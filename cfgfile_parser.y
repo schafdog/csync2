@@ -117,7 +117,7 @@ static void add_patt(int patterntype, char *pattern)
 
 	t->isinclude = patterntype >= 1;
 	t->iscompare = patterntype >= 2;
-	t->pattern = pattern;
+	t->pattern = strdup(prefixsubst(pattern));
 	t->next = csync_group->pattern;
 	csync_group->pattern = t;
 }
