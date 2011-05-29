@@ -47,9 +47,9 @@ int csync_unlink(const char *filename, int ign)
 	struct stat st;
 	int rc;
 
-	if ( lstat_strict(prefixsubst(filename), &st) != 0 ) return 0;
+	if ( lstat_strict(filename, &st) != 0 ) return 0;
 	if ( ign==2 && S_ISREG(st.st_mode) ) return 0;
-	rc = S_ISDIR(st.st_mode) ? rmdir(prefixsubst(filename)) : unlink(prefixsubst(filename));
+	rc = S_ISDIR(st.st_mode) ? rmdir(filename) : unlink(filename);
 
 	if ( rc && !ign ) cmd_error = strerror(errno);
 	return rc;
@@ -111,7 +111,8 @@ int csync_file_backup(const char *filename)
 	int rc;
 	while ( (g=csync_find_next(g, filename)) ) {
 	  if (g->backup_directory && g->backup_generations > 1) {
-	    
+	    //	    const char *filename = prefixsubst(prefixed_filename);
+
 	    int bak_dir_len = strlen(g->backup_directory);
 	    int filename_len = strlen(filename);
 	    char backup_filename[bak_dir_len + filename_len + 10];
@@ -119,7 +120,7 @@ int csync_file_backup(const char *filename)
 	    int fd_in, fd_out, i;
 	    int lastSlash = 0;
 	    mode_t mode;
-	    csync_debug(1, "backup\n");
+	    csync_debug(1, "backup %s \n", filename);
 	    // Skip generation of directories
 	    rc =  stat(filename, &buf);
 	    if (S_ISDIR(buf.st_mode)) {
@@ -301,7 +302,7 @@ struct csync_command cmdtab[] = {
 	{ "setmod",	1, 1, 0, 2, 1, A_SETMOD	},
 	{ "setime",	1, 0, 0, 2, 1, A_SETIME	},
 	{ "list",	0, 0, 0, 0, 1, A_LIST	},
-#if 0
+#if 1
 	{ "debug",	0, 0, 0, 0, 1, A_DEBUG	},
 #endif
 	{ "group",	0, 0, 0, 0, 0, A_GROUP	},
@@ -350,8 +351,8 @@ int verify_peername(const char *name, address_t *peeraddr)
 
 	s = getaddrinfo(name, NULL, &hints, &result);
 	if (s != 0) {
-		csync_debug(1, "getaddrinfo: %s\n", gai_strerror(s));
-		return 0;
+	  csync_debug(1, "getaddrinfo %s: %s\n", name, gai_strerror(s));
+	  return 0;
 	}
 
 	try_mapped_ipv4 =
@@ -428,6 +429,30 @@ void set_peername_from_env(address_t *p, const char *env)
 	freeaddrinfo(result);
 }
 
+static int setup_tag(char *tag[32], char *line) {
+  int i = 0;
+  char *save_ptr = NULL;
+  tag[0] = strtok_r(line, "\t \r\n", &save_ptr);
+  while ( tag[i] && i < 31 )
+    tag[++i] = strtok_r(NULL, "\t \r\n", &save_ptr);
+  while ( i < 32 )
+    tag[i++] = "";
+  
+  if ( !tag[0][0] ) 
+    return 1;
+  
+  for (i=0; i<32; i++)
+    tag[i] = strdup(url_decode(tag[i]));
+
+  return 0;
+}
+
+static void destroy_tag(char *tag[32]) {
+  int i = 0;
+  for (i=0; i<32; i++)
+    free(tag[i]);
+}
+
 void csync_daemon_session()
 {
 	struct stat sb;
@@ -456,17 +481,9 @@ void csync_daemon_session()
 
 	while ( conn_gets(line, 4096) ) {
 		int cmdnr;
-
-		tag[i=0] = strtok(line, "\t \r\n");
-		while ( tag[i] && i < 31 )
-			tag[++i] = strtok(0, "\t \r\n");
-		while ( i < 32 )
-			tag[i++] = "";
-
-		if ( !tag[0][0] ) continue;
-
-		for (i=0; i<32; i++)
-			tag[i] = strdup(url_decode(tag[i]));
+		
+		if (setup_tag(tag, line))
+		  continue;
 
 		for (cmdnr=0; cmdtab[cmdnr].text; cmdnr++)
 			if ( !strcasecmp(cmdtab[cmdnr].text, tag[0]) ) break;
@@ -506,31 +523,35 @@ void csync_daemon_session()
 		if ( cmdtab[cmdnr].check_dirty && csync_check_dirty(tag[2], peer,
 				cmdtab[cmdnr].action == A_FLUSH) ) goto abort_cmd;
 
+		const char *filename = NULL; 
+		if (tag[2])
+		  filename = prefixsubst(tag[2]);
+
 		if ( cmdtab[cmdnr].unlink )
-				csync_unlink(tag[2], cmdtab[cmdnr].unlink);
+		  csync_unlink(filename, cmdtab[cmdnr].unlink);
 
 		switch ( cmdtab[cmdnr].action )
 		{
 		case A_SIG:
 			{
-				struct stat st;
+			   struct stat st;
 
-				if ( lstat_strict(prefixsubst(tag[2]), &st) != 0 ) {
+				if ( lstat_strict(filename, &st) != 0 ) {
 					if ( errno == ENOENT )
 						conn_printf("OK (not_found).\n---\noctet-stream 0\n");
 					else
 						cmd_error = strerror(errno);
 					break;
 				} else
-					if ( csync_check_pure(tag[2]) ) {
+				  if ( csync_check_pure(filename)) {
 						conn_printf("OK (not_found).\n---\noctet-stream 0\n");
 						break;
 					}
 				conn_printf("OK (data_follows).\n");
-				conn_printf("%s\n", csync_genchecktxt(&st, tag[2], 1));
+				conn_printf("%s\n", csync_genchecktxt(&st, filename, 1));
 
 				if ( S_ISREG(st.st_mode) )
-					csync_rs_sig(tag[2]);
+					csync_rs_sig(filename);
 				else
 					conn_printf("octet-stream 0\n");
 			}
@@ -540,7 +561,7 @@ void csync_daemon_session()
 			break;
 		case A_TYPE:
 			{
-				FILE *f = fopen(prefixsubst(tag[2]), "rb");
+				FILE *f = fopen(filename, "rb");
 
 				if (!f && errno == ENOENT)
 					f = fopen("/dev/null", "rb");
@@ -566,7 +587,7 @@ void csync_daemon_session()
 			{
 				struct stat sbuf;
 				conn_printf("OK (data_follows).\n");
-				if (!lstat_strict(prefixsubst(tag[2]), &sbuf))
+				if (!lstat_strict(filename, &sbuf))
 					conn_printf("%ld\n", cmdtab[cmdnr].action == A_GETTM ?
 							(long)sbuf.st_mtime : (long)sbuf.st_size);
 				else
@@ -580,14 +601,14 @@ void csync_daemon_session()
 				url_encode(tag[2]));
 			break;
 		case A_DEL:
-			if (!csync_file_backup(tag[2]))
-				csync_unlink(tag[2], 0);
+			if (!csync_file_backup(filename))
+			  csync_unlink(filename, 0);
 			break;
 		case A_PATCH:
-			if (!csync_file_backup(tag[2])) {
+		  if (!csync_file_backup(filename)) {
 				conn_printf("OK (send_data).\n");
-				csync_rs_sig(tag[2]);
-				if (csync_rs_patch(tag[2]))
+				csync_rs_sig(filename);
+				if (csync_rs_patch(filename))
 					cmd_error = strerror(errno);
 			}
 			break;
@@ -603,11 +624,11 @@ void csync_daemon_session()
 			// permissions..
 			{
 				char winfilename[MAX_PATH];
-				cygwin_conv_to_win32_path(prefixsubst(tag[2]), winfilename);
+				cygwin_conv_to_win32_path(filename), winfilename);
 
 				if ( !CreateDirectory(TEXT(winfilename), NULL) ) {
 					struct stat st;
-					if ( lstat_strict(prefixsubst(tag[2]), &st) != 0 || !S_ISDIR(st.st_mode)) {
+					if ( lstat_strict(filename), &st) != 0 || !S_ISDIR(st.st_mode)) {
 						csync_debug(1, "Win32 I/O Error %d in mkdir command: %s\n",
 								(int)GetLastError(), winfilename);
 						cmd_error = "Win32 I/O Error on CreateDirectory()";
@@ -615,27 +636,27 @@ void csync_daemon_session()
 				}
 			}
 #else
-			if ( mkdir(prefixsubst(tag[2]), 0700) ) {
+			if ( mkdir(filename, 0700) ) {
 				struct stat st;
-				if ( lstat_strict((prefixsubst(tag[2])), &st) != 0 || !S_ISDIR(st.st_mode))
+				if ( lstat_strict(filename, &st) != 0 || !S_ISDIR(st.st_mode))
 					cmd_error = strerror(errno);
 			}
 #endif
 			break;
 		case A_MKCHR:
-			if ( mknod(prefixsubst(tag[2]), 0700|S_IFCHR, atoi(tag[3])) )
+			if ( mknod(filename, 0700|S_IFCHR, atoi(tag[3])) )
 				cmd_error = strerror(errno);
 			break;
 		case A_MKBLK:
-			if ( mknod(prefixsubst(tag[2]), 0700|S_IFBLK, atoi(tag[3])) )
+			if ( mknod(filename, 0700|S_IFBLK, atoi(tag[3])) )
 				cmd_error = strerror(errno);
 			break;
 		case A_MKFIFO:
-			if ( mknod(prefixsubst(tag[2]), 0700|S_IFIFO, 0) )
+			if ( mknod(filename, 0700|S_IFIFO, 0) )
 				cmd_error = strerror(errno);
 			break;
 		case A_MKLINK:
-			if ( symlink(tag[3], prefixsubst(tag[2])) )
+		  if ( symlink(prefixsubst(tag[3]), filename) )
 				cmd_error = strerror(errno);
 			break;
 		case A_MKSOCK:
@@ -645,13 +666,13 @@ void csync_daemon_session()
 			if ( !csync_ignore_uid || !csync_ignore_gid ) {
 				int uid = csync_ignore_uid ? -1 : atoi(tag[3]);
 				int gid = csync_ignore_gid ? -1 : atoi(tag[4]);
-				if ( lchown(prefixsubst(tag[2]), uid, gid) )
+				if ( lchown(filename, uid, gid) )
 					cmd_error = strerror(errno);
 			}
 			break;
 		case A_SETMOD:
 			if ( !csync_ignore_mod ) {
-				if ( chmod(prefixsubst(tag[2]), atoi(tag[3])) )
+				if ( chmod(filename, atoi(tag[3])) )
 					cmd_error = strerror(errno);
 			}
 			break;
@@ -660,16 +681,16 @@ void csync_daemon_session()
 				struct utimbuf utb;
 				utb.actime = atoll(tag[3]);
 				utb.modtime = atoll(tag[3]);
-				if ( utime(prefixsubst(tag[2]), &utb) )
+				if ( utime(filename, &utb) )
 					cmd_error = strerror(errno);
 			}
 			break;
 		case A_LIST:
 			SQL_BEGIN("DB Dump - Files for sync pair",
 				"SELECT checktxt, filename FROM file %s%s%s ORDER BY filename",
-					strcmp(tag[2], "-") ? "WHERE filename = '" : "",
-					strcmp(tag[2], "-") ? url_encode(tag[2]) : "",
-					strcmp(tag[2], "-") ? "'" : "")
+					strcmp(filename, "-") ? "WHERE filename = '" : "",
+					strcmp(filename, "-") ? url_encode(filename) : "",
+					strcmp(filename, "-") ? "'" : "")
 			{
 				if ( csync_match_file_host(url_decode(SQL_V(1)), tag[1], peer, (const char **)&tag[3]) )
 					conn_printf("%s\t%s\n", SQL_V(0), SQL_V(1));
@@ -741,22 +762,21 @@ found_asactive: ;
 		}
 
 		if ( cmdtab[cmdnr].update )
-			csync_file_update(tag[2], peer);
+			csync_file_update(filename, peer);
 
 		if ( cmdtab[cmdnr].update == 1 ) {
 			csync_debug(1, "Updated %s from %s.\n",
-					tag[2], peer ? peer : "???");
-			csync_schedule_commands(tag[2], 0);
+					filename, peer ? peer : "???");
+			csync_schedule_commands(filename, 0);
 		}
 
 abort_cmd:
 		if ( cmd_error )
-			conn_printf("%s\n", cmd_error);
+		  conn_printf("%s (%s)\n", cmd_error, filename ? filename : "<no file>");
 		else
 			conn_printf("OK (cmd_finished).\n");
 
 next_cmd:
-		for (i=0; i<32; i++)
-			free(tag[i]);
+		destroy_tag(tag);
 	}
 }
