@@ -90,7 +90,8 @@ enum {
 	MODE_LIST_DIRTY,
 	MODE_REMOVE_OLD,
 	MODE_COMPARE,
-	MODE_SIMPLE
+	MODE_SIMPLE,
+	MODE_UPGRADE_DB
 };
 
 void help(char *cmd)
@@ -344,6 +345,33 @@ error:
 	return 1;
 }
 
+int upgrade_db() 
+{
+  struct csync_prefix *p;
+  csync_debug(1, "Upgrade database.. ");
+
+  for (p = csync_prefix; p; p = p->next) {
+      if (p->name && p->path) {
+	int length = strlen(p->name) + 3;
+	char *prefix = malloc(length);
+	prefix[0] = '%';
+	strcpy(prefix+1, p->name);
+	strcpy(prefix+length-2, "%");
+	char *prefix_encoded = strdup(url_encode(prefix));
+	const char *path_encoded = url_encode(p->path);
+
+	csync_debug(1, "Replace prefix %s with path %s (%s)", prefix_encoded, p->path, path_encoded);
+	SQL("upgrade database",
+	    "UPDATE file set filename=replace(filename,'%s', '%s') WHERE filename like '%s%%' ",
+	    prefix_encoded, path_encoded, prefix_encoded);
+	free(prefix);
+	free(prefix_encoded);
+      }
+  }
+  exit(0);
+  return 0;
+}
+
 int main(int argc, char ** argv)
 {
 	struct textlist *tl = 0, *t;
@@ -368,7 +396,7 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
-	while ( (opt = getopt(argc, argv, "a:W:s:Ftp:G:P:C:D:N:HBAIXULlSTMRvhcuoimfxrd")) != -1 ) {
+	while ( (opt = getopt(argc, argv, "a:W:s:Ftp:G:P:C:D:N:HBAIXULlSTMRvhcuoimfxrdZ")) != -1 ) {
 
 		switch (opt) {
 		        case 'a':
@@ -511,6 +539,9 @@ int main(int argc, char ** argv)
 			case 'd':
 				dry_run = 1;
 				break;
+			case 'Z':
+				mode = MODE_UPGRADE_DB;
+				break;
 			default:
 				help(argv[0]);
 		}
@@ -522,7 +553,8 @@ int main(int argc, char ** argv)
 			mode != MODE_UPDATE && mode != MODE_CHECK &&
 			mode != MODE_COMPARE &&
 			mode != MODE_CHECK_AND_UPDATE &&
-			mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC)
+			mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
+	                mode != MODE_UPGRADE_DB)
 		help(argv[0]);
 
 	if ( mode == MODE_TEST_SYNC && optind != argc &&
@@ -611,7 +643,7 @@ int main(int argc, char ** argv)
 				file_config, strerror(errno));
 	yyparse();
 	fclose(yyin);
-
+	
 	if (!csync_database)
 		csync_database = db_default_database(dbdir, myhostname, cfgname);
 
@@ -627,6 +659,11 @@ found_a_group:;
 	}
 
 	csync_db_open(csync_database);
+
+	if (mode == MODE_UPGRADE_DB) {
+	  int rc = upgrade_db();
+	  exit(rc);
+	}
 
 	for (i=optind; i < argc; i++)
 		on_cygwin_lowercase(argv[i]);
@@ -727,11 +764,9 @@ found_a_group:;
 		case MODE_MARK:
 			for (i=optind; i < argc; i++) {
 				char *realname = getrealfn(argv[i]);
-				char *pfname;
 				csync_check_usefullness(realname, recursive);
-				//pfname=strdup(prefixencode(realname));
-				pfname = strdup(realname);
-				csync_mark(pfname, 0, 0);
+				csync_mark(realname, 0, 0);
+				char *url_encoded = strdup(url_encode(realname));
 
 				if ( recursive ) {
 					char *where_rec = "";
@@ -741,18 +776,18 @@ found_a_group:;
 					else
 						ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' "
 							"and filename < '%s0'",
-							url_encode(pfname), url_encode(pfname));
+							url_encoded, url_encoded);
 
 					SQL_BEGIN("Adding dirty entries recursively",
 						"SELECT filename FROM file WHERE filename = '%s' %s",
-						url_encode(pfname), where_rec)
+						url_encoded, where_rec)
 					{
 						char *filename = strdup(url_decode(SQL_V(0)));
 						csync_mark(filename, 0, 0);
 						free(filename);
 					} SQL_END;
 				}
-				free(pfname);
+				free(url_encoded);
 			}
 			break;
 
