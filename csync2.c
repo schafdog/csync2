@@ -459,7 +459,6 @@ int main(int argc, char ** argv)
 				break;
 			case 'l':
 				csync_syslog = 1;
-				printf("Using syslog"); 
 				openlog("csync2", LOG_ODELAY, LOG_LOCAL0);
 				break;
 			case 'h':
