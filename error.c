@@ -137,7 +137,7 @@ void csync_debug(int lv, const char *fmt, ...)
 	}
 	else {
 	  va_start(ap,fmt);
-	  vsyslog(LOG_DEBUG, fmt, ap);
+	  vsyslog(lv, fmt, ap);
 	  va_end(ap);
 	}
 	csync_messages_printed++;
