@@ -163,7 +163,7 @@ auto_resolve_entry_point:
 			printf("!D: %-15s %s\n", peername, filename);
 			return;
 		}
-		conn_printf("FLUSH %s %s\n", url_encode(key), url_encode(filename));
+		conn_printf("FLUSH %s %s\n", url_encode(key), url_encode(prefixencode(filename)));
 		if ( read_conn_status(filename, peername) )
 			goto got_error;
 	} else {
@@ -172,8 +172,7 @@ auto_resolve_entry_point:
 		const char *chk2 = "---";
 		char chk1[4096];
 
-		conn_printf("SIG %s %s\n",
-				url_encode(key), url_encode(filename));
+		conn_printf("SIG %s %s\n", url_encode(key), url_encode(prefixencode(filename)));
 		if ( read_conn_status(filename, peername) ) goto got_error;
 
 		if ( !conn_gets(chk1, 4096) ) goto got_error;
@@ -210,7 +209,7 @@ auto_resolve_entry_point:
 	}
 
 	conn_printf("DEL %s %s\n",
-			url_encode(key), url_encode(filename));
+		    url_encode(key), url_encode(prefixencode(filename)));
 	if ( (last_conn_status=read_conn_status(filename, peername)) )
 		goto maybe_auto_resolve;
 
@@ -287,7 +286,7 @@ void csync_update_file_mod(const char *peername,
 auto_resolve_entry_point:
 	csync_debug(1, "Updating %s on %s ...\n", filename, peername);
 
-	if ( lstat_strict(prefixsubst(filename), &st) != 0 ) {
+	if ( lstat_strict(filename, &st) != 0 ) {
 		csync_debug(0, "ERROR: Cant stat %s.\n", filename);
 		csync_error_count++;
 		goto got_error;
@@ -299,7 +298,7 @@ auto_resolve_entry_point:
 			return;
 		}
 		conn_printf("FLUSH %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( read_conn_status(filename, peername) )
 			goto got_error;
 	} else {
@@ -309,7 +308,7 @@ auto_resolve_entry_point:
 		const char *chk2;
 
 		conn_printf("SIG %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( read_conn_status(filename, peername) ) goto got_error;
 
 		if ( !conn_gets(chk1, 4096) ) goto got_error;
@@ -348,7 +347,7 @@ auto_resolve_entry_point:
 
 	if ( S_ISREG(st.st_mode) ) {
 		conn_printf("PATCH %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( (last_conn_status = read_conn_status(filename, peername)) )
 			goto maybe_auto_resolve;
 		if ( csync_rs_delta(filename) ) {
@@ -360,37 +359,38 @@ auto_resolve_entry_point:
 	} else
 	if ( S_ISDIR(st.st_mode) ) {
 		conn_printf("MKDIR %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( (last_conn_status = read_conn_status(filename, peername)) )
 			goto maybe_auto_resolve;
 	} else
 	if ( S_ISCHR(st.st_mode) ) {
 		conn_printf("MKCHR %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( (last_conn_status = read_conn_status(filename, peername)) )
 			goto maybe_auto_resolve;
 	} else
 	if ( S_ISBLK(st.st_mode) ) {
 		conn_printf("MKBLK %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( (last_conn_status = read_conn_status(filename, peername)) )
 			goto maybe_auto_resolve;
 	} else
 	if ( S_ISFIFO(st.st_mode) ) {
 		conn_printf("MKFIFO %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( (last_conn_status = read_conn_status(filename, peername)) )
 			goto maybe_auto_resolve;
 	} else
 	if ( S_ISLNK(st.st_mode) ) {
 		char target[1024];
 		int rc;
-		rc = readlink(prefixsubst(filename), target, 1023);
+		rc = readlink(filename, target, 1023);
 		if ( rc >= 0 ) {
 			target[rc]=0;
 			conn_printf("MKLINK %s %s %s\n",
-					url_encode(key), url_encode(filename),
-					url_encode(target));
+				    url_encode(key), 
+				    url_encode(prefixencode(filename)),
+				    url_encode(prefixencode(target)));
 			if ( (last_conn_status = read_conn_status(filename, peername)) )
 				goto maybe_auto_resolve;
 		} else {
@@ -400,7 +400,7 @@ auto_resolve_entry_point:
 	} else
 	if ( S_ISSOCK(st.st_mode) ) {
 		conn_printf("MKSOCK %s %s\n",
-				url_encode(key), url_encode(filename));
+			    url_encode(key), url_encode(prefixencode(filename)));
 		if ( (last_conn_status = read_conn_status(filename, peername)) )
 			goto maybe_auto_resolve;
 	} else {
@@ -409,14 +409,14 @@ auto_resolve_entry_point:
 	}
 
 	conn_printf("SETOWN %s %s %d %d\n",
-			url_encode(key), url_encode(filename),
+		    url_encode(key), url_encode(prefixencode(filename)),
 			st.st_uid, st.st_gid);
 	if ( read_conn_status(filename, peername) )
 		goto got_error;
 
 	if ( !S_ISLNK(st.st_mode) ) {
 		conn_printf("SETMOD %s %s %d\n", url_encode(key),
-				url_encode(filename), st.st_mode);
+			    url_encode(prefixencode(filename)), st.st_mode);
 		if ( read_conn_status(filename, peername) )
 			goto got_error;
 	}
@@ -424,7 +424,7 @@ auto_resolve_entry_point:
 skip_action:
 	if ( !S_ISLNK(st.st_mode) ) {
 		conn_printf("SETIME %s %s %Ld\n",
-				url_encode(key), url_encode(filename),
+			    url_encode(key), url_encode(prefixencode(filename)),
 				(long long)st.st_mtime);
 		if ( read_conn_status(filename, peername) )
 			goto got_error;
@@ -483,7 +483,7 @@ maybe_auto_resolve:
 						cmd = "GETSZ";
 					}
 
-					conn_printf("%s %s %s\n", cmd, url_encode(key), url_encode(filename));
+					conn_printf("%s %s %s\n", cmd, url_encode(key), url_encode(prefixencode(filename)));
 					if ( read_conn_status(filename, peername) ) goto got_error_in_autoresolve;
 
 					if ( !conn_gets(buffer, 4096) ) goto got_error_in_autoresolve;
@@ -492,7 +492,7 @@ maybe_auto_resolve:
 					if (remotedata == -1)
 						goto remote_file_has_been_removed;
 
-					if ( lstat_strict(prefixsubst(filename), &sbuf) ) goto got_error_in_autoresolve;
+					if ( lstat_strict(filename, &sbuf) ) goto got_error_in_autoresolve;
 
 					if (auto_method == CSYNC_AUTO_METHOD_YOUNGER ||
 					    auto_method == CSYNC_AUTO_METHOD_OLDER)
@@ -551,7 +551,7 @@ void csync_update_host(const char *peername,
 		const char *filename = url_decode(SQL_V(0));
 		int i, use_this = patnum == 0;
 		for (i=0; i<patnum && !use_this; i++)
-			if ( compare_files(filename, patlist[i], recursive) ) use_this = 1;
+		  if ( compare_files(filename, patlist[i], recursive) ) use_this = 1;
 		if (use_this)
 			textlist_add2(&tl, filename, url_decode(SQL_V(1)), atoi(SQL_V(2)));
 	} SQL_END;
@@ -582,7 +582,7 @@ void csync_update_host(const char *peername,
 	 */
 	for (t = tl; t != 0; t = next_t) {
 		next_t = t->next;
-		if ( !lstat_strict(prefixsubst(t->value), &st) != 0 && !csync_check_pure(t->value)) {
+		if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
 			*last_tn = next_t;
 			t->next = tl_mod;
 			tl_mod = t;
@@ -681,10 +681,10 @@ found_host_check:
 		return 0;
 	}
 
-	conn_printf("HELLO %s\n", myname);
+	conn_printf("HELLO %s\n", url_encode(myname));
 	if ( read_conn_status(0, peername) ) goto finish;
 
-	conn_printf("TYPE %s %s\n", g->key, filename);
+	conn_printf("TYPE %s %s\n", url_encode(g->key), url_encode(prefixencode(filename)));
 	if ( read_conn_status(0, peername) ) goto finish;
 
 	/* FIXME
@@ -707,9 +707,12 @@ found_host_check:
 	old_sigpipe_handler = signal(SIGPIPE, SIG_IGN);
 	p = popen(buffer, "w");
 
-	while ( (rc=conn_read(buffer, 512)) > 0 )
+	int length = 0;
+	while ( (rc=conn_read(buffer, 512)) > 0 ) {
 		fwrite(buffer, rc, 1, p);
-
+		length += rc;
+	}
+	csync_debug(2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d " , myname, filename, peername, filename, length);
 	fclose(p);
 	signal(SIGPIPE, old_sigpipe_handler);
 
@@ -783,10 +786,10 @@ found_host_check:
 		return 0;
 	}
 
-	conn_printf("HELLO %s\n", myname);
+	conn_printf("HELLO %s\n", url_encode(myname));
 	read_conn_status(0, peername);
 
-	conn_printf("LIST %s %s", peername, filename ? url_encode(filename) : "-");
+	conn_printf("LIST %s %s", peername, filename ? url_encode(prefixencode(filename)) : "-");
 	for (g = csync_group; g; g = g->next) {
 		if ( !g->myname || strcmp(g->myname, myname) ) continue;
 		for (h = g->host; h; h = h->next)
