@@ -192,7 +192,7 @@ int csync_check_pure(const char *filename)
 			}
 
 			myfilename[i]=0;
-			if (lstat_strict(prefixsubst(myfilename), &sbuf) || S_ISLNK(sbuf.st_mode)) {
+			if (lstat_strict(myfilename, &sbuf) || S_ISLNK(sbuf.st_mode)) {
 				has_symlink = 1;
 				break;
 			}
@@ -231,7 +231,7 @@ void csync_check_del(const char *file, int recursive, int init_run)
 		if (!csync_match_file(filename))
 			continue;
 
-		if ( lstat_strict(prefixsubst(filename), &st) != 0 || csync_check_pure(filename) )
+		if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename) )
 			textlist_add(&tl, filename, 0);
 	} SQL_END;
 
@@ -257,32 +257,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run)
 	const char *checktxt;
 	struct stat st;
 
-	if (*file != '%') {
-		struct csync_prefix *p;
-		for (p = csync_prefix; p; p = p->next)
-		{
-			if (!p->path)
-				continue;
-
-			if (!strcmp(file, p->path)) {
-				char new_file[strlen(p->name) + 3];
-				sprintf(new_file, "%%%s%%", p->name);
-				csync_check_mod(new_file, recursive, ignnoent, init_run);
-				continue;
-			}
-
-			if (check_type < 1) {
-				int file_len = strlen(file);
-				int path_len = strlen(p->path);
-
-				if (file_len < path_len && p->path[file_len] == '/' &&
-				    !strncmp(file, p->path, file_len))
-					check_type = 1;
-			}
-		}
-	}
-
-	if ( check_type>0 && lstat_strict(prefixsubst(file), &st) != 0 ) {
+	if ( check_type>0 && lstat_strict(file, &st) != 0 ) {
 		if ( ignnoent ) return 0;
 		csync_fatal("This should not happen: "
 				"Can't stat %s.\n", file);
@@ -332,10 +307,10 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run)
 		if ( !S_ISDIR(st.st_mode) ) break;
 		csync_debug(2, "Checking %s%s* ..\n",
 				file, !strcmp(file, "/") ? "" : "/");
-		n = scandir(prefixsubst(file), &namelist, 0, alphasort);
+		n = scandir(file, &namelist, 0, alphasort);
 		if (n < 0) {
 			csync_debug(0, "%s in scandir: %s (%s)\n",
-				strerror(errno), prefixsubst(file), file);
+				strerror(errno), file, file);
 			csync_error_count++;
 		} else {
 			while(n--) {
@@ -380,7 +355,8 @@ void csync_check(const char *filename, int recursive, int init_run)
 		filename = "/cygdrive";
 	}
 #endif
-	struct csync_prefix *p = csync_prefix;
+	
+	//struct csync_prefix *p = csync_prefix;
 
 	csync_debug(2, "Running%s check for %s ...\n",
 			recursive ? " recursive" : "", filename);
@@ -389,27 +365,5 @@ void csync_check(const char *filename, int recursive, int init_run)
 		csync_check_del(filename, recursive, init_run);
 
 	csync_check_mod(filename, recursive, 1, init_run);
-
-	if (*filename == '/')
-		while (p) {
-			if (p->path) {
-				int p_len = strlen(p->path);
-				int f_len = strlen(filename);
-
-				if (p_len <= f_len && !strncmp(p->path, filename, p_len) &&
-						(filename[p_len] == '/' || !filename[p_len])) {
-					char new_filename[strlen(p->name) + strlen(filename+p_len) + 10];
-					sprintf(new_filename, "%%%s%%%s", p->name, filename+p_len);
-
-					csync_debug(2, "Running%s check for %s ...\n",
-							recursive ? " recursive" : "", new_filename);
-
-					if (!csync_compare_mode)
-						csync_check_del(new_filename, recursive, init_run);
-					csync_check_mod(new_filename, recursive, 1, init_run);
-				}
-			}
-			p = p->next;
-		}
 }
 
