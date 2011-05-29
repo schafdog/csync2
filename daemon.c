@@ -493,6 +493,11 @@ void csync_daemon_session()
 			goto abort_cmd;
 		}
 
+		char *filename = NULL; 
+		if (tag[2])
+		  filename = (char *) prefixsubst(tag[2]);
+
+
 		cmd_error = 0;
 
 		if ( cmdtab[cmdnr].need_ident && !peer ) {
@@ -502,17 +507,17 @@ void csync_daemon_session()
 		}
 
 		if ( cmdtab[cmdnr].check_perm )
-			on_cygwin_lowercase(tag[2]);
+			on_cygwin_lowercase(filename);
 
 		if ( cmdtab[cmdnr].check_perm ) {
 			if ( cmdtab[cmdnr].check_perm == 2 )
 				csync_compare_mode = 1;
-			int perm = csync_perm(tag[2], tag[1], peer);
+			int perm = csync_perm(filename, tag[1], peer);
 			if ( cmdtab[cmdnr].check_perm == 2 )
 				csync_compare_mode = 0;
 			if ( perm ) {
 				if ( perm == 2 ) {
-					csync_mark(tag[2], peer, 0);
+					csync_mark(filename, peer, 0);
 					cmd_error = "Permission denied for slave!";
 				} else
 					cmd_error = "Permission denied!";
@@ -520,12 +525,8 @@ void csync_daemon_session()
 			}
 		}
 
-		if ( cmdtab[cmdnr].check_dirty && csync_check_dirty(tag[2], peer,
+		if ( cmdtab[cmdnr].check_dirty && csync_check_dirty(filename, peer,
 				cmdtab[cmdnr].action == A_FLUSH) ) goto abort_cmd;
-
-		const char *filename = NULL; 
-		if (tag[2])
-		  filename = prefixsubst(tag[2]);
 
 		if ( cmdtab[cmdnr].unlink )
 		  csync_unlink(filename, cmdtab[cmdnr].unlink);
@@ -557,7 +558,7 @@ void csync_daemon_session()
 			}
 			break;
 		case A_MARK:
-			csync_mark(tag[2], peer, 0);
+			csync_mark(filename, peer, 0);
 			break;
 		case A_TYPE:
 			{
@@ -598,7 +599,7 @@ void csync_daemon_session()
 		case A_FLUSH:
 			SQL("Flushing dirty entry (if any) for file",
 				"DELETE FROM dirty WHERE filename = '%s'",
-				url_encode(tag[2]));
+				url_encode(filename));
 			break;
 		case A_DEL:
 			if (!csync_file_backup(filename))
