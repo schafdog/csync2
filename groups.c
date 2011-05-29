@@ -113,11 +113,12 @@ int csync_match_file(const char *file)
 
 void csync_check_usefullness(const char *file, int recursive)
 {
-	struct csync_prefix *p = csync_prefix;
+  //	struct csync_prefix *p = csync_prefix;
 
 	if ( csync_find_next(0, file) ) return;
 	if ( recursive && csync_step_into(file) ) return;
 
+	/*
 	if (*file == '/')
 		while (p) {
 			if (p->path) {
@@ -135,7 +136,7 @@ void csync_check_usefullness(const char *file, int recursive)
 			}
 			p = p->next;
 		}
-
+	*/
 	csync_debug(0, "WARNING: Parameter will be ignored: %s\n", file);
 }
 
