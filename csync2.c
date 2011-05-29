@@ -326,9 +326,9 @@ static int csync_server_loop(int single_connect)
 					hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
 					NI_NUMERICHOST | NI_NUMERICSERV) != 0)
 				goto error;
-			fprintf(stderr, "<%d> New connection from %s:%s.\n",
+			fprintf(stdout, "<%d> New connection from %s:%s.\n",
 				csync_server_child_pid, hbuf, sbuf);
-			fflush(stderr);
+			fflush(stdout);
 
 			dup2(conn, 0);
 			dup2(conn, 1);
@@ -431,6 +431,7 @@ int main(int argc, char ** argv)
 				break;
 			case 'l':
 				csync_syslog = 1;
+				printf("Using syslog"); 
 				openlog("csync2", LOG_ODELAY, LOG_LOCAL0);
 				break;
 			case 'h':
@@ -728,7 +729,8 @@ found_a_group:;
 				char *realname = getrealfn(argv[i]);
 				char *pfname;
 				csync_check_usefullness(realname, recursive);
-				pfname=strdup(prefixencode(realname));
+				//pfname=strdup(prefixencode(realname));
+				pfname = strdup(realname);
 				csync_mark(pfname, 0, 0);
 
 				if ( recursive ) {
@@ -827,7 +829,7 @@ found_a_group:;
 					csync_compare_mode = 1;
 					retval = csync_diff(argv[optind], argv[optind+1], realname);
 				} else
-					if ( csync_insynctest(argv[optind], argv[optind+1], init_run, 0, realname) )
+				    if ( csync_insynctest(argv[optind], argv[optind+1], init_run, 0, realname))
 						retval = 2;
 				break;
 			case 2:
@@ -840,7 +842,7 @@ found_a_group:;
 
 				if ( mode_test_auto_diff )
 					csync_compare_mode = 1;
-				if ( csync_insynctest_all(init_run, mode_test_auto_diff, realname) )
+				if ( csync_insynctest_all(init_run, mode_test_auto_diff, realname))
 					retval = 2;
 				break;
 			case 0:
