@@ -114,6 +114,10 @@ void csync_fatal(const char *fmt, ...)
 	exit(1);
 }
 
+int csync_syslog_priority(int level) {
+  return level + 3;
+}
+
 void csync_debug(int lv, const char *fmt, ...)
 {
 	va_list ap;
@@ -137,7 +141,7 @@ void csync_debug(int lv, const char *fmt, ...)
 	}
 	else {
 	  va_start(ap,fmt);
-	  vsyslog(lv, fmt, ap);
+	  vsyslog(csync_syslog_priority(lv), fmt, ap);
 	  va_end(ap);
 	}
 	csync_messages_printed++;
