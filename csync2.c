@@ -116,7 +116,7 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "	-c [-r] file..		Check files and maybe add to dirty db\n"
 "	-u [-d] [-r] file..	Updates files if listed in dirty db\n"
 "	-o [-r] file..		Create list of files in compare-mode\n"
-"	-f [-r] file..		Force this file in sync (resolve conflict)\n"
+"	-f [-r] file..		Force files to win next conflict resolution\n"
 "	-m file..		Mark files in database as dirty\n"
 "\n"
 "Simple mode:\n"
@@ -174,11 +174,11 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "	-U	Don't mark all other peers as dirty when doing a -TI run.\n"
 "\n"
 "	-G Group1,Group2,Group3,...\n"
-"		Only use this groups from config-file.\n"
+"		Only use these groups from config-file.\n"
 "\n"
 "	-P peer1,peer1,...\n"
-"		Only update this peers (still mark all as dirty).\n"
-"		Only show files for this peers in -o (compare) mode.\n"
+"		Only update these peers (still mark all as dirty).\n"
+"		Only show files for these peers in -o (compare) mode.\n"
 "\n"
 "	-F	Add new entries to dirty database with force flag set.\n"
 "\n"
@@ -194,10 +194,11 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "Database switches:\n"
 "\n"
 "	-D database-dir\n"
-"		Use sqlite database in database dir (defaults to /var/lib/csync2)\n"
+"		Use sqlite database in database dir (default: /var/lib/csync2)\n"
 "\n"
 "	-a mysql-url\n"
-"		Use mysql database in URL: mysql://[<user>:<password>@]<hostname>/<database>\n"
+"		Use mysql database in URL:\n"
+"		mysql://[<user>:<password>@]<hostname>/<database>\n"
 "\n"
 "Creating key file:\n"
 "	%s -k filename\n"
@@ -566,6 +567,13 @@ int main(int argc, char ** argv)
 	if ( mode == MODE_NONE )
 		help(argv[0]);
 
+	/* Some inetd connect stderr to stdout.  The debug level messages on
+	 * stderr would confuse the csync2 protocol. Log to syslog instead. */
+	if ( mode == MODE_INETD && csync_debug_level && !csync_syslog ) {
+		csync_syslog = 1;
+		openlog("csync2", LOG_ODELAY, LOG_LOCAL0);
+	}
+
 	if ( *myhostname == 0 ) {
 		gethostname(myhostname, 256);
 		myhostname[255] = 0;
@@ -771,7 +779,7 @@ found_a_group:;
 					char *where_rec = "";
 
 					if ( !strcmp(realname, "/") )
-						ASPRINTF(&where_rec, "or 1");
+						ASPRINTF(&where_rec, "or 1=1");
 					else
 						ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' "
 							"and filename < '%s0'",
@@ -793,11 +801,12 @@ found_a_group:;
 		case MODE_FORCE:
 			for (i=optind; i < argc; i++) {
 				char *realname = getrealfn(argv[i]);
+				char *pfname = strdup(prefixencode(realname));
 				char *where_rec = "";
 
 				if ( recursive ) {
 					if ( !strcmp(realname, "/") )
-						ASPRINTF(&where_rec, "or 1");
+						ASPRINTF(&where_rec, "or 1=1");
 					else
 						ASPRINTF(&where_rec, "or (filename > '%s/' "
 							"and filename < '%s0')",
@@ -810,6 +819,7 @@ found_a_group:;
 
 				if ( recursive )
 					free(where_rec);
+				free(pfname);
 			}
 			break;
 

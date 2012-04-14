@@ -24,7 +24,12 @@ man_MANS = csync2.1
 csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
                  checktxt.c csync2.c daemon.c db.c error.c getrealfn.c	\
                  groups.c rsync.c update.c urlencode.c conn.c prefixsubst.c \
-		 db_api.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c
+		 db_api.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c \
+		 csync2.h db_api.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
+		 csync2-compare \
+		 csync2.1
+
+EXTRA_DIST = csync2.cfg csync2.xinetd
 
 AM_YFLAGS = -d
 BUILT_SOURCES = cfgfile_parser.h
@@ -37,8 +42,8 @@ DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=
-AM_LDFLAGS=
+AM_CFLAGS=$(LIBGNUTLS_CFLAGS)
+AM_LDFLAGS=$(LIBGNUTLS_LIBS)
 
 if PRIVATE_LIBRSYNC
   BUILT_SOURCES += private_librsync
