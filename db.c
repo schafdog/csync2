@@ -301,6 +301,8 @@ void csync_db_fin(void *vmx, const char *err)
 #endif
 #if defined(HAVE_SQLITE3)
 #define DBEXTENSION ".db3"
+#else
+#define DBEXTENSION ""
 #endif
 
 char *db_default_database(char *dbdir, char *myhostname, char *cfg_name)
