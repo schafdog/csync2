@@ -57,6 +57,7 @@ char myhostname[256] = "";
 char *csync_port = "30865";
 char *active_grouplist = 0;
 char *active_peerlist = 0;
+char *update_format= "";
 
 extern int yyparse();
 extern FILE *yyin;
@@ -291,6 +292,13 @@ error:
 	return -1;
 }
 
+static char program_pid[256];
+
+void csync_openlog() {
+  sprintf(program_pid, "csync2(%d)", getpid());
+  openlog(program_pid, LOG_ODELAY, LOG_LOCAL0);
+}
+
 static int csync_server_loop(int single_connect)
 {
 	union {
@@ -328,10 +336,17 @@ static int csync_server_loop(int single_connect)
 					hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
 					NI_NUMERICHOST | NI_NUMERICSERV) != 0)
 				goto error;
-			fprintf(stdout, "<%d> New connection from %s:%s.\n",
-				csync_server_child_pid, hbuf, sbuf);
-			fflush(stdout);
 
+			if (csync_syslog) {
+			  csync_openlog();
+			  csync_debug(1, "New connection from %s:%s.\n", hbuf, sbuf);
+			}
+			else {
+			  //Stupid this is not using csync_debug(..)
+			  fprintf(stdout, "<%d> New connection from %s:%s.\n",
+				csync_server_child_pid, hbuf, sbuf);
+			  fflush(stdout);
+			}
 			dup2(conn, 0);
 			dup2(conn, 1);
 			close(conn);
@@ -460,7 +475,6 @@ int main(int argc, char ** argv)
 				break;
 			case 'l':
 				csync_syslog = 1;
-				openlog("csync2", LOG_ODELAY, LOG_LOCAL0);
 				break;
 			case 'h':
 				if ( mode != MODE_NONE ) help(argv[0]);
@@ -571,7 +585,6 @@ int main(int argc, char ** argv)
 	 * stderr would confuse the csync2 protocol. Log to syslog instead. */
 	if ( mode == MODE_INETD && csync_debug_level && !csync_syslog ) {
 		csync_syslog = 1;
-		openlog("csync2", LOG_ODELAY, LOG_LOCAL0);
 	}
 
 	if ( *myhostname == 0 ) {
@@ -585,8 +598,14 @@ int main(int argc, char ** argv)
 	/* Stand-alone server mode. This is a hack..
 	 */
 	if ( mode == MODE_SERVER || mode == MODE_SINGLE ) {
-		if (csync_server_loop(mode == MODE_SINGLE)) return 1;
+		if (csync_server_loop(mode == MODE_SINGLE)) 
+		  return 1;
 		mode = MODE_INETD;
+	}
+
+	// init syslog if needed. 
+	if (csync_syslog && csync_server_child_pid == 0) {
+	  csync_openlog();
 	}
 
 	// print time (if -t is set)
