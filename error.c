@@ -136,8 +136,6 @@ void csync_debug(int lv, const char *fmt, ...)
 	  va_start(ap, fmt);
 	  vfprintf(csync_debug_out, fmt, ap);
 	  va_end(ap);
-	  // Good / bad with extra line
-	  fprintf(csync_debug_out,"\n");
 	}
 	else {
 	  va_start(ap,fmt);
