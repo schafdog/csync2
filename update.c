@@ -156,7 +156,7 @@ void csync_update_file_del(const char *peername,
 	}
 
 auto_resolve_entry_point:
-	csync_debug(1, "Deleting %s on %s ...\n", filename, peername);
+	csync_debug(1, "Deleting %s:%s\n", peername, filename);
 
 	if ( force ) {
 		if ( dry_run ) {
@@ -284,7 +284,7 @@ void csync_update_file_mod(const char *peername,
 	}
 
 auto_resolve_entry_point:
-	csync_debug(1, "Updating %s on %s ...\n", filename, peername);
+	csync_debug(1, "Updating %s:%s\n", peername, filename);
 
 	if ( lstat_strict(filename, &st) != 0 ) {
 		csync_debug(0, "ERROR: Cant stat %s.\n", filename);
