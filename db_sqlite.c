@@ -50,6 +50,8 @@ static struct db_sqlite3_fns {
 	int (*sqlite3_column_int_fn)(sqlite3_stmt*, int);
 	int (*sqlite3_step_fn)(sqlite3_stmt*);
 	int (*sqlite3_finalize_fn)(sqlite3_stmt *);
+        const char* (*sqlite3_free_fn)(void *);
+        char* (*sqlite3_mprintf_fn)(const char *,...);
 } f;
 
 static void *dl_handle;
@@ -74,7 +76,9 @@ static void db_sqlite3_dlopen(void)
         LOOKUP_SYMBOL(dl_handle, sqlite3_column_blob);
         LOOKUP_SYMBOL(dl_handle, sqlite3_column_int);
         LOOKUP_SYMBOL(dl_handle, sqlite3_step);
-        LOOKUP_SYMBOL(dl_handle, sqlite3_finalize);
+        LOOKUP_SYMBOL(dl_handle, sqlite3_finalize);        
+	LOOKUP_SYMBOL(dl_handle, sqlite3_mprintf);
+	LOOKUP_SYMBOL(dl_handle, sqlite3_free);
 }
 
 static int sqlite_errors[] = { SQLITE_OK, SQLITE_ERROR, SQLITE_BUSY, SQLITE_ROW, SQLITE_DONE, -1 };
@@ -111,6 +115,7 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p)
   conn->prepare = db_sqlite_prepare;
   conn->errmsg  = db_sqlite_errmsg;
   conn->upgrade_to_schema = db_sqlite_upgrade_to_schema;
+  conn->escape  = db_sqlite_escape;
   return db_sqlite_error_map(rc);
 }
 
@@ -216,6 +221,29 @@ int db_sqlite_stmt_close(db_stmt_p stmt)
   return db_sqlite_error_map(rc);
 }
 
+const char *db_my_escape(const char *string) {
+  
+  char *escaped = malloc(strlen(string)*2 +1);
+  const char *p = string; 
+  char *e = escaped;
+  while (*p != 0) {
+    switch (*p) {
+    case '\'': 
+    case '\\': 
+      *(e++) = '\'';
+    default:
+      *(e++) = *(p++);
+    }
+    *e = 0;
+  };
+  return escaped;
+};
+
+const char *db_sqlite_escape(db_conn_p conn, const char *string) {
+  const char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
+  ringbuffer_add(string, free);
+  return escaped;
+}
 
 int db_sqlite_upgrade_to_schema(int version)
 {
