@@ -47,10 +47,11 @@ static struct db_postgres_fns {
 	void (*PQfinish_fn)(PGconn *);
 	PGresult *(*PQexec_fn)(PGconn *, const char *);
 	ExecStatusType (*PQresultStatus_fn)(const PGresult *);
-	char *(*PQresultErrorMessage_fn)(const PGresult *);
-	void (*PQclear_fn)(PGresult *);
-	int (*PQntuples_fn)(const PGresult *);
-	char *(*PQgetvalue_fn)(const PGresult *, int, int);
+	char*  (*PQresultErrorMessage_fn)(const PGresult *);
+	void   (*PQclear_fn)(PGresult *);
+	int    (*PQntuples_fn)(const PGresult *);
+	char*  (*PQgetvalue_fn)(const PGresult *, int, int);
+        size_t (*PQescapeStringConn)(const PGConn *, char *, const char*, size_t, int *);
 } f;
 
 static void *dl_handle;
@@ -76,6 +77,7 @@ static void db_postgres_dlopen(void)
         LOOKUP_SYMBOL(dl_handle, PQclear);
         LOOKUP_SYMBOL(dl_handle, PQntuples);
         LOOKUP_SYMBOL(dl_handle, PQgetvalue);
+        LOOKUP_SYMBOL(dl_handle, PQescapeStringConn);
 }
 
 
