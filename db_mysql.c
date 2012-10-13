@@ -45,6 +45,7 @@ static struct db_mysql_fns {
 	MYSQL_ROW (*mysql_fetch_row_fn)(MYSQL_RES *);
 	void (*mysql_free_result_fn)(MYSQL_RES *);
 	unsigned int (*mysql_warning_count_fn)(MYSQL *);
+        unsigned long (*mysql_real_escape_string_fn)(MYSQL *mysql, char *to, const char *from, unsigned long length);
 } f;
 
 static void *dl_handle;
@@ -71,6 +72,7 @@ static void db_mysql_dlopen(void)
         LOOKUP_SYMBOL(dl_handle, mysql_fetch_row);
         LOOKUP_SYMBOL(dl_handle, mysql_free_result);
         LOOKUP_SYMBOL(dl_handle, mysql_warning_count);
+	LOOKUP_SYMBOL(dl_handle, mysql_real_escape_string);
 }
 
 
@@ -164,11 +166,13 @@ fatal:
   }
   *conn_p = conn;
   conn->private = db;
-  conn->close = db_mysql_close;
-  conn->exec = db_mysql_exec;
+  conn->close   = db_mysql_close;
+  conn->exec    = db_mysql_exec;
   conn->prepare = db_mysql_prepare;
-  conn->errmsg = db_mysql_errmsg;
+  conn->errmsg  = db_mysql_errmsg;
   conn->upgrade_to_schema = db_mysql_upgrade_to_schema;
+  conn->escape  = db_mysql_escape;
+  //  conn->free    = db_mysql_free;
 
   return rc;
 #else
@@ -403,6 +407,25 @@ int db_mysql_upgrade_to_schema(int version)
 
 	return DB_OK;
 }
+
+extern void *ringbuffer_malloc(size_t length);
+
+const char* db_mysql_escape(db_conn_p conn, const char *string) 
+{
+  int rc = DB_ERROR;
+  if (!conn)
+    return 0; 
+
+  if (!conn->private) {
+    return 0;
+  }
+  size_t length = strlen(string);
+  char *escaped_buffer = ringbuffer_malloc(2*length+1);
+  rc = f.mysql_real_escape_string_fn(conn->private, escaped_buffer, string, length);
+
+  return escaped_buffer;
+}
+
 
 
 #endif
