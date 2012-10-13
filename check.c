@@ -81,7 +81,7 @@ void csync_hint(const char *file, int recursive)
 {
 	SQL("Adding Hint",
 		"INSERT INTO hint (filename, recursive) "
-		"VALUES ('%s', %d)", url_encode(file), recursive);
+		"VALUES ('%s', %d)", db_encode(file), recursive);
 }
 
 void csync_mark(const char *file, const char *thispeer, const char *peerfilter)
@@ -102,16 +102,16 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter)
 		if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
 			SQL("Deleting old dirty file entries",
 				"DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
-				url_encode(file),
-				url_encode(pl[pl_idx].peername));
+				db_encode(file),
+				db_encode(pl[pl_idx].peername));
 
 			SQL("Marking File Dirty",
 				"INSERT INTO dirty (filename, forced, myname, peername) "
 				"VALUES ('%s', %s, '%s', '%s')",
-				url_encode(file),
+				db_encode(file),
 				csync_new_force ? "1" : "0",
-				url_encode(pl[pl_idx].myname),
-				url_encode(pl[pl_idx].peername));
+				db_encode(pl[pl_idx].myname),
+				db_encode(pl[pl_idx].peername));
 		}
 
 	free(pl);
@@ -219,27 +219,27 @@ void csync_check_del(const char *file, int recursive, int init_run)
 		else
 		  ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' "
 				"and filename < '%s0'",
-				url_encode(file), url_encode(file));
+				db_encode(file), db_encode(file));
 	}
 
 	SQL_BEGIN("Checking for removed files",
 			"SELECT filename from file where "
-			"filename = '%s' %s ORDER BY filename", url_encode(file), where_rec)
+			"filename = '%s' %s ORDER BY filename", db_encode(file), where_rec)
 	{
-		const char *filename = url_decode(SQL_V(0));
+		const char *filename = db_decode(SQL_V(0));
 
 		if (!csync_match_file(filename))
 			continue;
 
 		if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename) )
-			textlist_add(&tl, filename, 0);
+		  textlist_add(&tl, filename, 0);
 	} SQL_END;
 
 	for (t = tl; t != 0; t = t->next) {
 		if (!init_run) csync_mark(t->value, 0, 0);
 		SQL("Removing file from DB. It isn't with us anymore.",
 		    "DELETE FROM file WHERE filename = '%s'",
-		    url_encode(t->value));
+		    db_encode(t->value));
 	}
 
 	textlist_free(tl);
@@ -248,7 +248,7 @@ void csync_check_del(const char *file, int recursive, int init_run)
 		free(where_rec);
 }
 
-int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run)
+int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version)
 {
 	int check_type = csync_match_file(file);
 	int dirdump_this = 0, dirdump_parent = 0;
@@ -267,20 +267,20 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run)
 	{
 	case 2:
 		csync_debug(2, "Checking %s.\n", file);
-		checktxt = csync_genchecktxt(&st, file, 0);
-
+		checktxt = csync_genchecktxt_version(&st, file, 0, version);
+		
 		if (csync_compare_mode)
 			printf("%s\n", file);
-
+		const char *encoded = db_encode(file);
+		const char *checktxt_encoded = db_encode(checktxt);
 		SQL_BEGIN("Checking File",
 			"SELECT checktxt FROM file WHERE "
-			"filename = '%s'", url_encode(file))
-		{
-			if ( !csync_cmpchecktxt(checktxt,
-						url_decode(SQL_V(0))) ) {
-				csync_debug(2, "File has changed: %s\n", file);
-				this_is_dirty = 1;
-			}
+			"filename = '%s' ", encoded)
+		  {
+		    if ( !csync_cmpchecktxt(checktxt_encoded, SQL_V(0))) {
+		      csync_debug(2, "File has changed: %s\n", file);
+		      this_is_dirty = 1;
+		    }
 		} SQL_FIN {
 			if ( SQL_COUNT == 0 ) {
 				csync_debug(2, "New file: %s\n", file);
@@ -291,12 +291,13 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run)
 		if ( this_is_dirty && !csync_compare_mode ) {
 			SQL("Deleting old file entry",
 			    "DELETE FROM file WHERE filename = '%s'",
-			    url_encode(file));
+			    encoded);
 
 			SQL("Adding or updating file entry",
 			    "INSERT INTO file (filename, checktxt) "
 			    "VALUES ('%s', '%s')",
-			    url_encode(file), url_encode(checktxt));
+			    encoded, 
+			    checktxt_encoded);
 			if (!init_run) csync_mark(file, 0, 0);
 		}
 		dirdump_this = 1;
@@ -322,7 +323,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run)
 					sprintf(fn, "%s/%s",
 						!strcmp(file, "/") ? "" : file,
 						namelist[n]->d_name);
-					if (csync_check_mod(fn, recursive, 0, init_run))
+					if (csync_check_mod(fn, recursive, 0, init_run, version))
 						dirdump_this = 1;
 				}
 				free(namelist[n]);
@@ -348,7 +349,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run)
 	return dirdump_parent;
 }
 
-void csync_check(const char *filename, int recursive, int init_run)
+void csync_check(const char *filename, int recursive, int init_run, int version)
 {
 #if __CYGWIN__
 	if (!strcmp(filename, "/")) {
@@ -364,6 +365,6 @@ void csync_check(const char *filename, int recursive, int init_run)
 	if (!csync_compare_mode)
 		csync_check_del(filename, recursive, init_run);
 
-	csync_check_mod(filename, recursive, 1, init_run);
+	csync_check_mod(filename, recursive, 1, init_run, version);
 }
 
