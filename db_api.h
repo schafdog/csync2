@@ -20,12 +20,14 @@ typedef struct db_stmt_t *db_stmt_p;
 
 struct db_conn_t {
   void *private;
-  int       (*exec)   (db_conn_p conn, const char* exec);
-  int       (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
-  void      (*close)  (db_conn_p conn);
-  void      (*logger) (int lv, const char *fmt, ...);
+  int         (*exec)   (db_conn_p conn, const char* exec);
+  int         (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
+  void        (*close)  (db_conn_p conn);
+  void        (*logger) (int lv, const char *fmt, ...);
   const char* (*errmsg) (db_conn_p conn);
-  int       (*upgrade_to_schema) (int version);
+  int         (*upgrade_to_schema) (int version);
+  const char* (*escape) (db_conn_p conn, const char *string);
+  void        (*free)   (db_conn_p conn, const char *escaped);
 };
 
 struct db_stmt_t {
@@ -54,9 +56,10 @@ int       db_stmt_get_column_int(db_stmt_p  stmt, int column);
 int       db_stmt_next (db_stmt_p stmt);
 int       db_stmt_close(db_stmt_p stmt);
 
-void db_set_logger(db_conn_p conn, void (*logger)(int lv, const char *fmt, ...));
-int db_schema_version(db_conn_p db);
-int db_upgrade_to_schema(db_conn_p db, int version);
+void      db_set_logger(db_conn_p conn, void (*logger)(int lv, const char *fmt, ...));
+int       db_schema_version(db_conn_p db);
+int       db_upgrade_to_schema(db_conn_p db, int version);
 const char *db_errmsg(db_conn_p conn);
+const char *db_escape(db_conn_p conn, const char *string);
 
 #endif
