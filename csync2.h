@@ -115,6 +115,8 @@ extern int csync_db_next(void *vmx, const char *err,
 extern void csync_db_fin(void *vmx, const char *err);
 extern const void * csync_db_colblob(void *stmtx,int col);
 extern char *db_default_database(char *dbdir, char *myhostname, char *cfg_name);
+extern const char *csync_db_escape(const char *);
+
 
 
 #define SQL(e, s, ...) csync_db_sql(e, s, ##__VA_ARGS__)
@@ -137,6 +139,9 @@ extern char *db_default_database(char *dbdir, char *myhostname, char *cfg_name);
 	(dataSQL_V[(col)])
 #endif
 #endif
+
+const char* (*db_decode) (const char *value); 
+const char* (*db_encode) (const char *value); 
 
 // #if defined(HAVE_LIBSQLITE3)
 
@@ -179,14 +184,15 @@ extern int csync_rs_patch(const char *filename);
 
 /* checktxt.c */
 
-extern const char *csync_genchecktxt(const struct stat *st, const char *filename, int ign_mtime);
+//extern const char *csync_genchecktxt(const struct stat *st, const char *filename, int ign_mtime);
+extern const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int ign_mtime, int version);
 extern int csync_cmpchecktxt(const char *a, const char *b);
 
 
 /* check.c */
 
 extern void csync_hint(const char *file, int recursive);
-extern void csync_check(const char *filename, int recursive, int init_run);
+extern void csync_check(const char *filename, int recursive, int init_run, int version);
 extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter);
 
 
