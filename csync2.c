@@ -50,6 +50,7 @@ char *csync_database = 0;
 int db_type = DB_SQLITE3;
 
 static char *file_config = 0;
+static char *cfgfile = 0;
 static char *dbdir = DBDIR;
 char *cfgname = "";
 
@@ -57,8 +58,9 @@ char myhostname[256] = "";
 char *csync_port = "30865";
 char *active_grouplist = 0;
 char *active_peerlist = 0;
-char *update_format= "";
-
+char *update_format= 0;
+char *allow_peer = 0;
+int version = 1; 
 extern int yyparse();
 extern FILE *yyin;
 
@@ -109,7 +111,7 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "\n"
 "This program is free software under the terms of the GNU GPL.\n"
 "\n"
-"Usage: %s [-v..] [-C config-name] \\\n"
+"Usage: %s [-v..] [-C config-name|-K config-file] \\\n"
 "		[-D database-dir] [-N hostname] [-p port] ..\n"
 "\n"
 "With file parameters:\n"
@@ -191,6 +193,8 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "	-W fd	Write a list of directories in which relevant files can be\n"
 "		found to the specified file descriptor (when doing a -c run).\n"
 "		The directory names in this output are zero-terminated.\n"
+"\n"
+"       -z peer Force the daemon to accept this peer without verifying.\n"
 "\n"
 "Database switches:\n"
 "\n"
@@ -388,6 +392,54 @@ int upgrade_db()
   return 0;
 }
 
+int update_format_v1_v2(const char *file, int recursive, int do_it)
+{
+	char *where_rec = "";
+	struct textlist *tl = 0, *t;
+	struct stat st;
+
+	if ( recursive ) {
+		if ( !strcmp(file, "/") )
+		  ASPRINTF(&where_rec, "OR 1=1");
+		else
+		  ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' "
+				"and filename < '%s0'",
+				url_encode(file), url_encode(file));
+	}
+	int total = 0, found = 0;
+	SQL_BEGIN("Checking for removed files",
+			"SELECT filename from file where "
+			"filename = '%s' %s ORDER BY filename", url_encode(file), where_rec)
+	{
+	  const char *filename = url_decode(SQL_V(0));
+	  const char *db_filename = db_encode(filename);
+	  // Differ then add
+	  if (strcmp(db_filename,SQL_V(0))) {
+	    textlist_add2(&tl, db_filename, SQL_V(1), 0);
+	    found++;
+	  }
+	  total++;
+
+	} SQL_END;
+	printf("Found %d files out of %d to upgrade.\n", found, total);
+	if (do_it)
+	  for (t = tl; t != 0; t = t->next) {
+	    SQL("Updating url encode file from DB",
+		"UPDATE file set filename='%s', checktxt='%s' WHERE filename = '%s'",
+		db_encode(t->value), db_encode(t->value2), url_encode(t->value));
+	    total--;
+	  }
+
+	textlist_free(tl);
+
+	if ( recursive )
+		free(where_rec);
+}
+
+const char* csync_nop(const char *value) {
+  return value;
+}
+
 int main(int argc, char ** argv)
 {
 	struct textlist *tl = 0, *t;
@@ -400,7 +452,12 @@ int main(int argc, char ** argv)
 	int retval = -1;
 	int dry_run = 0;
 	int opt, i;
-
+	
+	// Default db_decodes (version 1 scheme)
+	db_decode = url_decode;
+	db_encode = url_encode;
+     
+	ringbuffer_init();
 	csync_debug_out = stderr;
 
 	if ( argc==3 && !strcmp(argv[1], "-k") ) {
@@ -412,9 +469,20 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
-	while ( (opt = getopt(argc, argv, "a:W:s:Ftp:G:P:C:D:N:HBAIXULlSTMRvhcuoimfxrdZ")) != -1 ) {
+	while ( (opt = getopt(argc, argv, "012a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:")) != -1 ) {
 
 		switch (opt) {
+		case '1':
+		  version = 1;
+		  break;
+		case '0':
+		  update_format ="v1-v2";
+		  break;
+		case '2':
+		  version = 2;
+		  db_encode = csync_db_escape;
+		  db_decode = csync_nop;
+		  break;
 		        case 'a':
 			        csync_database = optarg;
 				db_type = DB_MYSQL;
@@ -463,6 +531,9 @@ int main(int argc, char ** argv)
 				break;
 			case 'C':
 				cfgname = optarg;
+				break;
+			case 'K':
+				cfgfile = optarg;
 				break;
 			case 'D':
 				dbdir = optarg;
@@ -556,6 +627,9 @@ int main(int argc, char ** argv)
 			case 'Z':
 				mode = MODE_UPGRADE_DB;
 				break;
+			case 'z':
+				allow_peer = optarg;
+				break;
 			default:
 				help(argv[0]);
 		}
@@ -568,7 +642,8 @@ int main(int argc, char ** argv)
 			mode != MODE_COMPARE &&
 			mode != MODE_CHECK_AND_UPDATE &&
 			mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
-	                mode != MODE_UPGRADE_DB)
+	                mode != MODE_UPGRADE_DB &&
+	                update_format == 0)
 		help(argv[0]);
 
 	if ( mode == MODE_TEST_SYNC && optind != argc &&
@@ -578,7 +653,7 @@ int main(int argc, char ** argv)
 	if ( mode == MODE_LIST_SYNC && optind+2 != argc )
 		help(argv[0]);
 
-	if ( mode == MODE_NONE )
+	if ( mode == MODE_NONE && update_format == 0)
 		help(argv[0]);
 
 	/* Some inetd connect stderr to stdout.  The debug level messages on
@@ -644,9 +719,12 @@ int main(int argc, char ** argv)
 		}
 
 		if (para)
-			cfgname = strdup(url_decode(para));
+		  cfgname = strdup(url_decode(para));
 	}
-	if ( !*cfgname ) {
+	if (cfgfile) {
+	  ASPRINTF(&file_config, "%s", cfgfile);
+	}
+	else if ( !*cfgname) {
 	     ASPRINTF(&file_config, ETCDIR "/csync2.cfg");
 	} else {
 		int i;
@@ -691,6 +769,16 @@ found_a_group:;
 	  exit(rc);
 	}
 
+	if (update_format) {
+	  if (!strcmp(update_format, "v1-v2")) {
+	    int rc = update_format_v1_v2("/", 1, 0);
+	    exit(rc);
+	  }
+	  else {
+	    printf("Update format %s unknown\n");
+	    exit(1);
+	  }
+	}
 	for (i=optind; i < argc; i++)
 		on_cygwin_lowercase(argv[i]);
 
@@ -698,8 +786,8 @@ found_a_group:;
 		case MODE_SIMPLE:
 			if ( argc == optind )
 			{
-				csync_check("/", 1, init_run);
-				csync_update(0, 0, 0, dry_run);
+			  csync_check("/", 1, init_run, version);
+			  csync_update(0, 0, 0, dry_run);
 			}
 			else
 			{
@@ -707,7 +795,7 @@ found_a_group:;
 				for (i=optind; i < argc; i++) {
 					realnames[i-optind] = strdup(getrealfn(argv[i]));
 					csync_check_usefullness(realnames[i-optind], recursive);
-					csync_check(realnames[i-optind], recursive, init_run);
+					csync_check(realnames[i-optind], recursive, init_run, version);
 				}
 				csync_update((const char**)realnames, argc-optind, recursive, dry_run);
 				for (i=optind; i < argc; i++)
@@ -730,16 +818,16 @@ found_a_group:;
 				SQL_BEGIN("Check all hints",
 					"SELECT filename, recursive FROM hint")
 				{
-					textlist_add(&tl, url_decode(SQL_V(0)),
+					textlist_add(&tl, db_decode(SQL_V(0)),
 							atoi(SQL_V(1)));
 				} SQL_END;
 
 				for (t = tl; t != 0; t = t->next) {
-					csync_check(t->value, t->intvalue, init_run);
+				  csync_check(t->value, t->intvalue, init_run, version);
 					SQL("Remove processed hint.",
 					    "DELETE FROM hint WHERE filename = '%s' "
 					    "and recursive = %d",
-					    url_encode(t->value), t->intvalue);
+					    db_encode(t->value), t->intvalue);
 				}
 
 				textlist_free(tl);
@@ -749,7 +837,7 @@ found_a_group:;
 				for (i=optind; i < argc; i++) {
 					char *realname = getrealfn(argv[i]);
 					csync_check_usefullness(realname, recursive);
-					csync_check(realname, recursive, init_run);
+					csync_check(realname, recursive, init_run,version);
 				}
 			}
 			if (mode != MODE_CHECK_AND_UPDATE)
@@ -778,7 +866,7 @@ found_a_group:;
 			for (i=optind; i < argc; i++) {
 				char *realname = getrealfn(argv[i]);
 				csync_check_usefullness(realname, recursive);
-				csync_check(realname, recursive, init_run);
+				csync_check(realname, recursive, init_run,version);
 			}
 			break;
 
@@ -792,7 +880,7 @@ found_a_group:;
 				char *realname = getrealfn(argv[i]);
 				csync_check_usefullness(realname, recursive);
 				csync_mark(realname, 0, 0);
-				char *url_encoded = strdup(url_encode(realname));
+				char *db_encoded = strdup(csync_db_escape(realname));
 
 				if ( recursive ) {
 					char *where_rec = "";
@@ -800,20 +888,22 @@ found_a_group:;
 					if ( !strcmp(realname, "/") )
 						ASPRINTF(&where_rec, "or 1=1");
 					else
-						ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' "
-							"and filename < '%s0'",
-							url_encoded, url_encoded);
+						ASPRINTF(&where_rec, 
+							 "UNION ALL SELECT filename from file"
+							 " where filename > '%s/' "
+							 " and filename < '%s0'",
+							db_encoded, db_encoded);
 
 					SQL_BEGIN("Adding dirty entries recursively",
 						"SELECT filename FROM file WHERE filename = '%s' %s",
-						url_encoded, where_rec)
+						db_encoded, where_rec)
 					{
-						char *filename = strdup(url_decode(SQL_V(0)));
+						char *filename = strdup(db_decode(SQL_V(0)));
 						csync_mark(filename, 0, 0);
 						free(filename);
 					} SQL_END;
 				}
-				free(url_encoded);
+				free(db_encoded);
 			}
 			break;
 
@@ -847,7 +937,7 @@ found_a_group:;
 			SQL_BEGIN("DB Dump - Hint",
 				"SELECT recursive, filename FROM hint ORDER BY filename")
 			{
-				printf("%s\t%s\n", (char*)SQL_V(0), url_decode(SQL_V(1)));
+				printf("%s\t%s\n", (char*)SQL_V(0), db_decode(SQL_V(1)));
 				retval = -1;
 			} SQL_END;
 			break;
@@ -857,8 +947,8 @@ found_a_group:;
 			SQL_BEGIN("DB Dump - File",
 				"SELECT checktxt, filename FROM file ORDER BY filename")
 			{
-				if (csync_find_next(0, url_decode(SQL_V(1)))) {
-					printf("%s\t%s\n", url_decode(SQL_V(0)), url_decode(SQL_V(1)));
+				if (csync_find_next(0, db_decode(SQL_V(1)))) {
+					printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
 					retval = -1;
 				}
 			} SQL_END;
@@ -869,8 +959,8 @@ found_a_group:;
 			SQL_BEGIN("DB Dump - File",
 				"SELECT checktxt, filename FROM file ORDER BY filename")
 			{
-				if ( csync_match_file_host(url_decode(SQL_V(1)), argv[optind], argv[optind+1], 0) ) {
-					printf("%s\t%s\n", url_decode(SQL_V(0)), url_decode(SQL_V(1)));
+				if ( csync_match_file_host(db_decode(SQL_V(1)), argv[optind], argv[optind+1], 0) ) {
+					printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
 					retval = -1;
 				}
 			} SQL_END;
@@ -921,9 +1011,9 @@ found_a_group:;
 			SQL_BEGIN("DB Dump - Dirty",
 				"SELECT forced, myname, peername, filename FROM dirty ORDER BY filename")
 			{
-				if (csync_find_next(0, url_decode(SQL_V(3)))) {
+				if (csync_find_next(0, db_decode(SQL_V(3)))) {
 					printf("%s\t%s\t%s\t%s\n", atoi(SQL_V(0)) ?  "force" : "chary",
-						url_decode(SQL_V(1)), url_decode(SQL_V(2)), url_decode(SQL_V(3)));
+						db_decode(SQL_V(1)), db_decode(SQL_V(2)), db_decode(SQL_V(3)));
 					retval = -1;
 				}
 			} SQL_END;
