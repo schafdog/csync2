@@ -111,6 +111,14 @@ const char *db_errmsg(db_conn_p conn)
   return "(no error message function available)";
 }
 
+const char *db_escape_string(db_conn_p conn, const char *string)
+{
+  if (conn && conn->escape)
+    return conn->escape(conn, string);
+  csync_debug(0, "No Connection (%p) or escape method configured.", conn, (conn? conn->escape : 0));
+  return string;
+}
+
 int db_exec(db_conn_p conn, const char *sql) {
   if (conn && conn->exec)
     return conn->exec(conn, sql);
