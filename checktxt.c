@@ -162,9 +162,15 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 /* In future version of csync this might also convert
  * older checktxt strings to the new format.
  */
-int csync_cmpchecktxt(const char *a, const char *b)
+int csync_cmpchecktxt(const char *chk1, const char *chk2)
 {
-	return !strcmp(a, b);
+  int i;
+  for (i=0; chk1[i] && chk1[i] != '\n' && chk2[i] && chk2[i] != '\n'; i++)
+    if ( chk1[i] != chk2[i] )
+      return 1;
+    
+  return 0;
+  // return !strcmp(a, b);
 }
 
 
