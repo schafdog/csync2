@@ -309,17 +309,25 @@ auto_resolve_entry_point:
 
 		conn_printf("SIG %s %s\n",
 			    url_encode(key), url_encode(prefixencode(filename)));
-		if ( read_conn_status(filename, peername) ) goto got_error;
+		if ( read_conn_status(filename, peername) ) 
+		  goto got_error;
 
-		if ( !conn_gets(chk1, 4096) ) goto got_error;
-		chk2 = csync_genchecktxt(&st, filename, 1);
-		for (i=0; chk1[i] && chk1[i] != '\n' && chk2[i]; i++)
-			if ( chk1[i] != chk2[i] ) {
-				csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-				csync_debug(2, ">>> PEER:  %s>>> LOCAL: %s\n", chk1, chk2);
-				found_diff=1;
-				break;
-			}
+		if ( !conn_gets(chk1, 4096) ) 
+		  goto got_error;
+		int version = 1;
+		if (chk1[1] == '1')
+		  version = 1;
+		else if (chk1[1] == '2')
+		  version = 2;
+		else
+		  csync_debug(0, "Error reading version from check text: %s", chk1);
+		chk2 = csync_genchecktxt_version(&st, filename, 1, version);
+		
+		if (csync_cmpchecktxt(chk1, chk2)) {
+		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
+		  csync_debug(2, ">>> PEER:  %s>>> LOCAL: %s\n", chk1, chk2);
+		  found_diff=1;
+		}
 
 		rs_check_result = csync_rs_check(filename, S_ISREG(st.st_mode));
 		if ( rs_check_result < 0 )
@@ -432,8 +440,8 @@ skip_action:
 
 	SQL("Remove dirty-file entry.",
 		"DELETE FROM dirty WHERE filename = '%s' "
-		"AND peername = '%s'", url_encode(filename),
-		url_encode(peername));
+		"AND peername = '%s'", db_encode(filename),
+		db_encode(peername));
 
 	if (auto_resolve_run)
 		csync_error_count--;
@@ -546,14 +554,14 @@ void csync_update_host(const char *peername,
 	struct stat st;
 	SQL_BEGIN("Get files for host from dirty table",
 		"SELECT filename, myname, forced FROM dirty WHERE peername = '%s' "
-		"ORDER by filename ASC", url_encode(peername))
+		"ORDER by filename ASC", db_encode(peername))
 	{
-		const char *filename = url_decode(SQL_V(0));
+		const char *filename = db_decode(SQL_V(0));
 		int i, use_this = patnum == 0;
 		for (i=0; i<patnum && !use_this; i++)
 		  if ( compare_files(filename, patlist[i], recursive) ) use_this = 1;
 		if (use_this)
-			textlist_add2(&tl, filename, url_decode(SQL_V(1)), atoi(SQL_V(2)));
+			textlist_add2(&tl, filename, db_decode(SQL_V(1)), atoi(SQL_V(2)));
 	} SQL_END;
 
 	/* just return if there are no files to update */
@@ -631,7 +639,7 @@ void csync_update(const char ** patlist, int patnum, int recursive, int dry_run)
 	SQL_BEGIN("Get hosts from dirty table",
 		"SELECT peername FROM dirty GROUP BY peername")
 	{
-		textlist_add(&tl, url_decode(SQL_V(0)), 0);
+		textlist_add(&tl, db_decode(SQL_V(0)), 0);
 	} SQL_END;
 
 	for (t = tl; t != 0; t = t->next) {
@@ -803,10 +811,10 @@ found_host:
 	SQL_BEGIN("DB Dump - File",
 		"SELECT checktxt, filename FROM file %s%s%s ORDER BY filename",
 			filename ? "WHERE filename = '" : "",
-			filename ? url_encode(filename) : "",
+			filename ? db_encode(filename) : "",
 			filename ? "'" : "")
 	{
-		char *l_file = strdup(url_decode(SQL_V(1))), *l_checktxt = strdup(url_decode(SQL_V(0)));
+		char *l_file = strdup(db_decode(SQL_V(1))), *l_checktxt = strdup(db_decode(SQL_V(0)));
 		if ( csync_match_file_host(l_file, myname, peername, 0) ) {
 			if ( remote_eof ) {
 got_remote_eof:
@@ -944,7 +952,9 @@ void csync_remove_old()
 		const struct csync_group *g = 0;
 		const struct csync_group_host *h;
 
-		const char *filename = url_decode(SQL_V(0)); 
+		const char *filename  = db_decode(SQL_V(0)); 
+		const char *localname = db_decode(SQL_V(1));
+		const char *peername  = db_decode(SQL_V(2));
 
 		while ((g=csync_find_next(g, filename)) != 0) {
 			if (!strcmp(g->myname, SQL_V(1)))
@@ -954,29 +964,33 @@ void csync_remove_old()
 				}
 		}
 
-		textlist_add2(&tl, SQL_V(0), SQL_V(2), 0);
+		textlist_add2(&tl, filename, peername, 0);
 
 this_dirty_record_is_ok:
 		;
 	} SQL_END;
 	for (t = tl; t != 0; t = t->next) {
-		csync_debug(1, "Removing %s (%s) from dirty db.\n", t->value, t->value2);
-		SQL("Remove old file from dirty db",
-		    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'", t->value, t->value2);
+	  const char *filename = t->value;
+	  const char *peername = t->value2;
+
+	  csync_debug(1, "Removing %s (%s) from dirty db.\n", filename, peername);
+	  SQL("Remove old file from dirty db",
+	      "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'", db_encode(filename), db_encode(peername));
 	}
 	textlist_free(tl);
 
 	tl = 0;
 	SQL_BEGIN("Query file DB",
 	          "SELECT filename FROM file")
-	{
-		if (!csync_find_next(0, url_decode(SQL_V(0))))
-			textlist_add(&tl, SQL_V(0), 0);
+	  {
+	    const char *decoded = db_decode(SQL_V(0));
+		if (!csync_find_next(0, decoded))
+		  textlist_add(&tl, decoded, 0);
 	} SQL_END;
 	for (t = tl; t != 0; t = t->next) {
-		csync_debug(1, "Removing %s from file db.\n", t->value);
-		SQL("Remove old file from file db",
-		    "DELETE FROM file WHERE filename = '%s'", t->value);
+	  csync_debug(1, "Removing %s from file db.\n", t->value);
+	  SQL("Remove old file from file db",
+	      "DELETE FROM file WHERE filename = '%s'", db_encode(t->value));
 	}
 	textlist_free(tl);
 }
