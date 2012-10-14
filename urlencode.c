@@ -23,10 +23,10 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#define RINGBUFF_LEN 10
+#define RINGBUFF_LEN 100
 
 static char *ringbuff[RINGBUFF_LEN];
-int ringbuff_counter = 0;
+static int ringbuff_counter = 0;
 
 // perl -e 'printf("\\%03o", $_) for(1..040)' | fold -64; echo
 static char badchars[] =
