@@ -504,12 +504,15 @@ void csync_daemon_session()
 		  continue;
 
 		for (cmdnr=0; cmdtab[cmdnr].text; cmdnr++)
-			if ( !strcasecmp(cmdtab[cmdnr].text, tag[0]) ) break;
+		  if ( !strcasecmp(cmdtab[cmdnr].text, tag[0])) 
+		    break;
 
 		if ( !cmdtab[cmdnr].text ) {
 			cmd_error = "Unkown command!";
 			goto abort_cmd;
 		}
+
+		csync_debug(1, "Command: %s %s %s\n", cmdtab[cmdnr].text, (tag[1]? tag[1]: "-"), (tag[2]? tag[2]: "-"));
 
 		char *filename = NULL; 
 		if (tag[2])
