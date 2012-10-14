@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+
 #include "csync2.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,8 +39,11 @@
 #endif
 
 static char *cmd_error;
+extern char* update_format;
+extern int version; 
+extern char* allow_peer;
 
-int csync_setBackupFileStatus(char *filename, int backupDirLength);
+int csync_set_backup_file_status(char *filename, int backupDirLength);
 
 
 int csync_unlink(const char *filename, int ign)
@@ -55,14 +59,15 @@ int csync_unlink(const char *filename, int ign)
 	return rc;
 }
 
-int csync_check_dirty(const char *filename, const char *peername, int isflush)
+int csync_check_dirty(const char *filename, const char *peername, int isflush, int version)
 {
 	int rc = 0;
-	csync_check(filename, 0, 0);
-	if (isflush) return 0;
+	csync_check(filename, 0, 0, version);
+	if (isflush) 
+	  return 0;
 	SQL_BEGIN("Check if file is dirty",
-		"SELECT 1 FROM dirty WHERE filename = '%s' LIMIT 1",
-		url_encode(filename))
+		"SELECT 1 FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
+		  db_encode(filename), db_encode(peername))
 	{
 		rc = 1;
 		cmd_error = "File is also marked dirty here!";
@@ -75,24 +80,21 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush)
 void csync_file_update(const char *filename, const char *peername)
 {
 	struct stat st;
+	const char *filename_encoded = db_encode(filename);
+	const char *peername_encoded = db_encode(peername);
 	SQL("Removing file from dirty db",
 			"delete from dirty where filename = '%s' and peername = '%s'",
-			url_encode(filename), peername);
+	                filename_encoded, peername_encoded);
 	if ( lstat_strict(prefixsubst(filename), &st) != 0 || csync_check_pure(filename) ) {
 		SQL("Removing file from file db",
 			"delete from file where filename = '%s'",
-			url_encode(filename));
+		    filename_encoded);
 	} else {
-		const char *checktxt = csync_genchecktxt(&st, filename, 0);
-
-		SQL("Deleting old record from file db",
-			"DELETE FROM file WHERE filename = '%s'",
-			url_encode(filename));
-
-		SQL("Insert record to file db",
-			"INSERT INTO file (filename, checktxt) values "
-			"('%s', '%s')", url_encode(filename),
-			url_encode(checktxt));
+	  const char *checktxt = csync_genchecktxt_version(&st, filename, 0, version);
+		
+	  SQL("Deleting old record from file db",
+	      "DELETE FROM file WHERE filename = '%s'",
+	      filename_encoded);
 	}
 }
 
@@ -100,7 +102,7 @@ void csync_file_flush(const char *filename)
 {
 	SQL("Removing file from dirty db",
 		"delete from dirty where filename ='%s'",
-		url_encode(filename));
+		db_encode(filename));
 }
 
 int csync_file_backup(const char *filename)
@@ -120,11 +122,17 @@ int csync_file_backup(const char *filename)
 	    int fd_in, fd_out, i;
 	    int lastSlash = 0;
 	    mode_t mode;
-	    csync_debug(1, "backup %s \n", filename);
+	    csync_debug(2, "backup %s \n", filename);
 	    // Skip generation of directories
 	    rc =  stat(filename, &buf);
+	    csync_debug(2, "backup %s %d \n", filename, rc);
+	    if (rc != 0) {
+	      csync_debug(1, "Nothing to backup: %s. New file?\n", filename);
+	      return 0;
+	    }
+	    
 	    if (S_ISDIR(buf.st_mode)) {
-	      csync_debug(1, "directory. Skip generation \n");
+	      csync_debug(2, "directory. Skip generation \n");
 	      return 0;
 	    }
 
@@ -150,12 +158,12 @@ int csync_file_backup(const char *filename)
 
 		backup_filename[bak_dir_len+i] = 0;
 
-		csync_debug(1, "mkdir %s \n", backup_filename);
+		csync_debug(2, "mkdir %s \n", backup_filename);
 
 		mkdir(backup_filename, mode);
 		// Dont check the empty string.
 		if (i!= 0)
-		  csync_setBackupFileStatus(backup_filename, bak_dir_len);
+		  csync_set_backup_file_status(backup_filename, bak_dir_len);
 
 	      }
 		backup_filename[bak_dir_len+i] = filename[i];
@@ -171,7 +179,12 @@ int csync_file_backup(const char *filename)
 
 	      if (i != 1)
 		snprintf(backup_filename+bak_dir_len+filename_len, 10, ".%d", i-1);
-	      backup_filename[bak_dir_len+filename_len] = '\0';
+	      else
+		backup_filename[bak_dir_len+filename_len] = '\0';
+
+	      rc = stat(backup_filename, &buf);
+	      if (rc != 0) 
+		continue; // File does not exists
 	      snprintf(backup_otherfilename+bak_dir_len+filename_len, 10, ".%d", i);
 
 	      rc = rename(backup_filename, backup_otherfilename);
@@ -196,7 +209,7 @@ int csync_file_backup(const char *filename)
 
 	    rc  = csync_copy_file(fd_in, fd_out);
 	    if (rc != 0) {
-		csync_debug(1, "csync_backup error 2\n");
+		csync_debug(0, "csync_backup error: copy file\n");
 
 		snprintf(error_buffer, 1024,
 			 "Write error while backing up '%s': %s\n",
@@ -207,11 +220,11 @@ int csync_file_backup(const char *filename)
 		// 
 		// return 1;
 	    }
-	    csync_setBackupFileStatus(backup_filename, bak_dir_len);
-	    csync_debug(1, "csync_backup loop end\n");
+	    csync_set_backup_file_status(backup_filename, bak_dir_len);
+	    csync_debug(2, "csync_backup loop end\n");
 	  }
 	}
-	csync_debug(1, "csync_backup end\n");
+	csync_debug(2, "csync_backup end\n");
 	return 0;
 }
 
@@ -243,24 +256,24 @@ int csync_copy_file(int fd_in, int fd_out)
 /* get the mode from the orig directory.
    Looking from the back_dir_len should produce the original dir.
 */
-int csync_setBackupFileStatus(char *filename, int backupDirLength) {
+int csync_set_backup_file_status(char *filename, int backupDirLength) {
 
   struct stat buf;
   int rc = stat((filename + backupDirLength), &buf);
   if (rc == 0 ) {
-    csync_debug(0, "Stating original file %s rc: %d mode: %o", (filename + backupDirLength), rc, buf.st_mode);
+    csync_debug(2, "Stating original file %s rc: %d mode: %o", (filename + backupDirLength), rc, buf.st_mode);
 
     rc = chown(filename, buf.st_uid, buf.st_gid);
-    csync_debug(0, "Changing owner of %s to user %d and group %d, rc= %d \n", 
+    csync_debug(2, "Changing owner of %s to user %d and group %d, rc= %d \n", 
 		filename, buf.st_uid, buf.st_gid, rc);
 
     rc = chmod(filename, buf.st_mode);
-    csync_debug(0, "Changing mode of %s to mode %d, rc= %d \n", 
+    csync_debug(2, "Changing mode of %s to mode %d, rc= %d \n", 
 		filename, buf.st_mode, rc);
 
   }
   else {
-    csync_debug(0, "Error getting mode and owner ship from %s \n", (filename + backupDirLength));
+    csync_debug(2, "Error getting mode and owner ship from %s \n", (filename + backupDirLength));
     return -1;
   }
   return 0;
@@ -278,7 +291,7 @@ struct csync_command {
 
 enum {
 	A_SIG, A_FLUSH, A_MARK, A_TYPE, A_GETTM, A_GETSZ, A_DEL, A_PATCH,
-	A_MKDIR, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKSOCK,
+	A_MKDIR, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV, 
 	A_SETOWN, A_SETMOD, A_SETIME, A_LIST, A_GROUP,
 	A_DEBUG, A_HELLO, A_BYE
 };
@@ -297,7 +310,9 @@ struct csync_command cmdtab[] = {
 	{ "mkblk",	1, 1, 1, 1, 1, A_MKBLK	},
 	{ "mkfifo",	1, 1, 1, 1, 1, A_MKFIFO	},
 	{ "mklink",	1, 1, 1, 1, 1, A_MKLINK	},
+	{ "mkhardlink",	1, 1, 1, 1, 1, A_MKHLINK},
 	{ "mksock",	1, 1, 1, 1, 1, A_MKSOCK	},
+	{ "mv",	        1, 1, 1, 1, 1, A_MV	},
 	{ "setown",	1, 1, 0, 2, 1, A_SETOWN	},
 	{ "setmod",	1, 1, 0, 2, 1, A_SETMOD	},
 	{ "setime",	1, 0, 0, 2, 1, A_SETIME	},
@@ -318,14 +333,13 @@ typedef union address {
 	struct sockaddr_storage ss;
 } address_t;
 
-const char *csync_inet_ntop(address_t *addr)
+const char *csync_inet_ntop(address_t *addr, char *buf, size_t size)
 {
-	char buf[INET6_ADDRSTRLEN];
 	sa_family_t af = addr->sa.sa_family;
 	return inet_ntop(af,
-		af == AF_INET  ? (void*)&addr->sa_in.sin_addr :
-		af == AF_INET6 ? (void*)&addr->sa_in6.sin6_addr : NULL,
-		buf, sizeof(buf));
+			 af == AF_INET  ? (void*)&addr->sa_in.sin_addr :
+			 af == AF_INET6 ? (void*)&addr->sa_in6.sin6_addr : NULL,
+			 buf, size);
 }
 
 /*
@@ -351,10 +365,11 @@ int verify_peername(const char *name, address_t *peeraddr)
 
 	s = getaddrinfo(name, NULL, &hints, &result);
 	if (s != 0) {
-	  csync_debug(1, "getaddrinfo %s: %s\n", name, gai_strerror(s));
+	  csync_debug(2, "getaddrinfo %s: %s\n", name, gai_strerror(s));
 	  return 0;
 	}
-
+	char buf[INET6_ADDRSTRLEN];
+	csync_debug(1, "Connected from %s\n", csync_inet_ntop(peeraddr, buf, sizeof(buf)));
 	try_mapped_ipv4 =
 		af == AF_INET6 &&
 		!memcmp(&peeraddr->sa_in6.sin6_addr,
@@ -364,6 +379,8 @@ int verify_peername(const char *name, address_t *peeraddr)
 	 * Try each address. */
 
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
+	  char ip_string[INET6_ADDRSTRLEN];
+	  csync_debug(2, "IP: %s\n", csync_inet_ntop((address_t *) rp->ai_addr, ip_string, sizeof(ip_string)));
 		/* both IPv4 */
 		if (af == AF_INET && rp->ai_family == AF_INET &&
 		    !memcmp(&((struct sockaddr_in*)rp->ai_addr)->sin_addr,
@@ -383,6 +400,7 @@ int verify_peername(const char *name, address_t *peeraddr)
 			    sizeof(struct in_addr)))
 			break;
 	}
+
 	freeaddrinfo(result);
 	if (rp != NULL) /* memcmp found a match */
 		return conn_check_peer_cert(name, 0);
@@ -418,7 +436,7 @@ void set_peername_from_env(address_t *p, const char *env)
 
 	s = getaddrinfo(val, NULL, &hints, &result);
 	if (s != 0) {
-		csync_debug(1, "getaddrinfo: %s\n", gai_strerror(s));
+		csync_debug(2, "getaddrinfo: %s\n", gai_strerror(s));
 		return;
 	}
 
@@ -499,10 +517,10 @@ void csync_daemon_session()
 
 
 		cmd_error = 0;
-
+		char buf[INET6_ADDRSTRLEN];
 		if ( cmdtab[cmdnr].need_ident && !peer ) {
 			conn_printf("Dear %s, please identify first.\n",
-				    csync_inet_ntop(&peername) ?: "stranger");
+				    csync_inet_ntop(&peername, buf, sizeof(buf)) ?: "stranger");
 			goto next_cmd;
 		}
 
@@ -525,8 +543,9 @@ void csync_daemon_session()
 			}
 		}
 
-		if ( cmdtab[cmdnr].check_dirty && csync_check_dirty(filename, peer,
-				cmdtab[cmdnr].action == A_FLUSH) ) goto abort_cmd;
+		if ( cmdtab[cmdnr].check_dirty && 
+		     csync_check_dirty(filename, peer, cmdtab[cmdnr].action == A_FLUSH, version) ) 
+		  goto abort_cmd;
 
 		if ( cmdtab[cmdnr].unlink )
 		  csync_unlink(filename, cmdtab[cmdnr].unlink);
@@ -549,8 +568,12 @@ void csync_daemon_session()
 						break;
 					}
 				conn_printf("OK (data_follows).\n");
-				conn_printf("%s\n", csync_genchecktxt(&st, filename, 1));
-
+			 	const char *checktxt = csync_genchecktxt_version(&st, filename, 1, version);
+				if (version == 1)
+				    conn_printf("%s\n", checktxt);
+				else
+				    conn_printf("%s\n", url_encode(checktxt));
+				      
 				if ( S_ISREG(st.st_mode) )
 					csync_rs_sig(filename);
 				else
@@ -597,22 +620,27 @@ void csync_daemon_session()
 			}
 			break;
 		case A_FLUSH:
-			SQL("Flushing dirty entry (if any) for file",
-				"DELETE FROM dirty WHERE filename = '%s'",
-				url_encode(filename));
-			break;
+		  SQL("Flushing dirty entry (if any) for file",
+		      "DELETE FROM dirty WHERE filename = '%s'",
+		      db_encode(filename));
+		  break;
 		case A_DEL:
-			if (!csync_file_backup(filename))
-			  csync_unlink(filename, 0);
-			break;
-		case A_PATCH:
-		  if (!csync_file_backup(filename)) {
-				conn_printf("OK (send_data).\n");
-				csync_rs_sig(filename);
-				if (csync_rs_patch(filename))
-					cmd_error = strerror(errno);
-			}
-			break;
+		  if (!csync_file_backup(filename))
+		    csync_unlink(filename, 0);
+		  break;
+		case A_PATCH: {
+		  struct stat st;
+		  int rc = stat(filename, &st);
+		  // Only try to backup if the file exists already. 
+		  // TODO also skip if it is a directory that already exists. 
+		  if (rc == -1 || !csync_file_backup(filename)) {
+		    conn_printf("OK (send_data).\n");
+		    csync_rs_sig(filename);
+		    if (csync_rs_patch(filename))
+		      cmd_error = strerror(errno);
+		  }
+		  break;
+		}
 		case A_MKDIR:
 			/* ignore errors on creating directories if the
 			 * directory does exist already. we don't need such
@@ -638,9 +666,9 @@ void csync_daemon_session()
 			}
 #else
 			if ( mkdir(filename, 0700) ) {
-				struct stat st;
-				if ( lstat_strict(filename, &st) != 0 || !S_ISDIR(st.st_mode))
-					cmd_error = strerror(errno);
+			  struct stat st;
+			  if ( lstat_strict(filename, &st) != 0 || !S_ISDIR(st.st_mode))
+			    cmd_error = strerror(errno);
 			}
 #endif
 			break;
@@ -658,6 +686,10 @@ void csync_daemon_session()
 			break;
 		case A_MKLINK:
 		  if ( symlink(prefixsubst(tag[3]), filename) )
+				cmd_error = strerror(errno);
+			break;
+		case A_MKHLINK:
+		  if ( link(prefixsubst(tag[3]), filename) )
 				cmd_error = strerror(errno);
 			break;
 		case A_MKSOCK:
@@ -690,10 +722,10 @@ void csync_daemon_session()
 			SQL_BEGIN("DB Dump - Files for sync pair",
 				"SELECT checktxt, filename FROM file %s%s%s ORDER BY filename",
 					strcmp(filename, "-") ? "WHERE filename = '" : "",
-					strcmp(filename, "-") ? url_encode(filename) : "",
+					strcmp(filename, "-") ? db_encode(filename) : "",
 					strcmp(filename, "-") ? "'" : "")
 			{
-				if ( csync_match_file_host(url_decode(SQL_V(1)), tag[1], peer, (const char **)&tag[3]) )
+				if ( csync_match_file_host(db_decode(SQL_V(1)), tag[1], peer, (const char **)&tag[3]) )
 					conn_printf("%s\t%s\n", SQL_V(0), SQL_V(1));
 			} SQL_END;
 			break;
@@ -708,7 +740,8 @@ void csync_daemon_session()
 				free(peer);
 				peer = NULL;
 			}
-			if (verify_peername(tag[1], &peername)) {
+			// Hack to allow test cases on local machine
+			if ((allow_peer && !strcmp(allow_peer, tag[1])) || verify_peername(tag[1], &peername)) {
 				peer = strdup(tag[1]);
 			} else {
 				peer = NULL;
@@ -766,8 +799,7 @@ found_asactive: ;
 			csync_file_update(filename, peer);
 
 		if ( cmdtab[cmdnr].update == 1 ) {
-			csync_debug(1, "Updated %s from %s.\n",
-					filename, peer ? peer : "???");
+		  csync_debug(1, "Updated(%s) %s:%s \n", cmdtab[cmdnr].text, peer ? peer : "???", filename);
 			csync_schedule_commands(filename, 0);
 		}
 
