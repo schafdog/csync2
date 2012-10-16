@@ -175,14 +175,13 @@ auto_resolve_entry_point:
 		conn_printf("SIG %s %s\n", url_encode(key), url_encode(prefixencode(filename)));
 		if ( read_conn_status(filename, peername) ) goto got_error;
 
-		if ( !conn_gets(chk1, 4096) ) goto got_error;
-		for (i=0; chk1[i] && chk1[i] != '\n' && chk2[i]; i++)
-			if ( chk1[i] != chk2[i] ) {
-				csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-				csync_debug(2, ">>> PEER:  %s>>> LOCAL: %s\n", chk1, chk2);
-				found_diff=1;
-				break;
-			}
+		if ( !conn_gets_newline(chk1, 4096, 1) ) goto got_error;
+
+		if (!csync_cmpchecktxt(chk1,chk2)) {
+		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
+		  csync_debug(2, ">>> PEER:  %s>>> LOCAL: %s\n", chk1, chk2);
+		  found_diff=1;
+		}
 
 		rs_check_result = csync_rs_check(filename, 0);
 		if ( rs_check_result < 0 )
@@ -312,7 +311,7 @@ auto_resolve_entry_point:
 		if ( read_conn_status(filename, peername) ) 
 		  goto got_error;
 
-		if ( !conn_gets(chk1, 4096) ) 
+		if ( !conn_gets_newline(chk1, 4096,1) ) 
 		  goto got_error;
 		int version = 1;
 		if (chk1[1] == '1')
@@ -323,7 +322,7 @@ auto_resolve_entry_point:
 		  csync_debug(0, "Error reading version from check text: %s", chk1);
 		chk2 = csync_genchecktxt_version(&st, filename, 1, version);
 		
-		if (csync_cmpchecktxt(chk1, chk2)) {
+		if (!csync_cmpchecktxt(chk1, chk2)) {
 		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
 		  csync_debug(2, ">>> PEER:  %s>>> LOCAL: %s\n", chk1, chk2);
 		  found_diff=1;
