@@ -408,14 +408,16 @@ int update_format_v1_v2(const char *file, int recursive, int do_it)
 	}
 	int total = 0, found = 0;
 	SQL_BEGIN("Checking for removed files",
-			"SELECT filename from file where "
+			"SELECT filename, checktxt from file where "
 			"filename = '%s' %s ORDER BY filename", url_encode(file), where_rec)
 	{
 	  const char *filename = url_decode(SQL_V(0));
-	  const char *db_filename = db_encode(filename);
+	  const char *checktxt = url_decode(SQL_V(1));
+	  const char *db_filename = csync_db_escape(filename);
 	  // Differ then add
 	  if (strcmp(db_filename,SQL_V(0))) {
-	    textlist_add2(&tl, db_filename, SQL_V(1), 0);
+	    csync_debug(1, "URL encode %s => DB encode %s ", SQL_V(0),db_filename); 
+	    textlist_add2(&tl, filename, checktxt, 0);
 	    found++;
 	  }
 	  total++;
@@ -424,9 +426,14 @@ int update_format_v1_v2(const char *file, int recursive, int do_it)
 	printf("Found %d files out of %d to upgrade.\n", found, total);
 	if (do_it)
 	  for (t = tl; t != 0; t = t->next) {
-	    SQL("Updating url encode file from DB",
-		"UPDATE file set filename='%s', checktxt='%s' WHERE filename = '%s'",
-		db_encode(t->value), db_encode(t->value2), url_encode(t->value));
+	    SQL("Updating url encoding to db encoding in file",
+		"UPDATE file set filename='%s' WHERE filename = '%s'",
+		csync_db_escape(t->value), url_encode(t->value));
+
+	    SQL("Updating url encoding to db encoding in dirty",
+		"UPDATE dirty set filename='%s' WHERE filename = '%s'",
+		csync_db_escape(t->value), url_encode(t->value));
+
 	    total--;
 	  }
 
@@ -434,10 +441,28 @@ int update_format_v1_v2(const char *file, int recursive, int do_it)
 
 	if ( recursive )
 		free(where_rec);
+	return 0;
 }
 
+int csync_get_checktxt_version(const char *value) {
+  if (value && strlen(value) > 2) {
+    if (value[1] == '1')
+      return 1;
+    if (value[1] == '2')
+      return 2;
+  }
+  return 0;
+}
 const char* csync_nop(const char *value) {
   return value;
+}
+
+const char* csync_decode_v1_v2(const char *value) {
+  int version = csync_get_checktxt_version(value);
+  if (version == 1)
+    return url_decode(value);
+  else
+    return value;
 }
 
 int main(int argc, char ** argv)
@@ -481,7 +506,7 @@ int main(int argc, char ** argv)
 		case '2':
 		  version = 2;
 		  db_encode = csync_db_escape;
-		  db_decode = csync_nop;
+		  db_decode = csync_decode_v1_v2;
 		  break;
 		        case 'a':
 			        csync_database = optarg;
@@ -771,11 +796,11 @@ found_a_group:;
 
 	if (update_format) {
 	  if (!strcmp(update_format, "v1-v2")) {
-	    int rc = update_format_v1_v2("/", 1, 0);
+	    int rc = update_format_v1_v2("/", 1, 1);
 	    exit(rc);
 	  }
 	  else {
-	    printf("Update format %s unknown\n");
+	    printf("Update format %s unknown\n", update_format);
 	    exit(1);
 	  }
 	}
