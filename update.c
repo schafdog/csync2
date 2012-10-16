@@ -179,7 +179,7 @@ auto_resolve_entry_point:
 
 		if (!csync_cmpchecktxt(chk1,chk2)) {
 		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-		  csync_debug(2, ">>> PEER:  %s>>> LOCAL: %s\n", chk1, chk2);
+		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1, chk2);
 		  found_diff=1;
 		}
 
@@ -324,7 +324,7 @@ auto_resolve_entry_point:
 		
 		if (!csync_cmpchecktxt(chk1, chk2)) {
 		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-		  csync_debug(2, ">>> PEER:  %s>>> LOCAL: %s\n", chk1, chk2);
+		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1, chk2);
 		  found_diff=1;
 		}
 
