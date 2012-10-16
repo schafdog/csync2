@@ -458,18 +458,28 @@ void conn_printf(const char *fmt, ...)
 	conn_write(buffer, size);
 }
 
-size_t conn_gets(char *s, size_t size)
+size_t conn_gets_newline(char *s, size_t size, int remove_newline)
 {
 	size_t i=0;
 
 	while (i<size-1) {
 		int rc = conn_raw_read(s+i, 1);
-		if (rc != 1) break;
-		if (s[i++] == '\n') break;
+		if (rc != 1) 
+		  break;
+		if (s[i++] == '\n') {
+		  if (remove_newline)
+		    i--;
+		  break;
+		}
 	}
 	s[i] = 0;
 
 	conn_debug("Peer", s, i);
 	return i;
+}
+
+
+size_t conn_gets(char *s, size_t size) {
+  return conn_gets_newline(s, size, 0);
 }
 
