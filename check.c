@@ -254,7 +254,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 	int dirdump_this = 0, dirdump_parent = 0;
 	struct dirent **namelist;
 	int n, this_is_dirty = 0;
-	const char *checktxt;
+	char *checktxt;
 	struct stat st;
 
 	if ( check_type>0 && lstat_strict(file, &st) != 0 ) {
@@ -267,17 +267,30 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 	{
 	case 2:
 		csync_debug(2, "Checking %s.\n", file);
-		checktxt = csync_genchecktxt_version(&st, file, 0, version);
 		
 		if (csync_compare_mode)
 			printf("%s\n", file);
+		const char *checktxt_db;
+		checktxt = strdup(csync_genchecktxt_version(&st, file, 0, version));
+		// Assume that this isn't a upgrade and thus same version
+		int is_upgrade = 0;
+		int db_version = version;
 		const char *encoded = db_encode(file);
-		const char *checktxt_encoded = db_encode(checktxt);
 		SQL_BEGIN("Checking File",
 			"SELECT checktxt FROM file WHERE "
 			"filename = '%s' ", encoded)
 		  {
-		    if ( !csync_cmpchecktxt(checktxt_encoded, SQL_V(0))) {
+		    db_version = csync_get_checktxt_version(SQL_V(0));
+		    if (db_version < 1 || db_version > 2) {
+		      csync_debug(0, "Error extracting version from checktxt: %s", checktxt_db);
+		    }
+		    checktxt_db = db_decode(SQL_V(0));
+		    const char *checktxt_same_version = checktxt;
+		    if (db_version != version) {
+		      checktxt_same_version = csync_genchecktxt_version(&st, file, 0, db_version);
+		      is_upgrade = 1;
+		    }
+		    if ( !csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 		      csync_debug(2, "File has changed: %s\n", file);
 		      this_is_dirty = 1;
 		    }
@@ -287,19 +300,21 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 				this_is_dirty = 1;
 			}
 		} SQL_END;
-
-		if ( this_is_dirty && !csync_compare_mode ) {
+		if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
 			SQL("Deleting old file entry",
 			    "DELETE FROM file WHERE filename = '%s'",
 			    encoded);
+			const char *checktxt_encoded = db_encode(checktxt);
 
 			SQL("Adding or updating file entry",
 			    "INSERT INTO file (filename, checktxt) "
 			    "VALUES ('%s', '%s')",
 			    encoded, 
 			    checktxt_encoded);
-			if (!init_run) csync_mark(file, 0, 0);
+			if (!init_run && this_is_dirty) 
+			  csync_mark(file, 0, 0);
 		}
+		free(checktxt);
 		dirdump_this = 1;
 		dirdump_parent = 1;
 		/* fall thru */
