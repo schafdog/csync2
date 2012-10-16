@@ -178,7 +178,7 @@ void csync_db_sql(const char *err, const char *fmt, ...)
 	in_sql_query++;
 	csync_db_maybegin();
 
-	csync_debug(2, "SQL: %s\n", sql);
+	csync_debug(2, "%s SQL: %s\n", err, sql);
 
 	while (1) {
 	  rc = db_exec(db, sql);
