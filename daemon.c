@@ -92,9 +92,12 @@ void csync_file_update(const char *filename, const char *peername)
 	} else {
 	  const char *checktxt = csync_genchecktxt_version(&st, filename, 0, version);
 		
-	  SQL("Deleting old record from file db",
+	  SQL("Delete old record (if exist) ",
 	      "DELETE FROM file WHERE filename = '%s'",
-	      filename_encoded);
+	      filename_encoded);	  
+	  SQL("Insert record into file",
+	      "INSERT INTO file (filename, checktxt) values ('%s', '%s')",
+	      filename_encoded, db_encode(checktxt));
 	}
 }
 
@@ -261,7 +264,7 @@ int csync_set_backup_file_status(char *filename, int backupDirLength) {
   struct stat buf;
   int rc = stat((filename + backupDirLength), &buf);
   if (rc == 0 ) {
-    csync_debug(2, "Stating original file %s rc: %d mode: %o", (filename + backupDirLength), rc, buf.st_mode);
+    csync_debug(2, "Stating original file %s rc: %d mode: %o\n", (filename + backupDirLength), rc, buf.st_mode);
 
     rc = chown(filename, buf.st_uid, buf.st_gid);
     csync_debug(2, "Changing owner of %s to user %d and group %d, rc= %d \n", 
@@ -297,6 +300,7 @@ enum {
 };
 
 struct csync_command cmdtab[] = {
+  /*      command,perm, dirty,unlink, update,need_ident, action */
 	{ "sig",	1, 0, 0, 0, 1, A_SIG	},
 	{ "mark",	1, 0, 0, 0, 1, A_MARK	},
 	{ "type",	2, 0, 0, 0, 1, A_TYPE	},
