@@ -176,10 +176,11 @@ auto_resolve_entry_point:
 		if ( read_conn_status(filename, peername) ) goto got_error;
 
 		if ( !conn_gets_newline(chk1, 4096, 1) ) goto got_error;
+		const char *chk1_decoded = url_decode(chk1);
 
-		if (!csync_cmpchecktxt(chk1,chk2)) {
+		if (!csync_cmpchecktxt(chk1_decoded,chk2)) {
 		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1, chk2);
+		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1_decoded, chk2);
 		  found_diff=1;
 		}
 
@@ -215,8 +216,8 @@ auto_resolve_entry_point:
 skip_action:
 	SQL("Remove dirty-file entry.",
 		"DELETE FROM dirty WHERE filename = '%s' "
-		"AND peername = '%s'", url_encode(filename),
-		url_encode(peername));
+		"AND peername = '%s'", db_encode(filename),
+		db_encode(peername));
 
 	if (auto_resolve_run)
 		csync_error_count--;
@@ -313,18 +314,12 @@ auto_resolve_entry_point:
 
 		if ( !conn_gets_newline(chk1, 4096,1) ) 
 		  goto got_error;
-		int version = 1;
-		if (chk1[1] == '1')
-		  version = 1;
-		else if (chk1[1] == '2')
-		  version = 2;
-		else
-		  csync_debug(0, "Error reading version from check text: %s", chk1);
-		chk2 = csync_genchecktxt_version(&st, filename, 1, version);
-		
-		if (!csync_cmpchecktxt(chk1, chk2)) {
+		int peer_version = csync_get_checktxt_version(chk1);
+		chk2 = csync_genchecktxt_version(&st, filename, 1, peer_version);
+		const char *chk1_decoded = url_decode(chk1);
+		if (!csync_cmpchecktxt(chk1_decoded, chk2)) {
 		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1, chk2);
+		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1_decoded, chk2);
 		  found_diff=1;
 		}
 
