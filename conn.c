@@ -48,7 +48,7 @@ static gnutls_certificate_credentials_t conn_x509_cred;
 
 
 /* getaddrinfo stuff mostly copied from its manpage */
-int conn_connect(const char *peername)
+int conn_connect(const char *peername, int ip_version)
 {
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
@@ -56,7 +56,7 @@ int conn_connect(const char *peername)
 
 	/* Obtain address(es) matching host/port */
 	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;	/* Allow IPv4 or IPv6 */
+	hints.ai_family = ip_version;	/* Allow IPv4 or IPv6 */
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;	/* Any protocol */
@@ -90,11 +90,11 @@ int conn_connect(const char *peername)
 	return sfd;
 }
 
-int conn_open(const char *peername)
+int conn_open(const char *peername, int ip_version)
 {
 	int on = 1;
 
-        conn_fd_in = conn_connect(peername);
+        conn_fd_in = conn_connect(peername, ip_version);
         if (conn_fd_in < 0) {
                 csync_debug(1, "Can't create socket.\n");
                 return -1;
