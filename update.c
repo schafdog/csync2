@@ -51,7 +51,7 @@ int read_conn_status(const char *file, const char *host)
 	return !strcmp(line, "File is also marked dirty here!") ? 1 : 2;
 }
 
-int connect_to_host(const char *peername)
+int connect_to_host(const char *peername, int ip_version)
 {
 	int use_ssl = 1;
 	struct csync_nossl *t;
@@ -69,7 +69,7 @@ int connect_to_host(const char *peername)
 	csync_debug(1, "Connecting to host %s (%s) ...\n",
 			peername, use_ssl ? "SSL" : "PLAIN");
 
-	if ( conn_open(peername) ) return -1;
+	if ( conn_open(peername, ip_version) ) return -1;
 
 	if ( use_ssl ) {
 #if HAVE_LIBGNUTLS
@@ -540,7 +540,7 @@ int compare_files(const char *filename, const char *pattern, int recursive)
 }
 
 void csync_update_host(const char *peername,
-		const char **patlist, int patnum, int recursive, int dry_run)
+		       const char **patlist, int patnum, int recursive, int dry_run, int ip_version)
 {
 	struct textlist *tl = 0, *t, *next_t;
 	struct textlist *tl_mod = 0, **last_tn=&tl;
@@ -561,7 +561,7 @@ void csync_update_host(const char *peername,
 	/* just return if there are no files to update */
 	if ( !tl ) return;
 
-	if ( connect_to_host(peername) ) {
+	if ( connect_to_host(peername, ip_version) ) {
 		csync_error_count++;
 		csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
 		csync_debug(1, "Host stays in dirty state. "
@@ -626,7 +626,7 @@ ident_failed_2:;
 	conn_close();
 }
 
-void csync_update(const char ** patlist, int patnum, int recursive, int dry_run)
+void csync_update(const char ** patlist, int patnum, int recursive, int dry_run, int ip_version)
 {
 	struct textlist *tl = 0, *t;
 
@@ -650,13 +650,13 @@ void csync_update(const char ** patlist, int patnum, int recursive, int dry_run)
 			continue;
 		}
 found_asactive:
-		csync_update_host(t->value, patlist, patnum, recursive, dry_run);
+		csync_update_host(t->value, patlist, patnum, recursive, dry_run, ip_version);
 	}
 
 	textlist_free(tl);
 }
 
-int csync_diff(const char *myname, const char *peername, const char *filename)
+int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version)
 {
 	FILE *p;
 	void *old_sigpipe_handler;
@@ -677,7 +677,7 @@ int csync_diff(const char *myname, const char *peername, const char *filename)
 	return 0;
 found_host_check:
 
-	if ( connect_to_host(peername) ) {
+	if ( connect_to_host(peername, ip_version) ) {
 		csync_error_count++;
 		csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
 		return 0;
@@ -763,7 +763,7 @@ int csync_insynctest_readline(char **file, char **checktxt)
 	return 0;
 }
 
-int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename)
+int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version)
 {
 	struct textlist *diff_list = 0, *diff_ent;
 	const struct csync_group *g;
@@ -782,7 +782,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run, int
 	return 0;
 found_host_check:
 
-	if ( connect_to_host(peername) ) {
+	if ( connect_to_host(peername, ip_version) ) {
 		csync_error_count++;
 		csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
 		return 0;
@@ -819,7 +819,7 @@ got_remote_eof:
 				if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
 			} else {
 				if ( !remote_reuse )
-					if ( csync_insynctest_readline(&r_file, &r_checktxt) )
+				  if ( csync_insynctest_readline(&r_file, &r_checktxt) )
 						{ remote_eof = 1; goto got_remote_eof; }
 				rel = strcmp(l_file, r_file);
 
@@ -876,13 +876,13 @@ got_remote_eof:
 	conn_close();
 
 	for (diff_ent=diff_list; diff_ent; diff_ent=diff_ent->next)
-		csync_diff(myname, peername, diff_ent->value);
+	  csync_diff(myname, peername, diff_ent->value, ip_version);
 	textlist_free(diff_list);
 
 	return ret;
 }
 
-int csync_insynctest_all(int init_run, int auto_diff, const char *filename)
+int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version)
 {
 	struct textlist *myname_list = 0, *myname;
 	struct csync_group *g;
@@ -893,7 +893,7 @@ int csync_insynctest_all(int init_run, int auto_diff, const char *filename)
 		int pl_idx;
 
 		for (pl_idx=0; pl && pl[pl_idx].peername; pl_idx++)
-			csync_diff(pl[pl_idx].myname, pl[pl_idx].peername, filename);
+		  csync_diff(pl[pl_idx].myname, pl[pl_idx].peername, filename, ip_version);
 
 		free(pl);
 		return ret;
@@ -925,7 +925,7 @@ skip_this_peername:		;
 
 		for (peername=peername_list; peername; peername=peername->next) {
 			csync_debug(1, "Running in-sync check for %s <-> %s.\n", myname->value, peername->value);
-			if ( !csync_insynctest(myname->value, peername->value, init_run, auto_diff, filename) ) ret=0;
+			if ( !csync_insynctest(myname->value, peername->value, init_run, auto_diff, filename, ip_version) ) ret=0;
 		}
 
 		textlist_free(peername_list);
