@@ -89,7 +89,7 @@ csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 
 /* conn.c */
 
-extern int conn_open(const char *peername);
+extern int conn_open(const char *peername, int ip_version);
 extern int conn_set(int infd, int outfd);
 extern int conn_activate_ssl(int server_role);
 extern int conn_check_peer_cert(const char *peername, int callfatal);
@@ -198,10 +198,10 @@ extern void csync_mark(const char *file, const char *thispeer, const char *peerf
 
 /* update.c */
 
-extern void csync_update(const char **patlist, int patnum, int recursive, int dry_run);
-extern int csync_diff(const char *myname, const char *peername, const char *filename);
-extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename);
-extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename);
+extern void csync_update(const char **patlist, int patnum, int recursive, int dry_run, int ip_version);
+extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
+extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
+extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version);
 extern void csync_remove_old();
 
 
