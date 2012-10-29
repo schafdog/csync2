@@ -38,6 +38,7 @@
 #include <ctype.h>
 #include <syslog.h>
 #include "db_api.h"
+
 #include <netdb.h>
 
 #ifdef REAL_DBDIR
@@ -60,7 +61,9 @@ char *active_grouplist = 0;
 char *active_peerlist = 0;
 char *update_format= 0;
 char *allow_peer = 0;
-int version = 1; 
+int  version = 1; 
+int  ip_version = AF_UNSPEC;
+
 extern int yyparse();
 extern FILE *yyin;
 
@@ -241,7 +244,7 @@ int create_keyfile(const char *filename)
 	return 0;
 }
 
-static int csync_server_bind(void)
+static int csync_server_bind(int ip_version)
 {
 	struct linger sl = { 1, 5 };
 	struct addrinfo hints;
@@ -249,7 +252,7 @@ static int csync_server_bind(void)
 	int save_errno;
 	int sfd, s, on = 1;
 	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;	/* Allow IPv4 or IPv6 */
+	hints.ai_family = ip_version;	/* Allow IPv4 or IPv6 */
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
@@ -303,7 +306,7 @@ void csync_openlog() {
   openlog(program_pid, LOG_ODELAY, LOG_LOCAL0);
 }
 
-static int csync_server_loop(int single_connect)
+static int csync_server_loop(int single_connect, int ip_version)
 {
 	union {
 		struct sockaddr sa;
@@ -311,7 +314,7 @@ static int csync_server_loop(int single_connect)
 		struct sockaddr_in6 sa_in6;
 		struct sockaddr_storage ss;
 	} addr;
-	int listenfd = csync_server_bind();
+	int listenfd = csync_server_bind(ip_version);
 	if (listenfd < 0) goto error;
 
 	if (listen(listenfd, 5) < 0) goto error;
@@ -494,7 +497,7 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
-	while ( (opt = getopt(argc, argv, "012a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:")) != -1 ) {
+	while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:")) != -1 ) {
 
 		switch (opt) {
 		case '1':
@@ -508,6 +511,13 @@ int main(int argc, char ** argv)
 		  db_encode = csync_db_escape;
 		  db_decode = csync_decode_v1_v2;
 		  break;
+		case '4':
+		  ip_version = AF_INET;
+		  break;
+
+		case '6':
+		  ip_version = AF_INET6;
+		break;
 		        case 'a':
 			        csync_database = optarg;
 				db_type = DB_MYSQL;
@@ -698,7 +708,7 @@ int main(int argc, char ** argv)
 	/* Stand-alone server mode. This is a hack..
 	 */
 	if ( mode == MODE_SERVER || mode == MODE_SINGLE ) {
-		if (csync_server_loop(mode == MODE_SINGLE)) 
+	  if (csync_server_loop(mode == MODE_SINGLE, ip_version)) 
 		  return 1;
 		mode = MODE_INETD;
 	}
@@ -812,7 +822,7 @@ found_a_group:;
 			if ( argc == optind )
 			{
 			  csync_check("/", 1, init_run, version);
-			  csync_update(0, 0, 0, dry_run);
+			  csync_update(0, 0, 0, dry_run, ip_version);
 			}
 			else
 			{
@@ -822,7 +832,7 @@ found_a_group:;
 					csync_check_usefullness(realnames[i-optind], recursive);
 					csync_check(realnames[i-optind], recursive, init_run, version);
 				}
-				csync_update((const char**)realnames, argc-optind, recursive, dry_run);
+				csync_update((const char**)realnames, argc-optind, recursive, dry_run, ip_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}
@@ -871,7 +881,7 @@ found_a_group:;
 		case MODE_UPDATE:
 			if ( argc == optind )
 			{
-				csync_update(0, 0, 0, dry_run);
+			  csync_update(0, 0, 0, dry_run, ip_version);
 			}
 			else
 			{
@@ -880,7 +890,7 @@ found_a_group:;
 					realnames[i-optind] = strdup(getrealfn(argv[i]));
 					csync_check_usefullness(realnames[i-optind], recursive);
 				}
-				csync_update((const char**)realnames, argc-optind, recursive, dry_run);
+				csync_update((const char**)realnames, argc-optind, recursive, dry_run, ip_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}
@@ -1005,13 +1015,13 @@ found_a_group:;
 
 				if ( mode_test_auto_diff ) {
 					csync_compare_mode = 1;
-					retval = csync_diff(argv[optind], argv[optind+1], realname);
+					retval = csync_diff(argv[optind], argv[optind+1], realname, ip_version);
 				} else
-				    if ( csync_insynctest(argv[optind], argv[optind+1], init_run, 0, realname))
+				  if ( csync_insynctest(argv[optind], argv[optind+1], init_run, 0, realname, ip_version))
 						retval = 2;
 				break;
 			case 2:
-				if ( csync_insynctest(argv[optind], argv[optind+1], init_run, mode_test_auto_diff, 0) )
+			  if ( csync_insynctest(argv[optind], argv[optind+1], init_run, mode_test_auto_diff, 0, ip_version) )
 					retval = 2;
 				break;
 			case 1:
@@ -1020,11 +1030,11 @@ found_a_group:;
 
 				if ( mode_test_auto_diff )
 					csync_compare_mode = 1;
-				if ( csync_insynctest_all(init_run, mode_test_auto_diff, realname))
+				if ( csync_insynctest_all(init_run, mode_test_auto_diff, realname, ip_version))
 					retval = 2;
 				break;
 			case 0:
-				if ( csync_insynctest_all(init_run, mode_test_auto_diff, 0) )
+			  if ( csync_insynctest_all(init_run, mode_test_auto_diff, 0, ip_version) )
 					retval = 2;
 				break;
 			}
