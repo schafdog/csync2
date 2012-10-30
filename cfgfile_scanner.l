@@ -48,6 +48,11 @@ int include_stack_ptr = 0;
 "ignore"	{ return TK_IGNORE; }
 "database"	{ return TK_DATABASE; }
 
+"database-version" { return TK_DB_VERSION;       }
+"protocol-version" { return TK_PROTOCOL_VERSION; }
+"ip-version"       { return TK_IP_VERSION;       }
+
+
 "group"		{ return TK_GROUP; }
 "host"		{ return TK_HOST; }
 "exclude"	{ return TK_EXCL; }

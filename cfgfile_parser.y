@@ -36,6 +36,10 @@ int csync_ignore_mod = 0;
 unsigned csync_lock_timeout = 12;
 char *csync_tempdir = NULL;
 
+int cfg_db_version = -1;
+int cfg_protocol_version = -1;
+int cfg_ip_version = -1;
+
 #ifdef __CYGWIN__
 int csync_lowercyg_disable = 0;
 int csync_lowercyg_used = 0;
@@ -335,6 +339,21 @@ static void set_database(const char *filename)
 		csync_database = strdup(filename);
 }
 
+static void set_database_version(const char *version)
+{
+  cfg_db_version = atoi(version);
+}
+
+static void set_protocol_version(const char *version)
+{
+  cfg_protocol_version = atoi(version);
+}
+
+static void set_ip_version(const char *version)
+{
+  cfg_ip_version = atoi(version);
+}
+
 static void new_prefix(const char *pname)
 {
 	struct csync_prefix *p =
@@ -424,6 +443,7 @@ static void disable_cygwin_lowercase_hack()
 
 %token TK_BLOCK_BEGIN TK_BLOCK_END TK_STEND TK_AT TK_AUTO
 %token TK_NOSSL TK_IGNORE TK_GROUP TK_HOST TK_EXCL TK_INCL TK_COMP TK_KEY TK_DATABASE
+%token TK_DB_VERSION TK_PROTOCOL_VERSION TK_IP_VERSION
 %token TK_ACTION TK_PATTERN TK_EXEC TK_DOLOCAL TK_LOGFILE TK_NOCYGLOWER
 %token TK_PREFIX TK_ON TK_COLON TK_POPEN TK_PCLOSE
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
@@ -448,6 +468,12 @@ block:
 		{ new_nossl($2, $3); }
 |	TK_DATABASE TK_STRING TK_STEND
 		{ set_database($2); }
+|	TK_DB_VERSION TK_STRING TK_STEND
+		{ set_database_version($2); }
+|	TK_PROTOCOL_VERSION TK_STRING TK_STEND
+		{ set_protocol_version($2); }
+|	TK_IP_VERSION TK_STRING TK_STEND
+		{ set_ip_version($2); }
 |	TK_TEMPDIR TK_STRING TK_STEND
 		{ set_tempdir($2); }
 |	TK_IGNORE ignore_list TK_STEND
