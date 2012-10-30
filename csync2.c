@@ -61,7 +61,7 @@ char *active_grouplist = 0;
 char *active_peerlist = 0;
 char *update_format= 0;
 char *allow_peer = 0;
-int  version = 1; 
+int  db_version = 1; 
 int  ip_version = AF_UNSPEC;
 
 extern int yyparse();
@@ -468,6 +468,11 @@ const char* csync_decode_v1_v2(const char *value) {
     return value;
 }
 
+extern cfg_ip_version; 
+extern cfg_db_version; 
+extern cfg_protocol_version; 
+int protocol_version;
+
 int main(int argc, char ** argv)
 {
 	struct textlist *tl = 0, *t;
@@ -484,10 +489,7 @@ int main(int argc, char ** argv)
 	// Default db_decodes (version 1 scheme)
 	db_decode = url_decode;
 	db_encode = url_encode;
-     
-	ringbuffer_init();
-	csync_debug_out = stderr;
-
+	
 	if ( argc==3 && !strcmp(argv[1], "-k") ) {
 		return create_keyfile(argv[2]);
 	}
@@ -497,17 +499,20 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
+	int cmd_db_version = 0;
 	while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:")) != -1 ) {
 
 		switch (opt) {
 		case '1':
-		  version = 1;
+		  db_version = 1;
+		  cmd_db_version = 1;
 		  break;
 		case '0':
 		  update_format ="v1-v2";
+		  cmd_db_version = 1;
 		  break;
 		case '2':
-		  version = 2;
+		  db_version = 2;
 		  db_encode = csync_db_escape;
 		  db_decode = csync_decode_v1_v2;
 		  break;
@@ -782,6 +787,29 @@ int main(int argc, char ** argv)
 				file_config, strerror(errno));
 	yyparse();
 	fclose(yyin);
+
+	// Move configuration versions into place, if configured.
+	if (cfg_db_version != -1)
+	  db_version = cfg_db_version;
+	if (cfg_protocol_version != -1)
+	  protocol_version = cfg_protocol_version;
+
+	ringbuffer_init();
+	csync_debug_out = stderr;
+
+	if (cfg_ip_version != -1) {
+	  if (cmd_db_version) 
+	    csync_debug(0, "Command line overrides configuration database protocol version: %d -> %d\n", cfg_db_version, db_version);
+	  else if (cfg_ip_version == 4)
+	    ip_version = AF_INET;
+	  else if (cfg_ip_version == 6)
+	    ip_version = AF_INET6;
+	  else {
+	    csync_debug(0, "Unknown IP version: %d\n", cfg_ip_version);
+	    exit(1);
+	  }
+	} 
+
 	
 	if (!csync_database)
 		csync_database = db_default_database(dbdir, myhostname, cfgname);
@@ -821,7 +849,7 @@ found_a_group:;
 		case MODE_SIMPLE:
 			if ( argc == optind )
 			{
-			  csync_check("/", 1, init_run, version);
+			  csync_check("/", 1, init_run, db_version);
 			  csync_update(0, 0, 0, dry_run, ip_version);
 			}
 			else
@@ -830,7 +858,7 @@ found_a_group:;
 				for (i=optind; i < argc; i++) {
 					realnames[i-optind] = strdup(getrealfn(argv[i]));
 					csync_check_usefullness(realnames[i-optind], recursive);
-					csync_check(realnames[i-optind], recursive, init_run, version);
+					csync_check(realnames[i-optind], recursive, init_run, db_version);
 				}
 				csync_update((const char**)realnames, argc-optind, recursive, dry_run, ip_version);
 				for (i=optind; i < argc; i++)
@@ -858,7 +886,7 @@ found_a_group:;
 				} SQL_END;
 
 				for (t = tl; t != 0; t = t->next) {
-				  csync_check(t->value, t->intvalue, init_run, version);
+				  csync_check(t->value, t->intvalue, init_run, db_version);
 					SQL("Remove processed hint.",
 					    "DELETE FROM hint WHERE filename = '%s' "
 					    "and recursive = %d",
@@ -872,7 +900,7 @@ found_a_group:;
 				for (i=optind; i < argc; i++) {
 					char *realname = getrealfn(argv[i]);
 					csync_check_usefullness(realname, recursive);
-					csync_check(realname, recursive, init_run,version);
+					csync_check(realname, recursive, init_run, db_version);
 				}
 			}
 			if (mode != MODE_CHECK_AND_UPDATE)
@@ -901,7 +929,7 @@ found_a_group:;
 			for (i=optind; i < argc; i++) {
 				char *realname = getrealfn(argv[i]);
 				csync_check_usefullness(realname, recursive);
-				csync_check(realname, recursive, init_run,version);
+				csync_check(realname, recursive, init_run,db_version);
 			}
 			break;
 
