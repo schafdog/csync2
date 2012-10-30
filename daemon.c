@@ -77,7 +77,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	return rc;
 }
 
-void csync_file_update(const char *filename, const char *peername)
+void csync_file_update(const char *filename, const char *peername, int db_version)
 {
 	struct stat st;
 	const char *filename_encoded = db_encode(filename);
@@ -90,7 +90,7 @@ void csync_file_update(const char *filename, const char *peername)
 			"delete from file where filename = '%s'",
 		    filename_encoded);
 	} else {
-	  const char *checktxt = csync_genchecktxt_version(&st, filename, 0, version);
+	  const char *checktxt = csync_genchecktxt_version(&st, filename, 0, db_version);
 		
 	  SQL("Delete old record (if exist) ",
 	      "DELETE FROM file WHERE filename = '%s'",
@@ -475,7 +475,7 @@ static void destroy_tag(char *tag[32]) {
     free(tag[i]);
 }
 
-void csync_daemon_session()
+void csync_daemon_session(int db_version, int protocol_version)
 {
 	struct stat sb;
 	address_t peername = { .sa.sa_family = AF_UNSPEC, };
@@ -551,7 +551,7 @@ void csync_daemon_session()
 		}
 
 		if ( cmdtab[cmdnr].check_dirty && 
-		     csync_check_dirty(filename, peer, cmdtab[cmdnr].action == A_FLUSH, version) ) 
+		     csync_check_dirty(filename, peer, cmdtab[cmdnr].action == A_FLUSH, db_version) ) 
 		  goto abort_cmd;
 
 		if ( cmdtab[cmdnr].unlink )
@@ -575,8 +575,8 @@ void csync_daemon_session()
 						break;
 					}
 				conn_printf("OK (data_follows).\n");
-			 	const char *checktxt = csync_genchecktxt_version(&st, filename, 1, version);
-				if (version == 1)
+			 	const char *checktxt = csync_genchecktxt_version(&st, filename, 1, db_version);
+				if (db_version == 1)
 				    conn_printf("%s\n", checktxt);
 				else
 				    conn_printf("%s\n", url_encode(checktxt));
@@ -803,7 +803,7 @@ found_asactive: ;
 		}
 
 		if ( cmdtab[cmdnr].update )
-			csync_file_update(filename, peer);
+		  csync_file_update(filename, peer, db_version);
 
 		if ( cmdtab[cmdnr].update == 1 ) {
 		  csync_debug(1, "Updated(%s) %s:%s \n", cmdtab[cmdnr].text, peer ? peer : "???", filename);
