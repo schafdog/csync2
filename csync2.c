@@ -489,6 +489,9 @@ int main(int argc, char ** argv)
 	// Default db_decodes (version 1 scheme)
 	db_decode = url_decode;
 	db_encode = url_encode;
+
+	ringbuffer_init();
+	csync_debug_out = stderr;
 	
 	if ( argc==3 && !strcmp(argv[1], "-k") ) {
 		return create_keyfile(argv[2]);
@@ -793,9 +796,6 @@ int main(int argc, char ** argv)
 	  db_version = cfg_db_version;
 	if (cfg_protocol_version != -1)
 	  protocol_version = cfg_protocol_version;
-
-	ringbuffer_init();
-	csync_debug_out = stderr;
 
 	if (cfg_ip_version != -1) {
 	  if (cmd_db_version) 
