@@ -282,7 +282,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 		  {
 		    db_version = csync_get_checktxt_version(SQL_V(0));
 		    if (db_version < 1 || db_version > 2) {
-		      csync_debug(0, "Error extracting version from checktxt: %s", checktxt_db);
+		      csync_debug(0, "Error extracting version from checktxt: %s", SQL_V(0));
 		    }
 		    checktxt_db = db_decode(SQL_V(0));
 		    const char *checktxt_same_version = checktxt;
