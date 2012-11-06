@@ -40,7 +40,7 @@
 
 static char *cmd_error;
 extern char* update_format;
-extern int version; 
+//extern int version; 
 extern char* allow_peer;
 
 int csync_set_backup_file_status(char *filename, int backupDirLength);
