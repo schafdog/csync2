@@ -503,6 +503,7 @@ int main(int argc, char ** argv)
 	}
 
 	int cmd_db_version = 0;
+	int cmd_ip_version = 0;
 	while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:")) != -1 ) {
 
 		switch (opt) {
@@ -520,10 +521,12 @@ int main(int argc, char ** argv)
 		  db_decode = csync_decode_v1_v2;
 		  break;
 		case '4':
+		  cmd_ip_version = 1;
 		  ip_version = AF_INET;
 		  break;
 
 		case '6':
+		  cmd_ip_version = 1;
 		  ip_version = AF_INET6;
 		break;
 		        case 'a':
@@ -792,14 +795,18 @@ int main(int argc, char ** argv)
 	fclose(yyin);
 
 	// Move configuration versions into place, if configured.
-	if (cfg_db_version != -1)
-	  db_version = cfg_db_version;
+	if (cfg_db_version != -1) {
+	  if (cmd_db_version) 
+	    csync_debug(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version, cfg_db_version);
+	  else
+	    db_version = cfg_db_version;
+	}
 	if (cfg_protocol_version != -1)
 	  protocol_version = cfg_protocol_version;
 
 	if (cfg_ip_version != -1) {
-	  if (cmd_db_version) 
-	    csync_debug(0, "Command line overrides configuration database protocol version: %d -> %d\n", cfg_db_version, db_version);
+	  if (cmd_ip_version) 
+	    csync_debug(0, "Command line overrides configuration ip protocol version: %d -> %d\n", cfg_ip_version, ip_version);
 	  else if (cfg_ip_version == 4)
 	    ip_version = AF_INET;
 	  else if (cfg_ip_version == 6)
@@ -814,8 +821,10 @@ int main(int argc, char ** argv)
 	if (!csync_database)
 		csync_database = db_default_database(dbdir, myhostname, cfgname);
 
-	csync_debug(2, "My hostname is %s.\n", myhostname);
-	csync_debug(2, "Database-File: %s\n", csync_database);
+	csync_debug(2, "My hostname is %s.\n",   myhostname);
+	csync_debug(2, "Database File: %s\n",    csync_database);
+	csync_debug(2, "DB Version:    %d\n", db_version);
+	csync_debug(2, "IP Version:    %d\n",       ip_version);
 
 	{
 		const struct csync_group *g;
@@ -935,7 +944,7 @@ found_a_group:;
 
 		case MODE_INETD:
 			conn_printf("OK (cmd_finished).\n");
-			csync_daemon_session();
+			csync_daemon_session(db_version, protocol_version);
 			break;
 
 		case MODE_MARK:
