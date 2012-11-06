@@ -207,7 +207,7 @@ extern void csync_remove_old();
 
 /* daemon.c */
 
-extern void csync_daemon_session();
+extern void csync_daemon_session(int db_version, int protocol_version);
 extern int csync_copy_file(int fd_in, int fd_out);
 
 
