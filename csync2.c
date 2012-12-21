@@ -517,8 +517,6 @@ int main(int argc, char ** argv)
 		  break;
 		case '2':
 		  db_version = 2;
-		  db_encode = csync_db_escape;
-		  db_decode = csync_decode_v1_v2;
 		  break;
 		case '4':
 		  cmd_ip_version = 1;
@@ -797,10 +795,15 @@ int main(int argc, char ** argv)
 	// Move configuration versions into place, if configured.
 	if (cfg_db_version != -1) {
 	  if (cmd_db_version) 
-	    csync_debug(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version, cfg_db_version);
+	    csync_debug(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version, cmd_db_version);
 	  else
 	    db_version = cfg_db_version;
 	}
+	if (db_version == 2) {
+	  db_encode = csync_db_escape;
+	  db_decode = csync_decode_v1_v2;
+	}
+
 	if (cfg_protocol_version != -1)
 	  protocol_version = cfg_protocol_version;
 
