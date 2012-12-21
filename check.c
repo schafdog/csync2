@@ -117,6 +117,38 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter)
 	free(pl);
 }
 
+/* Return path that doesn't exist */ 
+/* Pre-cond: a non-existing file   */
+char *csync_check_path(char *filename) 
+{
+  struct stat st;
+  int missing = 0;
+  int index = strlen(filename); 
+  for (; index > 0; index--) {
+    if (filename[index-1] == '/') {
+      filename[index-1] = 0;
+      /* Check for existence */
+      if (lstat_strict(filename, &st) == 0) {
+	/* check file status */
+	if (S_ISDIR(st.st_mode)) {
+	    filename[index-1] = '/';	  
+	    if (!missing)
+	      return 0;
+	    else
+	      return filename;
+	}
+	/* This shouldn't happen. We have a non-directory */
+	csync_debug(0, "Check for directory failed with non-directory %s: %d", filename, st.st_mode);
+	return 0;
+      }
+      else
+	missing = 1;
+    }
+  }
+  /* Weird. We went all to the way to the root */
+  return 0; 
+}
+
 /* return 0 if path does not contain any symlinks */
 int csync_check_pure(const char *filename)
 {
