@@ -826,8 +826,8 @@ int main(int argc, char ** argv)
 
 	csync_debug(2, "My hostname is %s.\n",   myhostname);
 	csync_debug(2, "Database File: %s\n",    csync_database);
-	csync_debug(2, "DB Version:    %d\n", db_version);
-	csync_debug(2, "IP Version:    %d\n",       ip_version);
+	csync_debug(2, "DB Version:    %d\n",    db_version);
+	csync_debug(2, "IP Version:    %s\n",    (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
 
 	{
 		const struct csync_group *g;
