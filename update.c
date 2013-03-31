@@ -31,24 +31,40 @@
 #include <stdarg.h>
 #include <signal.h>
 
+#define ERROR_DIRTY        1
+#define ERROR_OTHER        2
+#define ERROR_PATH_MISSING 3
+
 static int connection_closed_error = 1;
 
 int read_conn_status(const char *file, const char *host)
 {
 	char line[4096];
 	if ( conn_gets(line, 4096) ) {
-		if ( !strncmp(line, "OK (", 4) ) return 0;
+	  if ( !strncmp(line, "OK (", 4) ) 
+	    return 0;
 	} else {
 		connection_closed_error = 1;
 		strcpy(line, "Connection closed.\n");
 	}
+	if (strncmp(line, "ERROR (Path not found)", 15) == 0)
+	  return ERROR_PATH_MISSING; 
 	if ( file )
 		csync_debug(0, "While syncing file %s:\n", file);
 	else
 	        file = "<no file>";
 	csync_debug(0, "ERROR from peer(%s): %s %s", file, host, line);
 	csync_error_count++;
-	return !strcmp(line, "File is also marked dirty here!") ? 1 : 2;
+	return !strcmp(line, "File is also marked dirty here!") ? ERROR_DIRTY : ERROR_OTHER;
+}
+
+
+int read_conn_status_allow_missing(const char *file, const char *host) 
+{
+  int status = read_conn_status(file, host);
+  if (status == ERROR_PATH_MISSING)
+    return 0;
+  return status;
 }
 
 int connect_to_host(const char *peername, int ip_version)
@@ -160,21 +176,25 @@ auto_resolve_entry_point:
 
 	if ( force ) {
 		if ( dry_run ) {
-			printf("!D: %-15s %s\n", peername, filename);
-			return;
+		  csync_debug(1, "!D: %-15s %s\n", peername, filename);
+		  return;
 		}
 		conn_printf("FLUSH %s %s\n", url_encode(key), url_encode(prefixencode(filename)));
-		if ( read_conn_status(filename, peername) )
-			goto got_error;
+		if ( read_conn_status_allow_missing(filename, peername) )
+		  goto got_error;
 	} else {
 		int i, found_diff = 0;
 		int rs_check_result;
 		const char *chk2 = "---";
 		char chk1[4096];
-
+		int status;
 		conn_printf("SIG %s %s\n", url_encode(key), url_encode(prefixencode(filename)));
-		if ( read_conn_status(filename, peername) ) goto got_error;
-
+		if ( status = read_conn_status(filename, peername) ) {
+		  if (status == ERROR_PATH_MISSING)
+		    goto skip_action;
+		  else
+		    goto got_error;
+		}
 		if ( !conn_gets_newline(chk1, 4096, 1) ) goto got_error;
 		const char *chk1_decoded = url_decode(chk1);
 
@@ -196,15 +216,15 @@ auto_resolve_entry_point:
 		if ( !found_diff ) {
 			csync_debug(1, "File is already up to date on peer.\n");
 			if ( dry_run ) {
-				printf("?S: %-15s %s\n", peername, filename);
+			  csync_debug(1, "?S: %-15s %s\n", peername, filename);
 				// DS Remove local dirty, even in dry run
 				// return;
 			}
 			goto skip_action;
 		}
 		if ( dry_run ) {
-			printf("?D: %-15s %s\n", peername, filename);
-			return;
+		  csync_debug(1, "?D: %-15s %s\n", peername, filename);
+		  return;
 		}
 	}
 
@@ -293,14 +313,14 @@ auto_resolve_entry_point:
 	}
 
 	if ( force ) {
-		if ( dry_run ) {
-			printf("!M: %-15s %s\n", peername, filename);
-			return;
-		}
-		conn_printf("FLUSH %s %s\n",
-			    url_encode(key), url_encode(prefixencode(filename)));
-		if ( read_conn_status(filename, peername) )
-			goto got_error;
+	  if ( dry_run ) {
+	    csync_debug(1, "!M: %-15s %s\n", peername, filename);
+	    return;
+	  }
+	  conn_printf("FLUSH %s %s\n",
+		      url_encode(key), url_encode(prefixencode(filename)));
+	  if ( read_conn_status(filename, peername) )
+	    goto got_error;
 	} else {
 		int i, found_diff = 0;
 		int rs_check_result;
@@ -327,23 +347,19 @@ auto_resolve_entry_point:
 		if ( rs_check_result < 0 )
 			goto got_error;
 		if ( rs_check_result ) {
-			csync_debug(2, "File is different on peer (rsync sig).\n");
-			found_diff=1;
+		  csync_debug(2, "File is different on peer (rsync sig).\n");
+		  found_diff=1;
 		}
 		if ( read_conn_status(filename, peername) ) goto got_error;
 
 		if ( !found_diff ) {
-			csync_debug(1, "File is already up to date on peer.\n");
-			if ( dry_run ) {
-				printf("?S: %-15s %s\n", peername, filename);
-				// DS also skip on dry_run 
-				// return;
-			}
-			goto skip_action;
+		  csync_debug(1, "?S: %-15s %s\n", peername, filename);
+		  // DS also skip on dry_run 
+		  goto skip_action;
 		}
 		if ( dry_run ) {
-			printf("?M: %-15s %s\n", peername, filename);
-			return;
+		  csync_debug(1, "?M: %-15s %s\n", peername, filename);
+		  return;
 		}
 	}
 
@@ -813,9 +829,9 @@ found_host:
 			if ( remote_eof ) {
 got_remote_eof:
 				if (auto_diff)
-					textlist_add(&diff_list, strdup(l_file), 0);
+				  textlist_add(&diff_list, strdup(l_file), 0);
 				else
-					printf("L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
+				  csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
 				if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
 			} else {
 				if ( !remote_reuse )
@@ -825,9 +841,9 @@ got_remote_eof:
 
 				while ( rel > 0 ) {
 					if (auto_diff)
-						textlist_add(&diff_list, strdup(r_file), 0);
+					  textlist_add(&diff_list, strdup(r_file), 0);
 					else
-						printf("R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
+					  csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
 					if (init_run & 2) csync_mark(r_file, 0, (init_run & 4) ? peername : 0);
 					if ( csync_insynctest_readline(&r_file, &r_checktxt) )
 						{ remote_eof = 1; goto got_remote_eof; }
@@ -838,17 +854,17 @@ got_remote_eof:
 					if (auto_diff)
 						textlist_add(&diff_list, strdup(l_file), 0);
 					else
-						printf("L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
+					  csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
 					if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
 					remote_reuse = 1;
 				} else {
 					remote_reuse = 0;
 					if ( !rel ) {
 						if ( strcmp(l_checktxt, r_checktxt) ) {
-							if (auto_diff)
-								textlist_add(&diff_list, strdup(l_file), 0);
-							else
-								printf("X\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
+						  if (auto_diff)
+						    textlist_add(&diff_list, strdup(l_file), 0);
+						  else
+						    csync_debug(1, "X\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
 							if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
 						}
 					}
@@ -864,7 +880,7 @@ got_remote_eof:
 			if (auto_diff)
 				textlist_add(&diff_list, strdup(r_file), 0);
 			else
-				printf("R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
+			  csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
 			if (init_run & 2) csync_mark(r_file, 0, (init_run & 4) ? peername : 0);
 		}
 
