@@ -59,7 +59,7 @@ void csync_db_alarmhandler(int signum)
 
 	begin_commit_recursion++;
 
-	csync_debug(2, "Database idle in transaction. Forcing COMMIT.\n");
+	//csync_debug(2, "Database idle in transaction. Forcing COMMIT.\n");
 	SQL("COMMIT ", "COMMIT ");
 	tqueries_counter = -10;
 
