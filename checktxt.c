@@ -19,6 +19,7 @@
  */
 
 #include "csync2.h"
+#include "uidgid.h"
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -40,62 +41,9 @@
 
 const char *csync_genchecktxt(const struct stat *st, const char *filename, int ign_mtime)
 {
-	static char *buffer = 0;
-	char *elements[64];
-	int elidx=0, len=1;
-	int i, j, k;
-
-	/* version 1 of this check text */
-	xxprintf("v1");
-
-	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode) )
-		xxprintf(":mtime=%Ld", ign_mtime ? (long long)0 : (long long)st->st_mtime);
-
-	if ( !csync_ignore_mod )
-		xxprintf(":mode=%d", (int)st->st_mode);
-
-	if ( !csync_ignore_uid )
-		xxprintf(":uid=%d", (int)st->st_uid);
-
-	if ( !csync_ignore_gid )
-		xxprintf(":gid=%d", (int)st->st_gid);
-
-	if ( S_ISREG(st->st_mode) )
-		xxprintf(":type=reg:size=%Ld", (long long)st->st_size);
-
-	if ( S_ISDIR(st->st_mode) )
-		xxprintf(":type=dir");
-
-	if ( S_ISCHR(st->st_mode) )
-		xxprintf(":type=chr:dev=%d", (int)st->st_rdev);
-
-	if ( S_ISBLK(st->st_mode) )
-		xxprintf(":type=blk:dev=%d", (int)st->st_rdev);
-
-	if ( S_ISFIFO(st->st_mode) )
-		xxprintf(":type=fifo");
-
-	if ( S_ISLNK(st->st_mode) ) {
-		char tmp[4096];
-		int r = readlink(filename, tmp, 4095);
-		tmp[ r >= 0 ? r : 0 ] = 0;
-		xxprintf(":type=lnk:target=%s", url_encode(tmp));
-	}
-
-	if ( S_ISSOCK(st->st_mode) )
-		xxprintf(":type=sock");
-
-	if ( buffer ) free(buffer);
-	buffer = malloc(len);
-
-	for (i=j=0; j<elidx; j++)
-		for (k=0; elements[j][k]; k++)
-			buffer[i++] = elements[j][k];
-	assert(i == len-1);
-	buffer[i]=0;
-
-	return buffer;
+  return csync_genchecktxt_version(st, filename, ign_mtime, 1);
 }
+
 const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int ign_mtime, int version)
 {
 	static char *buffer = 0;
@@ -105,22 +53,32 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 
 	xxprintf("v%d", version);
 
-	/*
-	if (version > 1) {
-	    xxprintf(":inode=%lu",st->st_ino);
-	}
-	*/
 	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode) )
 		xxprintf(":mtime=%Ld", ign_mtime ? (long long)0 : (long long)st->st_mtime);
 	
 	if ( !csync_ignore_mod )
 		xxprintf(":mode=%d", (int)st->st_mode);
 
-	if ( !csync_ignore_uid )
-		xxprintf(":uid=%d", (int)st->st_uid);
+	char buf[100]; 
+	char *user = uid_to_name(st->st_uid, buf, 100);
+	if ( !csync_ignore_uid ) {
+	  if (user) {
+	    xxprintf(":user=%s", user);
+	  }
+	  else {
+	    xxprintf(":uid=%d", (int)st->st_uid);
+	  }
+	}
 
-	if ( !csync_ignore_gid )
-		xxprintf(":gid=%d", (int)st->st_gid);
+	char *group = gid_to_name(st->st_gid, buf, 100);
+	if ( !csync_ignore_gid ) {
+	  if (group) {
+	    xxprintf(":group=%s", group);
+	  }
+	  else {
+	    xxprintf(":gid=%d", (int)st->st_gid);
+	  }
+	}
 
 	if ( S_ISREG(st->st_mode) )
 		xxprintf(":type=reg:size=%Ld", (long long)st->st_size);
@@ -146,6 +104,12 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 
 	if ( S_ISSOCK(st->st_mode) )
 		xxprintf(":type=sock");
+
+	/*
+	if (version > 1) {
+	    xxprintf(":inode=%lu",st->st_ino);
+	}
+	*/
 
 	if ( buffer ) free(buffer);
 	buffer = malloc(len);
@@ -183,11 +147,24 @@ int csync_cmpchecktxt_component(const char *a, const char *b, const char *versio
 {
   char * a_new = strdup(a);
   char * b_new = strdup(b);
-  
-  //  strtok(a_new, ':');
-  // strtok(b_new, ':');
+  int differs = 0;
+  char *a_save; 
+  char *b_save;
+  char *a_ptr = strtok_r(a_new, ":", &a_save);
+  char *b_ptr = strtok_r(b_new, ":", &b_save);
+  //  printf("components: %s %s", a_ptr, b_ptr);
 
+  while (a_ptr && b_ptr) {
+    if (strcmp(a_ptr,b_ptr)) {
+	csync_debug(0, "%s!=%s:", a_ptr, b_ptr);
+	differs = 1;
+    }
+    a_ptr = strtok_r(NULL, ":", &a_save);
+    b_ptr = strtok_r(NULL, ":", &b_save);
+    //printf("components: %s %s", a_ptr, b_ptr);
+  }
+  // TODO should write rest of both a and b out, but assuming same number of tokens
   free(a_new);
   free(b_new);
-  return 1;
+  return differs;
 }
