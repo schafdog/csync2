@@ -215,7 +215,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   conn->errmsg = db_postgres_errmsg;
   conn->prepare = db_postgres_prepare;
   conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
-
+  conn->escape = db_postgres_escape;  
   free(pg_conn_info);
 
   return DB_OK;
@@ -454,6 +454,25 @@ int db_postgres_upgrade_to_schema(int version)
 ");");
 
 	return DB_OK;
+}
+
+extern void *ringbuffer_malloc(size_t length);
+
+const char* db_postgres_escape(db_conn_p conn, const char *string) 
+{
+  int rc = DB_ERROR;
+  if (!conn)
+    return 0; 
+
+  if (!conn->private) {
+    return 0;
+  }
+  size_t length = strlen(string);
+  char *escaped_buffer = ringbuffer_malloc(2*length+1);
+  size_t size = 0 ;
+  size = f.PQescapeStringConn_fn(conn->private, escaped_buffer, string, length, &rc);
+
+  return escaped_buffer;
 }
 
 
