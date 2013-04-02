@@ -19,6 +19,7 @@
  */
 
 #include "csync2.h"
+#include "uidgid.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -34,6 +35,9 @@
 #define ERROR_DIRTY        1
 #define ERROR_OTHER        2
 #define ERROR_PATH_MISSING 3
+
+#define MAX_UID_SIZE  100
+#define MAX_GID_SIZE  100
 
 static int connection_closed_error = 1;
 
@@ -426,9 +430,23 @@ auto_resolve_entry_point:
 		goto got_error;
 	}
 
-	conn_printf("SETOWN %s %s %d %d\n",
+	char uid[MAX_UID_SIZE];
+	char gid[MAX_GID_SIZE];
+	char *uidptr = uid_to_name(st.st_uid, uid, MAX_UID_SIZE);
+	if (uidptr == NULL) {
+	  uidptr = "-";
+	  csync_debug(0, "Failed to lookup uid %d\n", st.st_uid);
+	}
+	char *gidptr = gid_to_name(st.st_gid, gid, MAX_GID_SIZE);
+	if (gidptr == NULL) {
+	  gidptr = "-";
+	  csync_debug(0, "Failed to lookup gid %d\n", st.st_gid);
+	}
+	csync_debug(2, "uid %s gid %s\n", uidptr, gidptr);
+  
+	conn_printf("SETOWN %s %s %d %d %s %s \n",
 		    url_encode(key), url_encode(prefixencode(filename)),
-			st.st_uid, st.st_gid);
+		    st.st_uid, st.st_gid, uidptr, gidptr);
 	if ( read_conn_status(filename, peername) )
 		goto got_error;
 
@@ -863,9 +881,17 @@ got_remote_eof:
 						if ( strcmp(l_checktxt, r_checktxt) ) {
 						  if (auto_diff)
 						    textlist_add(&diff_list, strdup(l_file), 0);
-						  else
-						    csync_debug(1, "X\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
-							if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
+						  else {
+						    //TODO disabled the simple X out.  
+						    if (csync_debug_level >= 0) {
+						      csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
+						      csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
+						    }
+						    else
+						      csync_debug(0, "X\t%s\t%s\t%s\n", myname, peername, l_file); 
+						    ret=0;
+						  }
+						  if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
 						}
 					}
 				}
