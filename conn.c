@@ -455,6 +455,8 @@ void conn_printf(const char *fmt, ...)
 	vsnprintf(buffer, size+1, fmt, ap);
 	va_end(ap);
 
+	buffer[size] = 0;
+	csync_debug(1, "Command (sending): %s", buffer);
 	conn_write(buffer, size);
 }
 
