@@ -20,6 +20,7 @@
 
 
 #include "csync2.h"
+#include "uidgid.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -504,6 +505,7 @@ void csync_daemon_session(int db_version, int protocol_version)
 	while ( conn_gets(line, 4096) ) {
 		int cmdnr;
 		
+		csync_debug(1, "Command: %s ", line);
 		if (setup_tag(tag, line))
 		  continue;
 
@@ -516,7 +518,14 @@ void csync_daemon_session(int db_version, int protocol_version)
 			goto abort_cmd;
 		}
 
-		csync_debug(1, "Command: %s %s %s\n", cmdtab[cmdnr].text, (tag[1]? tag[1]: "-"), (tag[2]? tag[2]: "-"));
+		/*
+		int index  = 1;
+		while (tag[index][0] != 0 && index < 32) {
+		  csync_debug(1, "%s ", tag[index]);
+		  index++;
+		}
+		csync_debug(1, "\n");
+		*/
 
 		char *filename = NULL; 
 		if (tag[2])
@@ -711,6 +720,19 @@ void csync_daemon_session(int db_version, int protocol_version)
 			if ( !csync_ignore_uid || !csync_ignore_gid ) {
 				int uid = csync_ignore_uid ? -1 : atoi(tag[3]);
 				int gid = csync_ignore_gid ? -1 : atoi(tag[4]);
+				
+				char *user = csync_ignore_uid ? NULL : tag[5];
+				if (user != NULL && user[0] != "-") {
+				  int local_uid = name_to_uid(user, NULL); 
+				  if (local_uid != -1) 
+				    uid = local_uid;
+				}
+				char *group = csync_ignore_gid ? NULL : tag[6];
+				if (group != NULL && group[0] != "-") {
+				  int local_gid = name_to_gid(group); 
+				  if (local_gid != -1) 
+				    gid = local_gid;
+				}
 				if ( lchown(filename, uid, gid) )
 					cmd_error = strerror(errno);
 			}
