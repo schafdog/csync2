@@ -34,6 +34,11 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#define IGNORE_MTIME 1 
+#define IGNORE_INODE 2 
+#define IGNORE_USER  4
+#define IGNORE_GROUP 8
+
 
 #define DB_SCHEMA_VERSION 0
 
