@@ -309,8 +309,8 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 		int db_version = version;
 		const char *encoded = db_encode(file);
 		SQL_BEGIN("Checking File",
-			"SELECT checktxt FROM file WHERE "
-			"filename = '%s' ", encoded)
+			  "SELECT checktxt FROM file WHERE "
+			  "filename = '%s' ", encoded)
 		  {
 		    db_version = csync_get_checktxt_version(SQL_V(0));
 		    if (db_version < 1 || db_version > 2) {
