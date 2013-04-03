@@ -589,7 +589,11 @@ void csync_daemon_session(int db_version, int protocol_version)
 			   }
 			   
 			   conn_printf("OK (data_follows).\n");
-			   const char *checktxt = csync_genchecktxt_version(&st, filename, 1, db_version);
+			   // TODO Why ignore mtime? 
+			   int flags  = IGNORE_MTIME;
+			   if (strcmp("user/group",tag[3]) == 0)
+			     flags |= SET_USER|SET_GROUP;
+			   const char *checktxt = csync_genchecktxt_version(&st, filename, flags, db_version);
 			   if (db_version == 1)
 			     conn_printf("%s\n", checktxt);
 			   else
@@ -722,13 +726,13 @@ void csync_daemon_session(int db_version, int protocol_version)
 				int gid = csync_ignore_gid ? -1 : atoi(tag[4]);
 				
 				char *user = csync_ignore_uid ? NULL : tag[5];
-				if (user != NULL && user[0] != "-") {
+				if (user != NULL && user[0] != '-') {
 				  int local_uid = name_to_uid(user, NULL); 
 				  if (local_uid != -1) 
 				    uid = local_uid;
 				}
 				char *group = csync_ignore_gid ? NULL : tag[6];
-				if (group != NULL && group[0] != "-") {
+				if (group != NULL && group[0] != '-') {
 				  int local_gid = name_to_gid(group); 
 				  if (local_gid != -1) 
 				    gid = local_gid;
