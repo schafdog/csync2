@@ -38,7 +38,8 @@
 #define IGNORE_INODE 2 
 #define IGNORE_USER  4
 #define IGNORE_GROUP 8
-
+#define SET_USER    16
+#define SET_GROUP   32
 
 #define DB_SCHEMA_VERSION 0
 
@@ -190,8 +191,8 @@ extern int csync_rs_patch(const char *filename);
 
 /* checktxt.c */
 
-//extern const char *csync_genchecktxt(const struct stat *st, const char *filename, int ign_mtime);
-extern const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int ign_mtime, int version);
+//extern const char *csync_genchecktxt(const struct stat *st, const char *filename, int flags);
+extern const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int flags, int version);
 extern int csync_cmpchecktxt(const char *a, const char *b);
 
 
