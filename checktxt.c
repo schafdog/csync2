@@ -39,12 +39,12 @@
 	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
 	len+=t; elidx++; }
 
-const char *csync_genchecktxt(const struct stat *st, const char *filename, int ign_mtime)
+const char *csync_genchecktxt(const struct stat *st, const char *filename, int flags)
 {
-  return csync_genchecktxt_version(st, filename, ign_mtime, 1);
+  return csync_genchecktxt_version(st, filename, flags, 1);
 }
 
-const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int ign_mtime, int version)
+const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int flags, int version)
 {
 	static char *buffer = 0;
 	char *elements[64];
@@ -54,7 +54,7 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	xxprintf("v%d", version);
 
 	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode) )
-		xxprintf(":mtime=%Ld", ign_mtime ? (long long)0 : (long long)st->st_mtime);
+		xxprintf(":mtime=%Ld", flags & IGNORE_MTIME ? (long long)0 : (long long)st->st_mtime);
 	
 	if ( !csync_ignore_mod )
 		xxprintf(":mode=%d", (int)st->st_mode);
@@ -62,7 +62,7 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	char buf[100]; 
 	char *user = uid_to_name(st->st_uid, buf, 100);
 	if ( !csync_ignore_uid ) {
-	  if (user) {
+	  if (user && (flags & SET_USER)) {
 	    xxprintf(":user=%s", user);
 	  }
 	  else {
@@ -72,7 +72,7 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 
 	char *group = gid_to_name(st->st_gid, buf, 100);
 	if ( !csync_ignore_gid ) {
-	  if (group) {
+	  if (group && (flags & SET_GROUP)) {
 	    xxprintf(":group=%s", group);
 	  }
 	  else {
