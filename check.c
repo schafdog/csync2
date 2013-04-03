@@ -303,7 +303,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 		if (csync_compare_mode)
 			printf("%s\n", file);
 		const char *checktxt_db;
-		checktxt = strdup(csync_genchecktxt_version(&st, file, 0, version));
+		checktxt = strdup(csync_genchecktxt_version(&st, file, SET_USER|SET_GROUP, version));
 		// Assume that this isn't a upgrade and thus same version
 		int is_upgrade = 0;
 		int db_version = version;
@@ -319,7 +319,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 		    checktxt_db = db_decode(SQL_V(0));
 		    const char *checktxt_same_version = checktxt;
 		    if (db_version != version) {
-		      checktxt_same_version = csync_genchecktxt_version(&st, file, 0, db_version);
+		      checktxt_same_version = csync_genchecktxt_version(&st, file, SET_USER|SET_GROUP, db_version);
 		      is_upgrade = 1;
 		    }
 		    if ( !csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
