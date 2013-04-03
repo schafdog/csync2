@@ -189,22 +189,22 @@ auto_resolve_entry_point:
 	} else {
 		int i, found_diff = 0;
 		int rs_check_result;
-		const char *chk2 = "---";
-		char chk1[4096];
+		const char *chk_local = "---";
+		char chk_peer[4096];
 		int status;
-		conn_printf("SIG %s %s\n", url_encode(key), url_encode(prefixencode(filename)));
+		conn_printf("SIG %s %s %s\n", url_encode(key), url_encode(prefixencode(filename)), "user/group");
 		if ( status = read_conn_status(filename, peername) ) {
 		  if (status == ERROR_PATH_MISSING)
 		    goto skip_action;
 		  else
 		    goto got_error;
 		}
-		if ( !conn_gets_newline(chk1, 4096, 1) ) goto got_error;
-		const char *chk1_decoded = url_decode(chk1);
+		if ( !conn_gets_newline(chk_peer, 4096, 1) ) goto got_error;
+		const char *chk_peer_decoded = url_decode(chk_peer);
 
-		if (!csync_cmpchecktxt(chk1_decoded,chk2)) {
+		if (!csync_cmpchecktxt(chk_peer_decoded,chk_local)) {
 		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1_decoded, chk2);
+		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
 		  found_diff=1;
 		}
 
@@ -328,22 +328,31 @@ auto_resolve_entry_point:
 	} else {
 		int i, found_diff = 0;
 		int rs_check_result;
-		char chk1[4096];
-		const char *chk2;
+		char chk_peer[4096];
+		const char *chk_local;
 
-		conn_printf("SIG %s %s\n",
-			    url_encode(key), url_encode(prefixencode(filename)));
+		conn_printf("SIG %s %s\n", url_encode(key), url_encode(prefixencode(filename)), "user/group");
 		if ( read_conn_status(filename, peername) ) 
 		  goto got_error;
 
-		if ( !conn_gets_newline(chk1, 4096,1) ) 
+		if ( !conn_gets_newline(chk_peer, 4096,1) ) 
 		  goto got_error;
-		int peer_version = csync_get_checktxt_version(chk1);
-		chk2 = csync_genchecktxt_version(&st, filename, 1, peer_version);
-		const char *chk1_decoded = url_decode(chk1);
-		if (!csync_cmpchecktxt(chk1_decoded, chk2)) {
+		int peer_version = csync_get_checktxt_version(chk_peer);
+
+		// DS Why do we ignore MTIME
+		int flag = IGNORE_MTIME;
+		const char *chk_peer_decoded = url_decode(chk_peer);
+		//TODO generate chk text that matches remote usage of uid/user and gid/gid
+		char *has_user = strstr(chk_peer_decoded, ":user=");
+		flag |=  (has_user != NULL ? SET_USER : 0);
+		char *has_group = strstr(chk_peer_decoded, ":group=");
+		flag |= (has_group != NULL ? SET_GROUP : 0);
+		csync_debug(1, "flags for gencheck: %d ", flag);
+		chk_local = csync_genchecktxt_version(&st, filename, flag, peer_version);
+
+		if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
 		  csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk1_decoded, chk2);
+		  csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
 		  found_diff=1;
 		}
 
@@ -882,7 +891,7 @@ got_remote_eof:
 						  if (auto_diff)
 						    textlist_add(&diff_list, strdup(l_file), 0);
 						  else {
-						    //TODO disabled the simple X out.  
+						    //DS disabled the simple X out.  
 						    if (csync_debug_level >= 0) {
 						      csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
 						      csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
