@@ -91,7 +91,7 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
 			"delete from file where filename = '%s'",
 		    filename_encoded);
 	} else {
-	  const char *checktxt = csync_genchecktxt_version(&st, filename, 0, db_version);
+	  const char *checktxt = csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version);
 		
 	  SQL("Delete old record (if exist) ",
 	      "DELETE FROM file WHERE filename = '%s'",
