@@ -318,8 +318,13 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 		    }
 		    checktxt_db = db_decode(SQL_V(0));
 		    const char *checktxt_same_version = checktxt;
-		    if (db_version != version) {
-		      checktxt_same_version = csync_genchecktxt_version(&st, file, SET_USER|SET_GROUP, db_version);
+		    int flag = 0;
+		    if (strstr(checktxt_db, ":user=") != NULL)
+		      flag |= SET_USER; 
+		    if (strstr(checktxt_db, ":group=") != NULL)
+		      flag |= SET_GROUP; 
+		    if (db_version != version || flag != (SET_USER|SET_GROUP)) {
+		      checktxt_same_version = csync_genchecktxt_version(&st, file, flag, db_version);
 		      is_upgrade = 1;
 		    }
 		    if ( !csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
