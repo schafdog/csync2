@@ -456,7 +456,7 @@ void conn_printf(const char *fmt, ...)
 	va_end(ap);
 
 	buffer[size] = 0;
-	csync_debug(1, "Command (sending): %s", buffer);
+	csync_debug(2, "Command (sending): %s", buffer);
 	conn_write(buffer, size);
 }
 
