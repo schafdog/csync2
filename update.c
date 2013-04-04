@@ -347,7 +347,7 @@ auto_resolve_entry_point:
 		flag |=  (has_user != NULL ? SET_USER : 0);
 		char *has_group = strstr(chk_peer_decoded, ":group=");
 		flag |= (has_group != NULL ? SET_GROUP : 0);
-		csync_debug(1, "flags for gencheck: %d ", flag);
+		csync_debug(2, "Flags for gencheck: %d ", flag);
 		chk_local = csync_genchecktxt_version(&st, filename, flag, peer_version);
 
 		if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
