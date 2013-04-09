@@ -328,9 +328,10 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 		      flag |= SET_GROUP; 
 		    if (db_version != version || flag != (SET_USER|SET_GROUP)) {
 		      checktxt_same_version = csync_genchecktxt_version(&st, file, flag, db_version);
-		      is_upgrade = 1;
+		      if (!csync_cmpchecktxt(checktxt, checktxt_same_version))
+			  is_upgrade = 1;
 		    }
-		    if ( !csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
+		    if (!csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 		      csync_debug(2, "File has changed: %s\n", file);
 		      this_is_dirty = 1;
 		    }
