@@ -51,7 +51,7 @@ static struct db_postgres_fns {
 	void   (*PQclear_fn)(PGresult *);
 	int    (*PQntuples_fn)(const PGresult *);
 	char*  (*PQgetvalue_fn)(const PGresult *, int, int);
-        size_t (*PQescapeStringConn)(const PGConn *, char *, const char*, size_t, int *);
+        size_t (*PQescapeStringConn_fn)(const PGconn *, char *, const char*, size_t, int *);
 } f;
 
 static void *dl_handle;
