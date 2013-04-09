@@ -50,11 +50,17 @@ static struct db_mysql_fns {
 
 static void *dl_handle;
 
+#ifdef __DARWIN_C_LEVEL
+#define SO_FILE "libmysqlclient.dylib"
+#else
+#define SO_FILE "libmysqlclient.so"
+#endif
+
 
 static void db_mysql_dlopen(void)
 {
-	csync_debug(2, "Opening shared library libmysqlclient.so\n");
-        dl_handle = dlopen("libmysqlclient.so", RTLD_LAZY);
+  csync_debug(2, "Opening shared library %s\n", SO_FILE);
+        dl_handle = dlopen(SO_FILE, RTLD_LAZY);
         if (dl_handle == NULL) {
                 csync_fatal("Could not open libmysqlclient.so: %s\nPlease install Mysql client library (libmysqlclient) or use other database (sqlite, postgres)\n", dlerror());
         }

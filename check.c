@@ -241,17 +241,20 @@ int csync_check_pure(const char *filename)
 
 void csync_check_del(const char *file, int recursive, int init_run)
 {
-	char *where_rec = "";
+	char *where_rec = NULL;
 	struct textlist *tl = 0, *t;
 	struct stat st;
 
 	if ( recursive ) {
 		if ( !strcmp(file, "/") )
 		  ASPRINTF(&where_rec, "OR 1=1");
-		else
-		  ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' "
-				"and filename < '%s0'",
-				db_encode(file), db_encode(file));
+		else {
+		  const char *file_encoded = db_encode(file);
+		  csync_debug(2,"file %s encode %s \n", file, file_encoded);
+		  ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' and filename < '%s0'", 
+			   file_encoded, file_encoded);
+
+		}
 	}
 
 	SQL_BEGIN("Checking for removed files",

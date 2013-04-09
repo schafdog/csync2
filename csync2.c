@@ -473,6 +473,9 @@ extern cfg_db_version;
 extern cfg_protocol_version; 
 int protocol_version;
 
+const char* (*db_decode) (const char *value); 
+const char* (*db_encode) (const char *value); 
+
 int main(int argc, char ** argv)
 {
 	struct textlist *tl = 0, *t;

@@ -111,7 +111,7 @@ const char *db_errmsg(db_conn_p conn)
   return "(no error message function available)";
 }
 
-const char *db_escape_string(db_conn_p conn, const char *string)
+const char *db_escape(db_conn_p conn, const char *string)
 {
   if (conn && conn->escape)
     return conn->escape(conn, string);

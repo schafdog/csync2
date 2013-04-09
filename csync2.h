@@ -147,8 +147,8 @@ extern const char *csync_db_escape(const char *);
 #endif
 #endif
 
-const char* (*db_decode) (const char *value); 
-const char* (*db_encode) (const char *value); 
+extern const char* (*db_decode) (const char *value); 
+extern const char* (*db_encode) (const char *value); 
 
 // #if defined(HAVE_LIBSQLITE3)
 
