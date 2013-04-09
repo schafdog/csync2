@@ -49,6 +49,7 @@
  *
  * @return index of the terminating byte.
  **/
+#if __DARWIN_C_LEVEL < __DARWIN_C_FULL
 static size_t strlcpy(char *d, const char *s, size_t bufsize)
 {
         size_t len = strlen(s);
@@ -61,6 +62,7 @@ static size_t strlcpy(char *d, const char *s, size_t bufsize)
         }
         return ret;
 }
+#endif
 
 
 /* This has been taken from rsync sources: receiver.c */
