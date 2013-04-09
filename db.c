@@ -297,7 +297,7 @@ void csync_db_fin(void *vmx, const char *err)
 }
 
 const char* csync_db_escape(const char* string) {
-  db_escape_string(db, string);
+  return db_escape(db, string);
 }
 
 #if defined(HAVE_SQLITE)
