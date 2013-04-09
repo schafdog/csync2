@@ -250,7 +250,7 @@ void csync_check_del(const char *file, int recursive, int init_run)
 		  ASPRINTF(&where_rec, "OR 1=1");
 		else {
 		  const char *file_encoded = db_encode(file);
-		  csync_debug(2,"file %s encode %s \n", file, file_encoded);
+		  csync_debug(3,"file %s encode %s \n", file, file_encoded);
 		  ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' and filename < '%s0'", 
 			   file_encoded, file_encoded);
 
