@@ -414,17 +414,17 @@ int db_mysql_upgrade_to_schema(int version)
 	return DB_OK;
 }
 
-extern void *ringbuffer_malloc(size_t length);
-
 const char* db_mysql_escape(db_conn_p conn, const char *string) 
 {
   int rc = DB_ERROR;
+
   if (!conn)
     return 0; 
-
-  if (!conn->private) {
+  if (!conn->private)
     return 0;
-  }
+  if (string == 0)
+    return 0; 
+
   size_t length = strlen(string);
   char *escaped_buffer = ringbuffer_malloc(2*length+1);
   rc = f.mysql_real_escape_string_fn(conn->private, escaped_buffer, string, length);
