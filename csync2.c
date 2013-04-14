@@ -957,7 +957,7 @@ found_a_group:;
 			for (i=optind; i < argc; i++) {
 				char *realname = getrealfn(argv[i]);
 				csync_check_usefullness(realname, recursive);
-				csync_mark(realname, 0, 0);
+				csync_mark(realname, 0, 0, "mark");
 				char *db_encoded = strdup(csync_db_escape(realname));
 
 				if ( recursive ) {
@@ -977,7 +977,7 @@ found_a_group:;
 						db_encoded, where_rec)
 					{
 						char *filename = strdup(db_decode(SQL_V(0)));
-						csync_mark(filename, 0, 0);
+						csync_mark(filename, 0, 0, "mark");
 						free(filename);
 					} SQL_END;
 				}
