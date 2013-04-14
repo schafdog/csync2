@@ -108,9 +108,11 @@ int csync_step_into(const char *file)
 
 int csync_match_file(const char *file)
 {
-	if ( csync_find_next(0, file) ) return 2;
-	if ( csync_step_into(file) ) return 1;
-	return 0;
+  if ( csync_find_next(0, file) ) 
+    return MATCH_NEXT;
+  if ( csync_step_into(file) ) 
+    return MATCH_INTO;
+  return 0;
 }
 
 void csync_check_usefullness(const char *file, int recursive)
