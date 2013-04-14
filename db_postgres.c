@@ -463,8 +463,6 @@ int db_postgres_upgrade_to_schema(int version)
 	return DB_OK;
 }
 
-extern void *ringbuffer_malloc(size_t length);
-
 const char* db_postgres_escape(db_conn_p conn, const char *string) 
 {
   int rc = DB_ERROR;
