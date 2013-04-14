@@ -34,6 +34,10 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#define MATCH_NEXT 2
+#define MATCH_INTO 1
+#define MATCH_NONE 0
+
 #define IGNORE_MTIME 1 
 #define IGNORE_INODE 2 
 #define IGNORE_USER  4
@@ -200,7 +204,9 @@ extern int csync_cmpchecktxt(const char *a, const char *b);
 
 extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version);
-extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter);
+/* Single file checking but returns possible operation */ 
+extern char *csync_check_single(const char *filename, int init_run, int version); 
+extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation);
 
 
 /* update.c */
@@ -217,6 +223,9 @@ extern void csync_remove_old();
 extern void csync_daemon_session(int db_version, int protocol_version);
 extern int csync_copy_file(int fd_in, int fd_out);
 
+/* ringbuffer.c */
+extern char *ringbuffer_malloc(size_t length);
+extern char *ringbuffer_strdup(const char *cpy);
 
 /* getrealfn.c */
 
