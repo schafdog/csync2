@@ -585,88 +585,92 @@ int compare_files(const char *filename, const char *pattern, int recursive)
 void csync_update_host(const char *peername,
 		       const char **patlist, int patnum, int recursive, int dry_run, int ip_version)
 {
-	struct textlist *tl = 0, *t, *next_t;
-	struct textlist *tl_mod = 0, **last_tn=&tl;
-	char *current_name = 0;
-	struct stat st;
-	SQL_BEGIN("Get files for host from dirty table",
-		"SELECT filename, myname, forced FROM dirty WHERE peername = '%s' "
-		"ORDER by filename ASC", db_encode(peername))
-	{
-		const char *filename = db_decode(SQL_V(0));
-		int i, use_this = patnum == 0;
-		for (i=0; i<patnum && !use_this; i++)
-		  if ( compare_files(filename, patlist[i], recursive) ) use_this = 1;
-		if (use_this)
-			textlist_add2(&tl, filename, db_decode(SQL_V(1)), atoi(SQL_V(2)));
-	} SQL_END;
+  struct textlist *tl = 0, *t, *next_t;
+  struct textlist *tl_mod = 0, **last_tn=&tl;
+  char *current_name = 0;
+  struct stat st;
+  SQL_BEGIN("Get files for host from dirty table",
+	    "SELECT filename, myname, forced FROM dirty WHERE peername = '%s' "
+	    "ORDER by filename ASC", db_encode(peername))
+    {
+      const char *filename = db_decode(SQL_V(0));
+      int i, use_this = patnum == 0;
+      for (i=0; i<patnum && !use_this; i++)
+	if ( compare_files(filename, patlist[i], recursive) ) use_this = 1;
+      if (use_this)
+	textlist_add2(&tl, filename, db_decode(SQL_V(1)), atoi(SQL_V(2)));
+    } SQL_END;
 
-	/* just return if there are no files to update */
-	if ( !tl ) return;
+  /* just return if there are no files to update */
+  if ( !tl ) 
+    return;
+  
+  if ( connect_to_host(peername, ip_version) ) {
+    csync_error_count++;
+    csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
+    csync_debug(1, "Host stays in dirty state. "
+		"Try again later...\n");
+    return;
+  }
 
-	if ( connect_to_host(peername, ip_version) ) {
-		csync_error_count++;
-		csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
-		csync_debug(1, "Host stays in dirty state. "
-				"Try again later...\n");
-		return;
+  /*
+   * The SQL statement above creates a linked list. Due to the
+   * way the linked list is created, it has the reversed order
+   * of the sql output. This order is good for removing stuff
+   * (deep entries first) but we need to use the original order
+   * for adding things.
+   *
+   * So I added a 2nd linked list for adding and modifying
+   * files: *tl_mod. Whever a file should be added/modified
+   * it's removed in the *tl linked list and moved to that
+   * other linked list.
+   *
+   */
+  for (t = tl; t != 0; t = next_t) {
+    next_t = t->next;
+    if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
+      *last_tn = next_t;
+      t->next = tl_mod;
+      tl_mod = t;
+    } else {
+      csync_debug(3, "Dirty item %s %s %d \n", t->value, t->value2, t->intvalue);
+      /* I cannot see how myname can change? */
+      if ( !current_name || strcmp(current_name, t->value2) ) {
+	conn_printf("HELLO %s\n", url_encode(t->value2));
+	if ( !read_conn_status(t->value, peername) )
+	  current_name = t->value2;
+	else {
+	  goto ident_failed_1;
 	}
+      }
+      if (!connection_closed_error)
+	csync_update_file_del(peername,
+			      t->value, t->intvalue, dry_run);
+    ident_failed_1:
+      last_tn=&(t->next);
+    }
+  }
+  
+  for (t = tl_mod; t != 0; t = t->next) {
+    if ( !current_name || strcmp(current_name, t->value2) ) {
+      csync_debug(3, "Dirty item %s %s %d ", t->value, t->value2, t->intvalue); 
+      conn_printf("HELLO %s\n", url_encode(t->value2));
+      if (read_conn_status(t->value, peername) )
+	goto ident_failed_2;
+      current_name = t->value2;
+    }
+    if (!connection_closed_error)
+      csync_update_file_mod(peername,
+			    t->value, t->intvalue, dry_run);
+  ident_failed_2:;
+  }
 
-	/*
-	 * The SQL statement above creates a linked list. Due to the
-	 * way the linked list is created, it has the reversed order
-	 * of the sql output. This order is good for removing stuff
-	 * (deep entries first) but we need to use the original order
-	 * for adding things.
-	 *
-	 * So I added a 2nd linked list for adding and modifying
-	 * files: *tl_mod. Whever a file should be added/modified
-	 * it's removed in the *tl linked list and moved to that
-	 * other linked list.
-	 *
-	 */
-	for (t = tl; t != 0; t = next_t) {
-		next_t = t->next;
-		if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
-			*last_tn = next_t;
-			t->next = tl_mod;
-			tl_mod = t;
-		} else {
-		        csync_debug(3, "Dirty item %s %s %d \n", t->value, t->value2, t->intvalue);
-			if ( !current_name || strcmp(current_name, t->value2) ) {
-				conn_printf("HELLO %s\n", url_encode(t->value2));
-				if ( read_conn_status(t->value, peername) )
-					goto ident_failed_1;
-				current_name = t->value2;
-			}
-			if (!connection_closed_error)
-				csync_update_file_del(peername,
-						t->value, t->intvalue, dry_run);
-ident_failed_1:
-			last_tn=&(t->next);
-		}
-	}
-
-	for (t = tl_mod; t != 0; t = t->next) {
-		if ( !current_name || strcmp(current_name, t->value2) ) {
-		        csync_debug(3, "Dirty item %s %s %d ", t->value, t->value2, t->intvalue); 
-			conn_printf("HELLO %s\n", url_encode(t->value2));
-			if ( read_conn_status(t->value, peername) )
-				goto ident_failed_2;
-			current_name = t->value2;
-		}
-		if (!connection_closed_error)
-			csync_update_file_mod(peername,
-					t->value, t->intvalue, dry_run);
-ident_failed_2:;
-	}
-
-	textlist_free(tl_mod);
-	textlist_free(tl);
-
-	conn_printf("BYE\n");
-	read_conn_status(0, peername);
-	conn_close();
+  textlist_free(tl_mod);
+  textlist_free(tl);
+  
+  conn_printf("BYE\n");
+  read_conn_status(0, peername);
+  conn_close();
 }
 
 void csync_update(const char ** patlist, int patnum, int recursive, int dry_run, int ip_version)
