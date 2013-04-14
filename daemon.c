@@ -63,7 +63,7 @@ int csync_unlink(const char *filename, int ign)
 int csync_check_dirty(const char *filename, const char *peername, int isflush, int version)
 {
 	int rc = 0;
-	csync_check(filename, 0, 0, version);
+	char *operation = csync_check_single(filename, 0, version);
 	if (isflush) 
 	  return 0;
 	SQL_BEGIN("Check if file is dirty",
@@ -74,7 +74,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 		cmd_error = "File is also marked dirty here!";
 	} SQL_END;
 	if (rc && peername)
-		csync_mark(filename, peername, 0);
+	  csync_mark(filename, peername, 0, operation);
 	return rc;
 }
 
@@ -296,7 +296,7 @@ struct csync_command {
 enum {
 	A_SIG, A_FLUSH, A_MARK, A_TYPE, A_GETTM, A_GETSZ, A_DEL, A_PATCH,
 	A_MKDIR, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV, 
-	A_SETOWN, A_SETMOD, A_SETIME, A_LIST, A_GROUP,
+	A_SETOWN, A_SETMOD, A_SETTIME, A_LIST, A_GROUP,
 	A_DEBUG, A_HELLO, A_BYE
 };
 
@@ -320,7 +320,8 @@ struct csync_command cmdtab[] = {
 	{ "mv",	        1, 1, 1, 1, 1, A_MV	},
 	{ "setown",	1, 1, 0, 2, 1, A_SETOWN	},
 	{ "setmod",	1, 1, 0, 2, 1, A_SETMOD	},
-	{ "setime",	1, 0, 0, 2, 1, A_SETIME	},
+	{ "setime",	1, 0, 0, 2, 1, A_SETTIME},
+	{ "settime",	1, 0, 0, 2, 1, A_SETTIME},
 	{ "list",	0, 0, 0, 0, 1, A_LIST	},
 #if 1
 	{ "debug",	0, 0, 0, 0, 1, A_DEBUG	},
@@ -551,10 +552,10 @@ void csync_daemon_session(int db_version, int protocol_version)
 				csync_compare_mode = 0;
 			if ( perm ) {
 				if ( perm == 2 ) {
-					csync_mark(filename, peer, 0);
-					cmd_error = "Permission denied for slave!";
+				  csync_mark(filename, peer, 0, "perm (slave)");
+				  cmd_error = "Permission denied for slave!";
 				} else
-					cmd_error = "Permission denied!";
+				  cmd_error = "Permission denied!";
 				goto abort_cmd;
 			}
 		}
@@ -606,7 +607,7 @@ void csync_daemon_session(int db_version, int protocol_version)
 			}
 			break;
 		case A_MARK:
-			csync_mark(filename, peer, 0);
+		  csync_mark(filename, peer, 0, "mark");
 			break;
 		case A_TYPE:
 			{
@@ -747,7 +748,7 @@ void csync_daemon_session(int db_version, int protocol_version)
 					cmd_error = strerror(errno);
 			}
 			break;
-		case A_SETIME:
+		case A_SETTIME:
 			{
 				struct utimbuf utb;
 				utb.actime = atoll(tag[3]);
