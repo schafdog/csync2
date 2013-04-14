@@ -58,6 +58,14 @@ char *ringbuffer_malloc(size_t length)
   return out;
 }
 
+char *ringbuffer_strdup(const char *cpy)
+{
+  char *out;
+  out = strdup(cpy);
+  ringbuffer_add(out, free);
+  return out;
+}
+
 
 void ringbuffer_destroy() {
   int index; 
