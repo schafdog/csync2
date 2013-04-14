@@ -347,7 +347,7 @@ auto_resolve_entry_point:
 		flag |=  (has_user != NULL ? SET_USER : 0);
 		char *has_group = strstr(chk_peer_decoded, ":group=");
 		flag |= (has_group != NULL ? SET_GROUP : 0);
-		csync_debug(2, "Flags for gencheck: %d ", flag);
+		csync_debug(3, "Flags for gencheck: %d \n", flag);
 		chk_local = csync_genchecktxt_version(&st, filename, flag, peer_version);
 
 		if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
@@ -851,73 +851,82 @@ found_host:
 			filename ? db_encode(filename) : "",
 			filename ? "'" : "")
 	{
-		char *l_file = strdup(db_decode(SQL_V(1))), *l_checktxt = strdup(db_decode(SQL_V(0)));
-		if ( csync_match_file_host(l_file, myname, peername, 0) ) {
-			if ( remote_eof ) {
-got_remote_eof:
-				if (auto_diff)
-				  textlist_add(&diff_list, strdup(l_file), 0);
-				else
-				  csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
-				if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
-			} else {
-				if ( !remote_reuse )
-				  if ( csync_insynctest_readline(&r_file, &r_checktxt) )
-						{ remote_eof = 1; goto got_remote_eof; }
-				rel = strcmp(l_file, r_file);
-
-				while ( rel > 0 ) {
-					if (auto_diff)
-					  textlist_add(&diff_list, strdup(r_file), 0);
-					else
-					  csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
-					if (init_run & 2) csync_mark(r_file, 0, (init_run & 4) ? peername : 0);
-					if ( csync_insynctest_readline(&r_file, &r_checktxt) )
-						{ remote_eof = 1; goto got_remote_eof; }
-					rel = strcmp(l_file, r_file);
-				}
-
-				if ( rel < 0 ) {
-					if (auto_diff)
-						textlist_add(&diff_list, strdup(l_file), 0);
-					else
-					  csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
-					if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
-					remote_reuse = 1;
-				} else {
-					remote_reuse = 0;
-					if ( !rel ) {
-						if ( strcmp(l_checktxt, r_checktxt) ) {
-						  if (auto_diff)
-						    textlist_add(&diff_list, strdup(l_file), 0);
-						  else {
-						    //DS disabled the simple X out.  
-						    if (csync_debug_level >= 0) {
-						      csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
-						      csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
-						    }
-						    else
-						      csync_debug(0, "X\t%s\t%s\t%s\n", myname, peername, l_file); 
-						    ret=0;
-						  }
-						  if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0);
-						}
-					}
-				}
-			}
+	  char *l_file = strdup(db_decode(SQL_V(1))), *l_checktxt = strdup(db_decode(SQL_V(0)));
+	  if ( csync_match_file_host(l_file, myname, peername, 0) ) {
+	    if ( remote_eof ) {
+	    got_remote_eof:
+	      if (auto_diff)
+		textlist_add(&diff_list, strdup(l_file), 0);
+	      else
+		csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); 
+	      ret=0;
+	      if (init_run & 1) 
+		csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "updated (local)");
+	    } else {
+	      if ( !remote_reuse )
+		if ( csync_insynctest_readline(&r_file, &r_checktxt) ) { 
+		  remote_eof = 1; 
+		  goto got_remote_eof; 
 		}
-		free(l_checktxt);
-		free(l_file);
+	      rel = strcmp(l_file, r_file);
+	      
+	      while ( rel > 0 ) {
+		if (auto_diff)
+		  textlist_add(&diff_list, strdup(r_file), 0);
+		else
+		  csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
+		if (init_run & 2) 
+		  csync_mark(r_file, 0, (init_run & 4) ? peername : 0, "updated (peer)");
+		if ( csync_insynctest_readline(&r_file, &r_checktxt) ) { 
+		  remote_eof = 1; 
+		  goto got_remote_eof; 
+		}
+		rel = strcmp(l_file, r_file);
+	      }
+	      
+	      if ( rel < 0 ) {
+		if (auto_diff)
+		  textlist_add(&diff_list, strdup(l_file), 0);
+		else
+		  csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
+		if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "autoupdate with local");
+		remote_reuse = 1;
+	      } else {
+		remote_reuse = 0;
+		if ( !rel ) {
+		  if ( strcmp(l_checktxt, r_checktxt) ) {
+		    if (auto_diff)
+		      textlist_add(&diff_list, strdup(l_file), 0);
+		    else {
+		      //DS disabled the simple X out.  
+		      if (csync_debug_level >= 0) {
+			csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
+			csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
+		      }
+		      else
+			csync_debug(0, "X\t%s\t%s\t%s\n", myname, peername, l_file); 
+		      ret=0;
+		    }
+		    if (init_run & 1) 
+		      csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "updated both");
+		  }
+		}
+	      }
+	    }
+	  }
+	  free(l_checktxt);
+	  free(l_file);
 	} SQL_END;
 
 	if ( !remote_eof )
-		while ( !csync_insynctest_readline(&r_file, &r_checktxt) ) {
-			if (auto_diff)
-				textlist_add(&diff_list, strdup(r_file), 0);
-			else
-			  csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
-			if (init_run & 2) csync_mark(r_file, 0, (init_run & 4) ? peername : 0);
-		}
+	  while ( !csync_insynctest_readline(&r_file, &r_checktxt) ) {
+	    if (auto_diff)
+	      textlist_add(&diff_list, strdup(r_file), 0);
+	    else
+	      csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
+	    if (init_run & 2) 
+	      csync_mark(r_file, 0, (init_run & 4) ? peername : 0, "updated (peer)");
+	  }
 
 	if (r_file) free(r_file);
 	if (r_checktxt) free(r_checktxt);
