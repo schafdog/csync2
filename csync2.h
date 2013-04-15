@@ -44,6 +44,8 @@
 #define IGNORE_GROUP 8
 #define SET_USER    16
 #define SET_GROUP   32
+#define IGNORE_LINK 64
+#define IGNORE_    128
 
 #define DB_SCHEMA_VERSION 0
 
@@ -211,7 +213,7 @@ extern void csync_mark(const char *file, const char *thispeer, const char *peerf
 
 /* update.c */
 
-extern void csync_update(const char **patlist, int patnum, int recursive, int dry_run, int ip_version);
+extern void csync_update(const char *myname, const char **patlist, int patnum, int recursive, int dry_run, int ip_version);
 extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
 extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version);
