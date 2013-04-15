@@ -241,7 +241,7 @@ int csync_check_pure(const char *filename)
 
 void csync_check_del(const char *file, int recursive, int init_run)
 {
-  char *where_rec = NULL;
+  char *where_rec = "";
   struct textlist *tl = 0, *t;
   struct stat st;
   
@@ -250,7 +250,7 @@ void csync_check_del(const char *file, int recursive, int init_run)
       ASPRINTF(&where_rec, "OR 1=1");
     else {
       const char *file_encoded = db_encode(file);
-      csync_debug(3,"file %s encode %s \n", file, file_encoded);
+      csync_debug(3,"file %s encoded %s \n", file, file_encoded);
       ASPRINTF(&where_rec, "UNION ALL SELECT filename, checktxt, inode from file where filename > '%s/' and filename < '%s0'", 
 	       file_encoded, file_encoded);
     }
@@ -310,11 +310,11 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
 	  textlist_add(&tl, db_filename, MOVE);
 	}
       } else {
-	csync_debug(1, "OPERATION: MHLINK %s to %s\n", db_filename, filename);
+	csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
 	char buffer[strlen(db_filename) + strlen(filename) + 10];
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
-	  sprintf(*operation, "MKHLINK %s", db_filename); 
+	  sprintf(*operation, "MKHARDLINK %s", db_filename); 
 	}
       }
       break; 
@@ -454,6 +454,10 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     }
   } SQL_END;
   
+  int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
+  if (has_links) {
+    csync_debug(1, "File %s has links: %d\n", file, file_stat->st_nlink);
+  }
   if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
     
     csync_check_move_link(file, checktxt, file_stat, operation);
