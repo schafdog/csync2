@@ -97,8 +97,8 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
 	      "DELETE FROM file WHERE filename = '%s'",
 	      filename_encoded);	  
 	  SQL("Insert record into file",
-	      "INSERT INTO file (filename, checktxt) values ('%s', '%s')",
-	      filename_encoded, db_encode(checktxt));
+	      "INSERT INTO file (filename, checktxt, inode) values ('%s', '%s', %ld)",
+	      filename_encoded, db_encode(checktxt), st.st_ino);
 	}
 }
 
@@ -570,42 +570,43 @@ void csync_daemon_session(int db_version, int protocol_version)
 		switch ( cmdtab[cmdnr].action )
 		{
 		case A_SIG:
-			{
-			   struct stat st;
-
-			   if ( lstat_strict(filename, &st) != 0 ) {
-			     char *path;
-			     if (path = csync_check_path(filename)) {
-			       conn_printf("ERROR (Path not found): %s\n", path);
-			       goto next_cmd;
-			     }
-			     if ( errno == ENOENT )
-			       conn_printf("OK (not_found).\n---\noctet-stream 0\n");
-			     else
-			       cmd_error = strerror(errno);
-			     break;
-			   } else if (csync_check_pure(filename)) {
-			     conn_printf("OK (not_found).\n---\noctet-stream 0\n");
-			     break;
-			   }
+		  {
+		    struct stat st;
+		    
+		    if ( lstat_strict(filename, &st) != 0 ) {
+		      char *path;
+		      if (path = csync_check_path(filename)) {
+			conn_printf("ERROR (Path not found): %s\n", path);
+			goto next_cmd;
+		      }
+		      if ( errno == ENOENT )
+			conn_printf("OK (not_found).\n---\noctet-stream 0\n");
+		      else
+			cmd_error = strerror(errno);
+		      break;
+		    } else if (csync_check_pure(filename)) {
+		      conn_printf("OK (not_found).\n---\noctet-stream 0\n");
+		      break;
+		    }
 			   
-			   conn_printf("OK (data_follows).\n");
-			   // TODO Why ignore mtime? 
-			   int flags  = IGNORE_MTIME;
-			   if (strcmp("user/group",tag[3]) == 0)
-			     flags |= SET_USER|SET_GROUP;
-			   const char *checktxt = csync_genchecktxt_version(&st, filename, flags, db_version);
-			   if (db_version == 1)
-			     conn_printf("%s\n", checktxt);
-			   else
-			     conn_printf("%s\n", url_encode(checktxt));
-			   
-			   if ( S_ISREG(st.st_mode) )
-			     csync_rs_sig(filename);
-			   else
-			     conn_printf("octet-stream 0\n");
-			}
-			break;
+		    conn_printf("OK (data_follows).\n");
+		    // TODO Why ignore mtime? 
+		    int flags  = IGNORE_MTIME;
+		    if (strcmp("user/group",tag[3]) == 0)
+		      flags |= SET_USER|SET_GROUP;
+		    const char *checktxt = csync_genchecktxt_version(&st, filename, 
+								     flags, db_version);
+		    if (db_version == 1)
+		      conn_printf("%s\n", checktxt);
+		    else
+		      conn_printf("%s\n", url_encode(checktxt));
+		    
+		    if ( S_ISREG(st.st_mode) )
+		      csync_rs_sig(filename);
+		    else
+		      conn_printf("octet-stream 0\n");
+		  }
+		  break;
 		case A_MARK:
 		  csync_mark(filename, peer, 0, "mark");
 			break;
@@ -716,7 +717,11 @@ void csync_daemon_session(int db_version, int protocol_version)
 			break;
 		case A_MKHLINK:
 		  if ( link(prefixsubst(tag[3]), filename) )
-				cmd_error = strerror(errno);
+		    cmd_error = strerror(errno);
+			break;
+		case A_MV:
+		  if (rename(filename, prefixsubst(tag[3])))
+		    cmd_error = strerror(errno);
 			break;
 		case A_MKSOCK:
 			/* just ignore socket files */
