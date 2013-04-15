@@ -835,9 +835,10 @@ int main(int argc, char ** argv)
 	{
 		const struct csync_group *g;
 		for (g=csync_group; g; g=g->next)
-			if ( g->myname ) goto found_a_group;
-		csync_fatal("This host (%s) is not a member of any configured group.\n", myhostname);
-found_a_group:;
+		  if ( g->myname )
+		    break;
+		  else
+		    csync_fatal("This host (%s) is not a member of any configured group.\n", myhostname);
 	}
 
 	csync_db_open(csync_database);
@@ -865,7 +866,7 @@ found_a_group:;
 			if ( argc == optind )
 			{
 			  csync_check("/", 1, init_run, db_version);
-			  csync_update(0, 0, 0, dry_run, ip_version);
+			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version);
 			}
 			else
 			{
@@ -875,7 +876,7 @@ found_a_group:;
 					csync_check_usefullness(realnames[i-optind], recursive);
 					csync_check(realnames[i-optind], recursive, init_run, db_version);
 				}
-				csync_update((const char**)realnames, argc-optind, recursive, dry_run, ip_version);
+				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}
@@ -924,7 +925,7 @@ found_a_group:;
 		case MODE_UPDATE:
 			if ( argc == optind )
 			{
-			  csync_update(0, 0, 0, dry_run, ip_version);
+			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version);
 			}
 			else
 			{
@@ -933,7 +934,7 @@ found_a_group:;
 					realnames[i-optind] = strdup(getrealfn(argv[i]));
 					csync_check_usefullness(realnames[i-optind], recursive);
 				}
-				csync_update((const char**)realnames, argc-optind, recursive, dry_run, ip_version);
+				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}
