@@ -199,7 +199,8 @@ auto_resolve_entry_point:
 		  else
 		    goto got_error;
 		}
-		if ( !conn_gets_newline(chk_peer, 4096, 1) ) goto got_error;
+		if ( !conn_gets_newline(chk_peer, 4096, 1) ) 
+		  goto got_error;
 		const char *chk_peer_decoded = url_decode(chk_peer);
 
 		if (!csync_cmpchecktxt(chk_peer_decoded,chk_local)) {
@@ -331,7 +332,7 @@ auto_resolve_entry_point:
 		char chk_peer[4096];
 		const char *chk_local;
 
-		conn_printf("SIG %s %s\n", url_encode(key), url_encode(prefixencode(filename)), "user/group");
+		conn_printf("SIG %s %s %s\n", url_encode(key), url_encode(prefixencode(filename)), "user/group");
 		if ( read_conn_status(filename, peername) ) 
 		  goto got_error;
 
@@ -363,11 +364,16 @@ auto_resolve_entry_point:
 		  csync_debug(2, "File is different on peer (rsync sig).\n");
 		  found_diff=1;
 		}
-		if ( read_conn_status(filename, peername) ) goto got_error;
+		if ( read_conn_status(filename, peername) ) 
+		  goto got_error;
 
 		if ( !found_diff ) {
 		  csync_debug(1, "?S: %-15s %s\n", peername, filename);
 		  // DS also skip on dry_run 
+		  // DS also skip time on reg. files
+		  if (S_ISREG(st.st_mode))
+		      goto skip_action_time;
+		  // This may be a problem with directories where we dont compare time? 
 		  goto skip_action;
 		}
 		if ( dry_run ) {
@@ -474,6 +480,7 @@ skip_action:
 		if ( read_conn_status(filename, peername) )
 			goto got_error;
 	}
+skip_action_time:
 
 	SQL("Remove dirty-file entry.",
 		"DELETE FROM dirty WHERE filename = '%s' "
