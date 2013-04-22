@@ -294,10 +294,10 @@ struct csync_command {
 };
 
 enum {
-	A_SIG, A_FLUSH, A_MARK, A_TYPE, A_GETTM, A_GETSZ, A_DEL, A_PATCH,
-	A_MKDIR, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV, 
-	A_SETOWN, A_SETMOD, A_SETTIME, A_LIST, A_GROUP,
-	A_DEBUG, A_HELLO, A_BYE
+  A_SIG, A_FLUSH, A_MARK, A_TYPE, A_GETTM, A_GETSZ, A_DEL, A_PATCH, A_CREATE,
+  A_MKDIR, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV, 
+  A_SETOWN, A_SETMOD, A_SETTIME, A_LIST, A_GROUP,
+  A_DEBUG, A_HELLO, A_BYE
 };
 
 struct csync_command cmdtab[] = {
@@ -310,6 +310,7 @@ struct csync_command cmdtab[] = {
 	{ "flush",	1, 1, 0, 0, 1, A_FLUSH	},
 	{ "del",	1, 1, 0, 1, 1, A_DEL	},
 	{ "patch",	1, 1, 2, 1, 1, A_PATCH	},
+	{ "create",	1, 1, 2, 1, 1, A_CREATE	},
 	{ "mkdir",	1, 1, 1, 1, 1, A_MKDIR	},
 	{ "mkchr",	1, 1, 1, 1, 1, A_MKCHR	},
 	{ "mkblk",	1, 1, 1, 1, 1, A_MKBLK	},
@@ -477,6 +478,94 @@ static void destroy_tag(char *tag[32]) {
     free(tag[i]);
 }
 
+
+const char * csync_daemon_patch(const char *filename) 
+{
+  struct stat st;
+  char *cmd_error = NULL;
+  int rc = stat(filename, &st);
+  // Only try to backup if the file exists already. 
+  // TODO also skip if it is a directory that already exists. 
+  if (rc == -1 || !csync_file_backup(filename)) {
+    conn_printf("OK (send_data).\n");
+    csync_rs_sig(filename);
+    if (csync_rs_patch(filename))
+      cmd_error = strerror(errno);
+  }
+  return cmd_error;
+}
+
+const char *cync_daemon_mkdir(const char *filename) 
+{
+  const char *cmd_error = NULL;
+  /* ignore errors on creating directories if the
+   * directory does exist already. we don't need such
+   * a check for the other file types, because they
+   * will simply be unlinked if already present.
+   */
+#ifdef __CYGWIN__
+  // This creates the file using the native windows API, bypassing
+  // the cygwin wrappers and so making sure that we do not mess up the
+  // permissions..
+  char winfilename[MAX_PATH];
+  cygwin_conv_to_win32_path(filename, winfilename);
+  
+  if ( !CreateDirectory(TEXT(winfilename), NULL) ) {
+    struct stat st;
+    if ( lstat_strict(filename), &st) != 0 || !S_ISDIR(st.st_mode)) {
+    csync_debug(1, "Win32 I/O Error %d in mkdir command: %s\n",
+		(int)GetLastError(), winfilename);
+    cmd_error = "Win32 I/O Error on CreateDirectory()";
+  }
+#else
+  if ( mkdir(filename, 0700) ) {
+    struct stat st;
+    if ( lstat_strict(filename, &st) != 0 || !S_ISDIR(st.st_mode))
+      cmd_error = strerror(errno);
+  }
+  return cmd_error;
+#endif
+}
+
+int find_command() {
+  int cmdnr;
+  for (cmdnr=0; cmdtab[cmdnr].text; cmdnr++)
+    if ( !strcasecmp(cmdtab[cmdnr].text, tag[0])) 
+      break;
+  return cmdnr;
+}
+
+int csync_daemon_identify(const char *peer, address_t *peername) {
+  char buf[INET6_ADDRSTRLEN];
+  if ( cmdtab[cmdnr].need_ident && !peer ) {
+    conn_printf("Dear %s, please identify first.\n",
+		csync_inet_ntop(peername, buf, sizeof(buf)) ?: "stranger");
+    return -1;
+  }
+  return 0;
+}
+
+const char *csync_daemon_check_perm(struct cmdtab *cmd, const char *filename, char* key) {
+
+  const char *cmd_error = 0;
+  if ( cmd->check_perm ) {
+    if ( cmd->check_perm == 2 )
+      csync_compare_mode = 1;
+    int perm = csync_perm(filename, key, peer);
+    if ( cmd->check_perm == 2 )
+      csync_compare_mode = 0;
+    if ( perm ) {
+      if ( perm == 2 ) {
+	csync_mark(filename, peer, 0, "perm (slave)");
+	cmd_error = "Permission denied for slave!";
+      } else
+	cmd_error = "Permission denied!";
+      return cmd_error;
+    }
+  }
+  return 0;
+}
+
 void csync_daemon_session(int db_version, int protocol_version)
 {
 	struct stat sb;
@@ -510,55 +599,26 @@ void csync_daemon_session(int db_version, int protocol_version)
 		if (setup_tag(tag, line))
 		  continue;
 
-		for (cmdnr=0; cmdtab[cmdnr].text; cmdnr++)
-		  if ( !strcasecmp(cmdtab[cmdnr].text, tag[0])) 
-		    break;
-
+		int cmdnr = find_command()
 		if ( !cmdtab[cmdnr].text ) {
 			cmd_error = "Unkown command!";
 			goto abort_cmd;
 		}
 
-		/*
-		int index  = 1;
-		while (tag[index][0] != 0 && index < 32) {
-		  csync_debug(1, "%s ", tag[index]);
-		  index++;
-		}
-		csync_debug(1, "\n");
-		*/
-
 		char *filename = NULL; 
 		if (tag[2])
 		  filename = (char *) prefixsubst(tag[2]);
 
-
 		cmd_error = 0;
-		char buf[INET6_ADDRSTRLEN];
-		if ( cmdtab[cmdnr].need_ident && !peer ) {
-			conn_printf("Dear %s, please identify first.\n",
-				    csync_inet_ntop(&peername, buf, sizeof(buf)) ?: "stranger");
-			goto next_cmd;
-		}
-
+		if (csync_daemon_check_identify())
+		  goto next_command;
+		
 		if ( cmdtab[cmdnr].check_perm )
 			on_cygwin_lowercase(filename);
 
-		if ( cmdtab[cmdnr].check_perm ) {
-			if ( cmdtab[cmdnr].check_perm == 2 )
-				csync_compare_mode = 1;
-			int perm = csync_perm(filename, tag[1], peer);
-			if ( cmdtab[cmdnr].check_perm == 2 )
-				csync_compare_mode = 0;
-			if ( perm ) {
-				if ( perm == 2 ) {
-				  csync_mark(filename, peer, 0, "perm (slave)");
-				  cmd_error = "Permission denied for slave!";
-				} else
-				  cmd_error = "Permission denied!";
-				goto abort_cmd;
-			}
-		}
+	        cmd_error = csync_daemon_check_perm(&cmdtab[cmdnr], filename, tag[1]); 
+		if (cmd_error) 
+		  goto error;
 
 		if ( cmdtab[cmdnr].check_dirty && 
 		     csync_check_dirty(filename, peer, cmdtab[cmdnr].action == A_FLUSH, db_version) ) 
@@ -656,48 +716,11 @@ void csync_daemon_session(int db_version, int protocol_version)
 		    csync_unlink(filename, 0);
 		  break;
 		case A_PATCH: {
-		  struct stat st;
-		  int rc = stat(filename, &st);
-		  // Only try to backup if the file exists already. 
-		  // TODO also skip if it is a directory that already exists. 
-		  if (rc == -1 || !csync_file_backup(filename)) {
-		    conn_printf("OK (send_data).\n");
-		    csync_rs_sig(filename);
-		    if (csync_rs_patch(filename))
-		      cmd_error = strerror(errno);
-		  }
+		  csync_daemon_patch(filename, &st); 
 		  break;
 		}
 		case A_MKDIR:
-			/* ignore errors on creating directories if the
-			 * directory does exist already. we don't need such
-			 * a check for the other file types, because they
-			 * will simply be unlinked if already present.
-			 */
-#ifdef __CYGWIN__
-			// This creates the file using the native windows API, bypassing
-			// the cygwin wrappers and so making sure that we do not mess up the
-			// permissions..
-			{
-				char winfilename[MAX_PATH];
-				cygwin_conv_to_win32_path(filename), winfilename);
-
-				if ( !CreateDirectory(TEXT(winfilename), NULL) ) {
-					struct stat st;
-					if ( lstat_strict(filename), &st) != 0 || !S_ISDIR(st.st_mode)) {
-						csync_debug(1, "Win32 I/O Error %d in mkdir command: %s\n",
-								(int)GetLastError(), winfilename);
-						cmd_error = "Win32 I/O Error on CreateDirectory()";
-					}
-				}
-			}
-#else
-			if ( mkdir(filename, 0700) ) {
-			  struct stat st;
-			  if ( lstat_strict(filename, &st) != 0 || !S_ISDIR(st.st_mode))
-			    cmd_error = strerror(errno);
-			}
-#endif
+		  csync_daemon_mkdir(filename);
 			break;
 		case A_MKCHR:
 			if ( mknod(filename, 0700|S_IFCHR, atoi(tag[3])) )
