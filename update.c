@@ -177,7 +177,6 @@ void csync_update_file_del_mv(const char *myname, const char *peername,
   
  auto_resolve_entry_point:
   csync_debug(1, "Deleting %s:%s\n", peername, filename);
-
   if ( force ) {
     if ( dry_run ) {
       csync_debug(1, "!D: %-15s %s\n", peername, filename);
@@ -188,7 +187,6 @@ void csync_update_file_del_mv(const char *myname, const char *peername,
       goto got_error;
   } else {
     int i, found_diff = 0;
-    int rs_check_result;
     const char *chk_local = "---";
     char chk_peer[4096];
     int status;
@@ -205,13 +203,12 @@ void csync_update_file_del_mv(const char *myname, const char *peername,
       goto got_error;
     const char *chk_peer_decoded = url_decode(chk_peer);
 
-    if (!csync_cmpchecktxt(chk_peer_decoded,chk_local)) {
+    if (!(i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
       csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
       csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
       found_diff=1;
     }
-    
-    rs_check_result = csync_rs_check(filename, 0);
+    int rs_check_result = csync_rs_check(filename, 0);
     if ( rs_check_result < 0 )
       goto got_error;
     if ( rs_check_result ) {
@@ -337,16 +334,121 @@ int get_file_type(int st_mode) {
 
   
 }
+
+/* PRE: all values must have been encoded */
+void cmd_printf(const char *cmd, const char *key, const char *filename, 
+		struct stat *st, const char *uidptr, const char* gidptr) {
+  conn_printf("%s %s %s %d %d %s %s %d %Ld \n", 
+	      cmd, key, filename,  
+	      st->st_uid, st->st_gid, 
+	      uidptr, gidptr,
+	      st->st_mode, st->st_mtime);
+}
+
+
+#define ERROR -1
+#define MAYBE_AUTO_RESOLVE -2
+#define DIFF -3
+#define SKIP_ACTION -4 
+#define SKIP_ACTION_TIME -5 
+
+/* Assume PATCH command has been sent */
+int csync_update_reg_file(const char *peername, const char *filename,
+			  int *last_conn_status) {
+  if ((*last_conn_status = read_conn_status(filename, peername)))
+    return MAYBE_AUTO_RESOLVE;
+  if (csync_rs_delta(filename)) {
+    read_conn_status(filename, peername);
+    return ERROR;
+  }
+  if (read_conn_status(filename, peername))
+    return ERROR;
+  return 0;
+}
+
+int csync_update_file_dir(const char *peername, const char *filename, 
+			  int *last_conn_status)
+{
+  if ( (*last_conn_status = read_conn_status(filename, peername)))
+    return MAYBE_AUTO_RESOLVE;
+  return 0;
+}
+
+
+/* PRE: command SIG have been sent */
+int csync_update_file_sig(const char *peername, const char *filename, 
+			  struct stat *st)
+{
+  int i;
+  char chk_peer[4096];
+
+  if ( read_conn_status(filename, peername) ) 
+    return ERROR;
+  
+  if ( !conn_gets_newline(chk_peer, 4096,1) )
+    return ERROR;
+  
+  int peer_version = csync_get_checktxt_version(chk_peer);
+  
+  // DS Why do we ignore MTIME, IGNORE_LINK
+  int flag = IGNORE_MTIME|IGNORE_LINK;
+  const char *chk_peer_decoded = url_decode(chk_peer);
+  //TODO generate chk text that matches remote usage of uid/user and gid/gid
+  char *has_user = strstr(chk_peer_decoded, ":user=");
+  flag |=  (has_user != NULL ? SET_USER : 0);
+  char *has_group = strstr(chk_peer_decoded, ":group=");
+  flag |= (has_group != NULL ? SET_GROUP : 0);
+  csync_debug(3, "Flags for gencheck: %d \n", flag);
+  const char *chk_local = csync_genchecktxt_version(st, filename, flag, 
+					      peer_version);
+  
+  if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
+    csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
+    csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", 
+		chk_peer_decoded, chk_local);
+    return DIFF;
+  }
+  return 0;
+}
+int csync_update_file_check_hardlink(const char *peername, 
+				     const char *filename, 
+				     const char *operation, 
+				     const char *key_encoded,
+				     const char *filename_encoded, 
+				     int *last_conn_status) {
+  const char *hardlink = "MKHARDLINK";
+  int length = strlen(hardlink);
+  if (strncmp(hardlink, operation, length))
+    return 0;
+  const char *target = (operation + length + 1);
+  // TODO Check that the target matches the config
+  csync_debug(1, "Hardlinking %s, %s\n", 
+	      filename_encoded, 
+	      url_encode(prefixencode(target)));
+  conn_printf("%s %s %s %s\n",
+	      hardlink,
+	      key_encoded, 
+	      filename_encoded,
+	      url_encode(prefixencode(target)));
+  if (*last_conn_status = read_conn_status(filename, peername))
+    csync_debug(0, "Failed to hard link %s %s\n", filename, target);
+  else 
+    return SKIP_ACTION_TIME;
+  return 0;
+}
+
 void csync_update_file_mod(const char *myname, const char *peername,
 			   const char *filename, const char *operation , 
 			   int force, int dry_run)
 {
   struct stat st;
-  int last_conn_status = 0, auto_resolve_run = 0, found_diff = 0, found_diff_meta = 0;
-  const char *key = csync_key(peername, filename);
+  int last_conn_status = 0, auto_resolve_run = 0, 
+    found_diff = 0, found_diff_meta = 0;
 
+  const char *key = csync_key(peername, filename);
   if ( !key ) {
-    csync_debug(2, "Skipping file update %s on %s - not in my groups.\n", filename, peername);
+    csync_debug(2, "Skipping file update %s on %s - not in my groups.\n", 
+		filename, peername);
     return;
   }
 
@@ -358,120 +460,93 @@ void csync_update_file_mod(const char *myname, const char *peername,
     csync_error_count++;
     goto got_error;
   }
+  char uid[MAX_UID_SIZE];
+  char gid[MAX_GID_SIZE];
+  char *uidptr = uid_to_name(st.st_uid, uid, MAX_UID_SIZE);
+  char *gidptr = gid_to_name(st.st_gid, gid, MAX_GID_SIZE);
+  if (uidptr == NULL) {
+    uidptr = "-";
+    csync_debug(0, "Failed to lookup uid %d\n", st.st_uid);
+  }
+  if (gidptr == NULL) {
+    gidptr = "-";
+    csync_debug(0, "Failed to lookup gid %d\n", st.st_gid);
+  }
+  csync_debug(2, "uid %s gid %s\n", uidptr, gidptr); 
 
+  const char *key_encoded = url_encode(key);
+  const char *filename_encoded =  url_encode(prefixencode(filename));
   if ( force ) {
     if ( dry_run ) {
       csync_debug(1, "!M: %-15s %s\n", peername, filename);
       return;
     }
     conn_printf("FLUSH %s %s\n",
-		url_encode(key), url_encode(prefixencode(filename)));
+		key_encoded, filename_encoded);
     if ( read_conn_status(filename, peername) )
       goto got_error;
-  } else {
-    int i;
-    int rs_check_result;
-    char chk_peer[4096];
-    const char *chk_local;
-    
-    conn_printf("SIG %s %s\n", 
-		url_encode(key), 
-		url_encode(prefixencode(filename)), "user/group");
-    if ( read_conn_status(filename, peername) ) 
-      goto got_error;
-    
-    if ( !conn_gets_newline(chk_peer, 4096,1) ) 
-      goto got_error;
-    int peer_version = csync_get_checktxt_version(chk_peer);
-    
-    // DS Why do we ignore MTIME, IGNORE_LINK
-    int flag = IGNORE_MTIME|IGNORE_LINK;
-    const char *chk_peer_decoded = url_decode(chk_peer);
-    //TODO generate chk text that matches remote usage of uid/user and gid/gid
-    char *has_user = strstr(chk_peer_decoded, ":user=");
-    flag |=  (has_user != NULL ? SET_USER : 0);
-    char *has_group = strstr(chk_peer_decoded, ":group=");
-    flag |= (has_group != NULL ? SET_GROUP : 0);
-    csync_debug(3, "Flags for gencheck: %d \n", flag);
-    chk_local = csync_genchecktxt_version(&st, filename, flag, peer_version);
-    
-    if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
-      csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-      csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
+  } 
+  else { 
+    cmd_printf("SIG", key_encoded, filename_encoded, &st, uidptr, gidptr);
+   int rc = csync_update_file_sig(peername, filename, &st);
+    if (rc == DIFF)
       found_diff_meta=1;
-    }
-    rs_check_result = csync_rs_check(filename, S_ISREG(st.st_mode));
-    if ( rs_check_result < 0 )
+    else if (rc == MAYBE_AUTO_RESOLVE)
+      goto maybe_auto_resolve;
+    else if (rc == ERROR)
       goto got_error;
-    if ( rs_check_result ) {
-      csync_debug(2, "File is different on peer (rsync sig).\n");
-      found_diff=1;
-    }
-    if ( read_conn_status(filename, peername) ) goto got_error;
-    
-    if ( !found_diff ) {
-      csync_debug(1, "?S: %-15s %s\n", peername, filename);
-      // DS also skip on dry_run 
-      goto skip_action;
-    }
-    if ( dry_run ) {
-      csync_debug(1, "?M: %-15s %s\n", peername, filename);
-      return;
-    }
   }
-  const char *hardlink = "MKHARDLINK";
-  int length = strlen(hardlink);
-  if (!strncmp(hardlink, operation, length)) {
-    const char *target = (operation + length + 1);
-    // TODO Check that the target matches the config
-    csync_debug(1, "Hardlinking %s, %s\n", 
-		url_encode(prefixencode(filename)), 
-		url_encode(prefixencode(target)));
-    conn_printf("%s %s %s %s\n",
-		hardlink,
-		url_encode(key), 
-		url_encode(prefixencode(filename)),
-		url_encode(prefixencode(target)));
-    if (last_conn_status = read_conn_status(filename, peername))
-      csync_debug(0, "Failed to hard link %s %s\n", filename, target);
-    else 
-      goto skip_action_time;
-  }  
+  int rs_check_result = csync_rs_check(filename, S_ISREG(st.st_mode));
+  if ( rs_check_result < 0 )
+    goto got_error;
+  if ( rs_check_result ) {
+    csync_debug(2, "File is different on peer (rsync sig).\n");
+    found_diff=1;
+  }
+  if ( read_conn_status(filename, peername) ) 
+    goto got_error;
+  
+  if ( !found_diff ) {
+    csync_debug(1, "?S: %-15s %s\n", peername, filename);
+    // DS also remove from dirty on dry_run 
+    goto skip_action;
+  }
+  if ( dry_run ) {
+    csync_debug(1, "?M: %-15s %s\n", peername, filename);
+    return;
+  }
+
+  int rc = csync_update_file_check_hardlink(peername, filename, 
+				       key_encoded, filename_encoded, 
+				       operation, &last_conn_status);
+  if (rc == SKIP_ACTION_TIME)
+    goto skip_action_time;
+
   if (found_diff) {
     switch (get_file_type(st.st_mode)) {
-    case REG_TYPE: 
-      conn_printf("PATCH %s %s\n",
-		  url_encode(key), url_encode(prefixencode(filename)));
-      if ( (last_conn_status = read_conn_status(filename, peername)) )
-	goto maybe_auto_resolve;
-      if ( csync_rs_delta(filename) ) {
-	read_conn_status(filename, peername);
-	goto got_error;
-      }
-      if ( read_conn_status(filename, peername) )
-	goto got_error;
-      break; 
+    case REG_TYPE:
+      cmd_printf("PATCH", key_encoded, filename_encoded, &st, uidptr, gidptr);
+      rc = csync_update_reg_file(peername, filename, &last_conn_status);
+      break;
     case DIR_TYPE:
-      conn_printf("MKDIR %s %s\n",
-		  url_encode(key), url_encode(prefixencode(filename)));
-      if ( (last_conn_status = read_conn_status(filename, peername)))
-	goto maybe_auto_resolve;
+      cmd_printf("MKDIR", key_encoded, filename_encoded, &st, uidptr, gidptr);
+      rc = csync_update_file_dir(peername, filename, &last_conn_status);
       break;
     case CHR_TYPE:
       conn_printf("MKCHR %s %s\n",
-		  url_encode(key), url_encode(prefixencode(filename)));
+		  key_encoded, filename_encoded);
       if ( (last_conn_status = read_conn_status(filename, peername)) )
 	goto maybe_auto_resolve;
       break;
     case BLK_TYPE: 
       conn_printf("MKBLK %s %s\n",
-		  url_encode(key), url_encode(prefixencode(filename)));
+		  key_encoded, filename_encoded);
       if ( (last_conn_status = read_conn_status(filename, peername)) )
 	goto maybe_auto_resolve;
       break;
     case FIFO_TYPE:
       conn_printf("MKFIFO %s %s\n",
-		  url_encode(key), url_encode(prefixencode(filename)));
+		  key_encoded, filename_encoded);
       if ( (last_conn_status = read_conn_status(filename, peername)) )
 	goto maybe_auto_resolve;
       break;
@@ -482,8 +557,8 @@ void csync_update_file_mod(const char *myname, const char *peername,
 	if ( rc >= 0 ) {
 	  target[rc]=0;
 	  conn_printf("MKLINK %s %s %s\n",
-		      url_encode(key), 
-		      url_encode(prefixencode(filename)),
+		      key_encoded, 
+		      filename_encoded,
 		      url_encode(prefixencode(target)));
 	  if ( (last_conn_status = read_conn_status(filename, peername)) )
 	    goto maybe_auto_resolve;
@@ -495,7 +570,7 @@ void csync_update_file_mod(const char *myname, const char *peername,
       break;
     case SOCK_TYPE: {
       conn_printf("MKSOCK %s %s\n",
-		url_encode(key), url_encode(prefixencode(filename)));
+		key_encoded, filename_encoded);
       if ( (last_conn_status = read_conn_status(filename, peername)) )
 	goto maybe_auto_resolve;
     }
@@ -506,29 +581,15 @@ void csync_update_file_mod(const char *myname, const char *peername,
     }
   }
   if (found_diff_meta) {
-    char uid[MAX_UID_SIZE];
-    char gid[MAX_GID_SIZE];
-    char *uidptr = uid_to_name(st.st_uid, uid, MAX_UID_SIZE);
-    if (uidptr == NULL) {
-      uidptr = "-";
-      csync_debug(0, "Failed to lookup uid %d\n", st.st_uid);
-    }
-    char *gidptr = gid_to_name(st.st_gid, gid, MAX_GID_SIZE);
-    if (gidptr == NULL) {
-      gidptr = "-";
-      csync_debug(0, "Failed to lookup gid %d\n", st.st_gid);
-    }
-    csync_debug(2, "uid %s gid %s\n", uidptr, gidptr);
-
     conn_printf("SETOWN %s %s %d %d %s %s \n",
-		url_encode(key), url_encode(prefixencode(filename)),
+		key_encoded, filename_encoded,
 		st.st_uid, st.st_gid, uidptr, gidptr);
     if ( read_conn_status(filename, peername) )
       goto got_error;
     
     if ( !S_ISLNK(st.st_mode) ) {
-      conn_printf("SETMOD %s %s %d\n", url_encode(key),
-		  url_encode(prefixencode(filename)), st.st_mode);
+      conn_printf("SETMOD %s %s %d\n", key_encoded,
+		  filename_encoded, st.st_mode);
       if ( read_conn_status(filename, peername) )
 	goto got_error;
     }
@@ -537,7 +598,7 @@ void csync_update_file_mod(const char *myname, const char *peername,
  skip_action:
   if ( !S_ISLNK(st.st_mode) ) {
     conn_printf("SETIME %s %s %Ld\n",
-		url_encode(key), url_encode(prefixencode(filename)),
+		key_encoded, filename_encoded,
 		(long long)st.st_mtime);
     if ( read_conn_status(filename, peername) )
       goto got_error;
@@ -596,7 +657,7 @@ void csync_update_file_mod(const char *myname, const char *peername,
 		cmd = "GETSZ";
 	      }
 	      
-	      conn_printf("%s %s %s\n", cmd, url_encode(key), url_encode(prefixencode(filename)));
+	      conn_printf("%s %s %s\n", cmd, key_encoded, filename_encoded);
 	      if ( read_conn_status(filename, peername) ) goto got_error_in_autoresolve;
 	      
 	      if ( !conn_gets(buffer, 4096) ) goto got_error_in_autoresolve;
@@ -625,7 +686,6 @@ void csync_update_file_mod(const char *myname, const char *peername,
 	    }
 	  }
       }
-
       if (auto_resolve_run) {
 	force = 1;
 	goto auto_resolve_entry_point;

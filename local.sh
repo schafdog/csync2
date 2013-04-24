@@ -7,10 +7,11 @@ function check {
     ${PAUSE}
 }
 
-
 echo "delete from dirty ; delete from file" | mysql -u csync2_local -pcsync2_local csync2_local
+echo "delete from dirty ; delete from file" | mysql -u csync2_peer -pcsync2_peer csync2_peer
 rm csync_local.log mysql_local.log
 rm -rf test/local/*
+rm -rf test/peer/*
 check
 echo first > test/local/first.txt
 check
@@ -29,5 +30,5 @@ ln test/local/dir1/third test/local/hardlink
 check
 ln test/local/hardlink test/local/2hardlink
 check
-ln -s test/local/hej test/local/softlink
+ln -s test/local/hej.txt test/local/softlink
 check

@@ -310,7 +310,7 @@ int csync_rs_check(const char *filename, int isreg)
   /* sig_file = open_temp_file(tmpfname, prefixsubst(filename)); */
   sig_file = paranoid_tmpfile();
   /* if ( !sig_file ) goto io_error; */
-  unlink(tmpfname);
+  // unlink(tmpfname);
 
   if ( isreg ) {
     basis_file = fopen(filename, "rb");
