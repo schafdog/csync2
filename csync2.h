@@ -266,7 +266,7 @@ static inline void textlist_add(struct textlist **listhandle, const char *item, 
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
-	(*listhandle)->value = strdup(item);
+	(*listhandle)->value = (item ? strdup(item) : 0);
 	(*listhandle)->value2 = 0;
 	(*listhandle)->next = tmp;
 }
@@ -276,8 +276,8 @@ static inline void textlist_add2(struct textlist **listhandle, const char *item,
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
-	(*listhandle)->value = strdup(item);
-	(*listhandle)->value2 = strdup(item2);
+	(*listhandle)->value  = (item  ? strdup(item)  : 0);
+	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
 	(*listhandle)->next = tmp;
 }
 
