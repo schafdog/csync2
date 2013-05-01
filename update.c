@@ -232,7 +232,7 @@ void csync_update_file_del_mv(const char *myname, const char *peername,
     }
   }
   int skip_delete = 0;
-  if (strncmp("MV ", operation, 3) == 0) {
+  if (operation && strncmp("MV ", operation, 3) == 0) {
     const char *new_name = (operation + 3);
     conn_printf("MV %s %s %s\n", url_encode(key), 
 		url_encode(prefixencode(filename)), 
@@ -336,10 +336,10 @@ int get_file_type(int st_mode) {
 }
 
 /* PRE: all values must have been encoded */
-void cmd_printf(const char *cmd, const char *key, const char *filename, 
+void cmd_printf(const char *cmd, const char *key, const char *filename, const char *secondname,
 		struct stat *st, const char *uidptr, const char* gidptr) {
-  conn_printf("%s %s %s %d %d %s %s %d %Ld \n", 
-	      cmd, key, filename,  
+  conn_printf("%s %s %s %s %d %d %s %s %d %Ld \n", 
+	      cmd, key, filename, secondname,
 	      st->st_uid, st->st_gid, 
 	      uidptr, gidptr,
 	      st->st_mode, st->st_mtime);
@@ -412,15 +412,16 @@ int csync_update_file_sig(const char *peername, const char *filename,
 }
 int csync_update_file_check_hardlink(const char *peername, 
 				     const char *filename, 
-				     const char *operation, 
 				     const char *key_encoded,
-				     const char *filename_encoded, 
+				     const char *filename_encoded,
+				     const char *operation, 
 				     int *last_conn_status) {
   const char *hardlink = "MKHARDLINK";
   int length = strlen(hardlink);
-  if (strncmp(hardlink, operation, length))
+  if (!operation || strncmp(hardlink, operation, length)) // |strstr(chktxt, "link=H") == -1)
     return 0;
   const char *target = (operation + length + 1);
+  
   // TODO Check that the target matches the config
   csync_debug(1, "Hardlinking %s, %s\n", 
 	      filename_encoded, 
@@ -481,13 +482,12 @@ void csync_update_file_mod(const char *myname, const char *peername,
       csync_debug(1, "!M: %-15s %s\n", peername, filename);
       return;
     }
-    conn_printf("FLUSH %s %s\n",
-		key_encoded, filename_encoded);
+    conn_printf("FLUSH %s %s\n", key_encoded, filename_encoded);
     if ( read_conn_status(filename, peername) )
       goto got_error;
   } 
   else { 
-    cmd_printf("SIG", key_encoded, filename_encoded, &st, uidptr, gidptr);
+    cmd_printf("SIG", key_encoded, filename_encoded, "user/group", &st, uidptr, gidptr);
    int rc = csync_update_file_sig(peername, filename, &st);
     if (rc == DIFF)
       found_diff_meta=1;
@@ -505,81 +505,97 @@ void csync_update_file_mod(const char *myname, const char *peername,
   }
   if ( read_conn_status(filename, peername) ) 
     goto got_error;
-  
-  if ( !found_diff ) {
-    csync_debug(1, "?S: %-15s %s\n", peername, filename);
+
+  // Only when both file and meta data is same (differs from earlier behavior)
+  if ( !found_diff && !found_diff_meta) {
+    csync_debug(2, "?S: %-15s %s\n", peername, filename);
     // DS also remove from dirty on dry_run 
-    goto skip_action;
+    goto skip_action_time;
   }
-  if ( dry_run ) {
-    csync_debug(1, "?M: %-15s %s\n", peername, filename);
-    return;
+  else {
+    if (found_diff_meta)
+      if (csync_debug_level >= 10) {
+	//csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
+	//csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
+      }
+      else
+	csync_debug(1, "?M: %-15s %s\n", peername, filename);
+    if (dry_run)
+      return;
   }
 
-  int rc = csync_update_file_check_hardlink(peername, filename, 
-				       key_encoded, filename_encoded, 
-				       operation, &last_conn_status);
+  int rc = csync_update_file_check_hardlink(peername, 
+					    filename, 
+					    key_encoded, 
+					    filename_encoded, 
+					    operation, &last_conn_status);
   if (rc == SKIP_ACTION_TIME)
     goto skip_action_time;
-
-  if (found_diff) {
-    switch (get_file_type(st.st_mode)) {
+  int mode = get_file_type(st.st_mode);
+  switch (mode) {
     case REG_TYPE:
-      cmd_printf("PATCH", key_encoded, filename_encoded, &st, uidptr, gidptr);
-      rc = csync_update_reg_file(peername, filename, &last_conn_status);
-      break;
-    case DIR_TYPE:
-      cmd_printf("MKDIR", key_encoded, filename_encoded, &st, uidptr, gidptr);
-      rc = csync_update_file_dir(peername, filename, &last_conn_status);
-      break;
-    case CHR_TYPE:
-      conn_printf("MKCHR %s %s\n",
-		  key_encoded, filename_encoded);
-      if ( (last_conn_status = read_conn_status(filename, peername)) )
-	goto maybe_auto_resolve;
-      break;
-    case BLK_TYPE: 
-      conn_printf("MKBLK %s %s\n",
-		  key_encoded, filename_encoded);
-      if ( (last_conn_status = read_conn_status(filename, peername)) )
-	goto maybe_auto_resolve;
-      break;
-    case FIFO_TYPE:
-      conn_printf("MKFIFO %s %s\n",
-		  key_encoded, filename_encoded);
-      if ( (last_conn_status = read_conn_status(filename, peername)) )
-	goto maybe_auto_resolve;
-      break;
-    case LINK_TYPE: {
-	char target[1024];
-	int rc;
-	rc = readlink(filename, target, 1023);
-	if ( rc >= 0 ) {
-	  target[rc]=0;
-	  conn_printf("MKLINK %s %s %s\n",
-		      key_encoded, 
-		      filename_encoded,
-		      url_encode(prefixencode(target)));
-	  if ( (last_conn_status = read_conn_status(filename, peername)) )
-	    goto maybe_auto_resolve;
-	} else {
-	  csync_debug(1, "File is a symlink but radlink() failed.\n", st.st_mode);
-	  goto got_error;
-	}
+      if (found_diff) {
+	cmd_printf("PATCH", key_encoded, filename_encoded, "-", &st, uidptr, gidptr);
+	rc = csync_update_reg_file(peername, filename, &last_conn_status);
       }
       break;
-    case SOCK_TYPE: {
-      conn_printf("MKSOCK %s %s\n",
+  case DIR_TYPE:
+    cmd_printf("MKDIR", key_encoded, filename_encoded, "-", &st, uidptr, gidptr);
+    rc = csync_update_file_dir(peername, filename, &last_conn_status);
+    break;
+  case CHR_TYPE:
+    conn_printf("MKCHR %s %s\n", key_encoded, filename_encoded);
+    if ( (last_conn_status = read_conn_status(filename, peername)) )
+      rc =  MAYBE_AUTO_RESOLVE;
+    break;
+  case BLK_TYPE: 
+    conn_printf("MKBLK %s %s\n",
 		key_encoded, filename_encoded);
+    if ( (last_conn_status = read_conn_status(filename, peername)) )
+      rc = MAYBE_AUTO_RESOLVE;
+    break;
+  case FIFO_TYPE:
+    conn_printf("MKFIFO %s %s\n",
+		key_encoded, filename_encoded);
+    if ( (last_conn_status = read_conn_status(filename, peername)) )
+      rc = MAYBE_AUTO_RESOLVE;
+    break;
+  case LINK_TYPE: {
+    char target[1024];
+    int rc = readlink(filename, target, 1023);
+    if ( rc >= 0 ) {
+      target[rc]=0;
+      conn_printf("MKLINK %s %s %s\n",
+		  key_encoded, 
+		  filename_encoded,
+		  url_encode(prefixencode(target)));
       if ( (last_conn_status = read_conn_status(filename, peername)) )
-	goto maybe_auto_resolve;
-    }
-      break;
-    default:
-      csync_debug(1, "File type (mode=%o) is not supported.\n", st.st_mode);
-      goto got_error;
+	rc = MAYBE_AUTO_RESOLVE;
+    } else {
+      csync_debug(1, "File is a symlink but radlink() failed.\n", st.st_mode);
+      rc = ERROR;
     }
   }
+    break;
+  case SOCK_TYPE: {
+    conn_printf("MKSOCK %s %s\n",
+		key_encoded, filename_encoded);
+    if ( (last_conn_status = read_conn_status(filename, peername)) )
+      rc = MAYBE_AUTO_RESOLVE;
+  }
+    break;
+  default:
+    csync_debug(1, "File type (mode=%o) is not supported.\n", st.st_mode);
+    rc = ERROR;
+  }
+  switch (rc) {
+  case MAYBE_AUTO_RESOLVE:
+    goto maybe_auto_resolve;
+    break;
+  case ERROR:
+    goto got_error;
+  }
+  // Optimize this. The daemon could have done this in the command.
   if (found_diff_meta) {
     conn_printf("SETOWN %s %s %d %d %s %s \n",
 		key_encoded, filename_encoded,
