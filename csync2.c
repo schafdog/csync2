@@ -87,6 +87,7 @@ enum {
 	MODE_INETD,
 	MODE_SERVER,
 	MODE_SINGLE,
+	MODE_NOFORK,
 	MODE_MARK,
 	MODE_FORCE,
 	MODE_LIST_HINT,
@@ -155,7 +156,8 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "\n"
 "	-i	Run in inetd server mode.\n"
 "	-ii	Run in stand-alone server mode.\n"
-"	-iii	Run in stand-alone server mode (one connect only).\n"
+"	-iii	Run in stand-alone server mode (one connect only, no forking).\n"
+"	-iiii	Run in stand-alone server mode (multi connects, no forking).\n"
 "\n"
 "	-R	Remove files from database which do not match config entries.\n"
 "\n"
@@ -244,7 +246,7 @@ int create_keyfile(const char *filename)
 	return 0;
 }
 
-static int csync_server_bind(int ip_version)
+static int csync_bind(int ip_version)
 {
 	struct linger sl = { 1, 5 };
 	struct addrinfo hints;
@@ -306,66 +308,77 @@ void csync_openlog() {
   openlog(program_pid, LOG_ODELAY, LOG_LOCAL0);
 }
 
-static int csync_server_loop(int single_connect, int ip_version)
+static int csync_server_bind(int ip_version) 
 {
-	union {
-		struct sockaddr sa;
-		struct sockaddr_in sa_in;
-		struct sockaddr_in6 sa_in6;
-		struct sockaddr_storage ss;
-	} addr;
-	int listenfd = csync_server_bind(ip_version);
-	if (listenfd < 0) goto error;
+  int listenfd = csync_bind(ip_version);
+  if (listenfd < 0) 
+    goto error;
+  if (listen(listenfd, 5) < 0) 
+    goto error;
+  /* we want to "cleanly" shutdown if the connection is lost unexpectedly */
+  signal(SIGPIPE, SIG_IGN);
+  /* server is not interested in its childs, prevent zombies */
+  signal(SIGCHLD, SIG_IGN);
+  return listenfd;
+ error:
+  fprintf(stderr, "Server error: %s\n", strerror(errno));
+  csync_fatal("Server error: %s\n", strerror(errno)); 
+  return -1;
 
-	if (listen(listenfd, 5) < 0) goto error;
+}
+/* On fork the child process will return but the parent will continue 
+   accepting. On non-forking, the loop has to be done outside.
+ */
+static int csync_server_accept_loop(int nonfork, int listenfd)
+{
+  union {
+    struct sockaddr sa;
+    struct sockaddr_in sa_in;
+    struct sockaddr_in6 sa_in6;
+    struct sockaddr_storage ss;
+  } addr;
+  printf("Csync2 daemon running. Waiting for connections.\n");
+  
+  while (1) {
+    unsigned addrlen = sizeof(addr);
+    int conn = accept(listenfd, &addr.sa, &addrlen);
+    if (conn < 0) 
+      goto error;
 
-	/* we want to "cleanly" shutdown if the connection is lost unexpectedly */
-	signal(SIGPIPE, SIG_IGN);
-	/* server is not interested in its childs, prevent zombies */
-	signal(SIGCHLD, SIG_IGN);
+    fflush(stdout); fflush(stderr);
 
-	printf("Csync2 daemon running. Waiting for connections.\n");
+    if (nonfork || !fork()) {
+      char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+      /* need to restore default SIGCHLD handler in the session,
+       * as we may need to wait on them in action.c */
+      signal(SIGCHLD, SIG_DFL);
+      csync_server_child_pid = getpid();
+      if (getnameinfo(&addr.sa, addrlen,
+		      hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
+		      NI_NUMERICHOST | NI_NUMERICSERV) != 0)
+	goto error;
+      
+      if (csync_syslog) {
+	csync_openlog();
+	csync_debug(1, "New connection from %s:%s.\n", hbuf, sbuf);
+      }
+      else {
+	//Stupid this is not using csync_debug(..)
+	fprintf(stdout, "<%d> New connection from %s:%s.\n",
+		csync_server_child_pid, hbuf, sbuf);
+	fflush(stdout);
+      }
+      dup2(conn, 0);
+      dup2(conn, 1);
+      close(conn);
+      return 0;
+    }
+    close(conn);
+  }
 
-	while (1) {
-		unsigned addrlen = sizeof(addr);
-		int conn = accept(listenfd, &addr.sa, &addrlen);
-		if (conn < 0) goto error;
-
-		fflush(stdout); fflush(stderr);
-
-		if (single_connect || !fork()) {
-			char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-			/* need to restore default SIGCHLD handler in the session,
-			 * as we may need to wait on them in action.c */
-			signal(SIGCHLD, SIG_DFL);
-			csync_server_child_pid = getpid();
-			if (getnameinfo(&addr.sa, addrlen,
-					hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
-					NI_NUMERICHOST | NI_NUMERICSERV) != 0)
-				goto error;
-
-			if (csync_syslog) {
-			  csync_openlog();
-			  csync_debug(1, "New connection from %s:%s.\n", hbuf, sbuf);
-			}
-			else {
-			  //Stupid this is not using csync_debug(..)
-			  fprintf(stdout, "<%d> New connection from %s:%s.\n",
-				csync_server_child_pid, hbuf, sbuf);
-			  fflush(stdout);
-			}
-			dup2(conn, 0);
-			dup2(conn, 1);
-			close(conn);
-			return 0;
-		}
-
-		close(conn);
-	}
-
-error:
-	fprintf(stderr, "Server error: %s\n", strerror(errno));
-	return 1;
+ error:
+  fprintf(stderr, "Server error: %s\n", strerror(errno));
+  return 1;
 }
 
 int upgrade_db() 
@@ -619,15 +632,17 @@ int main(int argc, char ** argv)
 				mode = MODE_COMPARE;
 				break;
 			case 'i':
-				if ( mode == MODE_INETD )
-					mode = MODE_SERVER;
-				else
-				if ( mode == MODE_SERVER )
-					mode = MODE_SINGLE;
-				else {
-					if ( mode != MODE_NONE ) help(argv[0]);
-					mode = MODE_INETD;
-				}
+			  if ( mode == MODE_INETD )
+			    mode = MODE_SERVER;
+			  else if ( mode == MODE_SERVER )
+			    mode = MODE_SINGLE;
+			  else if ( mode == MODE_SINGLE )
+			    mode = MODE_NOFORK;
+			  else {
+			    if ( mode != MODE_NONE ) 
+			      help(argv[0]);
+			    mode = MODE_INETD;
+			  }
 				break;
 			case 'm':
 				if ( mode != MODE_NONE ) help(argv[0]);
@@ -716,11 +731,20 @@ int main(int argc, char ** argv)
 
 	for (i=0; myhostname[i]; i++)
 		myhostname[i] = tolower(myhostname[i]);
-
+	
+	int listenfd;
+	if ( mode == MODE_SERVER || mode == MODE_SINGLE || mode == MODE_NOFORK) {
+	  listenfd = csync_server_bind(ip_version);
+	  if (listenfd == -1) {
+	    exit(1);
+	  }
+	}
+	int nofork = (mode == MODE_NOFORK);
+ nofork:
 	/* Stand-alone server mode. This is a hack..
 	 */
-	if ( mode == MODE_SERVER || mode == MODE_SINGLE ) {
-	  if (csync_server_loop(mode == MODE_SINGLE, ip_version)) 
+	if ( mode == MODE_SERVER || mode == MODE_SINGLE || mode == MODE_NOFORK) {
+	  if (csync_server_accept_loop(mode == MODE_SINGLE|| mode == MODE_NOFORK, listenfd)) 
 		  return 1;
 		mode = MODE_INETD;
 	}
@@ -733,7 +757,7 @@ int main(int argc, char ** argv)
 	// print time (if -t is set)
 	csync_printtime();
 
-	/* In inetd mode we need to read the module name from the peer
+	/* In inetd (actually any server) mode we need to read the module name from the peer
 	 * before we open the config file and database
 	 */
 	if ( mode == MODE_INETD ) {
@@ -1110,9 +1134,11 @@ int main(int argc, char ** argv)
 	csync_db_close();
 
 	if ( csync_server_child_pid ) {
-		fprintf(stderr, "<%d> Connection closed.\n",
-				csync_server_child_pid);
-		fflush(stderr);
+	  fprintf(stderr, "<%d> Connection closed.\n",
+		  csync_server_child_pid);
+	  fflush(stderr);
+	  if (nofork)
+	    goto nofork;
 	}
 
 	if ( csync_error_count != 0 || (csync_messages_printed && csync_debug_level) )
@@ -1120,7 +1146,8 @@ int main(int argc, char ** argv)
 
 	csync_printtotaltime();
 
-	if ( retval >= 0 && csync_error_count == 0 ) return retval;
+	if ( retval >= 0 && csync_error_count == 0 ) 
+	  return retval;
 	return csync_error_count != 0;
 }
 
