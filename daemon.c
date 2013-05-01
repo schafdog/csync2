@@ -582,9 +582,9 @@ int csync_daemon_setown(const char *filename, char *tag[32], const char **cmd_er
 	uid = local_uid;
     }
     char *group = csync_ignore_gid ? NULL : tag[6];
-    int local_uid = name_to_uid(user, NULL); 
-    if (local_uid != -1) 
-      uid = local_uid;
+    int local_gid = name_to_gid(group); 
+    if (local_gid != -1) 
+      gid = local_gid;
     if ( lchown(filename, uid, gid) )
       *cmd_error = strerror(errno);
   }
@@ -616,7 +616,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   }
   else if (csync_check_pure(filename)) {
     conn_printf("OK (not_found).\n---\noctet-stream 0\n");
-    return ABORT_CMD;
+    return OK;
   }
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
@@ -871,11 +871,11 @@ int csync_daemon_dispatch(char *filename,
       *cmd_error = strerror(errno);
     break;
   case A_MKLINK:
-    if ( symlink(prefixsubst(tag[3]), filename) )
+    if ( symlink(filename, prefixsubst(tag[3])) )
       *cmd_error = strerror(errno);
     break;
   case A_MKHLINK:
-    if ( link(prefixsubst(tag[3]), filename) )
+    if ( link(filename, prefixsubst(tag[3])) )
       *cmd_error = strerror(errno);
     break;
   case A_MV:
@@ -913,6 +913,9 @@ int csync_daemon_dispatch(char *filename,
     conn_printf("OK (cu_later).\n");
     return BYEBYE; 
   }
+  if (*cmd_error)
+    return ABORT_CMD;
+  return OK;
 }
 
 int csync_end_command(const char *filename, char *tag[32]) {
