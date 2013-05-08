@@ -251,18 +251,19 @@ void csync_check_del(const char *file, int recursive, int init_run)
     else {
       const char *file_encoded = db_encode(file);
       csync_debug(3,"file %s encoded %s \n", file, file_encoded);
-      ASPRINTF(&where_rec, "UNION ALL SELECT filename, checktxt, inode from file where filename > '%s/' and filename < '%s0'", 
+      ASPRINTF(&where_rec, "UNION ALL SELECT filename, checktxt, inode, device from file where filename > '%s/' and filename < '%s0'", 
 	       file_encoded, file_encoded);
     }
   }
 
   SQL_BEGIN("Checking for removed files",
-	    "SELECT filename, checktxt, inode from file where "
+	    "SELECT filename, checktxt, inode, device from file where "
 	    "filename = '%s' %s ORDER BY filename", db_encode(file), where_rec)
     {
       const char *filename = db_decode(SQL_V(0));
       const char *checktxt = db_decode(SQL_V(1));
       const char *inode    = db_decode(SQL_V(2));
+      const char *device   = db_decode(SQL_V(3));
       
       if (!csync_match_file(filename))
 	continue;
@@ -293,7 +294,7 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
 {
   struct textlist *tl = 0, *t;
   int count = 0;
-  SQL_BEGIN("Check for same inode", "SELECT filename, checktxt, status from file WHERE inode = %ld", st->st_ino) {
+  SQL_BEGIN("Check for same inode", "SELECT filename, checktxt, status from file WHERE inode = %ld and device = %ld ", st->st_ino, st->st_dev) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
     const char *status_value = SQL_V(2);
@@ -315,15 +316,16 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
 	  sprintf(*operation, "MKHARDLINK %s", db_filename); 
+	  textlist_add(&tl, db_filename, HARDLINK);
 	}
       }
       break; 
     } else {
-	if (count > 1) {
-	  csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
-	  csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
-	}
-    count++; 
+      if (count > 1) {
+	csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
+	csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
+      }
+      count++; 
     }
   } SQL_FIN {
     switch (SQL_COUNT) {
@@ -340,12 +342,14 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
   } SQL_END; 
   t = tl; 
   while (t) {
-    if ( t->intvalue == MOVE) {
-      char *src  = t->value;
-      SQL("Update operation to move",
-	  "UPDATE dirty set operation = 'MV %s' where filename = '%s'", 
-	  filename, src);
-    }
+    char *operation = "MV"; 
+    if ( t->intvalue == HARDLINK)
+      operation = "MKHARDLINK";
+    char *src  = t->value;
+
+    SQL("Update operation to move/hardlink",
+	"UPDATE dirty set operation = '%s %s' where filename = '%s'", 
+	operation, filename, src);
     t = t->next;
   }
   textlist_free(tl);
@@ -405,20 +409,26 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
   //char *operation = 0;
  
   SQL_BEGIN("Checking File",
-	    "SELECT checktxt FROM file WHERE "
+	    "SELECT checktxt, inode, device FROM file WHERE "
 	    "filename = '%s' ", encoded)
     {
       db_version = csync_get_checktxt_version(SQL_V(0));
+
       if (db_version < 1 || db_version > 2) {
 		      csync_debug(0, "Error extracting version from checktxt: %s", SQL_V(0));
       }
       const char *checktxt_db = db_decode(SQL_V(0));
       const char *checktxt_same_version = checktxt;
+      const char *inode  = SQL_V(1);
+      const char *device = SQL_V(2);
       int flag = 0;
       if (strstr(checktxt_db, ":user=") != NULL)
 	flag |= SET_USER; 
       if (strstr(checktxt_db, ":group=") != NULL)
 	flag |= SET_GROUP; 
+      if (!inode || !device) {
+	is_upgrade = 1;
+      }
       if (db_version != version || flag != (SET_USER|SET_GROUP)) {
 	checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
 	if (!csync_cmpchecktxt(checktxt, checktxt_same_version))
@@ -469,11 +479,12 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     const char *checktxt_encoded = db_encode(checktxt);
     
     SQL("Adding or updating file entry",
-	"INSERT INTO file (filename, checktxt, inode) "
-	"VALUES ('%s', '%s', %ld)",
+	"INSERT INTO file (filename, checktxt, inode, device) "
+	"VALUES ('%s', '%s', %ld, %ld)",
 	encoded, 
 	checktxt_encoded,
-	file_stat->st_ino);
+	file_stat->st_ino, 
+	file_stat->st_dev);
     if (!init_run && this_is_dirty)
       csync_mark(file, 0, 0, *operation);
   }
