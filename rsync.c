@@ -548,7 +548,10 @@ int csync_rs_patch(const char *filename)
 
   csync_debug(3, "Opening temp file for new data on local host..\n");
   new_file = open_temp_file(newfname, filename);
-  if ( !new_file ) { errstr="creating new data temp file"; goto io_error; }
+  if ( !new_file ) { 
+    errstr="creating new data temp file"; 
+    goto io_error; 
+  }
   
   csync_debug(3, "Running rs_patch_file() from librsync..\n");
   result = rs_patch_file(basis_file, delta_file, new_file, &stats);
