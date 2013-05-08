@@ -73,58 +73,58 @@ int read_conn_status_allow_missing(const char *file, const char *host)
 
 int connect_to_host(const char *peername, int ip_version)
 {
-	int use_ssl = 1;
-	struct csync_nossl *t;
+  int use_ssl = 1;
+  struct csync_nossl *t;
 
-	connection_closed_error = 0;
+  connection_closed_error = 0;
 
-	for (t = csync_nossl; t; t=t->next) {
-		if ( !fnmatch(t->pattern_from, myhostname, 0) &&
-		     !fnmatch(t->pattern_to, peername, 0) ) {
-			use_ssl = 0;
-			break;
-		}
-	}
+  for (t = csync_nossl; t; t=t->next) {
+    if ( !fnmatch(t->pattern_from, myhostname, 0) &&
+	 !fnmatch(t->pattern_to, peername, 0) ) {
+      use_ssl = 0;
+      break;
+    }
+  }
 
-	csync_debug(1, "Connecting to host %s (%s) ...\n",
-			peername, use_ssl ? "SSL" : "PLAIN");
+  csync_debug(1, "Connecting to host %s (%s) ...\n",
+	      peername, use_ssl ? "SSL" : "PLAIN");
 
-	if ( conn_open(peername, ip_version) ) return -1;
+  if ( conn_open(peername, ip_version) ) return -1;
 
-	if ( use_ssl ) {
+  if ( use_ssl ) {
 #if HAVE_LIBGNUTLS
-		conn_printf("SSL\n");
-		if ( read_conn_status(0, peername) ) {
-			csync_debug(1, "SSL command failed.\n");
-			conn_close();
-			return -1;
-		}
-		conn_activate_ssl(0);
-		conn_check_peer_cert(peername, 1);
+    conn_printf("SSL\n");
+    if ( read_conn_status(0, peername) ) {
+      csync_debug(1, "SSL command failed.\n");
+      conn_close();
+      return -1;
+    }
+    conn_activate_ssl(0);
+    conn_check_peer_cert(peername, 1);
 #else
-		csync_debug(0, "ERROR: Config request SSL but this csync2 is built without SSL support.\n");
-		csync_error_count++;
-		return -1;
+    csync_debug(0, "ERROR: Config request SSL but this csync2 is built without SSL support.\n");
+    csync_error_count++;
+    return -1;
 #endif
-	}
+  }
 
-	conn_printf("CONFIG %s\n", url_encode(cfgname));
-	if ( read_conn_status(0, peername) ) {
-		csync_debug(1, "Config command failed.\n");
-		conn_close();
-		return -1;
-	}
+  conn_printf("CONFIG %s\n", url_encode(cfgname));
+  if ( read_conn_status(0, peername) ) {
+    csync_debug(1, "Config command failed.\n");
+    conn_close();
+    return -1;
+  }
 
-	if (active_grouplist) {
-		conn_printf("GROUP %s\n", url_encode(active_grouplist));
-		if ( read_conn_status(0, peername) ) {
-			csync_debug(1, "Group command failed.\n");
-			conn_close();
-			return -1;
-		}
-	}
+  if (active_grouplist) {
+    conn_printf("GROUP %s\n", url_encode(active_grouplist));
+    if ( read_conn_status(0, peername) ) {
+      csync_debug(1, "Group command failed.\n");
+      conn_close();
+      return -1;
+    }
+  }
 
-	return 0;
+  return 0;
 }
 
 static int get_auto_method(const char *peername, const char *filename)
@@ -410,24 +410,29 @@ int csync_update_file_sig(const char *peername, const char *filename,
   }
   return 0;
 }
+
+#define HARDLINK_CMD "MKHARDLINK"
+#define HARDLINK_CMD_LEN 10
+
 int csync_update_file_check_hardlink(const char *peername, 
 				     const char *filename, 
 				     const char *key_encoded,
 				     const char *filename_encoded,
 				     const char *operation, 
 				     int *last_conn_status) {
-  const char *hardlink = "MKHARDLINK";
-  int length = strlen(hardlink);
-  if (!operation || strncmp(hardlink, operation, length)) // |strstr(chktxt, "link=H") == -1)
+
+  if (!operation || strncmp(HARDLINK_CMD, operation, HARDLINK_CMD_LEN)) 
+    // TODO do other checks |strstr(chktxt, "link=H") == -1)
     return 0;
-  const char *target = (operation + length + 1);
+  
+  const char *target = (operation + HARDLINK_CMD_LEN + 1);
   
   // TODO Check that the target matches the config
   csync_debug(1, "Hardlinking %s, %s\n", 
 	      filename_encoded, 
 	      url_encode(prefixencode(target)));
   conn_printf("%s %s %s %s\n",
-	      hardlink,
+	      HARDLINK_CMD,
 	      key_encoded, 
 	      filename_encoded,
 	      url_encode(prefixencode(target)));
@@ -488,40 +493,40 @@ void csync_update_file_mod(const char *myname, const char *peername,
   } 
   else { 
     cmd_printf("SIG", key_encoded, filename_encoded, "user/group", &st, uidptr, gidptr);
-   int rc = csync_update_file_sig(peername, filename, &st);
+    int rc = csync_update_file_sig(peername, filename, &st);
     if (rc == DIFF)
       found_diff_meta=1;
     else if (rc == MAYBE_AUTO_RESOLVE)
       goto maybe_auto_resolve;
     else if (rc == ERROR)
       goto got_error;
-  }
-  int rs_check_result = csync_rs_check(filename, S_ISREG(st.st_mode));
-  if ( rs_check_result < 0 )
-    goto got_error;
-  if ( rs_check_result ) {
-    csync_debug(2, "File is different on peer (rsync sig).\n");
-    found_diff=1;
-  }
-  if ( read_conn_status(filename, peername) ) 
-    goto got_error;
+    int rs_check_result = csync_rs_check(filename, S_ISREG(st.st_mode));
+    if ( rs_check_result < 0 )
+      goto got_error;
+    if ( rs_check_result ) {
+      csync_debug(2, "File is different on peer (rsync sig).\n");
+      found_diff=1;
+    }
+    if ( read_conn_status(filename, peername) ) 
+      goto got_error;
 
-  // Only when both file and meta data is same (differs from earlier behavior)
-  if ( !found_diff && !found_diff_meta) {
-    csync_debug(2, "?S: %-15s %s\n", peername, filename);
-    // DS also remove from dirty on dry_run 
-    goto skip_action_time;
-  }
-  else {
-    if (found_diff_meta)
-      if (csync_debug_level >= 10) {
-	//csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
-	//csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
-      }
-      else
-	csync_debug(1, "?M: %-15s %s\n", peername, filename);
-    if (dry_run)
-      return;
+    // Only when both file and meta data is same (differs from earlier behavior)
+    if ( !found_diff && !found_diff_meta) {
+      csync_debug(2, "?S: %-15s %s\n", peername, filename);
+      // DS also remove from dirty on dry_run 
+      goto skip_action_time;
+    }
+    else {
+      if (found_diff_meta)
+	if (csync_debug_level >= 10) {
+	  //csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
+	  //csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
+	}
+	else
+	  csync_debug(1, "?M: %-15s %s\n", peername, filename);
+      if (dry_run)
+	return;
+    }
   }
 
   int rc = csync_update_file_check_hardlink(peername, 
@@ -782,10 +787,19 @@ void csync_update_host(const char *myname, const char *peername,
     }
   }
   
-  // No longer support for changing local name (and thus extra HELLO)
+  // Run without hardlinks, in order to get (new) files over
   for (t = tl_mod; t != 0; t = t->next) {
     if (!connection_closed_error)
-      csync_update_file_mod(myname, peername,
+      if (!t->value2 || strncmp(t->value2, HARDLINK_CMD, HARDLINK_CMD_LEN))
+	csync_update_file_mod(myname, peername,
+			      t->value, t->value2, t->intvalue, dry_run);
+  }
+
+  // Now do it for hardlinks
+  for (t = tl_mod; t != 0; t = t->next) {
+    if (!connection_closed_error)
+      if (!t->value2 || !strncmp(t->value2, HARDLINK_CMD, HARDLINK_CMD_LEN))
+	csync_update_file_mod(myname, peername,
 			    t->value, t->value2, t->intvalue, dry_run);
   }
 
