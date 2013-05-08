@@ -739,20 +739,26 @@ int main(int argc, char ** argv)
 	    exit(1);
 	  }
 	}
-	int nofork = (mode == MODE_NOFORK);
- nofork:
-	/* Stand-alone server mode. This is a hack..
-	 */
-	if ( mode == MODE_SERVER || mode == MODE_SINGLE || mode == MODE_NOFORK) {
-	  if (csync_server_accept_loop(mode == MODE_SINGLE|| mode == MODE_NOFORK, listenfd)) 
-		  return 1;
-		mode = MODE_INETD;
-	}
 
+	int first = 1;
+	int server = (mode == MODE_INETD  || 
+		      mode == MODE_SERVER || 
+		      mode == MODE_SINGLE || 
+		      mode == MODE_NOFORK);
+ nofork:
 	// init syslog if needed. 
-	if (csync_syslog && csync_server_child_pid == 0) {
+	if (first && csync_syslog && csync_server_child_pid == 0) {
 	  csync_openlog();
 	}
+	// mode keeps its original value, but now checking on server
+	if (server && mode != MODE_INETD) {
+	  if (csync_server_accept_loop(mode == MODE_SINGLE ||
+				       mode == MODE_NOFORK,
+				       listenfd)) 
+	    return 1; // Parent returns
+	}
+
+
 
 	// print time (if -t is set)
 	csync_printtime();
@@ -760,37 +766,38 @@ int main(int argc, char ** argv)
 	/* In inetd (actually any server) mode we need to read the module name from the peer
 	 * before we open the config file and database
 	 */
-	if ( mode == MODE_INETD ) {
-		char line[4096], *cmd, *para;
-
-		/* configure conn.c for inetd mode */
-		conn_set(0, 1);
-
-		if ( !conn_gets(line, 4096) ) return 0;
-		cmd = strtok(line, "\t \r\n");
-		para = cmd ? strtok(0, "\t \r\n") : 0;
-
-		if (cmd && !strcasecmp(cmd, "ssl")) {
+	if (server) {
+	  char line[4096], *cmd, *para;
+	  
+	  /* configure conn.c for inetd mode */
+	  conn_set(0, 1);
+	  
+	  if ( !conn_gets(line, 4096) ) 
+	    return 0;
+	  cmd = strtok(line, "\t \r\n");
+	  para = cmd ? strtok(0, "\t \r\n") : 0;
+	  
+	  if (cmd && !strcasecmp(cmd, "ssl")) {
 #ifdef HAVE_LIBGNUTLS
-			conn_printf("OK (activating_ssl).\n");
-			conn_activate_ssl(1);
-
-			if ( !conn_gets(line, 4096) ) return 0;
-			cmd = strtok(line, "\t \r\n");
-			para = cmd ? strtok(0, "\t \r\n") : 0;
+	    conn_printf("OK (activating_ssl).\n");
+	    conn_activate_ssl(1);
+	    
+	    if ( !conn_gets(line, 4096) ) return 0;
+	    cmd = strtok(line, "\t \r\n");
+	    para = cmd ? strtok(0, "\t \r\n") : 0;
 #else
-			conn_printf("This csync2 server is built without SSL support.\n");
-			return 0;
+	    conn_printf("This csync2 server is built without SSL support.\n");
+	    return 0;
 #endif
-		}
+	  }
 
-		if (!cmd || strcasecmp(cmd, "config")) {
-			conn_printf("Expecting SSL (optional) and CONFIG as first commands.\n");
-			return 0;
-		}
-
-		if (para)
-		  cfgname = strdup(url_decode(para));
+	  if (!cmd || strcasecmp(cmd, "config")) {
+	    conn_printf("Expecting SSL (optional) and CONFIG as first commands.\n");
+	    return 0;
+	  }
+	  
+	  if (para)
+	    cfgname = strdup(url_decode(para));
 	}
 	if (cfgfile) {
 	  ASPRINTF(&file_config, "%s", cfgfile);
@@ -974,6 +981,9 @@ int main(int argc, char ** argv)
 			break;
 
 		case MODE_INETD:
+		case MODE_SERVER:
+		case MODE_SINGLE:
+		case MODE_NOFORK:
 			conn_printf("OK (cmd_finished).\n");
 			csync_daemon_session(db_version, protocol_version);
 			break;
@@ -1134,10 +1144,8 @@ int main(int argc, char ** argv)
 	csync_db_close();
 
 	if ( csync_server_child_pid ) {
-	  fprintf(stderr, "<%d> Connection closed.\n",
-		  csync_server_child_pid);
-	  fflush(stderr);
-	  if (nofork)
+	  csync_debug(1, "<%d> Connection closed.\n", csync_server_child_pid);
+	  if (mode == MODE_NOFORK)
 	    goto nofork;
 	}
 
