@@ -381,10 +381,11 @@ int db_mysql_upgrade_to_schema(int version)
 
 	csync_db_sql("Creating dirty table",
 		"CREATE TABLE `dirty` ("
-		"  `filename` varchar(4096) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
-		"  `forced`   int(11)      DEFAULT NULL,"
-		"  `myname`   varchar(50)  DEFAULT NULL,"
-		"  `peername` varchar(50)  DEFAULT NULL,"
+		"  `filename`  varchar(4096) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		"  `forced`    int(11)       DEFAULT NULL,"
+		"  `myname`    varchar(50)   DEFAULT NULL,"
+		"  `peername`  varchar(50)   DEFAULT NULL,"
+		"  `operation` varchar(4096) DEFAULT NULL,"
 		"  UNIQUE KEY `filename` (`filename`(316),`peername`),"
 		"  KEY `dirty_host` (`peername`(10))"
 		")");
@@ -393,6 +394,10 @@ int db_mysql_upgrade_to_schema(int version)
 		"CREATE TABLE `file` ("
 		"  `filename` varchar(4096) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
 		"  `checktxt` varchar(200) DEFAULT NULL,"
+		"  `device`   bigint DEFAULT NULL,"
+		"  `inode`    bigint DEFAULT NULL,"
+		"  `status`   boolean DEFAULT NULL,"
+		"  `digest`   varchar(1024) DEFAULT NULL,"
 		"  UNIQUE KEY `filename` (`filename`(333))"
 		")");
 
