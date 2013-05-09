@@ -58,8 +58,8 @@
 } while (0)
 
 
-#define VASPRINTF(s, fmt, args) do {\
-	int __ret = vasprintf(s, fmt, args);\
+#define VASPRINTF(s, fmt, args...) do {\
+	int __ret = vasprintf(s, fmt, ##args);\
 	if (__ret < 0) \
 		csync_fatal("Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__);\
 } while (0)
@@ -132,7 +132,7 @@ extern const char *csync_db_escape(const char *);
 
 
 
-#define SQL(e, s, ...) csync_db_sql(e, s, ##__VA_ARGS__)
+#define SQL(e, s, rest...) csync_db_sql(e, s, ##rest)
 
 #if 0
 #if defined(HAVE_LIBSQLITE)
