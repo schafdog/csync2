@@ -567,9 +567,9 @@ void csync_update_file_mod(const char *myname, const char *peername,
     break;
   case LINK_TYPE: {
     char target[1024];
-    int rc = readlink(filename, target, 1023);
-    if ( rc >= 0 ) {
-      target[rc]=0;
+    int len = readlink(filename, target, 1023);
+    if ( len > 0 ) {
+      target[len]=0;
       conn_printf("MKLINK %s %s %s\n",
 		  key_encoded, 
 		  filename_encoded,
