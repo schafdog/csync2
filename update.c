@@ -813,32 +813,32 @@ void csync_update_host(const char *myname, const char *peername,
 
 void csync_update(const char *myhostname, const char ** patlist, int patnum, int recursive, int dry_run, int ip_version)
 {
-	struct textlist *tl = 0, *t;
+  struct textlist *tl = 0, *t;
 
-	SQL_BEGIN("Get hosts from dirty table",
-		"SELECT peername FROM dirty GROUP BY peername")
-	{
-		textlist_add(&tl, db_decode(SQL_V(0)), 0);
-	} SQL_END;
-
-	for (t = tl; t != 0; t = t->next) {
-		if (active_peerlist) {
-			int i=0, pnamelen = strlen(t->value);
-
-			while (active_peerlist[i]) {
-				if ( !strncmp(active_peerlist+i, t->value, pnamelen) &&
-				     (active_peerlist[i+pnamelen] == ',' || !active_peerlist[i+pnamelen]) )
-					goto found_asactive;
-				while (active_peerlist[i])
-					if (active_peerlist[i++]==',') break;
-			}
-			continue;
-		}
-found_asactive:
-		csync_update_host(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version);
-	}
-
-	textlist_free(tl);
+  SQL_BEGIN("Get hosts from dirty table",
+	    "SELECT peername FROM dirty GROUP BY peername")
+    {
+      textlist_add(&tl, db_decode(SQL_V(0)), 0);
+    } SQL_END;
+  
+  for (t = tl; t != 0; t = t->next) {
+    if (active_peerlist) {
+      int i=0, pnamelen = strlen(t->value);
+      
+      while (active_peerlist[i]) {
+	if ( !strncmp(active_peerlist+i, t->value, pnamelen) &&
+	     (active_peerlist[i+pnamelen] == ',' || !active_peerlist[i+pnamelen]) )
+	  goto found_asactive;
+	while (active_peerlist[i])
+	  if (active_peerlist[i++]==',') break;
+      }
+      continue;
+    }
+  found_asactive:
+    csync_update_host(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version);
+  }
+  
+  textlist_free(tl);
 }
 
 int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version)
