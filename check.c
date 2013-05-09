@@ -483,17 +483,23 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       csync_debug(0, "SIZEOF %u %llu %u %llu \n", sizeof(file_stat->st_dev), file_stat->st_dev, sizeof(file_stat->st_ino), file_stat->st_ino);
     */
 
-    SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
-    const char *checktxt_encoded = db_encode(checktxt);
     unsigned long long dev = (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
-    SQL("Adding or updating file entry",
-	"INSERT INTO file (filename, checktxt, device, inode) VALUES ('%s', '%s', %llu, %llu)",
-	encoded, 
-	checktxt_encoded,
-	dev,
-	file_stat->st_ino
-	);
-
+    const char *checktxt_encoded = db_encode(checktxt);
+    if (is_upgrade) {
+      SQL("Update file entry",
+	  "UPDATE file set checktxt='%s', device=%llu, inode=%llu where filename = '%s'",
+	  checktxt_encoded, dev, file_stat->st_ino, encoded);
+    }
+    else {
+      SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
+      SQL("Adding or updating file entry",
+	  "INSERT INTO file (filename, checktxt, device, inode) VALUES ('%s', '%s', %llu, %llu)",
+	  encoded, 
+	  checktxt_encoded,
+	  dev,
+	  file_stat->st_ino
+	  );
+    }
     if (!init_run && this_is_dirty)
       csync_mark(file, 0, 0, *operation);
   }
