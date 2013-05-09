@@ -294,7 +294,8 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
 {
   struct textlist *tl = 0, *t;
   int count = 0;
-  SQL_BEGIN("Check for same inode", "SELECT filename, checktxt, status from file WHERE inode = %ld and device = %ld ", st->st_ino, st->st_dev) {
+  unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
+  SQL_BEGIN("Check for same inode", "SELECT filename, checktxt, status from file WHERE inode = %llu and device = %llu", st->st_ino, dev) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
     const char *status_value = SQL_V(2);
@@ -455,10 +456,14 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       else if ( S_ISLNK(file_stat->st_mode) ) {
 	// TODO get max path
 	char target[1024];
-	int rc = readlink(file, target, 1023);
-	size_t len = strlen(target);
-	*operation = ringbuffer_malloc(len + 20);
-	sprintf(*operation, "MKLINK %s", target );
+	int len = readlink(file, target, 1023);
+	if (len > 0) {
+	  target[len] = 0;
+	  *operation = ringbuffer_malloc(len + 20);
+	  sprintf(*operation, "MKLINK %s", target );
+	}
+	else
+	  csync_debug(0, "Failed to read link on %s\n", file);
       }
       this_is_dirty = 1;
     }
@@ -474,17 +479,19 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     if (this_is_dirty && operation && !*operation) {
       
     }
+    csync_debug(0, "SIZEOF %u %llu %u %llu \n", sizeof(file_stat->st_dev), file_stat->st_dev, sizeof(file_stat->st_ino), file_stat->st_ino);
 
     SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
     const char *checktxt_encoded = db_encode(checktxt);
-    
+    unsigned long long dev = (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
     SQL("Adding or updating file entry",
-	"INSERT INTO file (filename, checktxt, inode, device) "
-	"VALUES ('%s', '%s', %ld, %ld)",
+	"INSERT INTO file (filename, checktxt, device, inode) VALUES ('%s', '%s', %llu, %llu)",
 	encoded, 
 	checktxt_encoded,
-	file_stat->st_ino, 
-	file_stat->st_dev);
+	dev,
+	file_stat->st_ino
+	);
+
     if (!init_run && this_is_dirty)
       csync_mark(file, 0, 0, *operation);
   }
