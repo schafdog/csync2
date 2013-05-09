@@ -442,8 +442,11 @@ int db_postgres_upgrade_to_schema(int version)
 
 	csync_db_sql("Creating file table",
 "CREATE TABLE file ("
-"  filename varchar(200) DEFAULT NULL,"
+"  filename varchar(1024) DEFAULT NULL,"
 "  checktxt varchar(200) DEFAULT NULL,"
+"  device bigint DEFAULT NULL,"
+"  inode  bigint DEFAULT NULL,"
+"  digest varchar(1024) DEFAULT NULL,"
 "  UNIQUE (filename)"
 ");");
 
