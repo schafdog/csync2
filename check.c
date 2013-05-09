@@ -479,7 +479,9 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     if (this_is_dirty && operation && !*operation) {
       
     }
-    csync_debug(0, "SIZEOF %u %llu %u %llu \n", sizeof(file_stat->st_dev), file_stat->st_dev, sizeof(file_stat->st_ino), file_stat->st_ino);
+    /*
+      csync_debug(0, "SIZEOF %u %llu %u %llu \n", sizeof(file_stat->st_dev), file_stat->st_dev, sizeof(file_stat->st_ino), file_stat->st_ino);
+    */
 
     SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
     const char *checktxt_encoded = db_encode(checktxt);
