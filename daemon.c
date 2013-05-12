@@ -353,6 +353,7 @@ const char *csync_inet_ntop(address_t *addr, char *buf, size_t size)
 #define OK        0 
 #define IDENTICAL 1
 #define NEXT_CMD  2 
+#define ERROR     3 
 #define ABORT_CMD 3
 #define BYEBYE    4
 
@@ -602,7 +603,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   struct stat st;
   if ( lstat_strict(filename, &st) != 0 ) {
     char *path;
-    if (path = csync_check_path(filename)) {
+    if ((path = csync_check_path(filename)) ) {
       conn_printf("ERROR (Path not found): %s\n", path);
       return NEXT_CMD;
     }
@@ -640,7 +641,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   return 0;
 }
 
-const char *csync_daemon_type(char *filename, const char **cmd_error)
+void csync_daemon_type(char *filename, const char **cmd_error)
 {
   FILE *f = fopen(filename, "rb");
   
@@ -658,13 +659,12 @@ const char *csync_daemon_type(char *filename, const char **cmd_error)
 	break;
       }
     fclose(f);
-    return 0; 
   }
   *cmd_error = strerror(errno);
 }
 
 
-const char *csync_daemon_get_size_time(char *filename, struct csync_command *cmd)
+void csync_daemon_get_size_time(char *filename, struct csync_command *cmd)
 {
   struct stat sbuf;
   conn_printf("OK (data_follows).\n");
@@ -673,6 +673,7 @@ const char *csync_daemon_get_size_time(char *filename, struct csync_command *cmd
 		(long)sbuf.st_mtime : (long)sbuf.st_size);
   else
     conn_printf("-1\n");
+
 }
 
 int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
@@ -689,11 +690,15 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
 
 void csync_daemon_list(char *filename, char *tag[32], char *peer) 
 {
+  char buffer[strlen(filename) + 100];
+  const char *dash = "-";
+  int string_not_dash = strcmp( (const char*) filename, dash);
+  /* Pretty ugly to avoid allocation */
   SQL_BEGIN("DB Dump - Files for sync pair",
 	    "SELECT checktxt, filename FROM file %s%s%s ORDER BY filename",
-	    strcmp(filename, "-") ? "WHERE filename = '" : "",
-	    strcmp(filename, "-") ? db_encode(filename) : "",
-	    strcmp(filename, "-") ? "'" : "")
+	    (string_not_dash ? "WHERE filename = '" : ""),
+	    (string_not_dash ? db_encode(filename) : ""),
+	    (string_not_dash ? "'" : "") )
     {
       if ( csync_match_file_host(db_decode(SQL_V(1)), 
 				 tag[1], peer, (const char **)&tag[3]) )
@@ -729,9 +734,11 @@ const char *csync_daemon_hello(char **peer, address_t *peername, char *newpeer) 
   return 0;
 }
 
-const char *csync_daemon_group(char **active_grouplist, char *newgroup) {
+int csync_daemon_group(char **active_grouplist, char *newgroup, 
+			       const char **cmd_error) {
   if (*active_grouplist) {
-    return "Group list already set!";
+    *cmd_error =  "Group list already set!";
+    return ERROR;
   } 
   else {
     const struct csync_group *g;
@@ -756,6 +763,7 @@ const char *csync_daemon_group(char **active_grouplist, char *newgroup) {
     found_asactive: ;
     }
   }
+  return OK;
 }
 
 void csync_daemon_check_update(char *filename, struct csync_command *cmd, char *peer, int db_version) 
@@ -804,18 +812,45 @@ int csync_daemon_setmod(char *filename, char *mod, const char **cmd_error) {
   return OK;
 }
 
-int csync_daemon_hardlink(const char *filename, const char *linkname, const char **cmd_error)
+int csync_daemon_hardlink(const char *filename, const char *linkname, const char *is_identical, const char **cmd_error)
 {
   struct stat st_file, st_link; 
   int rc = stat(filename, &st_file);
-  if (rc == 0)   /* Found */
-    if (!link(filename, linkname))
-      return OK;
-
   int rc_link = stat(linkname, &st_link);
-  if (rc_link == 0)   /* Found */
-    if (!link(linkname, filename))
-      return OK;
+  int identical = atoi(is_identical);
+  
+  if (rc == 0 && rc_link == 0 && 
+      st_file.st_dev == st_link.st_dev &&
+      st_file.st_rdev == st_link.st_rdev) {
+    // OK on the same device 
+    if (identical && st_file.st_ino == st_link.st_ino)
+      return OK; 
+  }
+  if (rc != 0) {
+    *cmd_error = "PATCH";
+    return ABORT_CMD;
+  }  
+  /* Found */
+  if (!identical) {
+    *cmd_error = "PATCH";
+    return ABORT_CMD;
+  }
+  if (rc_link == 0) {
+    if (csync_file_backup(linkname, cmd_error)) {
+      return ABORT_CMD;
+    }
+    if (unlink(linkname)) {
+      *cmd_error = strerror(errno);
+      return ABORT_CMD;
+    }
+  }
+  if (!link(filename, linkname)) {
+    return OK;
+  }
+  else {
+    *cmd_error = "PATCH";
+    return ABORT_CMD;
+  }
   // TODO Handle both existing (overwrite with force flag?)
   *cmd_error = strerror(errno);
   return ABORT_CMD;
@@ -916,7 +951,7 @@ int csync_daemon_dispatch(char *filename,
     return csync_daemon_symlink(filename, prefixsubst(tag[3]), cmd_error);
     break;
   case A_MKHLINK:
-    return csync_daemon_hardlink(filename, prefixsubst(tag[3]), cmd_error);
+    return csync_daemon_hardlink(filename, prefixsubst(tag[3]), tag[4], cmd_error);
     break;
   case A_MV:
     return csync_daemon_mv(filename, prefixsubst(tag[3]), cmd_error);
@@ -945,7 +980,7 @@ int csync_daemon_dispatch(char *filename,
     *cmd_error = csync_daemon_hello(peer, peername, tag[1]);
     return ABORT_CMD;
   case A_GROUP:
-    *cmd_error = csync_daemon_group(&active_grouplist, tag[1]);
+    csync_daemon_group(&active_grouplist, tag[1], cmd_error);
     break;
   case A_BYE:
     destroy_tag(tag);
@@ -957,7 +992,7 @@ int csync_daemon_dispatch(char *filename,
   return OK;
 }
 
-int csync_end_command(const char *filename, char *tag[32], const char *cmd_error) {
+void csync_end_command(const char *filename, char *tag[32], const char *cmd_error) {
   if ( cmd_error )
     conn_printf("%s (%s)\n", cmd_error, filename ? filename : "<no file>");
   else
@@ -1001,7 +1036,7 @@ void csync_daemon_session(int db_version, int protocol_version)
     if ( cmd->check_perm )
       on_cygwin_lowercase(filename);
     
-    if (cmd_error = csync_daemon_check_perm(cmd, filename, peer,tag[1]))
+    if ((cmd_error = csync_daemon_check_perm(cmd, filename, peer,tag[1])))
       rc = ABORT_CMD;
 
     if (rc == OK && cmd->check_dirty && 
