@@ -26,22 +26,27 @@
 /* Maximum simultanous allocated */
 #define RINGBUFFER_LEN 100
 
+typedef void (*free_fn_t) (void *);
 static char *ringbuffer[RINGBUFFER_LEN];
+static free_fn_t free_fn_buffer[RINGBUFFER_LEN];
 static int ringbuffer_counter = 0;
 
 void ringbuffer_init() 
 {
   int i; 
-  for (i = 0; i < RINGBUFFER_LEN; i++)
+  for (i = 0; i < RINGBUFFER_LEN; i++) {
     ringbuffer[i] = 0;
+    free_fn_buffer[i] = 0;
+  }
   ringbuffer_counter = 0;
 }
 
-char *ringbuffer_add(const char* string, void (*free_fn) (void *) )
+char *ringbuffer_add(const char* string, free_fn_t free_fn)
 {
   if (ringbuffer[ringbuffer_counter])
-    free_fn(ringbuffer[ringbuffer_counter]);
-  ringbuffer[ringbuffer_counter++] = string;
+    free_fn_buffer[ringbuffer_counter](ringbuffer[ringbuffer_counter]);
+  ringbuffer[ringbuffer_counter] = (char *) string;
+  free_fn_buffer[ringbuffer_counter++] = free_fn;
   if (ringbuffer_counter == RINGBUFFER_LEN) {
     ringbuffer_counter=0;
   }
