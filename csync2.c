@@ -481,9 +481,9 @@ const char* csync_decode_v1_v2(const char *value) {
     return value;
 }
 
-extern cfg_ip_version; 
-extern cfg_db_version; 
-extern cfg_protocol_version; 
+extern int cfg_ip_version; 
+extern int cfg_db_version; 
+extern int cfg_protocol_version; 
 int protocol_version;
 
 const char* (*db_decode) (const char *value); 
