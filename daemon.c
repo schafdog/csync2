@@ -602,7 +602,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   struct stat st;
   if ( lstat_strict(filename, &st) != 0 ) {
     char *path;
-    if (path = csync_check_path(filename)) {
+    if ((path = csync_check_path(filename))) {
       conn_printf("ERROR (Path not found): %s\n", path);
       return NEXT_CMD;
     }
@@ -640,7 +640,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   return 0;
 }
 
-const char *csync_daemon_type(char *filename, const char **cmd_error)
+void csync_daemon_type(char *filename, const char **cmd_error)
 {
   FILE *f = fopen(filename, "rb");
   
@@ -658,13 +658,12 @@ const char *csync_daemon_type(char *filename, const char **cmd_error)
 	break;
       }
     fclose(f);
-    return 0; 
   }
   *cmd_error = strerror(errno);
 }
 
 
-const char *csync_daemon_get_size_time(char *filename, struct csync_command *cmd)
+void csync_daemon_get_size_time(char *filename, struct csync_command *cmd)
 {
   struct stat sbuf;
   conn_printf("OK (data_follows).\n");
@@ -689,11 +688,15 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
 
 void csync_daemon_list(char *filename, char *tag[32], char *peer) 
 {
+  int len = strlen(filename); 
+  char buffer[len + 50];
+  buffer[0] = 0;
+  int value = strcmp("-", filename);
+  if (value) 
+    sprintf(buffer, "WHERE filename = '%s'", db_encode(filename));
   SQL_BEGIN("DB Dump - Files for sync pair",
-	    "SELECT checktxt, filename FROM file %s%s%s ORDER BY filename",
-	    strcmp(filename, "-") ? "WHERE filename = '" : "",
-	    strcmp(filename, "-") ? db_encode(filename) : "",
-	    strcmp(filename, "-") ? "'" : "")
+	    "SELECT checktxt, filename FROM file %s ORDER BY filename",
+	    buffer)
     {
       if ( csync_match_file_host(db_decode(SQL_V(1)), 
 				 tag[1], peer, (const char **)&tag[3]) )
@@ -756,6 +759,7 @@ const char *csync_daemon_group(char **active_grouplist, char *newgroup) {
     found_asactive: ;
     }
   }
+  return 0;
 }
 
 void csync_daemon_check_update(char *filename, struct csync_command *cmd, char *peer, int db_version) 
@@ -957,7 +961,7 @@ int csync_daemon_dispatch(char *filename,
   return OK;
 }
 
-int csync_end_command(const char *filename, char *tag[32], const char *cmd_error) {
+void csync_end_command(const char *filename, char *tag[32], const char *cmd_error) {
   if ( cmd_error )
     conn_printf("%s (%s)\n", cmd_error, filename ? filename : "<no file>");
   else
@@ -1001,7 +1005,7 @@ void csync_daemon_session(int db_version, int protocol_version)
     if ( cmd->check_perm )
       on_cygwin_lowercase(filename);
     
-    if (cmd_error = csync_daemon_check_perm(cmd, filename, peer,tag[1]))
+    if ((cmd_error = csync_daemon_check_perm(cmd, filename, peer,tag[1])))
       rc = ABORT_CMD;
 
     if (rc == OK && cmd->check_dirty && 
