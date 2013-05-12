@@ -110,6 +110,7 @@ extern int conn_close();
 
 extern int conn_read(void *buf, size_t count);
 extern int conn_write(const void *buf, size_t count);
+size_t conn_gets_newline(char *s, size_t size, int remove_newline);
 
 extern void conn_printf(const char *fmt, ...);
 extern int conn_fgets(char *s, int size);
@@ -200,19 +201,23 @@ extern int csync_rs_patch(const char *filename);
 //extern const char *csync_genchecktxt(const struct stat *st, const char *filename, int flags);
 extern const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int flags, int version);
 extern int csync_cmpchecktxt(const char *a, const char *b);
-
+extern int csync_cmpchecktxt_component(const char *a, const char *b, 
+				       const char *version);
+int csync_get_checktxt_version(const char *value);
 
 /* check.c */
+struct textlist;
 
 extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version);
 /* Single file checking but returns possible operation */ 
 extern char *csync_check_single(const char *filename, int init_run, int version); 
 extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation);
-
+extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl);
 
 /* update.c */
 
+int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation);
 extern void csync_update(const char *myname, const char **patlist, int patnum, int recursive, int dry_run, int ip_version);
 extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
@@ -226,8 +231,11 @@ extern void csync_daemon_session(int db_version, int protocol_version);
 extern int csync_copy_file(int fd_in, int fd_out);
 
 /* ringbuffer.c */
+extern void  ringbuffer_init();
 extern char *ringbuffer_malloc(size_t length);
 extern char *ringbuffer_strdup(const char *cpy);
+char *ringbuffer_add(char* string, void (*free_fn) (void *) );
+extern void  ringbuffer_destroy();
 
 /* getrealfn.c */
 
@@ -251,8 +259,6 @@ const char *prefixencode(const char *filename);
 
 
 /* textlist implementation */
-
-struct textlist;
 
 struct textlist {
 	struct textlist *next;
