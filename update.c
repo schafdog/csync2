@@ -193,7 +193,7 @@ void csync_update_file_del_mv(const char *myname, const char *peername,
     conn_printf("SIG %s %s %s\n", 
 		url_encode(key), 
 		url_encode(prefixencode(filename)), "user/group");
-    if ( status = read_conn_status(filename, peername) ) {
+    if ((status = read_conn_status(filename, peername)) ) {
       if (status == ERROR_PATH_MISSING)
 	goto skip_action;
       else
@@ -332,7 +332,7 @@ int get_file_type(int st_mode) {
   if(S_ISSOCK(st_mode))
     return SOCK_TYPE;
 
-  
+  return -1;
 }
 
 /* PRE: all values must have been encoded */
@@ -436,7 +436,7 @@ int csync_update_file_check_hardlink(const char *peername,
 	      key_encoded, 
 	      filename_encoded,
 	      url_encode(prefixencode(target)));
-  if (*last_conn_status = read_conn_status(filename, peername))
+  if ((*last_conn_status = read_conn_status(filename, peername)))
     csync_debug(0, "Failed to hard link %s %s\n", filename, target);
   else 
     return SKIP_ACTION_TIME;
