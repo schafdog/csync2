@@ -37,7 +37,7 @@ void ringbuffer_init()
   ringbuffer_counter = 0;
 }
 
-char *ringbuffer_add(char* string, void (*free_fn) (void *) )
+char *ringbuffer_add(const char* string, void (*free_fn) (void *) )
 {
   if (ringbuffer[ringbuffer_counter])
     free_fn(ringbuffer[ringbuffer_counter]);
@@ -45,6 +45,7 @@ char *ringbuffer_add(char* string, void (*free_fn) (void *) )
   if (ringbuffer_counter == RINGBUFFER_LEN) {
     ringbuffer_counter=0;
   }
+  return 0;
 }
 
 char *ringbuffer_malloc(size_t length)
