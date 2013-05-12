@@ -346,6 +346,7 @@ void cmd_printf(const char *cmd, const char *key, const char *filename, const ch
 }
 
 
+#define OK     0
 #define ERROR -1
 #define MAYBE_AUTO_RESOLVE -2
 #define DIFF -3
@@ -363,7 +364,7 @@ int csync_update_reg_file(const char *peername, const char *filename,
   }
   if (read_conn_status(filename, peername))
     return ERROR;
-  return 0;
+  return OK;
 }
 
 int csync_update_file_dir(const char *peername, const char *filename, 
@@ -529,19 +530,28 @@ void csync_update_file_mod(const char *myname, const char *peername,
     }
   }
 
-  int rc = csync_update_file_update_hardlink(peername, 
-					    filename, 
-					    key_encoded, 
-					    filename_encoded, 
-					    operation, &last_conn_status);
-  if (rc == SKIP_ACTION_TIME)
-    goto skip_action_time;
   int mode = get_file_type(st.st_mode);
+  int rc;
   switch (mode) {
     case REG_TYPE:
+      if (st.st_nlink > 1) {
+	// compare with hardlink files on remote. Maybe the file is already there.
+	struct textlist *tl = csync_check_move_link(filename, checktxt, &st, NULL, csync_sig_rs_hardlink);
+
+	
+      }
       if (found_diff) {
 	cmd_printf("PATCH", key_encoded, filename_encoded, "-", &st, uidptr, gidptr);
 	rc = csync_update_reg_file(peername, filename, &last_conn_status);
+      }
+      if (st.st_nlink > 1) {
+	rc = csync_update_file_update_hardlink(peername, 
+					       filename, 
+					       key_encoded, 
+					       filename_encoded, 
+					       operation, &last_conn_status);
+	if (rc == SKIP_ACTION_TIME)
+	  goto skip_action_time;
       }
       break;
   case DIR_TYPE:
@@ -601,8 +611,8 @@ void csync_update_file_mod(const char *myname, const char *peername,
     goto got_error;
   }
   // Optimize this. The daemon could have done this in the command.
-  if (found_diff_meta) {
-    conn_printf("SETOWN %s %s %d %d %s %s \n",
+  if (found_diff || found_diff_meta) {
+    conn_printf("SETOWN %s %s - %d %d %s %s \n",
 		key_encoded, filename_encoded,
 		st.st_uid, st.st_gid, uidptr, gidptr);
     if ( read_conn_status(filename, peername) )
