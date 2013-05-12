@@ -234,7 +234,7 @@ extern int csync_copy_file(int fd_in, int fd_out);
 extern void  ringbuffer_init();
 extern char *ringbuffer_malloc(size_t length);
 extern char *ringbuffer_strdup(const char *cpy);
-char *ringbuffer_add(char* string, void (*free_fn) (void *) );
+char *ringbuffer_add(const char* string, void (*free_fn) (void *) );
 extern void  ringbuffer_destroy();
 
 /* getrealfn.c */
