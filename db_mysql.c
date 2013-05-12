@@ -134,7 +134,7 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
   char *host = 0, *user = 0, *pass = 0, *database = 0, *unix_socket = 0;
   unsigned int port;
   char *db_url = malloc(strlen(file)+1);
-  char *create_database_statement;
+  char *create_database_statement = 0;
 
   if (db_url == NULL)
     csync_fatal("No memory for db_url\n");
