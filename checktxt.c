@@ -54,7 +54,7 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	xxprintf("v%d", version);
 
 	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode) )
-	  xxprintf(":mtime=%Ld", 
+	  xxprintf(":mtime=%llu", 
 		   flags & IGNORE_MTIME ? (long long)0 : (long long)st->st_mtime);
 	
 	if ( !csync_ignore_mod )
@@ -82,7 +82,7 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	}
 
 	if ( S_ISREG(st->st_mode) ) {
-		xxprintf(":type=reg:size=%Ld", (long long)st->st_size);
+		xxprintf(":type=reg:size=%llu", (long long)st->st_size);
 		// TODO would be nice with the real count,
 		// but for now just an indicator for hard links
 		if (st->st_nlink > 1)
