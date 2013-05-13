@@ -442,7 +442,7 @@ int conn_write(const void *buf, size_t count)
 
 void conn_printf(const char *fmt, ...)
 {
-	char dummy, *buffer;
+	char dummy = 0, *buffer = 0;
 	va_list ap;
 	int size;
 

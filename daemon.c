@@ -603,7 +603,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   struct stat st;
   if ( lstat_strict(filename, &st) != 0 ) {
     char *path;
-    if ((path = csync_check_path(filename)) ) {
+    if ((path = csync_check_path(filename))) {
       conn_printf("ERROR (Path not found): %s\n", path);
       return NEXT_CMD;
     }
@@ -690,15 +690,15 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
 
 void csync_daemon_list(char *filename, char *tag[32], char *peer) 
 {
-  char buffer[strlen(filename) + 100];
-  const char *dash = "-";
-  int string_not_dash = strcmp( (const char*) filename, dash);
-  /* Pretty ugly to avoid allocation */
+  int len = strlen(filename); 
+  char buffer[len + 50];
+  buffer[0] = 0;
+  int value = strcmp("-", filename);
+  if (value) 
+    sprintf(buffer, "WHERE filename = '%s'", db_encode(filename));
   SQL_BEGIN("DB Dump - Files for sync pair",
-	    "SELECT checktxt, filename FROM file %s%s%s ORDER BY filename",
-	    (string_not_dash ? "WHERE filename = '" : ""),
-	    (string_not_dash ? db_encode(filename) : ""),
-	    (string_not_dash ? "'" : "") )
+	    "SELECT checktxt, filename FROM file %s ORDER BY filename",
+	    buffer)
     {
       if ( csync_match_file_host(db_decode(SQL_V(1)), 
 				 tag[1], peer, (const char **)&tag[3]) )

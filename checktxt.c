@@ -148,7 +148,7 @@ int csync_cmpchecktxt(const char *a, const char *b)
 }
 
 
-int csync_cmpchecktxt_component(const char *a, const char *b, const char *version) 
+int csync_cmpchecktxt_component(const char *a, const char *b) 
 {
   char * a_new = strdup(a);
   char * b_new = strdup(b);

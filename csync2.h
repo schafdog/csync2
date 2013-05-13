@@ -201,8 +201,7 @@ extern int csync_rs_patch(const char *filename);
 //extern const char *csync_genchecktxt(const struct stat *st, const char *filename, int flags);
 extern const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int flags, int version);
 extern int csync_cmpchecktxt(const char *a, const char *b);
-extern int csync_cmpchecktxt_component(const char *a, const char *b, 
-				       const char *version);
+extern int csync_cmpchecktxt_component(const char *a, const char *b);
 int csync_get_checktxt_version(const char *value);
 
 /* check.c */
@@ -234,7 +233,7 @@ extern int csync_copy_file(int fd_in, int fd_out);
 extern void  ringbuffer_init();
 extern char *ringbuffer_malloc(size_t length);
 extern char *ringbuffer_strdup(const char *cpy);
-char *ringbuffer_add(char* string, void (*free_fn) (void *) );
+char *ringbuffer_add(const char* string, void (*free_fn) (void *) );
 extern void  ringbuffer_destroy();
 
 /* getrealfn.c */

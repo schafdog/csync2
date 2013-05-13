@@ -456,7 +456,7 @@ int get_file_type(int st_mode) {
     return LINK_TYPE;
   if(S_ISSOCK(st_mode))
     return SOCK_TYPE;
-  return 0;
+  return -1;
 }
 
 /* PRE: all values must have been encoded */
@@ -1195,7 +1195,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 		else {
 		  //DS disabled the simple X out.  
 		  if (csync_debug_level >= 0) {
-		    csync_cmpchecktxt_component(l_checktxt, r_checktxt, version); 
+		    csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
 		    csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
 		  }
 		  else

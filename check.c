@@ -316,7 +316,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
   int count = 0;
   unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
   SQL_BEGIN("Check for same inode", 
-	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and inode = %llu and device = %llu", filename, st->st_ino, dev) {
+	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and inode = %llu and device = %llu", db_encode(filename), st->st_ino, dev) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
     const char *status_value = SQL_V(2);
