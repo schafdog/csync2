@@ -41,16 +41,19 @@ void ringbuffer_init()
   ringbuffer_counter = 0;
 }
 
-char *ringbuffer_add(const char* string, free_fn_t free_fn)
+void ringbuffer_add(const char* string, free_fn_t free_fn)
 {
   if (ringbuffer[ringbuffer_counter])
-    free_fn_buffer[ringbuffer_counter](ringbuffer[ringbuffer_counter]);
+    if (free_fn_buffer[ringbuffer_counter])
+      free_fn_buffer[ringbuffer_counter](ringbuffer[ringbuffer_counter]);
+    else
+      free(ringbuffer[ringbuffer_counter]);
+
   ringbuffer[ringbuffer_counter] = (char *) string;
   free_fn_buffer[ringbuffer_counter++] = free_fn;
   if (ringbuffer_counter == RINGBUFFER_LEN) {
     ringbuffer_counter=0;
   }
-  return 0;
 }
 
 char *ringbuffer_malloc(size_t length)
@@ -59,7 +62,7 @@ char *ringbuffer_malloc(size_t length)
   out = malloc(length);
   out[0] = 0;
 
-  ringbuffer_add(out, free);
+  ringbuffer_add(out, 0);
 
   return out;
 }
@@ -82,4 +85,8 @@ void ringbuffer_destroy() {
     }
   }
   ringbuffer_counter =0;
+}
+
+int  ringbuffer_getcount() {
+  return ringbuffer_counter;
 }
