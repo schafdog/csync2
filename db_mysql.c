@@ -133,11 +133,8 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
   MYSQL *db = f.mysql_init_fn(0);
   char *host = 0, *user = 0, *pass = 0, *database = 0, *unix_socket = 0;
   unsigned int port;
-  char *db_url = malloc(strlen(file)+1);
+  char db_url[strlen(file)+1];
   char *create_database_statement = 0;
-
-  if (db_url == NULL)
-    csync_fatal("No memory for db_url\n");
 
   strcpy(db_url, file);
   int rc = db_mysql_parse_url(db_url, &host, &user, &pass, &database, &port, &unix_socket);
@@ -196,6 +193,7 @@ void db_mysql_close(db_conn_p conn)
     return;
   f.mysql_close_fn(conn->private);
   conn->private = 0;
+  free(conn);
 }
 
 const char *db_mysql_errmsg(db_conn_p conn)
