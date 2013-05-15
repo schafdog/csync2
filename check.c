@@ -295,7 +295,8 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
   struct textlist *tl = 0, *t;
   int count = 0;
   unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
-  SQL_BEGIN("Check for same inode", "SELECT filename, checktxt, status from file WHERE inode = %llu and device = %llu", st->st_ino, dev) {
+  SQL_BEGIN("Check for same inode", "SELECT filename, checktxt, status from file WHERE filename != '%s' and inode = %llu and device = %llu", 
+	    filename, st->st_ino, dev) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
     const char *status_value = SQL_V(2);
@@ -304,7 +305,7 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
       status = atoi(status_value);
     // if the check doesnt compare, it's more that a move/link. 
     if (csync_cmpchecktxt(db_checktxt, checktxt)) {
-      if (status == 1) { 
+      if (status == 1) {
 	csync_debug(1, "OPERATION: mv %s to %s\n", db_filename, filename);
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
@@ -313,15 +314,17 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
 	}
       } else {
 	csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
-	char buffer[strlen(db_filename) + strlen(filename) + 10];
 	if (operation) {
-	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
+	  *operation = ringbuffer_malloc(strlen(db_filename) + 14);
 	  sprintf(*operation, "MKHARDLINK %s", db_filename); 
 	  textlist_add(&tl, db_filename, HARDLINK);
 	}
       }
       break; 
     } else {
+      csync_debug(1, "Unknown operation: %s %s\n", db_filename, filename);
+      csync_debug(1, "   checktxt differ %s %s\n", db_checktxt, checktxt);
+      
       if (count > 1) {
 	csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
 	csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
@@ -471,7 +474,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
   
   int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
   if (has_links) {
-    csync_debug(1, "File %s has links: %d\n", file, file_stat->st_nlink);
+    csync_debug(2, "File %s has links: %d\n", file, file_stat->st_nlink);
   }
   if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
     
