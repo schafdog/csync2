@@ -658,6 +658,7 @@ void csync_daemon_type(char *filename, const char **cmd_error)
 	break;
       }
     fclose(f);
+    return;
   }
   *cmd_error = strerror(errno);
 }
