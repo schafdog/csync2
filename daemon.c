@@ -861,6 +861,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   case A_TYPE:
      csync_daemon_type(filename, cmd_error);
+     return BYEBYE;
     break;
   case A_GETTM:
   case A_GETSZ:
