@@ -813,15 +813,27 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
 {
   struct stat st_file, st_link; 
   int rc = stat(filename, &st_file);
+  int rc_link = stat(linkname, &st_link);
+  if (rc == 0 && rc_link == 0) {
+    if (st_file.st_ino == st_link.st_ino  && 
+	st_file.st_dev == st_link.st_dev &&
+	st_file.st_rdev == st_link.st_rdev)
+      return OK;
+    
+    csync_debug(1, "HARDLINK: Both %s and %s exists there but are not hardlinked.", filename, linkname);
+    //TODO 
+    // if ! identical
+    //    Backup "other/older" ?
+    // Remove "other/older" ? 
+    // link 
+    return OK;
+  }
   if (rc == 0)   /* Found */
     if (!link(filename, linkname))
       return OK;
-
-  int rc_link = stat(linkname, &st_link);
   if (rc_link == 0)   /* Found */
     if (!link(linkname, filename))
       return OK;
-  // TODO Handle both existing (overwrite with force flag?)
   *cmd_error = strerror(errno);
   return ABORT_CMD;
 }
