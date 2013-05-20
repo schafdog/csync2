@@ -295,7 +295,7 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
   struct textlist *tl = 0, *t;
   int count = 0;
   unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
-  const char *filename_enc = strdup(db_encode(filename));
+  char *filename_enc = strdup(db_encode(filename));
   SQL_BEGIN("Check for same inode", 
 	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and inode = %llu and device = %llu", filename_enc, st->st_ino, dev) {
     const char *db_filename  = db_decode(SQL_V(0));
@@ -351,7 +351,6 @@ void csync_check_move_link(const char *filename, const char* checktxt, struct st
     if ( t->intvalue == HARDLINK)
       operation = "MKHARDLINK";
     char *src  = t->value;
-
     SQL("Update operation to move/hardlink",
 	"UPDATE dirty set operation = '%s %s' where filename = '%s'", 
 	operation, filename_enc, db_encode(src));
