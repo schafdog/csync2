@@ -31,17 +31,20 @@ echo hejhejhej > test/local/hej.txt
 check
 mv test/local/first.txt test/local/second
 check
-mv test/local/second  test/local/dir1/third
+mv test/local/second  test/local/before
 check
-touch 'test/local/database " problem' 
+mv test/local/before  test/local/dir1/third
 check
-touch "test/local/database ' problem"  
+ln test/local/dir1/third test/local/2hardlink
 check
-ln test/local/dir1/third test/local/hardlink
-check
-ln test/local/hardlink test/local/2hardlink
+echo "PATCH HARDLINK" >> test/local/2hardlink 
+ln test/local/2hardlink test/local/1hardlink 
 check
 ln -s hej.txt test/local/softlink
 check
 ln -s /etc/hosts test/local/absolut_softlink
+check
+touch 'test/local/database " problem' 
+check
+touch "test/local/database ' problem"  
 check
