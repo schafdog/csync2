@@ -659,6 +659,7 @@ void csync_daemon_type(char *filename, const char **cmd_error)
 	break;
       }
     fclose(f);
+    return;
   }
   *cmd_error = strerror(errno);
 }
@@ -851,7 +852,6 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
     *cmd_error = "PATCH";
     return ABORT_CMD;
   }
-  // TODO Handle both existing (overwrite with force flag?)
   *cmd_error = strerror(errno);
   return ABORT_CMD;
 }
@@ -891,6 +891,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   case A_TYPE:
      csync_daemon_type(filename, cmd_error);
+     return BYEBYE;
     break;
   case A_GETTM:
   case A_GETSZ:

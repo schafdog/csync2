@@ -287,13 +287,14 @@ void csync_check_del(const char *file, int recursive, int init_run)
     free(where_rec);
 }
 
-typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
+typedef struct textlist *(*textlist_loop_t)(const char *filename_enc, struct stat *st, struct textlist *tl);
 
 #define MOVE     1
 #define HARDLINK 2
 
 struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl)
 {
+  char *filename_enc = strdup(db_encode(filename));
   struct textlist *t = tl; 
   while (t) {
     char *operation = "MV"; 
@@ -303,10 +304,11 @@ struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, str
 
     SQL("Update operation to move/hardlink",
 	"UPDATE dirty set operation = '%s %s' where filename = '%s'", 
-	operation, filename, src);
+	operation, filename_enc, db_encode(src));
     t = t->next;
   }
   textlist_free(tl);
+  free(filename_enc);
   return 0;
 }
 
@@ -315,6 +317,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
   struct textlist *tl = 0, *t;
   int count = 0;
   unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
+  struct stat file_stat; 
   SQL_BEGIN("Check for same inode", 
 	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and inode = %llu and device = %llu", db_encode(filename), st->st_ino, dev) {
     const char *db_filename  = db_decode(SQL_V(0));
@@ -324,25 +327,33 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     if (status_value)
       status = atoi(status_value);
     // if the check doesnt compare, it's more than a move/link. 
+    int rc = stat(db_filename, &file_stat);
+    int db_version = csync_get_checktxt_version(checktxt);
+    if (rc) {
+      csync_debug(1, "Unable to stat move/hardlink candidate: %s", db_filename);
+      db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
+    }
     if (csync_cmpchecktxt(db_checktxt, checktxt)) {
-      if (status == 1) { 
+      if (status == 1) {
 	csync_debug(1, "OPERATION: mv %s to %s\n", db_filename, filename);
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
-	  sprintf(*operation, "NEW %s", db_filename);
+	  sprintf(*operation, "MV %s", db_filename);
 	  textlist_add(&tl, db_filename, MOVE);
 	}
       } else {
 	csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
-	char buffer[strlen(db_filename) + strlen(filename) + 10];
 	if (operation) {
-	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
+	  *operation = ringbuffer_malloc(strlen(db_filename) + 14);
 	  sprintf(*operation, "MKHARDLINK %s", db_filename); 
 	  textlist_add(&tl, db_filename, HARDLINK);
 	}
       }
       break; 
     } else {
+      csync_debug(1, "Unknown operation: %s %s\n", db_filename, filename);
+      csync_debug(1, "   checktxt differ %s %s\n", db_checktxt, checktxt);
+      
       if (count > 1) {
 	csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
 	csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
@@ -363,7 +374,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     }
   } SQL_END; 
   if (loop) {
-    return loop(filename, st, tl);
+    tl = loop(filename, st, tl);
   }
   return tl; 
 }
@@ -482,7 +493,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
   
   int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
   if (has_links) {
-    csync_debug(1, "File %s has links: %d\n", file, file_stat->st_nlink);
+    csync_debug(2, "File %s has links: %d\n", file, file_stat->st_nlink);
   }
   if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
     struct textlist *tl;

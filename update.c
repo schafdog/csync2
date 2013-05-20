@@ -546,12 +546,14 @@ int csync_update_file_sig(const char *peername, const char *filename,
 #define HARDLINK_CMD "MKHARDLINK"
 #define HARDLINK_CMD_LEN 10
 
-int csync_update_file_hardlink(const char *peername, const char *filename, 
+int csync_update_file_hardlink(const char *peername, 
+			       const char *filename, 
 			       const char *key_encoded, 
 			       const char *filename_enc,
-			       const char *operation, int is_identical,
-			       int *last_conn_status) {
-
+			       const char *operation, 
+			       int is_identical,
+			       int *last_conn_status) 
+{
   if (!operation || strncmp(HARDLINK_CMD, operation, HARDLINK_CMD_LEN)) 
     // TODO do other checks |strstr(chktxt, "link=H") == -1)
     return 0;
