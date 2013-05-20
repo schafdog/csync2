@@ -593,20 +593,20 @@ int csync_rs_patch(const char *filename)
     CloseHandle(winfh);
   }
 #endif
-
-  if (rename(newfname, filename) < 0) { errstr="renaming tmp file to to be patched file"; goto io_error; }
-
-  csync_debug(3, "File has been patched successfully.\n");
-  fclose(delta_file);
-  fclose(new_file);
-
-  return 0;
-
+  // TODO this will break any hardlink to filename. 
+  // DS: That is not want we want IMHO
+  if (rename(newfname, filename) == 0) {
+    csync_debug(3, "File has been patched successfully.\n");
+    fclose(delta_file);
+    fclose(new_file);
+    return 0;
+  }
+  errstr="renaming tmp file to to be patched file"; 
  io_error:
   csync_debug(0, "I/O Error '%s' while %s in rsync-patch: %s\n",
 	      strerror(errno), errstr, filename);
 
- error:;
+ error:
   backup_errno = errno;
   if ( delta_file ) fclose(delta_file);
   if ( basis_file ) fclose(basis_file);
