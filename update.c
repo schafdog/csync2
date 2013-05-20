@@ -414,7 +414,7 @@ int csync_update_file_sig(const char *peername, const char *filename,
 #define HARDLINK_CMD "MKHARDLINK"
 #define HARDLINK_CMD_LEN 10
 
-int csync_update_file_check_hardlink(const char *peername, 
+int csync_update_file_update_hardlink(const char *peername, 
 				     const char *filename, 
 				     const char *key_encoded,
 				     const char *filename_encoded,
@@ -529,7 +529,7 @@ void csync_update_file_mod(const char *myname, const char *peername,
     }
   }
 
-  int rc = csync_update_file_check_hardlink(peername, 
+  int rc = csync_update_file_update_hardlink(peername, 
 					    filename, 
 					    key_encoded, 
 					    filename_encoded, 
