@@ -22,5 +22,5 @@ missing
 patch.txt
 stamp-h1
 ylwrap
-test
+test/
 *.log
