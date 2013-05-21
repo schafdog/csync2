@@ -297,7 +297,7 @@ struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, str
   char *filename_enc = strdup(db_encode(filename));
   struct textlist *t = tl; 
   while (t) {
-    char *operation = "MV"; 
+    char *operation = "FROM"; 
     if ( t->intvalue == HARDLINK)
       operation = "MKHARDLINK";
     char *src  = t->value;
@@ -330,16 +330,18 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     int rc = stat(db_filename, &file_stat);
     int db_version = csync_get_checktxt_version(checktxt);
     if (rc) {
-      csync_debug(1, "Unable to stat move/hardlink candidate: %s", db_filename);
-      db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
+      csync_debug(1, "Unable to stat move/hardlink candidate: %s\n", db_filename);
     }
+    else
+      db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
+
     if (csync_cmpchecktxt(db_checktxt, checktxt)) {
       if (status == 1) {
 	csync_debug(1, "OPERATION: mv %s to %s\n", db_filename, filename);
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
 	  sprintf(*operation, "MV %s", db_filename);
-	  textlist_add(&tl, db_filename, MOVE);
+	  //textlist_add(&tl, db_filename, MOVE);
 	}
       } else {
 	csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
