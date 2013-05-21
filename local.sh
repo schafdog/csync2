@@ -13,7 +13,7 @@ function check {
     ${PAUSE}
 }
 
-if [ "$COMAMND" != "u" ] ; then 
+if [ "$COMMAND" != "u" ] ; then 
     echo "delete from dirty ; delete from file" | mysql -u csync2_local -pcsync2_local csync2_local
     echo "delete from dirty ; delete from file" | mysql -u csync2_peer -pcsync2_peer csync2_peer
     rm csync_local.log mysql_local.log
