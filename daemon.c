@@ -618,7 +618,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   }
   else if (csync_check_pure(filename)) {
     conn_printf("OK (not_found).\n---\noctet-stream 0\n");
-    return OK;
+    return NEXT_CMD;
   }
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
@@ -635,10 +635,10 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   
   if ( S_ISREG(st.st_mode) )
     csync_rs_sig(filename);
-  else
+  else 
     conn_printf("octet-stream 0\n");
 
-  return 0;
+  return NEXT_CMD;
 }
 
 void csync_daemon_type(char *filename, const char **cmd_error)
@@ -827,6 +827,7 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
     if (identical && st_file.st_ino == st_link.st_ino)
       return OK; 
   }
+  // This should not happen. File should be there (patched)
   if (rc != 0) {
     *cmd_error = "PATCH";
     return ABORT_CMD;
