@@ -594,7 +594,7 @@ int csync_patch_file(const char *key_enc,
   return OK;
 }
 
-int csync_update_file_sig_rs_diff(const char *key_enc, const char *peername, 
+int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const char *filename, const char *filename_enc,
 				  const struct stat *st, 
 				  const char *uidptr, const char *gidptr,
@@ -694,7 +694,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
       rc = csync_update_file_sig_rs_diff(peername, key_enc, 
 					 filename, filename_enc, 
 					 &st, uidptr, gidptr, 
-					 operation, &last_conn_status);
+					 NULL, &last_conn_status);
       if (dry_run)
 	return rc;
     }
