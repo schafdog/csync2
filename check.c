@@ -274,7 +274,7 @@ void csync_check_del(const char *file, int recursive, int init_run)
 
   for (t = tl; t != 0; t = t->next) {
     if (!init_run) 
-      csync_mark(t->value, 0, 0, "delete"); //, checktxt, inode);
+      csync_mark(t->value, 0, 0, "rm"); //, checktxt, inode);
     // delay delete, set deleted flags
     SQL("Mark file as deleted from DB. It isn't with us anymore.",
 	"UPDATE file set status = 1 WHERE filename = '%s'",
@@ -292,14 +292,21 @@ struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, str
   char *filename_enc = strdup(db_encode(filename));
   struct textlist *t = tl; 
   while (t) {
-    char *operation = "FROM"; 
-    if ( t->intvalue == HARDLINK)
-      operation = "MKHARDLINK";
     char *src  = t->value;
-
-    SQL("Update operation to move/hardlink",
+    switch (t->intvalue) {
+    case HARDLINK: {
+      char *operation = "MKHARDLINK";
+      SQL("Update operation to move/hardlink",
 	"UPDATE dirty set operation = '%s %s' where filename = '%s'", 
-	operation, filename_enc, db_encode(src));
+	  operation, filename_enc, db_encode(src));
+      break;
+    }
+    case MOVE:
+      SQL("Remove delete operation (move)",
+	"DELETE from dirty where filename = '%s'", db_encode(src));
+      break; 
+    }
+    
     t = t->next;
   }
   textlist_free(tl);
@@ -323,7 +330,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
       status = atoi(status_value);
     // if the check doesnt compare, it's more than a move/link. 
     int rc = stat(db_filename, &file_stat);
-    int db_version = csync_get_checktxt_version(checktxt);
+    int db_version = csync_get_checktxt_version(db_checktxt);
     if (rc) {
       csync_debug(1, "Unable to stat move/hardlink candidate: %s\n", db_filename);
     }
@@ -332,11 +339,11 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
 
     if (csync_cmpchecktxt(db_checktxt, checktxt)) {
       if (status == 1) {
-	csync_debug(1, "OPERATION: mv %s to %s\n", db_filename, filename);
+	csync_debug(1, "OPERATION: MV %s to %s\n", db_filename, filename);
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
 	  sprintf(*operation, "MV %s", db_filename);
-	  //textlist_add(&tl, db_filename, MOVE);
+	  textlist_add(&tl, db_filename, MOVE);
 	}
       } else {
 	csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
