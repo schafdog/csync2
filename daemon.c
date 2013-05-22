@@ -853,10 +853,13 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
     // link 
     return OK;
   }
-  if (rc == 0)   /* Found */
+  if (rc == 0) {  /* Found */
+    csync_debug(1, "HARDLINK: %s -> %s ", filename, linkname);
     if (!link(filename, linkname))
       return OK;
+  }
   if (rc_link == 0)   /* Found */
+    csync_debug(1, "HARDLINK: (reverse): %s -> %s ",linkname, filename);
     if (!link(linkname, filename))
       return OK;
   *cmd_error = strerror(errno);
