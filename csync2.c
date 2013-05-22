@@ -897,7 +897,7 @@ int main(int argc, char ** argv)
 			if ( argc == optind )
 			{
 			  csync_check("/", 1, init_run, db_version);
-			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version);
+			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version, db_version);
 			}
 			else
 			{
@@ -907,7 +907,7 @@ int main(int argc, char ** argv)
 					csync_check_usefullness(realnames[i-optind], recursive);
 					csync_check(realnames[i-optind], recursive, init_run, db_version);
 				}
-				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version);
+				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}
@@ -956,7 +956,7 @@ int main(int argc, char ** argv)
 		case MODE_UPDATE:
 			if ( argc == optind )
 			{
-			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version);
+			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version,db_version);
 			}
 			else
 			{
@@ -965,7 +965,7 @@ int main(int argc, char ** argv)
 					realnames[i-optind] = strdup(getrealfn(argv[i]));
 					csync_check_usefullness(realnames[i-optind], recursive);
 				}
-				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version);
+				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}

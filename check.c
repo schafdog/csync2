@@ -287,11 +287,6 @@ void csync_check_del(const char *file, int recursive, int init_run)
     free(where_rec);
 }
 
-typedef struct textlist *(*textlist_loop_t)(const char *filename_enc, struct stat *st, struct textlist *tl);
-
-#define MOVE     1
-#define HARDLINK 2
-
 struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl)
 {
   char *filename_enc = strdup(db_encode(filename));
@@ -376,7 +371,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     }
   } SQL_END; 
   if (loop) {
-    tl = loop(filename, st, tl);
+    return loop(filename, st, tl);
   }
   return tl; 
 }

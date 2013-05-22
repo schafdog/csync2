@@ -68,10 +68,7 @@
 /* action.c */
 
 extern void  csync_schedule_commands(const char *filename, int islocal);
-extern char *csync_check_path(char *filename); 
-extern int   csync_check_pure(const char *filename);
 extern void  csync_run_commands();
-
 
 /* groups.c */
 
@@ -206,6 +203,9 @@ int csync_get_checktxt_version(const char *value);
 
 /* check.c */
 struct textlist;
+/* check.c */
+#define MOVE     1
+#define HARDLINK 2
 
 extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version);
@@ -213,11 +213,17 @@ extern void csync_check(const char *filename, int recursive, int init_run, int v
 extern char *csync_check_single(const char *filename, int init_run, int version); 
 extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation);
 extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl);
+extern char *csync_check_path(char *filename); 
+extern int   csync_check_pure(const char *filename);
+typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
+struct textlist *csync_check_move_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
+
+
 
 /* update.c */
 
 int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation);
-extern void csync_update(const char *myname, const char **patlist, int patnum, int recursive, int dry_run, int ip_version);
+extern void csync_update(const char *myname, const char **patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version);
 extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
 extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version);

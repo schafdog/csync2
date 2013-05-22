@@ -483,6 +483,13 @@ struct update_request {
   const char *gid;
 };
 
+#define OK     0
+#define ERROR -1
+#define MAYBE_AUTO_RESOLVE -2
+#define DIFF -3
+#define SKIP_ACTION -4 
+#define SKIP_ACTION_TIME -5 
+
 /* Assume PATCH command has been sent */
 int csync_update_reg_file(const char *peername, const char *filename,
 			  int *last_conn_status) {
@@ -494,7 +501,7 @@ int csync_update_reg_file(const char *peername, const char *filename,
   }
   if (read_conn_status(filename, peername))
     return ERROR;
-  return 0;
+  return OK;
 }
 
 int csync_update_file_dir(const char *peername, const char *filename, 
@@ -533,8 +540,7 @@ int csync_update_file_sig(const char *peername, const char *filename,
   if (!chk_local) 
     chk_local = csync_genchecktxt_version(st, filename, flag, 
 					  peer_version);
-  
-  if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
+    if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
     csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
     csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", 
 		chk_peer_decoded, chk_local);
@@ -641,9 +647,23 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
   return rc;
 }
 
+struct textlist *csync_sig_rs_hardlink(const char *filename, struct stat *st, struct textlist *tl) {
+
+  struct textlist *t = tl;
+  while (t)  {
+    // SIG
+    // RS diff
+    // if remote (src) is identical with filename we can 
+    // remote hardlink (src, filename)
+    t = t->next;
+  }
+  // return empty if DONE?
+  return tl;
+}
+
 int csync_update_file_mod(const char *myname, const char *peername,
-			   const char *filename, const char *operation, 
-			   int force, int dry_run)
+			   const char *filename, const char *operation , 
+			   int force, int dry_run, int db_version)
 {
   struct stat st;
   int last_conn_status = 0, auto_resolve_run = 0, 
@@ -654,6 +674,22 @@ int csync_update_file_mod(const char *myname, const char *peername,
     csync_debug(2, "Skipping file update %s on %s - not in my groups.\n", 
 		filename, peername);
     return OK;
+  }
+
+ auto_resolve_entry_point:
+  csync_debug(1, "Updating %s:%s\n", peername, filename);
+  
+  if ( lstat_strict(filename, &st) != 0 ) {
+    csync_debug(0, "ERROR: Cant stat %s.\n", filename);
+    csync_error_count++;
+    return ERROR;
+  }
+  char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
+  char *uidptr = uid_to_name(st.st_uid, uid, MAX_UID_SIZE);
+  char *gidptr = gid_to_name(st.st_gid, gid, MAX_GID_SIZE);
+  if (uidptr == NULL) {
+    uidptr = "-";
+    csync_debug(0, "Failed to lookup uid %d\n", st.st_uid);
   }
   int not_done = 1;
   const char *key_enc = url_encode(key);
@@ -699,7 +735,9 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	return rc;
     }
   
-
+    // Attempt to find remote hardlinks that hare similar to current local file. 
+    // So we dont need to copy/patch
+    // If this doenst work we need to patch
     rc = csync_update_file_hardlink(peername, 
 				    filename, 
 				    key_enc, 
@@ -864,7 +902,8 @@ int compare_files(const char *filename, const char *pattern, int recursive)
 }
 
 void csync_update_host(const char *myname, const char *peername,
-		       const char **patlist, int patnum, int recursive, int dry_run, int ip_version)
+		       const char **patlist, int patnum, int recursive, 
+		       int dry_run, int ip_version, int db_version)
 {
   struct textlist *tl = 0, *t, *next_t;
   struct textlist *tl_mod = 0, **last_tn=&tl;
@@ -919,20 +958,10 @@ void csync_update_host(const char *myname, const char *peername,
     }
   }
   
-  // Run without hardlinks, in order to get (new) files over
   for (t = tl_mod; t != 0; t = t->next) {
     if (!connection_closed_error)
-      if (!t->value2 || strncmp(t->value2, HARDLINK_CMD, HARDLINK_CMD_LEN))
-	csync_update_file_mod(myname, peername,
-			      t->value, t->value2, t->intvalue, dry_run);
-  }
-
-  // Now do it for hardlinks
-  for (t = tl_mod; t != 0; t = t->next) {
-    if (!connection_closed_error)
-      if (!t->value2 || !strncmp(t->value2, HARDLINK_CMD, HARDLINK_CMD_LEN))
-	csync_update_file_mod(myname, peername,
-			    t->value, t->value2, t->intvalue, dry_run);
+      csync_update_file_mod(myname, peername,
+			    t->value, t->value2, t->intvalue, dry_run, db_version);
   }
 
   textlist_free(tl_mod);
@@ -943,7 +972,7 @@ void csync_update_host(const char *myname, const char *peername,
   conn_close();
 }
 
-void csync_update(const char *myhostname, const char ** patlist, int patnum, int recursive, int dry_run, int ip_version)
+void csync_update(const char *myhostname, const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version)
 {
   struct textlist *tl = 0, *t;
 
@@ -968,7 +997,7 @@ void csync_update(const char *myhostname, const char ** patlist, int patnum, int
       continue;
     }
   found_asactive:
-    csync_update_host(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version);
+    csync_update_host(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version, db_version);
   }
   
   textlist_free(tl);

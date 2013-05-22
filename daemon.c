@@ -486,8 +486,24 @@ static void destroy_tag(char *tag[32]) {
     free(tag[i]);
 }
 
+int csync_daemon_hardlink(const char *filename, const char *linkname, const char *is_identical, const char **cmd_error);
 
-int csync_daemon_patch(const char *filename, const char **cmd_error) 
+struct textlist *csync_hardlink(const char *filename, struct stat *st, struct textlist *tl)
+{
+  const char *cmd_error = NULL;
+  struct textlist *t = tl;
+  while (t) {
+    char *src  = t->value;
+    int rc = unlink(src);
+    
+    csync_daemon_hardlink(filename, src, 1, &cmd_error);
+    t = t->next;
+  }
+  textlist_free(tl);
+  return 0;
+}
+
+int csync_daemon_patch(const char *filename, const char **cmd_error, int db_version) 
 {
   struct stat st;
   int rc = stat(filename, &st);
@@ -496,9 +512,19 @@ int csync_daemon_patch(const char *filename, const char **cmd_error)
   if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
     conn_printf("OK (send_data).\n");
     csync_rs_sig(filename);
-    if (csync_rs_patch(filename))
+    if (csync_rs_patch(filename)) {
       *cmd_error = strerror(errno);
-    return ABORT_CMD;
+      return ABORT_CMD;
+    }
+    //TODO restore hardlinks
+    struct stat st_patched; 
+    int new_rc = stat(filename, &st_patched);
+    if (st.st_nlink > 1) {
+      const char *checktxt = csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version);
+      char *operation;
+      struct textlist *tl = csync_check_move_link(filename, checktxt, &st, &operation, csync_hardlink);
+    }
+    return OK;
   }
   return ABORT_CMD;
 }
@@ -576,19 +602,19 @@ const char *csync_daemon_check_perm(struct csync_command *cmd,
   return 0;
 }
 
-int csync_daemon_setown(const char *filename, char *tag[32], const char **cmd_error) 
+int csync_daemon_setown(const char *filename, const char *uidp, const char *gidp, const char *userp, const char *groupp, const char **cmd_error) 
 {
   if ( !csync_ignore_uid || !csync_ignore_gid ) {
-    int uid = csync_ignore_uid ? -1 : atoi(tag[3]);
-    int gid = csync_ignore_gid ? -1 : atoi(tag[4]);
+    int uid = csync_ignore_uid ? -1 : atoi(uidp);
+    int gid = csync_ignore_gid ? -1 : atoi(gidp);
     
-    char *user = csync_ignore_uid ? NULL : tag[5];
+    const char *user = csync_ignore_uid ? NULL : userp;
     if (user != NULL && user[0] != '-') {
       int local_uid = name_to_uid(user, NULL); 
       if (local_uid != -1) 
 	uid = local_uid;
     }
-    char *group = csync_ignore_gid ? NULL : tag[6];
+    const char *group = csync_ignore_gid ? NULL : groupp ;
     int local_gid = name_to_gid(group); 
     if (local_gid != -1) 
       gid = local_gid;
@@ -849,10 +875,6 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
   if (!link(filename, linkname)) {
     return OK;
   }
-  else {
-    *cmd_error = "PATCH";
-    return ABORT_CMD;
-  }
   *cmd_error = strerror(errno);
   return ABORT_CMD;
 }
@@ -881,6 +903,15 @@ int csync_daemon_dispatch(char *filename,
 			  address_t *peername,
 			  const char **cmd_error)
 {
+  char *value      = tag[3];
+  char *secondfile = value;
+  char *uid        = tag[4];
+  char *gid        = tag[5];
+  char *user       = tag[6];
+  char *group      = tag[7];
+  char *mod        = tag[8];
+  char *time       = tag[9];
+
   switch ( cmd->action) {
   
   case A_SIG: {
@@ -908,22 +939,19 @@ int csync_daemon_dispatch(char *filename,
     if (!csync_file_backup(filename, cmd_error))
       csync_unlink(filename, 0, cmd_error);
     break;
-  case A_PATCH: {
-    csync_daemon_patch(filename, cmd_error); 
-    break;
-  }
+  case A_PATCH:
   case A_CREATE: {
-    int rc = csync_daemon_patch(filename, cmd_error); 
+    int rc = csync_daemon_patch(filename, cmd_error, db_version); 
     if (rc != OK)
       return rc;
     // tag[3-6]
-    rc = csync_daemon_setown(filename, tag, cmd_error);
+    rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
     if (rc != OK) 
       return rc;
-    rc = csync_daemon_setmod(filename, tag[7], cmd_error);
+    rc = csync_daemon_setmod(filename, mod, cmd_error);
     if (rc != OK)
       return rc;
-    rc = csync_daemon_settime(filename, tag[8], cmd_error);
+    rc = csync_daemon_settime(filename, time, cmd_error);
     if (rc != OK)
       return rc;
     break;
@@ -950,25 +978,25 @@ int csync_daemon_dispatch(char *filename,
     }
     break;
   case A_MKLINK:
-    return csync_daemon_symlink(filename, prefixsubst(tag[3]), cmd_error);
+    return csync_daemon_symlink(filename, prefixsubst(secondfile), cmd_error);
     break;
   case A_MKHLINK:
-    return csync_daemon_hardlink(filename, prefixsubst(tag[3]), tag[4], cmd_error);
+    return csync_daemon_hardlink(filename, prefixsubst(secondfile), 1, cmd_error);
     break;
   case A_MV:
-    return csync_daemon_mv(filename, prefixsubst(tag[3]), cmd_error);
+    return csync_daemon_mv(filename, prefixsubst(secondfile), cmd_error);
     break;
   case A_MKSOCK:
     /* just ignore socket files */
     break;
   case A_SETOWN:
-    csync_daemon_setown(filename, tag, cmd_error);
+    return csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
     break;
   case A_SETMOD:
-    csync_daemon_setmod(filename, tag[3], cmd_error);
+    return csync_daemon_setmod(filename, value, cmd_error);
     break;
   case A_SETTIME:
-    csync_daemon_settime(filename, tag[3], cmd_error);
+    return csync_daemon_settime(filename, value, cmd_error);
     break;
   case A_LIST:
     csync_daemon_list(filename, tag, *peer);
