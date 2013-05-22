@@ -1123,13 +1123,14 @@ int main(int argc, char ** argv)
 		case MODE_LIST_DIRTY:
 			retval = 2;
 			SQL_BEGIN("DB Dump - Dirty",
-				"SELECT forced, myname, peername, filename FROM dirty ORDER BY filename")
+				"SELECT forced, myname, peername, filename, operation FROM dirty ORDER BY filename")
 			{
-				if (csync_find_next(0, db_decode(SQL_V(3)))) {
-					printf("%s\t%s\t%s\t%s\n", atoi(SQL_V(0)) ?  "force" : "chary",
-						db_decode(SQL_V(1)), db_decode(SQL_V(2)), db_decode(SQL_V(3)));
-					retval = -1;
-				}
+			  if (csync_find_next(0, db_decode(SQL_V(3)))) {
+			    printf("%s%s\t%s\t%s\t%s\n", (atoi(SQL_V(0)) ? "F " : "  "), SQL_V(4),
+				   db_decode(SQL_V(1)), db_decode(SQL_V(2)), db_decode(SQL_V(3)));
+			    retval = -1;
+			  }
+
 			} SQL_END;
 			break;
 
