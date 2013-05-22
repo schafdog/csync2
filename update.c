@@ -32,23 +32,27 @@
 #include <stdarg.h>
 #include <signal.h>
 
-#define ERROR_DIRTY        1
-#define ERROR_OTHER        2
-#define ERROR_PATH_MISSING 3
+#define ERROR_DIRTY        -11
+#define ERROR_OTHER        -12
+#define ERROR_PATH_MISSING -13
+#define ERROR_HARDLINK     -14
 
 #define MAX_UID_SIZE  100
 #define MAX_GID_SIZE  100
 
-#define OK 0
+#define DIFF 4
+#define DIFF_META 8
+#define DIFF_BOTH (DIFF & DIFF_META)
 #define OK_SKIP 1
 #define SKIP 1
 #define OK_DRY 2
 #define LINK_LATER 3
+#define OK 0
+
 #define ERROR -1
 #define MAYBE_AUTO_RESOLVE -2
-#define DIFF -3
-#define SKIP_ACTION -4 
-#define SKIP_ACTION_TIME -5 
+#define SKIP_ACTION -6 
+#define SKIP_ACTION_TIME -7
 
 
 int csync_skip_action_do_time(const char *peername, const char *key_enc, 
@@ -60,23 +64,24 @@ static int connection_closed_error = 1;
 
 int read_conn_status(const char *file, const char *host)
 {
-	char line[4096];
-	if ( conn_gets(line, 4096) ) {
-	  if ( !strncmp(line, "OK (", 4) ) 
-	    return 0;
-	} else {
-	  connection_closed_error = 1;
-	  strcpy(line, "Connection closed.\n");
-	}
-	if (strncmp(line, "ERROR (Path not found)", 15) == 0)
-	  return ERROR_PATH_MISSING; 
-	if ( file )
-		csync_debug(0, "While syncing file %s:\n", file);
-	else
-	        file = "<no file>";
-	csync_debug(0, "ERROR from peer(%s): %s %s", file, host, line);
-	csync_error_count++;
-	return !strcmp(line, "File is also marked dirty here!") ? ERROR_DIRTY : ERROR_OTHER;
+  char line[4096];
+  if ( conn_gets(line, 4096) ) {
+    if ( !strncmp(line, "OK (", 4) ) 
+      return OK;
+  } else {
+    connection_closed_error = 1;
+    strcpy(line, "Connection closed.\n");
+  }
+  if (strncmp(line, "ERROR (Path not found)", 15) == 0 ||
+      strncmp(line, "ERROR (File not found)", 15) == 0)
+    return ERROR_PATH_MISSING; 
+  if ( file )
+    csync_debug(0, "While syncing file %s:\n", file);
+  else
+    file = "<no file>";
+  csync_debug(0, "ERROR from peer(%s): %s %s", file, host, line);
+  csync_error_count++;
+  return !strcmp(line, "File is also marked dirty here!") ? ERROR_DIRTY : ERROR_OTHER;
 }
 
 
@@ -182,7 +187,7 @@ static int get_master_slave_status(const char *peername, const char *filename)
 }
 
 
-int csync_file_mv(const char *key, const char *peername, const char *filename, const char *new_name)
+int csync_file_mv(const char *peername, const char *key, const char *filename, const char *new_name)
 {
   conn_printf("MV %s %s %s\n", url_encode(key), 
 	      url_encode(prefixencode(filename)), 
@@ -351,7 +356,7 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
   const char *key = csync_key(peername, filename);
 
   if ( !key ) {
-    csync_debug(2, "Skipping deletion %s on %s - not in my groups.\n", filename, peername);
+    csync_debug(2, "Skipping deletion/move %s on %s - not in my groups.\n", filename, peername);
     return SKIP;
   }
   const char *key_enc = url_encode(key);
@@ -375,7 +380,8 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
       conn_printf("SIG %s %s %s\n", 
 		  key_enc, 
 		  url_encode(prefixencode(filename)), "user/group");
-      if ( (status = read_conn_status(filename, peername)) ) {
+
+      if ((status = read_conn_status(filename, peername)) ) {
 	if (status == ERROR_PATH_MISSING)
 	  return SKIP_ACTION;
 	else
@@ -411,24 +417,16 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
       }
     }
     int skip_delete = 0;
-    if (operation && strncmp("MV ", operation, 3) == 0) {
-      const char *new_name = (operation + 3);
-      if (csync_file_mv(key, peername, filename, new_name)) {
-	csync_debug(1, "Succes: MV %s %s", filename, new_name);
-	return SKIP_ACTION;
-      }
-      csync_debug(0, "Failed to MV %s %s", filename, new_name);
-    }
+
     conn_printf("DEL %s %s\n", key_enc, filename_enc);
     if ( (last_conn_status=read_conn_status(filename, peername)))
-      auto_resolve_run = csync_check_auto_resolve2(peername, filename, last_conn_status, auto_resolve_run, 1);
-    //TODO FIX
-    struct stat file_stat;
-    if (!auto_resolve_run) {
-      csync_skip_action_do_time(peername, key_enc, filename, filename_enc, 
-				&file_stat);
-      return SKIP_ACTION;
-    }
+      auto_resolve_run = csync_check_auto_resolve2(peername, filename, 
+						   last_conn_status, auto_resolve_run, 1);
+    if (!auto_resolve_run) 
+      {      
+	csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
+	return OK;
+      }
   }
 }
 
@@ -482,13 +480,6 @@ struct update_request {
   const char *uid;
   const char *gid;
 };
-
-#define OK     0
-#define ERROR -1
-#define MAYBE_AUTO_RESOLVE -2
-#define DIFF -3
-#define SKIP_ACTION -4 
-#define SKIP_ACTION_TIME -5 
 
 /* Assume PATCH command has been sent */
 int csync_update_reg_file(const char *peername, const char *filename,
@@ -544,44 +535,86 @@ int csync_update_file_sig(const char *peername, const char *filename,
     csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
     csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", 
 		chk_peer_decoded, chk_local);
-    return DIFF;
+    return DIFF_META;
   }
-  return 0;
+  return OK;
 }
 
 #define HARDLINK_CMD "MKHARDLINK"
 #define HARDLINK_CMD_LEN 10
+/** Works in two ways: normal and reverse 
+    Normalize: Given an Identical file with remote, restore all hardlinks to this
+    file. 
+
+    Reverse: Given an diff file, attempt to find similiar remote file that we 
+    and use to hardlink with. Retries if fails
+
+    If there are errors, we need to patch these files instead of linking
+*/
 
 int csync_update_file_hardlink(const char *peername, 
-			       const char *filename, 
 			       const char *key_encoded, 
+			       const char *filename, 
 			       const char *filename_enc,
-			       const char *operation, 
+			       struct stat  *st, 
+			       const char *uidptr,
+			       const char *gidptr, 
+			       const char *checktxt,
 			       int is_identical,
 			       int *last_conn_status) 
 {
-  if (!operation || strncmp(HARDLINK_CMD, operation, HARDLINK_CMD_LEN)) 
-    // TODO do other checks |strstr(chktxt, "link=H") == -1)
-    return 0;
-  
-  const char *target = (operation + HARDLINK_CMD_LEN + 1);
-  
-  // TODO Check that the target matches the config
-  csync_debug(1, "Hardlinking %s, %s\n", 
-	      filename_enc, 
-	      url_encode(prefixencode(target)));
-  conn_printf("%s %s %s %s\n",
-	      HARDLINK_CMD,
-	      key_encoded, 
-	      filename_enc,
-	      url_encode(prefixencode(target)));
-  if ((*last_conn_status = read_conn_status(filename, peername))) {
-    csync_debug(0, "Failed to hard link %s %s\n", filename, target);
-    return ERROR_OTHER;
+  char *operation;
+  struct textlist *tl = csync_check_move_link(filename, checktxt, st, &operation, NULL);
+  struct textlist *t = tl; 
+  int found_one = 0;
+  int errors = 0;
+
+  int count = 0;
+  for (; !found_one && t; t = t->next) {
+    const char *other = t->value;
+    if (t->intvalue == HARDLINK && other) {
+      const char *key = csync_key(peername, other);
+      if (!key) 
+	continue;
+      
+      const char *path = filename_enc, *newpath = url_encode(prefixencode(other)); 
+      int rc; 
+      rc = csync_update_file_sig_rs_diff(peername, db_encode(key), 
+					 other, newpath, 
+					 st, uidptr, gidptr, 
+					 NULL, last_conn_status);
+      if (!is_identical) {
+	if (rc == OK) {
+	  // We have a remote file that we can use to "reverse" hardlink with
+	  path = newpath;
+	  newpath = filename_enc;
+	  // we onlu need one, if it succed
+	  found_one = 1; 
+	}
+	else
+	  continue;
+      }
+      // TODO Check that the target matches the config
+      csync_debug(1, "Hardlinking %s -> %s\n", path, newpath);
+      conn_printf("%s %s %s %s\n", HARDLINK_CMD, key_encoded, path, newpath);
+
+      if ((*last_conn_status = read_conn_status(filename, peername))) {
+	csync_debug(0, "Failed to hard link %s %s\n", path, newpath);
+	found_one = 0; // Reset found_one flag
+	errors++;
+      }
+      count++;
+    }
   }
-  else 
-    return SKIP_ACTION_TIME;
-  return 0;
+
+  if (!is_identical) {
+    if (found_one)
+      return OK;
+    return ERROR_HARDLINK;
+  }      
+  if (errors) 
+    return ERROR_HARDLINK;
+  return OK;
 }
 
 int csync_patch_file(const char *key_enc, 
@@ -595,9 +628,7 @@ int csync_patch_file(const char *key_enc,
 {
   cmd_printf("PATCH", key_enc, filename_enc, "-", st, uidptr, gidptr);
   int rc = csync_update_reg_file(peername, filename, last_conn_status);
-  if (!rc)
-    return ERROR;
-  return OK;
+  return rc;
 }
 
 int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
@@ -608,13 +639,12 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  int *last_conn_status)
 {
   int found_diff_meta = 0, found_diff = 0;
-  cmd_printf("SIG", key_enc, filename_enc, "user/group", 
-	     st, uidptr, gidptr);
+  cmd_printf("SIG", key_enc, filename_enc, "user/group", st, uidptr, gidptr);
   int rc = csync_update_file_sig(peername, filename, st, chk_local);
-  if (rc == DIFF)
-    found_diff_meta=1;
+  if (rc == DIFF_META)
+    found_diff_meta = DIFF_META;
 
-  if (rc != OK || rc != DIFF)
+  if (rc != OK && rc != DIFF_META)
     return rc;
   
   int rs_check_result = csync_rs_check(filename, S_ISREG(st->st_mode));
@@ -622,7 +652,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
     rc = ERROR;
   if ( rs_check_result > 0) {
     csync_debug(2, "File is different on peer (rsync sig).\n");
-    found_diff=1;
+    found_diff = DIFF;
     rc = OK;
   }
   if ( read_conn_status(filename, peername) ) 
@@ -644,21 +674,33 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 	csync_debug(1, "?M: %-15s %s\n", peername, filename);
     }
   }
-  return rc;
+  return found_diff | found_diff_meta;
 }
 
-struct textlist *csync_sig_rs_hardlink(const char *filename, struct stat *st, struct textlist *tl) {
 
-  struct textlist *t = tl;
-  while (t)  {
-    // SIG
-    // RS diff
-    // if remote (src) is identical with filename we can 
-    // remote hardlink (src, filename)
-    t = t->next;
+int csync_update_file_move(const char *peername, const char *key, const char *filename, const char *operation)
+{
+  const char *old_name = (operation + 3);
+  if (OK == csync_file_mv(peername, key, old_name, filename)) {
+    // DO stat on other file, and setown,mod and time on this 
+    // (actually it should be correct */
+    /* csync_skip_action_do_time(peername, key_enc, filename, filename_enc, 
+       &file_stat);*/
+    
+    csync_debug(1, "Succes: MV %s %s", old_name, filename);
+    SQL("Delete moved file from dirty", 
+	"delete from dirty where filename = '%s' or filename = '%s'", 
+	db_encode(filename), db_encode(old_name)); 
+    return OK;
   }
-  // return empty if DONE?
-  return tl;
+  csync_debug(0, "Failed to MV %s %s", old_name, filename);
+  SQL("Update operation to new", 
+      "Update dirty set operation = 'new' where filename = '%s' ", 
+      db_encode(filename)); 
+  SQL("Insert new dirty delete", 
+      "INSERT into dirty (filename, operation) ('%s', 'rm')", 
+      db_encode(old_name)); 
+  return ERROR;
 }
 
 int csync_update_file_mod(const char *myname, const char *peername,
@@ -666,9 +708,9 @@ int csync_update_file_mod(const char *myname, const char *peername,
 			   int force, int dry_run, int db_version)
 {
   struct stat st;
-  int last_conn_status = 0, auto_resolve_run = 0, 
+  int last_conn_status = 0, auto_resolve_run = 0,
     found_diff = 0, found_diff_meta = 0;
-
+  
   const char *key = csync_key(peername, filename);
   if ( !key ) {
     csync_debug(2, "Skipping file update %s on %s - not in my groups.\n", 
@@ -707,6 +749,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
     char gid[MAX_GID_SIZE];
     char *uidptr = uid_to_name(st.st_uid, uid, MAX_UID_SIZE);
     char *gidptr = gid_to_name(st.st_gid, gid, MAX_GID_SIZE);
+
     if (uidptr == NULL) {
       uidptr = "-";
       csync_debug(0, "Failed to lookup uid %d\n", st.st_uid);
@@ -731,149 +774,180 @@ int csync_update_file_mod(const char *myname, const char *peername,
 					 filename, filename_enc, 
 					 &st, uidptr, gidptr, 
 					 NULL, &last_conn_status);
+      if (rc >= 0) {
+	found_diff = rc & DIFF;
+	found_diff_meta = rc & DIFF_META;
+	rc &= !DIFF_BOTH; 
+      }
+      
       if (dry_run)
 	return rc;
     }
   
+    if (operation &&
+	(strncmp("MV ", operation, 3) == 0)) {
+      int rc = csync_update_file_move(peername, key, filename, operation);
+      if (rc == SKIP_ACTION)
+	return SKIP_ACTION;
+    }
+    switch (rc) 
+      {
+      case OK: 
+      case DIFF:
+	break;
+      case ERROR:
+      case SKIP_ACTION:
+	rc = csync_skip_action_do_time(peername, key_enc, filename, filename_enc, &st);
+	return rc;
+      case SKIP_ACTION_TIME:
+	csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
+	return rc;
+      case OK_DRY:
+	return rc;
+      default:
+	csync_debug(0, "Unhandled return code: %d ", rc);
+	return rc;
+      }
+    int link_later = 0;
+    if (rc == LINK_LATER)
+      link_later = 1;
+    
+    int mode = get_file_type(st.st_mode);
+
+    switch (mode) {
+    case REG_TYPE:
+
     // Attempt to find remote hardlinks that hare similar to current local file. 
     // So we dont need to copy/patch
     // If this doenst work we need to patch
-    rc = csync_update_file_hardlink(peername, 
-				    filename, 
-				    key_enc, 
-				    filename_enc, 
-				    operation, 
-				    !found_diff,
-				    &last_conn_status);    
-      switch (rc) {
-	case OK: 
-	case DIFF:
-	  break;
-	case ERROR:
-	case SKIP_ACTION:
-	case SKIP_ACTION_TIME:
-	  return rc;
-	default:
-	  csync_debug(0, "Unhandled return code: %d ", rc);
-	  return rc;
-      }
-  
-      int link_later = 0;
-      if (rc == LINK_LATER)
-	link_later = 1;
-      int mode = get_file_type(st.st_mode);
-      switch (mode) {
-      case REG_TYPE:
-	rc = OK;
-	if (found_diff)
-	  rc = csync_patch_file(key_enc, peername, 
-				filename, filename_enc,
-				&st, uidptr, gidptr, &last_conn_status);
-	if (rc == OK && st.st_nlink > 0)
-	  rc = csync_update_file_hardlink(peername, 
-					  filename, 
-					  key_enc, 
-					  filename_enc, 
-					  operation, 
-					  1,
-					  &last_conn_status);
-	break;
-      case DIR_TYPE:
-	cmd_printf("MKDIR", key_enc, filename_enc, "-", &st, uidptr, gidptr);
-	rc = csync_update_file_dir(peername, filename, &last_conn_status);
-	break;
-      case CHR_TYPE:
-	conn_printf("MKCHR %s %s\n", key_enc, filename_enc);
-	if ( (last_conn_status = read_conn_status(filename, peername)) )
-	  rc =  MAYBE_AUTO_RESOLVE;
-	break;
-      case BLK_TYPE: 
-	conn_printf("MKBLK %s %s\n",
-		    key_enc, filename_enc);
-	if ( (last_conn_status = read_conn_status(filename, peername)) )
-	  rc = MAYBE_AUTO_RESOLVE;
-	break;
-      case FIFO_TYPE:
-	conn_printf("MKFIFO %s %s\n",
-		    key_enc, filename_enc);
-	if ( (last_conn_status = read_conn_status(filename, peername)) )
-	  rc = MAYBE_AUTO_RESOLVE;
-	break;
-      case LINK_TYPE: {
-	char target[1024];
-	int len = readlink(filename, target, 1023);
-	if ( len > 0 ) {
-	  target[len]=0;
-	  conn_printf("MKLINK %s %s %s\n",
-		      key_enc, 
-		      filename_enc,
-		      url_encode(prefixencode(target)));
-	  if ( (last_conn_status = read_conn_status(filename, peername)) )
-	    rc = MAYBE_AUTO_RESOLVE;
-	} else {
-	  csync_debug(1, "File is a symlink but radlink() failed.\n", st.st_mode);
-	  rc = ERROR;
-	}
-      }
-	break;
-      case SOCK_TYPE: {
-	conn_printf("MKSOCK %s %s\n",
-		    key_enc, filename_enc);
+    rc = OK;
+    if (st.st_nlink > 1 && found_diff) {
+
+      char *chk_local = strdup(
+				     csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
+      rc = csync_update_file_hardlink(peername, key_enc, filename, filename_enc, 
+				      &st, uidptr, gidptr,
+				      chk_local,
+				      !found_diff,
+				      &last_conn_status);    
+
+      free(chk_local);
+      if (rc == OK)
+	return OK;
+    }
+    if (found_diff)
+      rc = csync_patch_file(key_enc, peername, 
+			    filename, filename_enc,
+			    &st, uidptr, gidptr, &last_conn_status);
+    if (rc == OK && st.st_nlink > 1) {
+      char *chk_local = strdup(
+				     csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
+      rc = csync_update_file_hardlink(peername, key_enc, 
+				      filename, filename_enc, 
+				      &st, uidptr, gidptr,
+				      chk_local, 1,
+				      &last_conn_status);
+      free(chk_local);
+    }
+    break;
+    case DIR_TYPE:
+      cmd_printf("MKDIR", key_enc, filename_enc, "-", &st, uidptr, gidptr);
+      rc = csync_update_file_dir(peername, filename, &last_conn_status);
+      break;
+    case CHR_TYPE:
+      conn_printf("MKCHR %s %s\n", key_enc, filename_enc);
+      if ( (last_conn_status = read_conn_status(filename, peername)) )
+	rc =  MAYBE_AUTO_RESOLVE;
+      break;
+    case BLK_TYPE: 
+      conn_printf("MKBLK %s %s\n",
+		  key_enc, filename_enc);
+      if ( (last_conn_status = read_conn_status(filename, peername)) )
+	rc = MAYBE_AUTO_RESOLVE;
+      break;
+    case FIFO_TYPE:
+      conn_printf("MKFIFO %s %s\n",
+		  key_enc, filename_enc);
+      if ( (last_conn_status = read_conn_status(filename, peername)) )
+	rc = MAYBE_AUTO_RESOLVE;
+      break;
+    case LINK_TYPE: {
+      char target[1024];
+      int len = readlink(filename, target, 1023);
+      if ( len > 0 ) {
+	target[len]=0;
+	conn_printf("MKLINK %s %s %s\n",
+		    key_enc, 
+		    filename_enc,
+		    url_encode(prefixencode(target)));
 	if ( (last_conn_status = read_conn_status(filename, peername)) )
 	  rc = MAYBE_AUTO_RESOLVE;
-      }
-	break;
-      default:
-	csync_debug(1, "File type (mode=%o) is not supported.\n", st.st_mode);
+      } else {
+	csync_debug(1, "File is a symlink but radlink() failed.\n", st.st_mode);
 	rc = ERROR;
       }
-      switch (rc) {
-      case OK:
-      case DIFF:
-	break;
-      default:
-	return rc;
-      }
-      // Optimize this. The daemon could have done this in the command.
-      if (rc == OK && found_diff_meta) {
-	conn_printf("SETOWN %s %s %d %d %s %s \n",
-		    key_enc, filename_enc,
-		    st.st_uid, st.st_gid, uidptr, gidptr);
-	if ( read_conn_status(filename, peername) )
-	  rc = ERROR;
-	else {
-	  if ( !S_ISLNK(st.st_mode) ) {
-	    conn_printf("SETMOD %s %s %d\n", key_enc,
-			filename_enc, st.st_mode);
-	    if ( read_conn_status(filename, peername) )
-	      rc = ERROR;
-	  }
+      break;
+    }
+    case SOCK_TYPE: {
+      conn_printf("MKSOCK %s %s\n",
+		  key_enc, filename_enc);
+      if ( (last_conn_status = read_conn_status(filename, peername)) )
+	rc = MAYBE_AUTO_RESOLVE;
+      break;
+    }
+    default:
+      csync_debug(1, "File type (mode=%o) is not supported.\n", st.st_mode);
+      rc = ERROR;
+    }
+    switch (rc) {
+    case OK:
+    case DIFF:
+      break;
+    default:
+      return rc;
+    }
+    // Optimize this. The daemon could have done this in the command.
+    if (rc == OK && found_diff_meta) {
+      conn_printf("SETOWN %s %s - %d %d %s %s \n",
+		  key_enc, filename_enc,
+		  st.st_uid, st.st_gid, uidptr, gidptr);
+      if ( read_conn_status(filename, peername) )
+	rc = ERROR;
+      else {
+	if ( !S_ISLNK(st.st_mode) ) {
+	  conn_printf("SETMOD %s %s %d\n", key_enc,
+		      filename_enc, st.st_mode);
+	  if ( read_conn_status(filename, peername) )
+	    rc = ERROR;
 	}
       }
+    }
   
-      if (rc == SKIP_ACTION && !S_ISLNK(st.st_mode))
-	rc = csync_skip_action_do_time(peername, key_enc, filename, filename_enc,
-				       &st);
-      
-      if (rc == OK || rc == SKIP_ACTION_TIME)
-	csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
-      
-      auto_resolve_run = csync_check_auto_resolve(peername, 
-						  key_enc,
-						  filename, 
-						  filename_enc,
-						  last_conn_status,
-						  auto_resolve_run,
-						  0);
-      if (auto_resolve_run)
-	csync_error_count--;
-
+    if (rc == SKIP_ACTION && !S_ISLNK(st.st_mode)) {
+      rc = csync_skip_action_do_time(peername, key_enc, filename, filename_enc, &st);
       return rc;
+    }
+    
+    if (rc == OK || rc == SKIP_ACTION_TIME) {
+      csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
+      return rc;
+    }
+    auto_resolve_run = csync_check_auto_resolve(peername, 
+						key_enc,
+						filename, 
+						filename_enc,
+						last_conn_status,
+						auto_resolve_run,
+						0);
+    if (!auto_resolve_run) {
+      csync_error_count--;
+      return rc;
+    }
+    csync_debug(1,"Attempting autoresolve on %s:%s", peername, filename);
   }
-  //TODO fix
-  return 0;
+  return OK;
 }
-
+  
 int csync_skip_action_do_time(const char *peername, const char *key_enc, 
 			      const char *filename, const char *filename_enc,
 			      const struct stat *st)
