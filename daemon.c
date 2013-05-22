@@ -317,7 +317,7 @@ struct csync_command cmdtab[] = {
 	{ "mkblk",	1, 1, 1, 1, 1, A_MKBLK	},
 	{ "mkfifo",	1, 1, 1, 1, 1, A_MKFIFO	},
 	{ "mklink",	1, 1, 1, 1, 1, A_MKLINK	},
-	{ "mkhardlink",	1, 1, 1, 1, 1, A_MKHLINK},
+	{ "mkhardlink",	1, 1, 0, 1, 1, A_MKHLINK},
 	{ "mksock",	1, 1, 1, 1, 1, A_MKSOCK	},
 	{ "mv",	        1, 1, 0, 1, 1, A_MV	},
 	{ "setown",	1, 1, 0, 2, 1, A_SETOWN	},
@@ -496,7 +496,7 @@ struct textlist *csync_hardlink(const char *filename, struct stat *st, struct te
     char *src  = t->value;
     int rc = unlink(src);
     
-    csync_daemon_hardlink(filename, src, 1, &cmd_error);
+    csync_daemon_hardlink(filename, src, "1", &cmd_error);
     t = t->next;
   }
   textlist_free(tl);
@@ -635,7 +635,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
     }
     if ( errno == ENOENT ){
       conn_printf("OK (not_found).\n---\noctet-stream 0\n");
-      return ABORT_CMD;
+      return OK;
     }
     else {
       *cmd_error = strerror(errno);
@@ -644,7 +644,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   }
   else if (csync_check_pure(filename)) {
     conn_printf("OK (not_found).\n---\noctet-stream 0\n");
-    return NEXT_CMD;
+    return OK;
   }
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
@@ -664,7 +664,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   else 
     conn_printf("octet-stream 0\n");
 
-  return NEXT_CMD;
+  return OK;
 }
 
 void csync_daemon_type(char *filename, const char **cmd_error)
@@ -981,7 +981,7 @@ int csync_daemon_dispatch(char *filename,
     return csync_daemon_symlink(filename, prefixsubst(secondfile), cmd_error);
     break;
   case A_MKHLINK:
-    return csync_daemon_hardlink(filename, prefixsubst(secondfile), 1, cmd_error);
+    return csync_daemon_hardlink(filename, prefixsubst(secondfile), "1", cmd_error);
     break;
   case A_MV:
     return csync_daemon_mv(filename, prefixsubst(secondfile), cmd_error);
