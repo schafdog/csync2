@@ -1144,7 +1144,7 @@ int main(int argc, char ** argv)
 	csync_db_close();
 
 	if ( csync_server_child_pid ) {
-	  csync_debug(1, "<%d> Connection closed.\n", csync_server_child_pid);
+	  csync_debug(1, "Connection closed.\n", csync_server_child_pid);
 	  if (mode == MODE_NOFORK)
 	    goto nofork;
 	}
