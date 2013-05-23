@@ -8,10 +8,19 @@ fi
 echo "Running command $COMMAND" 
 
 function check {
-    ./csync2 -p 30860 -K csync2_local.cfg -N local -${COMMAND}r$DEBUG test/local # >> csync_local.log 2>&1
+    $VALGRIND ./csync2 -p 30860 -K csync2_local.cfg -N local -${COMMAND}r$DEBUG test/local # >> csync_local.log 2>&1
     echo "select * from file; select * from dirty;" | mysql -t -u csync2_local -pcsync2_local csync2_local >> mysql_local.log
     if [ "$1" != "" ] ; then
 	echo "$1";
+    fi
+    if [ "$COMMAND" == "c" ] ; then 
+	echo "SELECT * from dirty " | mysql -u csync2_local -pcsync2_local csync2_local
+    else
+	echo "Test result:" 
+	echo "SELECT * from dirty " | mysql -u csync2_local -pcsync2_local csync2_local
+#	echo "SELECT * from dirty " | mysql -u csync2_peer -pcsync2_local csync2_local
+	diff -r test/*
+	echo "Test result end" 
     fi
     ${PAUSE}
 }
