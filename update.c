@@ -185,51 +185,51 @@ void csync_update_file_del_mv(const char *myname, const char *peername,
     conn_printf("FLUSH %s %s\n", url_encode(key), url_encode(prefixencode(filename)));
     if ( read_conn_status_allow_missing(filename, peername) )
       goto got_error;
-  } else {
-    int i, found_diff = 0;
-    const char *chk_local = "---";
-    char chk_peer[4096];
-    int status;
-    conn_printf("SIG %s %s %s\n", 
-		url_encode(key), 
-		url_encode(prefixencode(filename)), "user/group");
-    if ((status = read_conn_status(filename, peername)) ) {
-      if (status == ERROR_PATH_MISSING)
-	goto skip_action;
-      else
-	goto got_error;
-    }
-    if ( !conn_gets_newline(chk_peer, 4096, 1) ) 
-      goto got_error;
-    const char *chk_peer_decoded = url_decode(chk_peer);
+  } 
 
-    if ((i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
-      csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-      csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
-      found_diff=1;
-    }
-    int rs_check_result = csync_rs_check(filename, 0);
-    if ( rs_check_result < 0 )
-      goto got_error;
-    if ( rs_check_result ) {
-      csync_debug(2, "File is different on peer (rsync sig).\n");
-      found_diff=1;
-    }
-    if ( read_conn_status(filename, peername) ) goto got_error;
-		
-    if ( !found_diff ) {
-      csync_debug(1, "File is already up to date on peer.\n");
-      if ( dry_run ) {
-	csync_debug(1, "?S: %-15s %s\n", peername, filename);
-	// DS Remove local dirty, even in dry run
-	// return;
-      }
+  int i, found_diff = 0;
+  const char *chk_local = "---";
+  char chk_peer[4096];
+  int status;
+  conn_printf("SIG %s %s %s\n", 
+	      url_encode(key), 
+	      url_encode(prefixencode(filename)), "user/group");
+  if ((status = read_conn_status(filename, peername)) ) {
+    if (status == ERROR_PATH_MISSING)
       goto skip_action;
-    }
+    else
+	goto got_error;
+  }
+  if ( !conn_gets_newline(chk_peer, 4096, 1) ) 
+    goto got_error;
+  const char *chk_peer_decoded = url_decode(chk_peer);
+  
+  if ((i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
+    csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
+    csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
+    found_diff=1;
+  }
+  int rs_check_result = csync_rs_check(filename, 0);
+  if ( rs_check_result < 0 )
+    goto got_error;
+  if ( rs_check_result ) {
+    csync_debug(2, "File is different on peer (rsync sig).\n");
+    found_diff=1;
+  }
+  if ( read_conn_status(filename, peername) ) goto got_error;
+  
+  if ( !found_diff ) {
+    csync_debug(1, "File is already up to date on peer.\n");
     if ( dry_run ) {
-      csync_debug(1, "?D: %-15s %s\n", peername, filename);
-      return;
+      csync_debug(1, "?S: %-15s %s\n", peername, filename);
+      // DS Remove local dirty, even in dry run
+      // return;
     }
+    goto skip_action;
+  }
+  if ( dry_run ) {
+    csync_debug(1, "?D: %-15s %s\n", peername, filename);
+    return;
   }
   int skip_delete = 0;
   if (operation && strncmp("MV ", operation, 3) == 0) {
