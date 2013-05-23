@@ -320,7 +320,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     if (status_value)
       status = atoi(status_value);
     // if the check doesnt compare, it's more than a move/link. 
-    if (csync_cmpchecktxt(db_checktxt, checktxt)) {
+    if (!csync_cmpchecktxt(db_checktxt, checktxt)) {
       if (status == 1) {
 	csync_debug(1, "OPERATION: mv %s to %s\n", db_filename, filename);
 	if (operation) {
@@ -348,18 +348,9 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
       count++; 
     }
   } SQL_FIN {
-    switch (SQL_COUNT) {
-    case 0: 
-      csync_debug(2, "No other file with same inode: %s\n", filename);
-      break;
-    case 1: 
-      csync_debug(2, "One file with same inode as file: %s\n", filename);
-      break;
-    default: 
       csync_debug(2, "%d files with same inode as file: %s\n", SQL_COUNT, filename);
-      break;
-    }
   } SQL_END; 
+  free(filename_enc);
   if (loop) {
     return loop(filename, st, tl);
   }
@@ -441,10 +432,10 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       }
       if (db_version != version || flag != (SET_USER|SET_GROUP)) {
 	checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
-	if (!csync_cmpchecktxt(checktxt, checktxt_same_version))
+	if (csync_cmpchecktxt(checktxt, checktxt_same_version))
 	  is_upgrade = 1;
       }
-      if (!csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
+      if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	csync_debug(2, "File has changed: %s\n", file);
 	*operation = ringbuffer_strdup("Modified");
 	this_is_dirty = 1;
