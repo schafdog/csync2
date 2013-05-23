@@ -506,46 +506,43 @@ void csync_update_file_mod(const char *myname, const char *peername,
     if ( read_conn_status(filename, peername) )
       goto got_error;
   } 
-  else { 
-    cmd_printf("SIG", key_encoded, filename_encoded, "user/group", &st, uidptr, gidptr);
-    int rc = csync_update_file_sig(peername, filename, &st);
-    if (rc == DIFF)
-      found_diff_meta=1;
-    else if (rc == MAYBE_AUTO_RESOLVE)
-      goto maybe_auto_resolve;
-    else if (rc == ERROR)
-      goto got_error;
-    int rs_check_result = csync_rs_check(filename, S_ISREG(st.st_mode));
-    if ( rs_check_result < 0 )
-      goto got_error;
-    if ( rs_check_result ) {
-      csync_debug(2, "File is different on peer (rsync sig).\n");
-      found_diff=1;
-    }
-    if ( read_conn_status(filename, peername) ) 
-      goto got_error;
 
-    // Only when both file and meta data is same (differs from earlier behavior)
-    if ( !found_diff && !found_diff_meta) {
-      csync_debug(2, "?S: %-15s %s\n", peername, filename);
-      // DS also remove from dirty on dry_run 
-      goto skip_action_time;
-    }
-    else {
-      if (found_diff_meta)
-	if (csync_debug_level >= 10) {
-	  //csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
-	  //csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
-	}
-	else
-	  csync_debug(1, "?M: %-15s %s\n", peername, filename);
-      if (dry_run)
-	return;
-    }
+  cmd_printf("SIG", key_encoded, filename_encoded, "user/group", &st, uidptr, gidptr);
+  int rc = csync_update_file_sig(peername, filename, &st);
+  if (rc == DIFF)
+    found_diff_meta=1;
+  else if (rc == MAYBE_AUTO_RESOLVE)
+    goto maybe_auto_resolve;
+  else if (rc == ERROR)
+    goto got_error;
+  int rs_check_result = csync_rs_check(filename, S_ISREG(st.st_mode));
+  if ( rs_check_result < 0 )
+    goto got_error;
+  if ( rs_check_result ) {
+    csync_debug(2, "File is different on peer (rsync sig).\n");
+    found_diff=1;
   }
-
+  if ( read_conn_status(filename, peername) ) 
+    goto got_error;
+  
+  // Only when both file and meta data is same (differs from earlier behavior)
+  if ( !found_diff && !found_diff_meta) {
+    csync_debug(2, "?S: %-15s %s\n", peername, filename);
+    // DS also remove from dirty on dry_run 
+    goto skip_action_time;
+  }
+  else {
+    if (found_diff_meta)
+      if (csync_debug_level >= 10) {
+	//csync_cmpchecktxt_component(l_checktxt, r_checktxt); 
+	//csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file); 
+      }
+      else
+	csync_debug(1, "?M: %-15s %s\n", peername, filename);
+    if (dry_run)
+      return;
+  }
   int mode = get_file_type(st.st_mode);
-  int rc;
   switch (mode) {
     case REG_TYPE:
       if (st.st_nlink > 1) {
