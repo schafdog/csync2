@@ -203,7 +203,7 @@ void csync_update_file_del_mv(const char *myname, const char *peername,
       goto got_error;
     const char *chk_peer_decoded = url_decode(chk_peer);
 
-    if (!(i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
+    if ((i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
       csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
       csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
       found_diff=1;
@@ -380,7 +380,7 @@ int csync_update_file_dir(const char *peername, const char *filename,
 int csync_update_file_sig(const char *peername, const char *filename, 
 			  struct stat *st)
 {
-  int i;
+  int i = 0;
   char chk_peer[4096];
 
   if ( read_conn_status(filename, peername) ) 
@@ -403,7 +403,7 @@ int csync_update_file_sig(const char *peername, const char *filename,
   const char *chk_local = csync_genchecktxt_version(st, filename, flag, 
 					      peer_version);
  
-  if (!csync_cmpchecktxt(chk_peer_decoded, chk_local)) {
+  if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
     csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
     csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", 
 		chk_peer_decoded, chk_local);
