@@ -408,6 +408,7 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
     
     if ( !found_diff ) {
       csync_debug(1, "%s:%s is already up to date on peer. \n", peername, filename);
+      csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
       return SKIP_ACTION;
     }
     if ( dry_run ) {
@@ -1012,8 +1013,8 @@ void csync_update_host(const char *myname, const char *peername,
     } else {
       csync_debug(3, "Dirty item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error)
-	csync_update_file_del_mv(myname, peername,
-			      t->value, t->value2, t->intvalue, dry_run);
+	csync_update_file_del_mv(myname, peername, 
+				 t->value, t->value2, t->intvalue, dry_run);
       last_tn=&(t->next);
     }
   }
