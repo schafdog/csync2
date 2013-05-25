@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.1.41, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.13  Distrib 5.5.31, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: csync2
 -- ------------------------------------------------------
--- Server version	5.1.41-3ubuntu12.10
+-- Server version	5.5.31-0+wheezy1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -42,7 +42,7 @@ CREATE TABLE `dirty` (
   `forced` int(11) DEFAULT NULL,
   `myname` varchar(50) DEFAULT NULL,
   `peername` varchar(50) DEFAULT NULL,
-  `operation` varchar(255) DEFAULT NULL,
+  `operation` varchar(1024) DEFAULT NULL,
   UNIQUE KEY `filename` (`filename`,`peername`),
   KEY `dirty_host` (`peername`(10))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -58,7 +58,12 @@ DROP TABLE IF EXISTS `file`;
 CREATE TABLE `file` (
   `filename` varchar(275) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `checktxt` varchar(200) DEFAULT NULL,
-  UNIQUE KEY `filename` (`filename`)
+  `inode` bigint(20) DEFAULT NULL,
+  `device` int(11) DEFAULT NULL,
+  `status` tinyint(1) DEFAULT NULL,
+  `operation` varchar(1024) DEFAULT NULL,
+  UNIQUE KEY `filename` (`filename`),
+  KEY `idx_file_inode_device` (`device`,`inode`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -76,6 +81,33 @@ CREATE TABLE `hint` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `host`
+--
+
+DROP TABLE IF EXISTS `host`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `host` (
+  `host` varchar(50) DEFAULT NULL,
+  `enabled` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Temporary table structure for view `time`
+--
+
+DROP TABLE IF EXISTS `time`;
+/*!50001 DROP VIEW IF EXISTS `time`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `time` (
+  `filename` tinyint NOT NULL,
+  `time` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Table structure for table `x509_cert`
 --
 
@@ -88,6 +120,25 @@ CREATE TABLE `x509_cert` (
   UNIQUE KEY `peername` (`peername`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Final view structure for view `time`
+--
+
+/*!50001 DROP TABLE IF EXISTS `time`*/;
+/*!50001 DROP VIEW IF EXISTS `time`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`csync2`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `time` AS select `file`.`filename` AS `filename`,substr(`file`.`checktxt`,10,10) AS `time` from `file` where (`file`.`checktxt` like '%mtime=%') */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -98,4 +149,4 @@ CREATE TABLE `x509_cert` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-09-30 22:04:02
+-- Dump completed on 2013-05-25 13:39:32

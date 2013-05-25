@@ -48,15 +48,15 @@ int read_conn_status(const char *file, const char *host)
 	  if ( !strncmp(line, "OK (", 4) ) 
 	    return 0;
 	} else {
-		connection_closed_error = 1;
-		strcpy(line, "Connection closed.\n");
+	  connection_closed_error = 1;
+	  strcpy(line, "Connection closed.\n");
 	}
 	if (strncmp(line, "ERROR (Path not found)", 15) == 0)
 	  return ERROR_PATH_MISSING; 
 	if ( file )
-		csync_debug(0, "While syncing file %s:\n", file);
+	  csync_debug(0, "While syncing file %s:\n", file);
 	else
-	        file = "<no file>";
+	  file = "<no file>";
 	csync_debug(0, "ERROR from peer(%s): %s %s", file, host, line);
 	csync_error_count++;
 	return !strcmp(line, "File is also marked dirty here!") ? ERROR_DIRTY : ERROR_OTHER;
