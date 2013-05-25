@@ -594,7 +594,7 @@ int csync_rs_patch(const char *filename)
   }
 #endif
   // TODO this will break any hardlink to filename. 
-  // DS: That is not want we want IMHO
+  // DS: That is not what we want IMHO
   if (rename(newfname, filename) == 0) {
     csync_debug(3, "File has been patched successfully.\n");
     fclose(delta_file);
