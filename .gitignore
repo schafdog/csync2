@@ -24,3 +24,4 @@ stamp-h1
 ylwrap
 test/
 *.log
+hardlinks_*.txt
