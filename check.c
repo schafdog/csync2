@@ -319,9 +319,10 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
   struct textlist *tl = 0, *t;
   int count = 0;
   unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
+  char *filename_enc = strdup(db_encode(filename));
   struct stat file_stat; 
   SQL_BEGIN("Check for same inode", 
-	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and inode = %llu and device = %llu", db_encode(filename), st->st_ino, dev) {
+	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and inode = %llu and device = %llu", filename_enc, st->st_ino, dev) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
     const char *status_value = SQL_V(2);
@@ -329,6 +330,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     if (status_value)
       status = atoi(status_value);
     // if the check doesnt compare, it's more than a move/link. 
+
     int rc = stat(db_filename, &file_stat);
     int db_version = csync_get_checktxt_version(db_checktxt);
     if (rc) {
@@ -336,8 +338,8 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     }
     else
       db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
-
-    if (csync_cmpchecktxt(db_checktxt, checktxt)) {
+    int i; 
+    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
       if (status == 1) {
 	csync_debug(1, "OPERATION: MV %s to %s\n", db_filename, filename);
 	if (operation) {
@@ -353,10 +355,10 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
 	  textlist_add(&tl, db_filename, HARDLINK);
 	}
       }
-      break; 
     } else {
-      csync_debug(1, "Unknown operation: %s %s\n", db_filename, filename);
-      csync_debug(1, "   checktxt differ %s %s\n", db_checktxt, checktxt);
+      csync_debug(1, "check_move_link: other file with same dev/inode. Unknown operation.");
+      csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
+      csync_debug(1, ">>> OTHER: %s\n>>> FILE:  %s\n", db_checktxt, checktxt);
       
       if (count > 1) {
 	csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
@@ -365,18 +367,9 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
       count++; 
     }
   } SQL_FIN {
-    switch (SQL_COUNT) {
-    case 0: 
-      csync_debug(2, "No other file with same inode: %s\n", filename);
-      break;
-    case 1: 
-      csync_debug(2, "One file with same inode as file: %s\n", filename);
-      break;
-    default: 
       csync_debug(2, "%d files with same inode as file: %s\n", SQL_COUNT, filename);
-      break;
-    }
   } SQL_END; 
+  free(filename_enc);
   if (loop) {
     return loop(filename, st, tl);
   }
@@ -458,10 +451,10 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       }
       if (db_version != version || flag != (SET_USER|SET_GROUP)) {
 	checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
-	if (!csync_cmpchecktxt(checktxt, checktxt_same_version))
+	if (csync_cmpchecktxt(checktxt, checktxt_same_version))
 	  is_upgrade = 1;
       }
-      if (!csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
+      if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	csync_debug(2, "File has changed: %s\n", file);
 	*operation = ringbuffer_strdup("Modified");
 	this_is_dirty = 1;

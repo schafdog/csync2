@@ -130,11 +130,12 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 
 /* In future version of csync this might also convert
  * older checktxt strings to the new format.
+ * WARNING: Inverted to return the n'th character.
  */
 int csync_cmpchecktxt(const char *a, const char *b)
 {
   csync_debug(3, "csync_cmpchecktxt: %s %s ", a, b);
-  return !strcmp(a, b);
+  return strcmp(a, b);
   /*
   int i;
   for (i=0; chk1[i] && chk1[i] != '\n' && chk2[i] && chk2[i] != '\n'; i++)

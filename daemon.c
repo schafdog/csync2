@@ -873,6 +873,7 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
     }
   }
   if (!link(filename, linkname)) {
+    csync_debug(1, "HARDLINK: %s -> %s ", filename, linkname);
     return OK;
   }
   *cmd_error = strerror(errno);
@@ -1040,7 +1041,7 @@ void csync_daemon_session(int db_version, int protocol_version)
   
   csync_daemon_stdin_check(&peername, &peerlen);
   while ( conn_gets(line, 4096) ) {
-    csync_debug(1, "Command: %s ", line);
+    csync_debug(1, "Command: %s", line);
     if (setup_tag(tag, line))
       continue;
     
