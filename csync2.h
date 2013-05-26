@@ -77,6 +77,19 @@ struct peer {
 	const char *peername;
 };
 
+typedef struct  peer *peer_t; 
+
+struct file_info {
+  const char *filename;
+  const char *filename_enc;
+  const char *operation;
+  const char *key_enc;
+  const struct stat *stat;
+  const int rc_stat;
+};
+
+typedef struct file_info *file_info_t; 
+
 extern const struct csync_group *csync_find_next(const struct csync_group *g, const char *file);
 extern int csync_match_file(const char *file);
 extern void csync_check_usefullness(const char *file, int recursive);
