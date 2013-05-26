@@ -50,12 +50,14 @@
 #define OK 0
 
 #define ERROR -1
-#define MAYBE_AUTO_RESOLVE -2
-#define SKIP_ACTION -6 
-#define SKIP_ACTION_TIME -7
+#define MAYBE_AUTO_RESOLVE  -2
+#define SETOWN  -6
+#define SETMOD  -7
+#define SETTIME -8
+#define CLEAR_DIRTY   -9
 
 
-int csync_skip_action_do_time(const char *peername, const char *key_enc, 
+int csync_update_file_settime(const char *peername, const char *key_enc, 
 			      const char *filename, const char *filename_enc,
 			      const struct stat *st);
 
@@ -194,7 +196,7 @@ int csync_file_mv(const char *peername, const char *key, const char *filename, c
   return read_conn_status(filename, peername);
 }
 
-void csync_skip_action_clear_dirty(const char *peername, const char *filename, int auto_resolve_run) 
+void csync_clear_dirty(const char *peername, const char *filename, int auto_resolve_run) 
 {
   SQL("Remove dirty-file entry.",
       "DELETE FROM dirty WHERE filename = '%s'"
@@ -216,8 +218,6 @@ int csync_check_auto_resolve(const char *peername, const char *key_enc,
 			     int last_conn_status, 
 			     int auto_resolve_run, int is_delete) 
 {
-
-  
   if (auto_resolve_run || last_conn_status != 2) {
     return 0;
   }
@@ -346,6 +346,56 @@ int csync_check_auto_resolve2(const char *peername, const char* filename, int la
   return force; 
 }
 
+int csync_update_file_setown(const char *peername, const char *key_enc,
+			     const char *filename, const char *filename_enc,
+			     const struct stat *st, const char *uidptr, const char *gidptr)
+{
+  // Optimize this. The daemon could have done this in the command.
+  conn_printf("SETOWN %s %s - %d %d %s %s \n",
+	      key_enc, filename_enc,
+	      st->st_uid, st->st_gid, uidptr, gidptr);
+  return read_conn_status(filename, peername);
+    
+}
+
+int csync_update_file_setmod(const char *peername, const char *key_enc,
+			     const char *filename, const char *filename_enc,
+			     const struct stat *st)
+{
+  conn_printf("SETMOD %s %s %d\n", key_enc, filename_enc, st->st_mode);
+  return read_conn_status(filename, peername);
+}
+
+int csync_next_step(int rc, int auto_run, const char *myname, const char *peername,
+		    const char *key_enc,
+		    const char *filename, const char *filename_enc, 
+		    const struct stat *st, const char *uidptr, const char *gidptr,
+		    const char *operation, int force, int dry_run)
+{
+  if (dry_run)
+    return 1; 
+  if (auto_run) 
+    return 1;
+
+  switch (rc) {
+  case SETOWN:
+	rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, st, uidptr, gidptr);
+  case SETMOD:
+    rc = csync_update_file_setmod(peername, key_enc, filename, filename_enc, st);
+  case SETTIME:
+    rc = csync_update_file_settime(peername, key_enc, 
+				   filename, filename_enc, st);
+  case CLEAR_DIRTY: 
+  case OK: 
+    csync_clear_dirty(peername, filename, auto_run); 
+    break; 
+  case MAYBE_AUTO_RESOLVE: 
+    // call autoresolve 
+    ;
+  }
+  return rc; 
+}
+
 
 int csync_update_file_del_mv(const char *myname, const char *peername,
 			     const char *filename, 
@@ -383,8 +433,8 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
     if ((status = read_conn_status(filename, peername)) ) {
       if (status == ERROR_PATH_MISSING) {
 	csync_debug(1, "%s:%s is already up to date on peer.\n", peername, filename);
-	csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
-	return SKIP_ACTION_TIME;
+	csync_clear_dirty(peername, filename, auto_resolve_run);
+	return CLEAR_DIRTY;
       }
       else
 	return ERROR;
@@ -411,24 +461,25 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
     
     if ( !found_diff ) {
       csync_debug(1, "%s:%s is already up to date on peer. \n", peername, filename);
-      csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
-      return SKIP_ACTION;
+      csync_clear_dirty(peername, filename, auto_resolve_run);
+      return CLEAR_DIRTY;
     }
     if ( dry_run ) {
       csync_debug(1, "?D: %-15s %s\n", peername, filename);
       return OK_DRY;
     }
     int skip_delete = 0;
-
+    int rc; 
     conn_printf("DEL %s %s\n", key_enc, filename_enc);
-    if ( (last_conn_status=read_conn_status(filename, peername)))
+    rc = read_conn_status(filename, peername);
+    if (rc != OK) 
       auto_resolve_run = csync_check_auto_resolve2(peername, filename, 
-						   last_conn_status, auto_resolve_run, 1);
-    if (!auto_resolve_run) 
-      {      
-	csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
-	return OK;
-      }
+						   rc, auto_resolve_run, 1);
+    if (!auto_resolve_run) {      
+      csync_clear_dirty(peername, filename, auto_resolve_run);
+      return rc; 
+    }
+    csync_debug(1,"Attempting autoresolve on %s:%s", peername, filename);    
   }
 }
 
@@ -664,7 +715,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
   if ( !found_diff && !found_diff_meta) {
     csync_debug(2, "?S: %-15s %s\n", peername, filename);
     // DS also remove from dirty on dry_run 
-    return SKIP_ACTION_TIME;
+    return CLEAR_DIRTY;
   }
   else {
     if (found_diff_meta) {
@@ -680,7 +731,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 }
 
 
-int csync_update_file_move(const char *peername, const char *key, const char *filename, const char *operation)
+int csync_update_file_move(const char* myname, const char *peername, const char *key, const char *filename, const char *operation)
 {
   const char *old_name = (operation + 3);
   if (OK == csync_file_mv(peername, key, old_name, filename)) {
@@ -696,12 +747,14 @@ int csync_update_file_move(const char *peername, const char *key, const char *fi
     return OK;
   }
   csync_debug(0, "Failed to MV %s %s", old_name, filename);
-  SQL("Update operation to new", 
-      "UPDATE dirty SET operation = 'new' WHERE filename = '%s' ", 
+  SQL("Update operation to new (failed move)", 
+      "UPDATE dirty SET operation = 'new (failed mv)' WHERE filename = '%s' ", 
       db_encode(filename)); 
-  SQL("Insert new dirty delete", 
-      "INSERT INTO dirty (filename, operation) VALUES ('%s', 'rm')", 
-      db_encode(old_name)); 
+  SQL("Update operation to delete (failed mv)",
+          "INSERT INTO dirty (filename, forced, myname, peername, operation) "
+      "VALUES ('%s', %s, '%s', '%s', '%s')",
+      db_encode(filename), "0", myname, 
+      db_encode(peername), "rm (failed mv)");
   return ERROR;
 }
 
@@ -776,21 +829,22 @@ int csync_update_file_mod(const char *myname, const char *peername,
   
     if (operation &&
 	(strncmp("MV ", operation, 3) == 0)) {
-      int rc = csync_update_file_move(peername, key, filename, operation);
-      if (rc == SKIP_ACTION)
-	return SKIP_ACTION;
+      int rc = csync_update_file_move(myname, peername, key, filename, operation);
+      if (rc == OK )
+	return rc;
     }
     switch (rc) 
       {
       case OK: 
       case DIFF:
 	break;
-      case SKIP_ACTION:
-	rc = csync_skip_action_do_time(peername, key_enc, filename, filename_enc, &st);
+      case SETTIME:
+	rc = csync_update_file_settime(peername, key_enc, filename, filename_enc, &st);
+	csync_clear_dirty(peername, filename, auto_resolve_run);
       case ERROR:
 	return rc;
-      case SKIP_ACTION_TIME:
-	csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
+      case CLEAR_DIRTY:
+	csync_clear_dirty(peername, filename, auto_resolve_run);
 	return rc;
       case OK_DRY:
 	return rc;
@@ -896,30 +950,25 @@ int csync_update_file_mod(const char *myname, const char *peername,
     default:
       return rc;
     }
-    // Optimize this. The daemon could have done this in the command.
-    if (rc == OK && found_diff_meta) {
-      conn_printf("SETOWN %s %s - %d %d %s %s \n",
-		  key_enc, filename_enc,
-		  st.st_uid, st.st_gid, uidptr, gidptr);
-      if ( read_conn_status(filename, peername) )
-	rc = ERROR;
-      else {
-	if ( !S_ISLNK(st.st_mode) ) {
-	  conn_printf("SETMOD %s %s %d\n", key_enc,
-		      filename_enc, st.st_mode);
-	  if ( read_conn_status(filename, peername) )
-	    rc = ERROR;
-	}
+    if (rc != CLEAR_DIRTY) {
+      if (rc == OK)
+	rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, 
+				      &st, uidptr, gidptr);
+      if (rc != OK)
+	return rc;
+      
+      if (!S_ISLNK(st.st_mode) ) {
+	rc = csync_update_file_setmod(peername, key_enc, filename, filename_enc, 
+				      &st);
+	if (rc != OK)
+	  return rc;
       }
+      rc = csync_update_file_settime(peername, key_enc, filename, filename_enc, &st);
     }
-  
-    if (rc == SKIP_ACTION && !S_ISLNK(st.st_mode)) {
-      rc = csync_skip_action_do_time(peername, key_enc, filename, filename_enc, &st);
+    if (rc != OK && rc != CLEAR_DIRTY)
       return rc;
-    }
-    
-    if (rc == OK || rc == SKIP_ACTION_TIME) {
-      csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
+    if (rc == OK) {
+      csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc;
     }
     auto_resolve_run = csync_check_auto_resolve(peername, 
@@ -938,7 +987,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
   return OK;
 }
   
-int csync_skip_action_do_time(const char *peername, const char *key_enc, 
+int csync_update_file_settime(const char *peername, const char *key_enc, 
 			      const char *filename, const char *filename_enc,
 			      const struct stat *st)
 {
@@ -1005,7 +1054,7 @@ void csync_update_host(const char *myname, const char *peername,
     conn_close();    
     return ;
   }
-  
+  int rc; 
   for (t = tl; t != 0; t = next_t) {
     next_t = t->next;
     if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
@@ -1015,17 +1064,21 @@ void csync_update_host(const char *myname, const char *peername,
       tl_mod = t;
     } else {
       csync_debug(3, "Dirty item %s %s %d \n", t->value, t->value2, t->intvalue);
-      if (!connection_closed_error)
-	csync_update_file_del_mv(myname, peername, 
-				 t->value, t->value2, t->intvalue, dry_run);
+      if (!connection_closed_error) {
+	int done = 0; 
+	rc = csync_update_file_del_mv(myname, peername, 
+				      t->value, t->value2, 
+				      done || t->intvalue, dry_run);
+	//done = check_next_step(rc, done, myname, pername, t->value; t->value2, t->intvalue);
       last_tn=&(t->next);
+      }
     }
   }
-  
   for (t = tl_mod; t != 0; t = t->next) {
     if (!connection_closed_error)
-      csync_update_file_mod(myname, peername,
+      rc = csync_update_file_mod(myname, peername,
 			    t->value, t->value2, t->intvalue, dry_run, db_version);
+    
   }
 
   textlist_free(tl_mod);
