@@ -1126,7 +1126,11 @@ int main(int argc, char ** argv)
 				"SELECT forced, myname, peername, filename, operation FROM dirty ORDER BY filename")
 			{
 			  if (csync_find_next(0, db_decode(SQL_V(3)))) {
-			    printf("%s%s\t%s\t%s\t%s\n", (atoi(SQL_V(0)) ? "F " : "  "), SQL_V(4),
+			    const char *force_str = SQL_V(0);
+			    int force = 0;
+			    if (force_str) 
+			      force = atoi(SQL_V(0));
+			    printf("%s%s\t%s\t%s\t%s\n", (force ? "F " : "  "), SQL_V(4),
 				   db_decode(SQL_V(1)), db_decode(SQL_V(2)), db_decode(SQL_V(3)));
 			    retval = -1;
 			  }
