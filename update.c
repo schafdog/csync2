@@ -197,7 +197,7 @@ int csync_file_mv(const char *peername, const char *key, const char *filename, c
 void csync_skip_action_clear_dirty(const char *peername, const char *filename, int auto_resolve_run) 
 {
   SQL("Remove dirty-file entry.",
-      "DELETE FROM dirty WHERE filename = '%s' "
+      "DELETE FROM dirty WHERE filename = '%s'"
       "AND peername = '%s'", db_encode(filename),
       db_encode(peername));
   
@@ -691,8 +691,8 @@ int csync_update_file_move(const char *peername, const char *key, const char *fi
     
     csync_debug(1, "Succes: MV %s %s", old_name, filename);
     SQL("Delete moved file from dirty", 
-	"DELETE FROM dirty WHERE filename = '%s' OR filename = '%s'", 
-	db_encode(filename), db_encode(old_name)); 
+	"DELETE FROM dirty WHERE (filename = '%s' OR filename = '%s') AND peername = '%s'", 
+	db_encode(filename), db_encode(old_name), db_encode(peername)); 
     return OK;
   }
   csync_debug(0, "Failed to MV %s %s", old_name, filename);
