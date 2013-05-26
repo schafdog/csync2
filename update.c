@@ -381,8 +381,11 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
 		url_encode(prefixencode(filename)), "user/group");
     
     if ((status = read_conn_status(filename, peername)) ) {
-      if (status == ERROR_PATH_MISSING)
+      if (status == ERROR_PATH_MISSING) {
+	csync_debug(1, "%s:%s is already up to date on peer.\n", peername, filename);
+	csync_skip_action_clear_dirty(peername, filename, auto_resolve_run);
 	return SKIP_ACTION_TIME;
+      }
       else
 	return ERROR;
     }
@@ -688,16 +691,16 @@ int csync_update_file_move(const char *peername, const char *key, const char *fi
     
     csync_debug(1, "Succes: MV %s %s", old_name, filename);
     SQL("Delete moved file from dirty", 
-	"delete from dirty where filename = '%s' or filename = '%s'", 
+	"DELETE FROM dirty WHERE filename = '%s' OR filename = '%s'", 
 	db_encode(filename), db_encode(old_name)); 
     return OK;
   }
   csync_debug(0, "Failed to MV %s %s", old_name, filename);
   SQL("Update operation to new", 
-      "Update dirty set operation = 'new' where filename = '%s' ", 
+      "UPDATE dirty SET operation = 'new' WHERE filename = '%s' ", 
       db_encode(filename)); 
   SQL("Insert new dirty delete", 
-      "INSERT into dirty (filename, operation) ('%s', 'rm')", 
+      "INSERT INTO dirty (filename, operation) VALUES ('%s', 'rm')", 
       db_encode(old_name)); 
   return ERROR;
 }
