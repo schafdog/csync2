@@ -50,6 +50,8 @@ mv test/local/second  test/local/before
 check "move second before (reorder)" 
 mv test/local/before  test/local/dir1/hardlink_soon
 check "move to subdir" 
+mv test/local/dir1  test/local/dir2
+check "move subdir" 
 ln test/local/dir1/hardlink_soon test/local/2hardlink
 ln test/local/2hardlink test/local/1hardlink 
 check "Hardlink count 3"
@@ -59,10 +61,10 @@ echo hardlink > test/local/4hardlink
 ln   test/local/4hardlink test/local/3hardlink 
 check "new hardlink 4 and 3 at once" 
 ln -s hej.txt test/local/softlink
-check
+check "softlink"
 ln -s /etc/hosts test/local/absolut_softlink
-check
+check "absolut softlink"
 touch 'test/local/database " problem' 
-check
+check "database encoding of \" "
 touch "test/local/database ' problem"  
-check
+check "database encoding of ' "
