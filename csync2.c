@@ -1155,7 +1155,10 @@ int main(int argc, char ** argv)
 	}
 
 	if ( csync_error_count != 0 || (csync_messages_printed && csync_debug_level) )
-		csync_debug(0, "Finished with %d errors.\n", csync_error_count);
+	  if (csync_error_count > 0)
+	    csync_debug(0, "Finished with %d errors.\n", csync_error_count);
+	  else
+	    csync_debug(0, "Finished succesfully.\n");
 
 	csync_printtotaltime();
 
