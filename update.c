@@ -756,7 +756,7 @@ int csync_update_file_move(const char* myname, const char *peername, const char 
   SQL("Update operation to delete (failed mv)",
           "INSERT INTO dirty (filename, forced, myname, peername, operation) "
       "VALUES ('%s', %s, '%s', '%s', '%s')",
-      db_encode(filename), "0", myname, 
+      db_encode(old_name), "0", myname, 
       db_encode(peername), "rm (failed mv)");
   return DIFF;
 }
