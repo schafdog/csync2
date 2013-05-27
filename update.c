@@ -827,9 +827,11 @@ int csync_update_file_mod(const char *myname, const char *peername,
       rc &= !DIFF_BOTH; 
     }
     
-    if (dry_run)
+    if (dry_run) {
+      if (rc == CLEAR_DIRTY)
+	csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc;
-  
+    }
     if (operation && (strncmp("MV ", operation, 3) == 0)) {
       switch (rc) {
       case DIFF_BOTH: 
