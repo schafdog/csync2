@@ -747,15 +747,18 @@ int csync_update_file_move(const char* myname, const char *peername, const char 
     return OK;
   }
   csync_debug(0, "Failed to MV %s %s", old_name, filename);
-  SQL("Update operation to new (failed move)", 
+
+  SQL("Update operation to new (failed mv)", 
       "UPDATE dirty SET operation = 'new (failed mv)' WHERE filename = '%s' ", 
-      db_encode(filename)); 
+      db_encode(filename), "0", myname, 
+      db_encode(peername), "new (failed mv)");
+
   SQL("Update operation to delete (failed mv)",
           "INSERT INTO dirty (filename, forced, myname, peername, operation) "
       "VALUES ('%s', %s, '%s', '%s', '%s')",
       db_encode(filename), "0", myname, 
       db_encode(peername), "rm (failed mv)");
-  return ERROR;
+  return DIFF;
 }
 
 int csync_update_file_mod(const char *myname, const char *peername,
@@ -827,20 +830,31 @@ int csync_update_file_mod(const char *myname, const char *peername,
     if (dry_run)
       return rc;
   
-    if (operation &&
-	(strncmp("MV ", operation, 3) == 0)) {
-      int rc = csync_update_file_move(myname, peername, key, filename, operation);
-      if (rc == OK )
-	return rc;
+    if (operation && (strncmp("MV ", operation, 3) == 0)) {
+      switch (rc) {
+      case DIFF_BOTH: 
+      case DIFF:
+	rc = csync_update_file_move(myname, peername, key, filename, operation);
+	if (rc == OK)
+	  return rc;
+	break; 
+      case DIFF_META:
+	  rc = SETOWN;
+	  rc = CLEAR_DIRTY;
+      }
     }
-    switch (rc) 
+
+    switch (rc)
       {
       case OK: 
       case DIFF:
 	break;
+      case SETOWN:
+	
       case SETTIME:
 	rc = csync_update_file_settime(peername, key_enc, filename, filename_enc, &st);
 	csync_clear_dirty(peername, filename, auto_resolve_run);
+	return rc;
       case ERROR:
 	return rc;
       case CLEAR_DIRTY:
