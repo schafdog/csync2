@@ -21,7 +21,7 @@ AC_INIT(csync2, 2.0rc1, csync2@lists.linbit.com)
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_SRCDIR(csync2.c)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 
 # Use /etc and /var instead of $prefix/...
 # test "$localstatedir" = '${prefix}/var' && localstatedir=/var
