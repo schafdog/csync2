@@ -15,6 +15,13 @@
 #define DB_ROW  100
 #define DB_DONE 101
 
+
+#ifdef __DARWIN_C_LEVEL
+#define SO_FILE_EXT ".dylib"
+#else
+#define SO_FILE_EXT ".so"
+#endif
+
 typedef struct db_conn_t *db_conn_p;
 typedef struct db_stmt_t *db_stmt_p;
 

@@ -56,13 +56,7 @@ static struct db_postgres_fns {
 
 static void *dl_handle;
 
-
-#ifdef __DARWIN_C_LEVEL
-#define SO_FILE "libpq.dylib"
-#else
-#define SO_FILE "libpq.so"
-#endif
-
+#define SO_FILE "libpq" SO_FILE_EXT
 
 static void db_postgres_dlopen(void)
 {
