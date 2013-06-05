@@ -1105,7 +1105,7 @@ void csync_update_host(const char *myname, const char *peername,
   conn_close();
 }
 
-void csync_update(const char *myhostname, const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version)
+void csync_update(const char *myhostname, char *active_peers[], const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version)
 {
   struct textlist *tl = 0, *t;
 
@@ -1114,23 +1114,24 @@ void csync_update(const char *myhostname, const char ** patlist, int patnum, int
     {
       textlist_add(&tl, db_decode(SQL_V(0)), 0);
     } SQL_END;
-  
+
+  int found = 1;
   for (t = tl; t != 0; t = t->next) {
-    if (active_peerlist) {
-      int i=0, pnamelen = strlen(t->value);
-      
-      while (active_peerlist[i]) {
-	if ( !strncmp(active_peerlist+i, t->value, pnamelen) &&
-	     (active_peerlist[i+pnamelen] == ',' || !active_peerlist[i+pnamelen]) )
-	  goto found_asactive;
-	while (active_peerlist[i])
-	  if (active_peerlist[i++]==',') 
+    if (active_peers) {
+      int i=0;
+      found = 0;
+      while (active_peers[i]) {
+	if (!strcmp(active_peers[i], t->value)) {
+	    found = 1;
+	    while (active_peers[i])
+	      active_peers[i] = active_peers[++i];
 	    break;
+	}
+	i++;
       }
-      continue;
     }
-  found_asactive:
-    csync_update_host(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version, db_version);
+    if (found)
+      csync_update_host(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version, db_version);
   }
   
   textlist_free(tl);
