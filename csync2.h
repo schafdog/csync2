@@ -239,7 +239,7 @@ void cmd_printf(const char *cmd, const char *key,
 		const char *filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr);
 int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation);
-extern void csync_update(const char *myname, const char **patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version);
+extern void csync_update(const char *myname, char **peers, const char **patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version);
 extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
 extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version);

@@ -59,6 +59,7 @@ char myhostname[256] = "";
 char *csync_port = "30865";
 char *active_grouplist = 0;
 char *active_peerlist = 0;
+char **active_peers = 0;
 char *update_format= 0;
 char *allow_peer = 0;
 int  db_version = 1; 
@@ -489,6 +490,36 @@ int protocol_version;
 const char* (*db_decode) (const char *value); 
 const char* (*db_encode) (const char *value); 
 
+
+char **peers = NULL;
+char ** parse_peerlist(char *peerlist) {
+  if (peerlist == NULL)
+    return peers;
+  peers = malloc(sizeof(peers[100]));
+  int i = 0;
+  char *saveptr;
+  peers[i] = strtok_r(peerlist, ",", &saveptr);
+  while ((peers[++i] = strtok_r(NULL, ",", &saveptr)))
+    ;
+  peers[++i] = NULL;
+  return peers;
+}
+
+int match_peer(char **active_peers, const char *peer) {
+  int i = 0;
+  int match = 1;
+  if (active_peers) {
+    match = 0;
+    while (active_peers[i]) {
+      if (!strcmp(active_peers[i], peer))
+	return 1;
+      i++;
+    }
+  }
+  return match;
+}
+
+
 int main(int argc, char ** argv)
 {
 	struct textlist *tl = 0, *t;
@@ -573,6 +604,7 @@ int main(int argc, char ** argv)
 				break;
 			case 'P':
 				active_peerlist = optarg;
+				active_peers = parse_peerlist(active_peerlist);
 				break;
 			case 'B':
 				db_blocking_mode = 0;
@@ -897,7 +929,7 @@ int main(int argc, char ** argv)
 			if ( argc == optind )
 			{
 			  csync_check("/", 1, init_run, db_version);
-			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version, db_version);
+			  csync_update(myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version);
 			}
 			else
 			{
@@ -907,7 +939,7 @@ int main(int argc, char ** argv)
 					csync_check_usefullness(realnames[i-optind], recursive);
 					csync_check(realnames[i-optind], recursive, init_run, db_version);
 				}
-				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
+				csync_update(myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}
@@ -956,7 +988,7 @@ int main(int argc, char ** argv)
 		case MODE_UPDATE:
 			if ( argc == optind )
 			{
-			  csync_update(myhostname, 0, 0, 0, dry_run, ip_version,db_version);
+			  csync_update(myhostname, active_peers, 0, 0, 0, dry_run, ip_version,db_version);
 			}
 			else
 			{
@@ -965,7 +997,7 @@ int main(int argc, char ** argv)
 					realnames[i-optind] = strdup(getrealfn(argv[i]));
 					csync_check_usefullness(realnames[i-optind], recursive);
 				}
-				csync_update(myhostname, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
+				csync_update(myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
 				for (i=optind; i < argc; i++)
 					free(realnames[i-optind]);
 			}
@@ -1125,16 +1157,19 @@ int main(int argc, char ** argv)
 			SQL_BEGIN("DB Dump - Dirty",
 				"SELECT forced, myname, peername, filename, operation FROM dirty ORDER BY filename")
 			{
-			  if (csync_find_next(0, db_decode(SQL_V(3)))) {
+			  const char *peername = db_decode(SQL_V(2));
+			  const char *filename = db_decode(SQL_V(3));
+			  if (csync_find_next(0, filename)) {
 			    const char *force_str = SQL_V(0);
-			    int force = 0;
-			    if (force_str) 
-			      force = atoi(SQL_V(0));
-			    printf("%s%s\t%s\t%s\t%s\n", (force ? "F " : "  "), SQL_V(4),
-				   db_decode(SQL_V(1)), db_decode(SQL_V(2)), db_decode(SQL_V(3)));
-			    retval = -1;
+			    if (match_peer(active_peers, peername)) {
+			      int force = 0;
+			      if (force_str) 
+				force = atoi(SQL_V(0));
+			      printf("%s%s\t%s\t%s\t%s\n", (force ? "F " : "  "), SQL_V(4),
+				     db_decode(SQL_V(1)), peername, filename);
+			      retval = -1;
+			    }
 			  }
-
 			} SQL_END;
 			break;
 
