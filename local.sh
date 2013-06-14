@@ -44,6 +44,10 @@ check "first file"
 mkdir test/local/dir1
 echo hejhejhej > test/local/hej.txt
 check "first directory dir1 plus file"
+echo delete > test/local/delete_soon.txt
+check "create to be deleted next"
+rm test/local/delete_soon.txt
+check "deleting delete_soon.txt"
 mv test/local/first.txt test/local/second
 check "move first second" 
 mv test/local/second  test/local/before
