@@ -776,9 +776,6 @@ int csync_update_file_mod(const char *myname, const char *peername,
     return OK;
   }
 
- auto_resolve_entry_point:
-  csync_debug(1, "Updating %s:%s\n", peername, filename);
-  
   if ( lstat_strict(filename, &st) != 0 ) {
     csync_debug(0, "ERROR: Cant stat %s.\n", filename);
     csync_error_count++;
