@@ -87,7 +87,7 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
 	SQL("Removing file from dirty db",
 			"delete from dirty where filename = '%s' and peername = '%s'",
 	                filename_encoded, peername_encoded);
-	if ( lstat_strict(prefixsubst(filename), &st) != 0 || csync_check_pure(filename) ) {
+	if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename) ) {
 		SQL("Removing file from file db",
 			"delete from file where filename = '%s'",
 		    filename_encoded);
@@ -302,7 +302,12 @@ enum {
 };
 
 struct csync_command cmdtab[] = {
-  /*      command,perm, dirty,unlink, update,need_ident, action */
+  /*      command,      perm, 
+	                   dirty,
+			      unlink, 
+			         update, 
+				    need_ident, 
+				       action */
 	{ "sig",	1, 0, 0, 0, 1, A_SIG	},
 	{ "mark",	1, 0, 0, 0, 1, A_MARK	},
 	{ "type",	2, 0, 0, 0, 1, A_TYPE	},
