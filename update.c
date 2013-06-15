@@ -518,7 +518,7 @@ void cmd_printf(const char *cmd, const char *key,
 	      cmd, key, filename, secondname,
 	      st->st_uid, st->st_gid, 
 	      uidptr, gidptr,
-	      st->st_mode, st->st_mtime);
+	      st->st_mode, (long long) st->st_mtime);
 }
 
 
@@ -679,7 +679,8 @@ int csync_patch_file(const char *key_enc,
 		     const char *gidptr,
 		     int *last_conn_status)
 {
-  cmd_printf("PATCH", key_enc, filename_enc, "-", st, uidptr, gidptr);
+  cmd_printf("PATCH", key_enc, filename_enc, "-",          st, uidptr, gidptr);
+//cmd_printf("SIG",   key_enc, filename_enc, "user/group", st, uidptr, gidptr);
   int rc = csync_update_reg_file(peername, filename, last_conn_status);
   return rc;
 }
