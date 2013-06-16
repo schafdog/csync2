@@ -988,9 +988,9 @@ int csync_daemon_dispatch(char *filename,
     break;
   case A_MKHLINK: {
     const char *newname = prefixsubst(secondfile);
-    int rc = csync_daemon_hardlink(filename, prefixsubst(secondfile), "1", cmd_error);
+    int rc = csync_daemon_hardlink(filename, newname, "1", cmd_error);
     if (rc == OK)
-      csync_file_update(filename, *peer, db_version);
+      csync_file_update(newname, *peer, db_version);
     return rc;
     break;
   }
@@ -998,7 +998,7 @@ int csync_daemon_dispatch(char *filename,
     const char *newname = prefixsubst(secondfile);
     int rc = csync_daemon_mv(filename, newname, cmd_error);
     if (rc == OK)
-      csync_file_update(filename, *peer, db_version);
+      csync_file_update(newname, *peer, db_version);
     return rc;
     break;
   }
@@ -1101,7 +1101,6 @@ void csync_daemon_session(int db_version, int protocol_version)
 	  
     if (rc == OK) {
       // check updates done
-      csync_debug(0, "check update: %s", cmd);
       csync_daemon_check_update(filename, cmd, 
 				peer, db_version);
     }
