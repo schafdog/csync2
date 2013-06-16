@@ -986,12 +986,22 @@ int csync_daemon_dispatch(char *filename,
   case A_MKLINK:
     return csync_daemon_symlink(filename, prefixsubst(secondfile), cmd_error);
     break;
-  case A_MKHLINK:
-    return csync_daemon_hardlink(filename, prefixsubst(secondfile), "1", cmd_error);
+  case A_MKHLINK: {
+    const char *newname = prefixsubst(secondfile);
+    int rc = csync_daemon_hardlink(filename, prefixsubst(secondfile), "1", cmd_error);
+    if (rc == OK)
+      csync_file_update(filename, *peer, db_version);
+    return rc;
     break;
-  case A_MV:
-    return csync_daemon_mv(filename, prefixsubst(secondfile), cmd_error);
+  }
+  case A_MV: {
+    const char *newname = prefixsubst(secondfile);
+    int rc = csync_daemon_mv(filename, newname, cmd_error);
+    if (rc == OK)
+      csync_file_update(filename, *peer, db_version);
+    return rc;
     break;
+  }
   case A_MKSOCK:
     /* just ignore socket files */
     break;
@@ -1089,9 +1099,12 @@ void csync_daemon_session(int db_version, int protocol_version)
 			       &peer, &peername,
 			       &cmd_error);
 	  
-    if (rc == OK) // check updates done
+    if (rc == OK) {
+      // check updates done
+      csync_debug(0, "check update: %s", cmd);
       csync_daemon_check_update(filename, cmd, 
 				peer, db_version);
+    }
     else if (rc == NEXT_CMD){
       // Already send an reply
       destroy_tag(tag);
