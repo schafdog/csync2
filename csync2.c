@@ -842,9 +842,12 @@ int main(int argc, char ** argv)
 		for (i=0; cfgname[i]; i++)
 			if ( !(cfgname[i] >= '0' && cfgname[i] <= '9') &&
 			     !(cfgname[i] >= 'a' && cfgname[i] <= 'z') ) {
-				(mode == MODE_INETD ? conn_printf : csync_fatal)
-						("Config names are limited to [a-z0-9]+.\n");
-				return mode != MODE_INETD;
+			  char *error  = "Config names are limited to [a-z0-9]+.\n";
+			  if (mode == MODE_INETD)
+			    conn_printf(error);
+			  else
+			    csync_fatal(error);
+			  return mode != MODE_INETD;
 			}
 
 		ASPRINTF(&file_config, ETCDIR "/csync2_%s.cfg", cfgname);
