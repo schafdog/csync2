@@ -74,8 +74,8 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 		rc = 1;
 		cmd_error = "File is also marked dirty here!";
 	} SQL_END;
-	if (rc && peername)
-	  csync_mark(filename, peername, 0, operation);
+	if (!rc && operation && peername)
+	  csync_mark(filename, myhostname, peername, operation);
 	return rc;
 }
 
@@ -798,15 +798,20 @@ int csync_daemon_group(char **active_grouplist, char *newgroup,
   return OK;
 }
 
-void csync_daemon_check_update(char *filename, struct csync_command *cmd, char *peer, int db_version) 
+void csync_daemon_check_update(const char *filename, const char *otherfile, struct csync_command *cmd, char *peer, int db_version) 
 {
   if ( cmd->update )
     csync_file_update(filename, peer, db_version);
-  
+
+  if (otherfile)
+    csync_file_update(otherfile, peer, db_version);
+
   if ( cmd->update == 1 ) {
-    csync_debug(1, "Updated(%s) %s:%s \n", 
+    csync_debug(1, "Updated(%s) %s:%s %s \n", 
 		cmd->text, 
-		peer ? peer : "???", filename);
+		peer ? peer : "???", 
+		filename, 
+		otherfile ? otherfile: "");
     csync_schedule_commands(filename, 0);
   }
 }
@@ -907,6 +912,7 @@ int csync_daemon_dispatch(char *filename,
 			  int protocol_version, 
 			  char **peer,
 			  address_t *peername,
+			  const char **otherfile,
 			  const char **cmd_error)
 {
   char *value      = tag[3];
@@ -984,22 +990,18 @@ int csync_daemon_dispatch(char *filename,
     }
     break;
   case A_MKLINK:
-    return csync_daemon_symlink(filename, prefixsubst(secondfile), cmd_error);
+    *otherfile = prefixsubst(secondfile);
+    return csync_daemon_symlink(filename, *otherfile, cmd_error);
+
     break;
   case A_MKHLINK: {
-    const char *newname = prefixsubst(secondfile);
-    int rc = csync_daemon_hardlink(filename, newname, "1", cmd_error);
-    if (rc == OK)
-      csync_file_update(newname, *peer, db_version);
-    return rc;
+    *otherfile = prefixsubst(secondfile);
+    return csync_daemon_hardlink(filename, *otherfile, "1", cmd_error);
     break;
   }
   case A_MV: {
-    const char *newname = prefixsubst(secondfile);
-    int rc = csync_daemon_mv(filename, newname, cmd_error);
-    if (rc == OK)
-      csync_file_update(newname, *peer, db_version);
-    return rc;
+    *otherfile = prefixsubst(secondfile);
+    return csync_daemon_mv(filename, *otherfile, cmd_error);
     break;
   }
   case A_MKSOCK:
@@ -1094,15 +1096,15 @@ void csync_daemon_session(int db_version, int protocol_version)
     if (rc == OK && cmd->unlink )
       csync_unlink(filename, cmd->unlink, &cmd_error);
 
+    const char *otherfile = NULL;
     rc = csync_daemon_dispatch(filename, cmd, tag, 
 			       db_version, protocol_version, 
-			       &peer, &peername,
+			       &peer, &peername, &otherfile,
 			       &cmd_error);
 	  
     if (rc == OK) {
       // check updates done
-      csync_daemon_check_update(filename, cmd, 
-				peer, db_version);
+      csync_daemon_check_update(filename, otherfile, cmd, peer, db_version);
     }
     else if (rc == NEXT_CMD){
       // Already send an reply
