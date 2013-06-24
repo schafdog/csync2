@@ -747,7 +747,7 @@ int csync_update_file_move(const char* myname, const char *peername, const char 
 	db_encode(filename), db_encode(old_name), db_encode(peername)); 
     return OK;
   }
-  csync_debug(0, "Failed to MV %s %s", old_name, filename);
+  csync_debug(0, "Failed to MV %s %s \n", old_name, filename);
 
   SQL("Update operation to new (failed mv)", 
       "UPDATE dirty SET operation = 'new (failed mv)' WHERE filename = '%s' ", 
