@@ -90,6 +90,8 @@ int conn_connect(const char *peername, int ip_version)
 	return sfd;
 }
 
+static char *active_peer = 0;
+
 int conn_open(const char *peername, int ip_version)
 {
 	int on = 1;
@@ -111,6 +113,11 @@ int conn_open(const char *peername, int ip_version)
 #ifdef HAVE_LIBGNUTLS
 	csync_conn_usessl = 0;
 #endif
+	if (active_peer) { 
+	  free(active_peer);
+	  csync_debug(0, "Connection not closed on open?");
+	}
+	active_peer = strdup(peername);
 	return 0;
 }
 
@@ -318,6 +325,11 @@ int conn_close()
 	}
 #endif
 
+  if (active_peer) {
+    free(active_peer);
+    active_peer = NULL;
+  }
+    
 	if ( conn_fd_in != conn_fd_out) close(conn_fd_in);
 	close(conn_fd_out);
 
@@ -430,7 +442,7 @@ int conn_read(void *buf, size_t count)
 		if (rc <= 0) return pos;
 	}
 
-	conn_debug("Peer", buf, pos);
+	conn_debug(active_peer, buf, pos);
 	return pos;
 }
 
@@ -476,12 +488,12 @@ size_t conn_gets_newline(char *s, size_t size, int remove_newline)
 	}
 	s[i] = 0;
 
-	conn_debug("Peer", s, i);
+	conn_debug(active_peer, s, i);
 	return i;
 }
 
 
 size_t conn_gets(char *s, size_t size) {
-  return conn_gets_newline(s, size, 0);
+  return conn_gets_newline(s, size, 1);
 }
 
