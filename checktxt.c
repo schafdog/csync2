@@ -85,8 +85,9 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 		xxprintf(":type=reg:size=%llu", (long long)st->st_size);
 		// TODO would be nice with the real count,
 		// but for now just an indicator for hard links
-		if (st->st_nlink > 1)
-		  xxprintf(":link=H");
+
+		//if (st->st_nlink > 1)
+		//  xxprintf(":link=H");
 	}
 	if ( S_ISDIR(st->st_mode) )
 		xxprintf(":type=dir");
