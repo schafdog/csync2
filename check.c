@@ -459,7 +459,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	  is_upgrade = 1;
       }
       if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
-	csync_debug(2, "File has changed: %s\n", file);
+	csync_debug(2, "%s has changed: \n %s \n %s\n", file, checktxt_same_version, checktxt_db);
 	*operation = ringbuffer_strdup("Modified");
 	this_is_dirty = 1;
       }
