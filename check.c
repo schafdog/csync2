@@ -99,7 +99,7 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
 
   for (pl_idx=0; pl[pl_idx].peername; pl_idx++)
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "Marking file as dirty: %s:%s\n", pl[pl_idx].peername, file);
+      csync_debug(1, "Marking %s:%s as %s (peerfilter %s).\n", pl[pl_idx].peername, file, operation, (peerfilter ? peerfilter : "(all)"));
 
       SQL("Deleting old dirty file entries",
 	  "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
@@ -274,8 +274,10 @@ void csync_check_del(const char *file, int recursive, int init_run)
     } SQL_END;
 
   for (t = tl; t != 0; t = t->next) {
-    if (!init_run) 
+    if (!init_run) {
+      csync_debug(0, "check_dirty (rm): before mark (all) \n");
       csync_mark(t->value, 0, 0, "rm"); //, checktxt, inode);
+    }
     // delay delete, set deleted flags
     SQL("Mark file as deleted from DB. It isn't with us anymore.",
 	"UPDATE file set status = 1 WHERE filename = '%s'",
@@ -359,7 +361,8 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
     } else {
       csync_debug(1, "check_move_link: other file with same dev/inode. Unknown operation.");
       csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
-      csync_debug(1, ">>> OTHER: %s\n>>> FILE:  %s\n", db_checktxt, checktxt);
+      csync_debug(1, ">>> %s: %s\n", db_checktxt, db_filename);
+      csync_debug(1, ">>> %s: %s\n", checktxt, filename);
       
       if (count > 1) {
 	csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
@@ -368,7 +371,7 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
       count++; 
     }
   } SQL_FIN {
-      csync_debug(2, "%d files with same inode as file: %s\n", SQL_COUNT, filename);
+    csync_debug(2, "%d files with same dev:inode (%llu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_ino, (unsigned long long) st->st_dev, filename);
   } SQL_END; 
   free(filename_enc);
   if (loop) {
@@ -520,8 +523,10 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	  file_stat->st_ino
 	  );
     }
-    if (!init_run && this_is_dirty)
+    if (!init_run && this_is_dirty) {
+      csync_debug(0, "check_dirty (mod): before mark (all) \n");
       csync_mark(file, 0, 0, *operation);
+    }
   }
   free(checktxt);
 }
