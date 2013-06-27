@@ -49,19 +49,22 @@
 
 #define DB_SCHEMA_VERSION 0
 
-/* asprintf with test for no memory */
+#define csync_fatal(fmt, ...) {\
+  csync_debug(0,fmt, ##__VA_ARGS__);\
+  exit(1);\
+} while(0)
 
+/* asprintf with test for no memory */
 #define ASPRINTF(s, fmt, ...) do {\
 	int __ret = asprintf(s, fmt, ##__VA_ARGS__);\
 	if (__ret < 0) \
-		csync_fatal("Out of memory in asprintf at %s:%d\n", __FILE__, __LINE__);\
+	  csync_fatal("Out of memory in asprintf at %s:%d\n", __FILE__, __LINE__); \
 } while (0)
-
 
 #define VASPRINTF(s, fmt, args...) do {\
 	int __ret = vasprintf(s, fmt, ##args);\
 	if (__ret < 0) \
-		csync_fatal("Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__);\
+	  csync_debug(-1,"Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__); \
 } while (0)
 
 
@@ -103,7 +106,6 @@ extern int csync_perm(const char *filename, const char *key, const char *hostnam
 
 extern void csync_printtime();
 extern void csync_printtotaltime();
-extern void csync_fatal(const char *fmt, ...);
 extern void csync_debug(int lv, const char *fmt, ...);
 
 #define csync_debug_ping(N) \

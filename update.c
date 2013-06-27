@@ -518,7 +518,7 @@ void cmd_printf(const char *cmd, const char *key,
 	      cmd, key, filename, secondname,
 	      st->st_uid, st->st_gid, 
 	      uidptr, gidptr,
-	      st->st_mode, st->st_mtime);
+	      st->st_mode, (long long) st->st_mtime);
 }
 
 
@@ -679,7 +679,8 @@ int csync_patch_file(const char *key_enc,
 		     const char *gidptr,
 		     int *last_conn_status)
 {
-  cmd_printf("PATCH", key_enc, filename_enc, "-", st, uidptr, gidptr);
+  cmd_printf("PATCH", key_enc, filename_enc, "-",          st, uidptr, gidptr);
+//cmd_printf("SIG",   key_enc, filename_enc, "user/group", st, uidptr, gidptr);
   int rc = csync_update_reg_file(peername, filename, last_conn_status);
   return rc;
 }
@@ -746,7 +747,7 @@ int csync_update_file_move(const char* myname, const char *peername, const char 
 	db_encode(filename), db_encode(old_name), db_encode(peername)); 
     return OK;
   }
-  csync_debug(0, "Failed to MV %s %s", old_name, filename);
+  csync_debug(0, "Failed to MV %s %s \n", old_name, filename);
 
   SQL("Update operation to new (failed mv)", 
       "UPDATE dirty SET operation = 'new (failed mv)' WHERE filename = '%s' ", 
@@ -776,9 +777,6 @@ int csync_update_file_mod(const char *myname, const char *peername,
     return OK;
   }
 
- auto_resolve_entry_point:
-  csync_debug(1, "Updating %s:%s\n", peername, filename);
-  
   if ( lstat_strict(filename, &st) != 0 ) {
     csync_debug(0, "ERROR: Cant stat %s.\n", filename);
     csync_error_count++;

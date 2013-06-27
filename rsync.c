@@ -278,7 +278,7 @@ int csync_recv_file(FILE *out)
 
   if ( !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", &size) != 1 ) {
     if (!strcmp(buffer, "ERROR\n")) { errno=EIO; return -1; }
-    csync_fatal("Format-error while receiving data.\n");
+    csync_fatal("Format-error while receiving data (octet-stream %ld) .\n", size);
   }
 
   csync_debug(3, "Receiving %ld bytes ..\n", size);
@@ -348,7 +348,7 @@ int csync_rs_check(const char *filename, int isreg)
     char line[100];
     csync_debug(3, "Reading signature size from peer....\n");
     if ( !conn_gets(line, 100) || sscanf(line, "octet-stream %ld\n", &size) != 1 )
-      csync_fatal("Format-error while receiving data.\n");
+      csync_fatal("Format-error while receiving data. (signature %ld) \n", size);
   }
 
   if (sig_file) {

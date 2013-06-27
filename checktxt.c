@@ -85,8 +85,9 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 		xxprintf(":type=reg:size=%llu", (long long)st->st_size);
 		// TODO would be nice with the real count,
 		// but for now just an indicator for hard links
-		if (st->st_nlink > 1)
-		  xxprintf(":link=H");
+
+		//if (st->st_nlink > 1)
+		//  xxprintf(":link=H");
 	}
 	if ( S_ISDIR(st->st_mode) )
 		xxprintf(":type=dir");
@@ -134,18 +135,17 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
  */
 int csync_cmpchecktxt(const char *a, const char *b)
 {
-  csync_debug(3, "csync_cmpchecktxt: %s %s ", a, b);
+  csync_debug(3, "csync_cmpchecktxt A: %s \n", a);
+  csync_debug(3, "csync_cmpchecktxt B: %s \n", a);
   return strcmp(a, b);
-  /*
   int i;
-  for (i=0; chk1[i] && chk1[i] != '\n' && chk2[i] && chk2[i] != '\n'; i++)
-    if ( chk1[i] != chk2[i] ) {
-      csync_debug(3, "csync_cmpchecktxt differ: %s %s ", chk1, chk2);
-      return 0;
+  for (i=0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++)
+    if ( a[i] != b[i] ) {
+      csync_debug(3, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
+      return i;
     }
     
-  return 1;
-  */
+  return 0;
 }
 
 
