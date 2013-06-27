@@ -251,6 +251,20 @@ void csync_send_file(FILE *in)
   }
 }
 
+int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) 
+{
+  if ( delta_file ) 
+    fclose(delta_file);
+  if ( basis_file ) 
+    fclose(basis_file);
+  if ( new_file )   
+    fclose(new_file);
+  errno = err_no;
+  return -1;
+}
+
+
+
 void csync_send_error()
 {
   conn_printf("ERROR\n");
@@ -309,7 +323,9 @@ int csync_rs_check(const char *filename, int isreg)
 
   /* sig_file = open_temp_file(tmpfname, prefixsubst(filename)); */
   sig_file = paranoid_tmpfile();
-  /* if ( !sig_file ) goto io_error; */
+  /* if ( !sig_file ) 
+        return rsync_check_io_error(...);
+  */
   // unlink(tmpfname);
 
   if ( isreg ) {
@@ -322,7 +338,7 @@ int csync_rs_check(const char *filename, int isreg)
 			   RS_DEFAULT_BLOCK_LEN, RS_DEFAULT_STRONG_LEN, &stats);
     if (result != RS_DONE) {
       csync_debug(0, "Internal error from rsync library!\n");
-      goto error;
+      rsync_close_error(errno, basis_file, sig_file, 0);
     }
     fclose(basis_file);
   }
@@ -379,17 +395,14 @@ int csync_rs_check(const char *filename, int isreg)
   if (sig_file)
     fclose(sig_file);
   return found_diff;
+}
+ 
 
- io_error:
-  csync_debug(0, "I/O Error '%s' in rsync-check: %s\n",
-	      strerror(errno), filename);
+int rsync_check_io_error(int err_no, const char *filename, FILE *basis_file, FILE *sig_file, FILE *new_file) 
+{
+  csync_debug(0, "I/O Error '%s' in rsync-check: %s\n", strerror(errno), filename);
+  return rsync_close_error(err_no, basis_file, sig_file, new_file);
 
- error:;
-  backup_errno = errno;
-  if ( basis_file ) fclose(basis_file);
-  if ( sig_file )   fclose(sig_file);
-  errno = backup_errno;
-  return -1;
 }
 
 void csync_rs_sig(const char *filename)
@@ -404,13 +417,17 @@ void csync_rs_sig(const char *filename)
   csync_debug(3, "Opening basis_file and sig_file..\n");
 	
   sig_file = open_temp_file(tmpfname, filename);
-  if ( !sig_file ) 
-    goto io_error;
-  if (unlink(tmpfname) < 0) 
-    goto io_error;
-
+  if ( !sig_file ) {
+    rsync_check_io_error(errno, filename, basis_file, sig_file, 0);
+    return ; 
+  }
+  if (unlink(tmpfname) < 0) {
+    rsync_check_io_error(errno, filename, basis_file, sig_file, 0);
+    return ;
+  }
   basis_file = fopen(filename, "rb");
-  if ( !basis_file ) basis_file = fopen("/dev/null", "rb");
+  if ( !basis_file ) 
+    basis_file = fopen("/dev/null", "rb");
 
   csync_debug(3, "Running rs_sig_file() from librsync..\n");
   result = rs_sig_file(basis_file, sig_file,
@@ -426,16 +443,25 @@ void csync_rs_sig(const char *filename)
   fclose(sig_file);
 
   return;
-
- io_error:
-  csync_debug(0, "I/O Error '%s' in rsync-sig: %s\n",
-	      strerror(errno), filename);
-
-  if (basis_file) fclose(basis_file);
-  if (sig_file) fclose(sig_file);
 }
 
 
+void io_error(const char * filename, FILE *basis_file, FILE *sig_file) {
+  csync_debug(0, "I/O Error '%s' in rsync-sig: %s\n",
+	      strerror(errno), filename);
+
+  if (basis_file) 
+    fclose(basis_file);
+  if (sig_file) 
+    fclose(sig_file);
+}
+
+
+int rsync_delta_io_error(int err_no, const char *filename, FILE *new_file, FILE *delta_file, FILE *sig_file) 
+{
+  csync_debug(0, "I/O Error '%s' in rsync-delta: %s\n", strerror(errno), filename);
+  return rsync_close_error(err_no, new_file, delta_file, sig_file);
+}
 
 int csync_rs_delta(const char *filename)
 {
@@ -449,8 +475,10 @@ int csync_rs_delta(const char *filename)
 
   csync_debug(3, "Receiving sig_file from peer..\n");
   sig_file = open_temp_file(tmpfname, filename);
-  if ( !sig_file ) goto io_error;
-  if (unlink(tmpfname) < 0) goto io_error;
+  if ( !sig_file ) 
+    return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
+  if (unlink(tmpfname) < 0) 
+    return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
   
   if ( csync_recv_file(sig_file) ) {
     fclose(sig_file);
@@ -474,8 +502,10 @@ int csync_rs_delta(const char *filename)
   }
 
   delta_file = open_temp_file(tmpfname, filename);
-  if ( !delta_file ) goto io_error;
-  if (unlink(tmpfname) < 0) goto io_error;
+  if ( !delta_file )
+    return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
+  if (unlink(tmpfname) < 0) 
+    return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
 
   csync_debug(3, "Running rs_build_hash_table() from librsync..\n");
   result = rs_build_hash_table(sumset);
@@ -496,16 +526,13 @@ int csync_rs_delta(const char *filename)
   fclose(new_file);
 
   return 0;
+}
 
- io_error:
-  csync_debug(0, "I/O Error '%s' in rsync-delta: %s\n",
-	      strerror(errno), filename);
-
-  if (new_file) fclose(new_file);
-  if (delta_file) fclose(delta_file);
-  if (sig_file) fclose(sig_file);
-
-  return -1;
+int rsync_patch_io_error(const char *errstr, const char *filename, FILE *delta_file, FILE* basis_file, FILE *new_file)
+{
+  csync_debug(0, "I/O Error '%s' while %s in rsync-patch: %s\n",
+	      strerror(errno), errstr, filename);
+  return rsync_close_error(errno, delta_file, basis_file, new_file); 
 }
 
 int csync_rs_patch(const char *filename)
@@ -523,14 +550,14 @@ int csync_rs_patch(const char *filename)
   delta_file = open_temp_file(tmpfname, filename);
   if ( !delta_file ) { 
     errstr="creating delta temp file"; 
-    goto io_error; 
+    return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
   }
   if (unlink(tmpfname) < 0) { 
     errstr="removing delta temp file"; 
-    goto io_error; 
+    return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
   }
   if ( csync_recv_file(delta_file) ) 
-    goto error;
+    return rsync_close_error(errno, basis_file, delta_file, new_file);
 
   csync_debug(3, "Opening to be patched file on local host..\n");
   basis_file = fopen(filename, "rb");
@@ -538,11 +565,11 @@ int csync_rs_patch(const char *filename)
     basis_file = open_temp_file(tmpfname, filename);
     if ( !basis_file ) { 
       errstr="opening data file for reading"; 
-      goto io_error; 
+      return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
     }
     if (unlink(tmpfname) < 0) { 
       errstr="removing data temp file"; 
-      goto io_error; 
+      return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
     }
   }
 
@@ -550,14 +577,14 @@ int csync_rs_patch(const char *filename)
   new_file = open_temp_file(newfname, filename);
   if ( !new_file ) { 
     errstr="creating new data temp file"; 
-    goto io_error; 
+    return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
   }
   
   csync_debug(3, "Running rs_patch_file() from librsync..\n");
   result = rs_patch_file(basis_file, delta_file, new_file, &stats);
   if (result != RS_DONE) {
     csync_debug(0, "Internal error from rsync library!\n");
-    goto error;
+    rsync_close_error(errno, basis_file, delta_file, new_file);
   }
   
   csync_debug(3, "Renaming tmp file to data file..\n");
@@ -588,7 +615,7 @@ int csync_rs_patch(const char *filename)
       csync_debug(0, "Win32 I/O Error %d in rsync-patch: %s\n",
 		  (int)GetLastError(), winfilename);
       errno = EACCES;
-      goto error;
+      rsync_error(errno, winfilename, 0, 0, 0);
     }
     CloseHandle(winfh);
   }
@@ -602,16 +629,7 @@ int csync_rs_patch(const char *filename)
     return 0;
   }
   errstr="renaming tmp file to to be patched file"; 
- io_error:
-  csync_debug(0, "I/O Error '%s' while %s in rsync-patch: %s\n",
-	      strerror(errno), errstr, filename);
-
- error:
-  backup_errno = errno;
-  if ( delta_file ) fclose(delta_file);
-  if ( basis_file ) fclose(basis_file);
-  if ( new_file )   fclose(new_file);
-  errno = backup_errno;
-  return -1;
+  return rsync_patch_io_error(errstr, filename, delta_file, basis_file, new_file);
 }
 
+ 
