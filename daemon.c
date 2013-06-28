@@ -793,8 +793,9 @@ int csync_daemon_group(char **active_grouplist, char *newgroup,
 	while (*active_grouplist[i])
 	  if (*active_grouplist[i++]==',') break;
       }
-	csync_group->myname = 0;
-    found_asactive: ;
+      csync_group->myname = 0;
+    found_asactive: 
+      ;
     }
   }
   return OK;
