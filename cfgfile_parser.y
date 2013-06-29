@@ -63,12 +63,15 @@ static void new_group(char *name)
 
 	if (name == 0)
 		rc = asprintf(&name, "group_%d", autonum++);
-
+	
 	t->next = csync_group;
 	t->auto_method = -1;
 	t->gname = name;
 	t->backup_generations = 3;
+	t->host = 0;
+	t->pattern = 0;
 	csync_group = t;
+	csync_debug(1, "New group: %s\n", name);
 }
 
 static void add_host(char *hostname, char *peername, int slave)
@@ -90,6 +93,7 @@ static void add_host(char *hostname, char *peername, int slave)
 		t->slave = slave;
 		t->next = csync_group->host;
 		csync_group->host = t;
+		csync_debug(1, "New group:host: %s %s\n",csync_group->gname, peername);
 		free(hostname);
 	}
 }
@@ -129,7 +133,7 @@ static void add_patt(int patterntype, char *pattern)
 	t->pattern = strdup(prefixsubst(pattern));
 	t->next = csync_group->pattern;
 	csync_group->pattern = t;
-}
+	csync_debug(1, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);}
 
 static void set_key(char *keyfilename)
 {
@@ -284,11 +288,68 @@ static void new_action()
 	struct csync_group_action *t =
 		calloc(sizeof(struct csync_group_action), 1);
 	t->next = csync_group->action;
-	t->logfile = "/dev/null";
+	t->logfile = strdup("/dev/null");
 	csync_group->action = t;
 }
 
-static void add_action_pattern(const char *pattern)
+static void action_pattern_destroy(struct csync_group_action_pattern *pattern) {
+  if (!pattern)
+    return ;
+  action_pattern_destroy(pattern->next);
+  //free(pattern->pattern);
+  free(pattern);
+}
+
+static void action_command_destroy(struct csync_group_action_command *command) {
+  if (!command)
+    return ;
+  action_command_destroy(command->next);
+  //free(command->command);
+  free(command);
+}
+
+static void action_destroy(struct csync_group_action *action) {
+  if (!action)
+    return;
+  action_destroy(action->next);
+  action_pattern_destroy(action->pattern);
+  free((void *) action->logfile);
+  free(action);
+}
+
+static void host_destroy(struct csync_group_host *host) {
+  if (!host)
+    return ; 
+  host_destroy(host->next);
+  free(host->hostname);
+  free(host);
+}
+
+static void pattern_destroy(struct csync_group_pattern *pattern) {
+  if (!pattern)
+    return ; 
+  pattern_destroy(pattern->next);
+  free(pattern->pattern);
+  free(pattern);
+}
+
+void csync_config_destroy_group(struct csync_group *group) {
+  if (!group) 
+    return ; 
+  csync_config_destroy_group(group->next);
+  host_destroy(group->host);
+  pattern_destroy(group->pattern);
+  action_destroy(group->action);
+}
+
+void csync_config_destroy() {
+  csync_config_destroy_group(csync_group);
+  csync_group = 0;
+  // TOOD other struct
+}
+
+
+static void add_action_pattern(char *pattern)
 {
 	struct csync_group_action_pattern *t =
 		calloc(sizeof(struct csync_group_action_pattern), 1);
@@ -298,7 +359,7 @@ static void add_action_pattern(const char *pattern)
 	csync_group->action->pattern = t;
 }
 
-static void add_action_exec(const char *command)
+static void add_action_exec(char *command)
 {
 	struct csync_group_action_command *t =
 		calloc(sizeof(struct csync_group_action_command), 1);
