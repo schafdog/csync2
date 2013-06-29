@@ -519,6 +519,14 @@ int match_peer(char **active_peers, const char *peer) {
   return match;
 }
 
+/**
+   void csync_config_destroy()
+
+   Valgrind should run clean after this. Every thing allocacted cfg_parser should be destroy 
+   Otherwise a long-running daemon running would be leaking
+**/
+
+void csync_config_destroy();
 
 int main(int argc, char ** argv)
 {
@@ -1185,9 +1193,10 @@ int main(int argc, char ** argv)
 
 	csync_run_commands();
 	csync_db_close();
-
+	csync_config_destroy();
 	if ( csync_server_child_pid ) {
 	  csync_debug(1, "Connection closed.\n");
+	  
 	  if (mode == MODE_NOFORK)
 	    goto nofork;
 	}
