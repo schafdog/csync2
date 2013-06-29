@@ -331,6 +331,8 @@ static inline void textlist_free(struct textlist *listhandle)
 }
 
 
+void csync_config_destroy();
+
 /* config structures */
 
 struct csync_nossl;
@@ -340,7 +342,7 @@ struct csync_group_pattern;
 
 struct csync_group_host {
 	struct csync_group_host *next;
-	const char *hostname;
+        char *hostname;
 	int on_left_side;
 	int slave;
 };
@@ -348,13 +350,13 @@ struct csync_group_host {
 struct csync_group_pattern {
 	struct csync_group_pattern *next;
 	int isinclude, iscompare, star_matches_slashes;
-	const char *pattern;
+	char *pattern;
 };
 
 struct csync_group_action_pattern {
 	struct csync_group_action_pattern *next;
 	int star_matches_slashes;
-	const char *pattern;
+	char *pattern;
 };
 
 struct csync_group_action_command {
