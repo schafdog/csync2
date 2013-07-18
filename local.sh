@@ -16,7 +16,7 @@ else
 fi
 
 if [ "$COMMAND" == "i" ] ; then 
-    ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
+    $VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
     exit
 fi 
 echo "Running command $COMMAND" 
@@ -32,7 +32,7 @@ function check {
     else
 	echo "Test result:" 
 	echo "SELECT * from dirty " | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
-	echo 'select filename from csync2_peer.file where not filename in (select replace(filename,"/local/", "/peer/") as filename from csync2_local.file);' | mysql -u root -pjohn238
+	echo 'select filename from csync2_peer.file where not filename in (select replace(filename,"/local/", "/peer/") as filename from csync2_local.file);' | mysql -u root $ROOTPW
 	diff -r test/*
 	./find_hardlinks.sh test/$NAME > hardlinks_$NAME.txt
 	./find_hardlinks.sh test/peer > hardlinks_peer.txt
@@ -53,36 +53,8 @@ else
     exit 0;
 fi
 
-echo first > test/$NAME/first.txt
-check "first file"
-mkdir test/$NAME/dir1
-echo hejhejhej > test/$NAME/hej.txt
-check "first directory dir1 plus file"
-echo delete > test/$NAME/delete_soon.txt
-check "create to be deleted next"
-rm test/$NAME/delete_soon.txt
-check "deleting delete_soon.txt"
-mv test/$NAME/first.txt test/$NAME/second
-check "move first second" 
-mv test/$NAME/second  test/$NAME/before
-check "move second before (reorder)" 
-mv test/$NAME/before  test/$NAME/dir1/hardlink_soon
-check "move to subdir" 
-mv test/$NAME/dir1  test/$NAME/dir2
-check "move subdir" 
-ln test/$NAME/dir2/hardlink_soon test/$NAME/2hardlink
-ln test/$NAME/2hardlink test/$NAME/1hardlink 
-check "Hardlink count 3"
-echo "PATCH HARDLINK " >> test/$NAME/2hardlink
-check "Patched hardlinks"  
-echo hardlink > test/$NAME/4hardlink 
-ln   test/$NAME/4hardlink test/$NAME/3hardlink 
-check "new hardlink 4 and 3 at once" 
-ln -s hej.txt test/$NAME/softlink
-check "softlink"
-ln -s /etc/hosts test/$NAME/absolut_softlink
-check "absolut softlink"
-touch "test/$NAME/database \" problem"
-check "database encoding of \" "
-touch "test/$NAME/database ' problem"  
-check "database encoding of ' "
+shift
+for d in $* ; do 
+    echo $d
+    source $d
+done
