@@ -1,0 +1,3 @@
+echo "far" > "test/$NAME/local"
+echo "vel" > "test/$PEER/local"
+check "Updated both"
