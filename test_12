@@ -1,0 +1,3 @@
+echo hardlink > test/$NAME/4hardlink 
+ln   test/$NAME/4hardlink test/$NAME/3hardlink 
+check "new hardlink 4 and 3 at once" 

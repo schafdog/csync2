@@ -1,0 +1,2 @@
+echo delete > test/$NAME/delete_soon.txt
+check "create to be deleted next"

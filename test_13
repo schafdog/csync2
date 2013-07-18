@@ -1,0 +1,2 @@
+ln -s hej.txt test/$NAME/softlink
+check "softlink"

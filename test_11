@@ -1,0 +1,2 @@
+echo "PATCH HARDLINK " >> test/$NAME/2hardlink
+check "Patched hardlinks"  

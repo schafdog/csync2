@@ -1,0 +1,2 @@
+rm test/$NAME/delete_soon.txt
+check "deleting delete_soon.txt"

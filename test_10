@@ -1,0 +1,3 @@
+ln test/$NAME/dir2/hardlink_soon test/$NAME/2hardlink
+ln test/$NAME/2hardlink test/$NAME/1hardlink 
+check "Hardlink count 3"
