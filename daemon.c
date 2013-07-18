@@ -61,7 +61,7 @@ int csync_unlink(const char *filename, int ign, const char **cmd_error)
 	return rc;
 }
 
-int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char *cmd_error)
+int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
 {
 	int rc = 0;
 	char *operation = csync_check_single(filename, 0, version);
@@ -72,7 +72,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 		  db_encode(filename), db_encode(peername))
 	{
 		rc = 1;
-		cmd_error = "File is also marked dirty here!";
+		*cmd_error = "File is also marked dirty here!";
 	} SQL_END;
 	if (!rc && operation && peername) {
 	  csync_debug(0, "check dirty: peername %s", peername);
@@ -1096,31 +1096,34 @@ void csync_daemon_session(int db_version, int protocol_version)
     if (rc == OK && cmd->check_dirty && 
 	csync_check_dirty(filename, peername, 
 			  cmd->action == A_FLUSH, 
-			  db_version, cmd_error))
+			  db_version, &cmd_error)) {
       rc = ABORT_CMD;
-
-    if (rc == OK && cmd->unlink )
+      // cmd_error is set on error
+    }
+    else {
+      if (rc == OK && cmd->unlink )
       csync_unlink(filename, cmd->unlink, &cmd_error);
 
-    const char *otherfile = NULL;
-    rc = csync_daemon_dispatch(filename, cmd, tag, 
+      const char *otherfile = NULL;
+      rc = csync_daemon_dispatch(filename, cmd, tag, 
 			       db_version, protocol_version, 
 			       &peername, &peeraddr, &otherfile,
 			       &cmd_error);
 	  
-    if (rc == OK) {
-      // check updates done
-      csync_debug(0, "DEBUG peername: check update '%s' '%s' '%s' \n", peername, filename, (otherfile ? otherfile : "-" )); 
-      csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
+      if (rc == OK) {
+	// check updates done
+	csync_debug(0, "DEBUG peername: check update '%s' '%s' '%s' \n", peername, filename, (otherfile ? otherfile : "-" )); 
+	csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
+      }
+      else if (rc == NEXT_CMD){
+	// Already send an reply
+	destroy_tag(tag);
+	continue;
+      }
+      else if (rc == BYEBYE)
+	return ;
     }
-    else if (rc == NEXT_CMD){
-      // Already send an reply
-      destroy_tag(tag);
-      continue;
-    }
-    else if (rc == BYEBYE)
-      return ;
-    // ABORT_CMD (but finish it with a reply)
+    // END CMD, in error if cmd_error (but finish it with a reply)
     csync_end_command(filename, tag, cmd_error);
   }
 }
