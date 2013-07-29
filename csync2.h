@@ -219,8 +219,14 @@ int csync_get_checktxt_version(const char *value);
 /* check.c */
 struct textlist;
 /* check.c */
-#define MOVE     1
-#define HARDLINK 2
+#define OP_CREATE   1
+#define OP_MKDIR    2
+#define OP_MKFIFO   4
+#define OP_MKCHR    8
+#define OP_MKBLK    16
+#define OP_MOVE     16
+#define OP_HARDLINK 32
+#define OP_RM       64
 
 extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version);

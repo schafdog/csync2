@@ -625,7 +625,7 @@ int csync_update_file_hardlink(const char *peername,
   int count = 0;
   for (; !found_one && t; t = t->next) {
     const char *other = t->value;
-    if (t->intvalue == HARDLINK && other) {
+    if (t->intvalue == OP_HARDLINK && other) {
       const char *key = csync_key(peername, other);
       if (!key) 
 	continue;
