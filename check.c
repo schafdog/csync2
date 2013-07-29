@@ -99,21 +99,42 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
 
   for (pl_idx=0; pl[pl_idx].peername; pl_idx++)
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "Marking %s:%s as %s (peerfilter %s).\n", pl[pl_idx].peername, file, operation, (peerfilter ? peerfilter : "(all)"));
+      csync_debug(1, "%s %s:%s (peerfilter %s).\n", operation, pl[pl_idx].peername, file, (peerfilter ? peerfilter : "(all)"));
+      short dirty = 1;
+      SQL_BEGIN("Checking old opertion on file",
+		"SELECT operation from dirty where "
+		"filename = '%s' AND peername = '%s'", 
+		db_encode(file),
+		db_encode(pl[pl_idx].peername)
+		)
+	{
+	  const char *old_operation = db_decode(SQL_V(0));
+	  // NEW/MKxxx -> RM => remove from dirty, as it newer happened
+	  if (!strcmp("rm",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2)))
+	    dirty = 0;
+	  // TODO NEW A -> MV x B (where stat and dev-inode is same) => NEW B 
 
+	} SQL_FIN {
+	if ( SQL_COUNT == 1)  {
+	  csync_debug(1, "New %s:%s deleted before syncing. Removing from dirty.", pl[pl_idx].peername, file);
+	}
+      }
+      SQL_END;
       SQL("Deleting old dirty file entries",
 	  "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
 	  db_encode(file),
 	  db_encode(pl[pl_idx].peername));
       
-      SQL("Marking File Dirty",
-	  "INSERT INTO dirty (filename, forced, myname, peername, operation) "
-	  "VALUES ('%s', %s, '%s', '%s', '%s')",
-	  db_encode(file),
-	  csync_new_force ? "1" : "0",
-	  db_encode(pl[pl_idx].myname),
-	  db_encode(pl[pl_idx].peername),
-	  (operation ? db_encode(operation): ""));
+      if (dirty) {
+	SQL("Marking File Dirty",
+	    "INSERT INTO dirty (filename, forced, myname, peername, operation) "
+	    "VALUES ('%s', %s, '%s', '%s', '%s')",
+	    db_encode(file),
+	    csync_new_force ? "1" : "0",
+	    db_encode(pl[pl_idx].myname),
+	    db_encode(pl[pl_idx].peername),
+	    (operation ? db_encode(operation): ""));
+      }
     }
   free(pl);
 }
@@ -245,21 +266,22 @@ void csync_check_del(const char *file, int recursive, int init_run)
   char *where_rec = "";
   struct textlist *tl = 0, *t;
   struct stat st;
-  
+  const char *SELECT_SQL = "SELECT filename, checktxt, inode, device from file ";
   if ( recursive ) {
     if ( !strcmp(file, "/") )
       ASPRINTF(&where_rec, "OR 1=1");
     else {
       const char *file_encoded = db_encode(file);
       csync_debug(3,"file %s encoded %s \n", file, file_encoded);
-      ASPRINTF(&where_rec, "UNION ALL SELECT filename, checktxt, inode, device from file where filename > '%s/' and filename < '%s0'", 
+      ASPRINTF(&where_rec, "UNION ALL %s where filename > '%s/' and filename < '%s0'", 
+	       SELECT_SQL, 
 	       file_encoded, file_encoded);
     }
   }
 
   SQL_BEGIN("Checking for removed files",
-	    "SELECT filename, checktxt, inode, device from file where "
-	    "filename = '%s' %s ORDER BY filename", db_encode(file), where_rec)
+	    "%s where filename = '%s' %s ORDER BY filename", 
+	    SELECT_SQL, db_encode(file), where_rec)
     {
       const char *filename = db_decode(SQL_V(0));
       const char *checktxt = db_decode(SQL_V(1));
@@ -297,14 +319,14 @@ struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, str
   while (t) {
     char *src  = t->value;
     switch (t->intvalue) {
-    case HARDLINK: {
+    case OP_HARDLINK: {
       char *operation = "MKHARDLINK";
       SQL("Update operation to move/hardlink",
 	"UPDATE dirty set operation = '%s %s' where filename = '%s'", 
 	  operation, filename_enc, db_encode(src));
       break;
     }
-    case MOVE:
+    case OP_MOVE:
       SQL("Remove delete operation (move)",
 	"DELETE from dirty where filename = '%s'", db_encode(src));
       break; 
@@ -348,14 +370,14 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
 	  sprintf(*operation, "MV %s", db_filename);
-	  textlist_add(&tl, db_filename, MOVE);
+	  textlist_add(&tl, db_filename, OP_MOVE);
 	}
       } else {
 	csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
 	if (operation) {
 	  *operation = ringbuffer_malloc(strlen(db_filename) + 14);
 	  sprintf(*operation, "MKHARDLINK %s", db_filename); 
-	  textlist_add(&tl, db_filename, HARDLINK);
+	  textlist_add(&tl, db_filename, OP_HARDLINK);
 	}
       }
     } else {
