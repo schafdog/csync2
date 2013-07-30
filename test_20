@@ -1,0 +1,5 @@
+echo "far" > "test/$NAME/local"
+check "New file"
+rm  "test/$NAME/local"
+echo updated > "test/$PEER/local"
+check "Deleted both"
