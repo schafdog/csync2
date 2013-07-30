@@ -110,16 +110,14 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
 	{
 	  const char *old_operation = db_decode(SQL_V(0));
 	  // NEW/MKxxx -> RM => remove from dirty, as it newer happened
-	  if (!strcmp("rm",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2)))
+	  if (!strcmp("rm",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
+	    csync_debug(1, "%s %s:%s deleted before syncing. Removing from dirty.", old_operation, pl[pl_idx].peername, file);
 	    dirty = 0;
+	  }
 	  // TODO NEW A -> MV x B (where stat and dev-inode is same) => NEW B 
 
 	} SQL_FIN {
-	if ( SQL_COUNT == 1)  {
-	  csync_debug(1, "New %s:%s deleted before syncing. Removing from dirty.", pl[pl_idx].peername, file);
-	}
-      }
-      SQL_END;
+      } SQL_END;
       SQL("Deleting old dirty file entries",
 	  "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
 	  db_encode(file),
