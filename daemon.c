@@ -1030,7 +1030,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   case A_HELLO:
     *cmd_error = csync_daemon_hello(peername, peeraddr, tag[1]);
-    csync_debug(0, "DEBUG HELLO from %s\n", *peername); 
+    csync_debug(1, "HELLO from %s. Response: %s\n", *peername, (*cmd_error ? *cmd_error : "OK")); 
     return ABORT_CMD;
   case A_GROUP:
     csync_daemon_group(&active_grouplist, tag[1], cmd_error);
@@ -1077,7 +1077,10 @@ void csync_daemon_session(int db_version, int protocol_version)
     if (tag[2])
       filename = (char *) prefixsubst(tag[2]);
     const char *other = prefixsubst(tag[3]);
-    csync_debug(1, "Command: %s %s %s %s %s %s %s %s %s \n", tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
+    if (cmd->action == A_HELLO)
+      csync_debug(1, "Command: %s \n", tag[0], tag[1]);
+    else
+      csync_debug(1, "Command: %s %s %s %s %s %s %s %s %s \n", tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
 
     cmd_error = 0;
 
@@ -1112,7 +1115,7 @@ void csync_daemon_session(int db_version, int protocol_version)
 	  
       if (rc == OK) {
 	// check updates done
-	csync_debug(0, "DEBUG peername: check update '%s' '%s' '%s' \n", peername, filename, (otherfile ? otherfile : "-" )); 
+	csync_debug(4, "DEBUG peername: check update '%s' '%s' '%s' \n", peername, filename, (otherfile ? otherfile : "-" )); 
 	csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
       }
       else if (rc == NEXT_CMD){
