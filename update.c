@@ -437,7 +437,7 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
 	return CLEAR_DIRTY;
       }
       else
-	return ERROR;
+	return status;
     }
     if ( !conn_gets_newline(chk_peer, 4096, 1) ) 
       return ERROR;
@@ -475,8 +475,9 @@ int csync_update_file_del_mv(const char *myname, const char *peername,
     if (rc != OK) 
       auto_resolve_run = csync_check_auto_resolve2(peername, filename, 
 						   rc, auto_resolve_run, 1);
-    if (!auto_resolve_run) {      
-      csync_clear_dirty(peername, filename, auto_resolve_run);
+    if (!auto_resolve_run) {
+      if (rc == OK || rc == CLEAR_DIRTY)
+	csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc; 
     }
     csync_debug(1,"Attempting autoresolve on %s:%s", peername, filename);    
