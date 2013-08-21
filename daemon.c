@@ -40,10 +40,11 @@
 #endif
 
 //static char *cmd_error;
-extern char* update_format;
+extern char *update_format;
 //extern int version; 
-extern char* allow_peer;
-
+extern char *allow_peer;
+extern char *active_peer;
+ 
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 
 
@@ -75,7 +76,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 		*cmd_error = "File is also marked dirty here!";
 	} SQL_END;
 	if (!rc && operation && peername) {
-	  csync_debug(0, "check dirty: peername %s", peername);
+	  //csync_debug(0, "check dirty: peername %s \n", peername);
 	  csync_mark(filename, myhostname, peername, operation);
 	}
 	return rc;
@@ -326,7 +327,7 @@ struct csync_command cmdtab[] = {
 	{ "mklink",	1, 1, 1, 1, 1, A_MKLINK	},
 	{ "mkhardlink",	1, 1, 0, 1, 1, A_MKHLINK},
 	{ "mksock",	1, 1, 1, 1, 1, A_MKSOCK	},
-	{ "mv",	        1, 1, 0, 1, 1, A_MV	},
+	{ "mv",	        1, 0, 0, 1, 1, A_MV	},
 	{ "setown",	1, 1, 0, 2, 1, A_SETOWN	},
 	{ "setmod",	1, 1, 0, 2, 1, A_SETMOD	},
 	{ "setime",	1, 0, 0, 2, 1, A_SETTIME},
@@ -536,9 +537,9 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
   return ABORT_CMD;
 }
 
-const char *csync_daemon_mkdir(const char *filename) 
+int csync_daemon_mkdir(const char *filename, const char **cmd_error) 
 {
-  const char *cmd_error = NULL;
+  *cmd_error = 0;
   /* ignore errors on creating directories if the
    * directory does exist already. we don't need such
    * a check for the other file types, because they
@@ -556,15 +557,17 @@ const char *csync_daemon_mkdir(const char *filename)
     if ( lstat_strict(filename), &st) != 0 || !S_ISDIR(st.st_mode)) {
     csync_debug(1, "Win32 I/O Error %d in mkdir command: %s\n",
 		(int)GetLastError(), winfilename);
-    cmd_error = "Win32 I/O Error on CreateDirectory()";
+    *cmd_error = "Win32 I/O Error on CreateDirectory()";
   }
 #else
   if ( mkdir(filename, 0700) ) {
     struct stat st;
     if ( lstat_strict(filename, &st) != 0 || !S_ISDIR(st.st_mode))
-      cmd_error = strerror(errno);
+      *cmd_error = strerror(errno);
   }
-  return cmd_error;
+  if (*cmd_error == 0)
+    return OK;
+  return ABORT_CMD;
 #endif
 }
 
@@ -589,7 +592,6 @@ int csync_daemon_check_identify(struct csync_command *cmd, const char *peername,
 const char *csync_daemon_check_perm(struct csync_command *cmd, 
 				    char *filename, char *peername, 
 				    char* key) {
-
   const char *cmd_error = 0;
   if ( cmd->check_perm ) {
     if ( cmd->check_perm == 2 )
@@ -808,7 +810,6 @@ void csync_daemon_check_update(const char *filename, const char *otherfile, stru
 
   if (otherfile)
     csync_file_update(otherfile, peer, db_version);
-
   if ( cmd->update == 1 ) {
     csync_debug(1, "Updated(%s) %s:%s %s \n", 
 		cmd->text, 
@@ -886,19 +887,34 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
     }
   }
   if (!link(filename, linkname)) {
-    csync_debug(1, "HARDLINK: %s -> %s ", filename, linkname);
+    csync_debug(1, "HARDLINK: %s -> %s \n", filename, linkname);
     return OK;
   }
   *cmd_error = strerror(errno);
   return ABORT_CMD;
 }
 
+int csync_db_update_path(const char *filename, const char *newname) {
+  char *update_sql = 0;
+  const char *filename_encoded = db_encode(filename);
+  const char *newname_encoded  = db_encode(newname);
+  int filename_length = strlen(filename_encoded);
+  int newname_length  = strlen(filename_encoded);
+  //  ASPRINTF(&update_sql, "")
+  //csync_debug(1, "SQL UPDATE: %s\n", update_sql);
+  SQL("Update moved files in DB ", "UPDATE file set filename = concat('%s',substring(filename,%d)) where filename = '%s' or filename like '%s/%%'",
+      newname_encoded, filename_length+1, filename_encoded, filename_encoded);
+  //  free(update_sql);
+  return 0;
+}
 
 int csync_daemon_mv(const char *filename, const char *newname, const char **cmd_error) {
-  if (!rename(filename, newname))
-    return OK;
-  *cmd_error = strerror(errno);
-  return ABORT_CMD;
+  if (rename(filename, newname)) {
+    *cmd_error = strerror(errno);
+    return ABORT_CMD;
+  }
+  int rc = csync_db_update_path(filename,newname);
+  return OK;
 }
 
 int csync_daemon_symlink(const char *filename, const char *target, const char **cmd_error) {
@@ -960,7 +976,6 @@ int csync_daemon_dispatch(char *filename,
     int rc = csync_daemon_patch(filename, cmd_error, db_version); 
     if (rc != OK)
       return rc;
-    // tag[3-6]
     rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
     if (rc != OK) 
       return rc;
@@ -970,11 +985,25 @@ int csync_daemon_dispatch(char *filename,
     rc = csync_daemon_settime(filename, time, cmd_error);
     if (rc != OK)
       return rc;
+    return IDENTICAL;
     break;
   }
-  case A_MKDIR:
-    *cmd_error = csync_daemon_mkdir(filename);
+  case A_MKDIR: {
+    int rc = csync_daemon_mkdir(filename, cmd_error);
+    if (rc != OK)
+      return rc;
+    rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
+    if (rc != OK)
+      return rc;
+    rc = csync_daemon_setmod(filename, mod, cmd_error);
+    if (rc != OK)
+      return rc;
+    rc = csync_daemon_settime(filename, time, cmd_error);
+    if (rc  != OK)
+      return rc;
+    return IDENTICAL;
     break;
+  }
   case A_MKCHR:
     if ( mknod(filename, 0700|S_IFCHR, atoi(tag[3])) ) {
       *cmd_error = strerror(errno);
@@ -1045,11 +1074,24 @@ int csync_daemon_dispatch(char *filename,
   return OK;
 }
 
-void csync_end_command(const char *filename, char *tag[32], const char *cmd_error) {
+void csync_end_command(const char *filename, char *tag[32], const char *cmd_error, int rc) {
   if ( cmd_error )
     conn_printf("%s (%s)\n", cmd_error, filename ? filename : "<no file>");
-  else
-    conn_printf("OK (cmd_finished).\n");
+  else {
+    switch (rc) {
+    case OK:
+    case ABORT_CMD:  // HELLO
+      conn_printf("OK (cmd_finished).\n");
+      break;
+    case IDENTICAL:
+      csync_debug(1, "IDENT (cmd_finished).\n");
+      conn_printf("IDENT (cmd_finished).\n");
+      break;
+    default:
+      csync_debug(1, "Unknown return rc: %d. Assuming OK\n", rc);
+      conn_printf("OK (cmd_finished).\n");
+    } 
+  }
   destroy_tag(tag);
 }
 
@@ -1069,7 +1111,7 @@ void csync_daemon_session(int db_version, int protocol_version)
     struct csync_command *cmd = find_command(tag[0]);
     if (!cmd->text) {
       cmd_error = "Unkown command!";
-      csync_end_command(tag[2], tag, cmd_error);
+      csync_end_command(tag[2], tag, cmd_error, 0);
       continue; 
     }
 
@@ -1077,10 +1119,14 @@ void csync_daemon_session(int db_version, int protocol_version)
     if (tag[2])
       filename = (char *) prefixsubst(tag[2]);
     const char *other = prefixsubst(tag[3]);
-    if (cmd->action == A_HELLO)
+    if (cmd->action == A_HELLO) {
       csync_debug(1, "Command: %s \n", tag[0], tag[1]);
+      if (active_peer)
+	free(active_peer);
+      active_peer = strdup(tag[1]);
+    }
     else
-      csync_debug(1, "Command: %s %s %s %s %s %s %s %s %s \n", tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
+      csync_debug(1, "%s> %s %s %s %s %s %s %s %s %s \n", active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
 
     cmd_error = 0;
 
@@ -1113,7 +1159,7 @@ void csync_daemon_session(int db_version, int protocol_version)
 			       &peername, &peeraddr, &otherfile,
 			       &cmd_error);
 	  
-      if (rc == OK) {
+      if (rc == OK || rc ==  IDENTICAL) {
 	// check updates done
 	csync_debug(4, "DEBUG peername: check update '%s' '%s' '%s' \n", peername, filename, (otherfile ? otherfile : "-" )); 
 	csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
@@ -1123,10 +1169,14 @@ void csync_daemon_session(int db_version, int protocol_version)
 	destroy_tag(tag);
 	continue;
       }
-      else if (rc == BYEBYE)
+      else if (rc == BYEBYE) {
+	if (active_peer) 
+	  free(active_peer);
+	active_peer = 0;
 	return ;
+      }
     }
     // END CMD, in error if cmd_error (but finish it with a reply)
-    csync_end_command(filename, tag, cmd_error);
+    csync_end_command(filename, tag, cmd_error, rc);
   }
 }
