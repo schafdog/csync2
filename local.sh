@@ -32,8 +32,9 @@ function check {
     else
 	echo "Test result:" 
 	echo "SELECT * from dirty " | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
-	echo 'select filename from csync2_peer.file where not filename in (select replace(filename,"/local/", "/peer/") as filename from csync2_local.file);' | mysql -u root $ROOTPW
-	diff -r test/*
+	echo 'select filename from csync2_peer.file where not filename in (select replace(filename,"/local/", "/peer/") as filename from csync2_local.file);' \
+	    | mysql -u csync2_local -pcsync2_local
+	rsync -q --delete -nav test/local/ test/peer/
 	./find_hardlinks.sh test/$NAME > hardlinks_$NAME.txt
 	./find_hardlinks.sh test/peer > hardlinks_peer.txt
 	diff hardlinks_$NAME.txt hardlinks_peer.txt
