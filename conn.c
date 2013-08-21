@@ -90,7 +90,7 @@ int conn_connect(const char *peername, int ip_version)
 	return sfd;
 }
 
-static char *active_peer = 0;
+char *active_peer = 0;
 
 int conn_open(const char *peername, int ip_version)
 {
@@ -442,13 +442,13 @@ int conn_read(void *buf, size_t count)
 		if (rc <= 0) return pos;
 	}
 
-	conn_debug(active_peer, buf, pos);
+	//	conn_debug(active_peer, buf, pos);
 	return pos;
 }
 
 int conn_write(const void *buf, size_t count)
 {
-	conn_debug("Local", buf, count);
+  //	conn_debug("Local", buf, count);
 	return WRITE(buf, count);
 }
 
@@ -468,7 +468,7 @@ void conn_printf(const char *fmt, ...)
 	va_end(ap);
 
 	buffer[size] = 0;
-	csync_debug(2, "Command (sending): %s", buffer);
+	//csync_debug(2, "%s> %s", myhostname, buffer);
 	conn_write(buffer, size);
 }
 
@@ -488,7 +488,7 @@ size_t conn_gets_newline(char *s, size_t size, int remove_newline)
 	}
 	s[i] = 0;
 
-	conn_debug(active_peer, s, i);
+	//	conn_debug(active_peer, s, i);
 	return i;
 }
 
