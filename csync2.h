@@ -147,29 +147,8 @@ extern const char *csync_db_escape(const char *);
 
 #define SQL(e, s, rest...) csync_db_sql(e, s, ##rest)
 
-#if 0
-#if defined(HAVE_LIBSQLITE)
-#define SQL_BEGIN(e, s, ...) \
-{ \
-	char *SQL_ERR = e; \
-	void *SQL_VM = csync_db_begin(SQL_ERR, s, ##__VA_ARGS__); \
-	int SQL_COUNT = 0; \
-	while (1) { \
-		const char **dataSQL_V, **dataSQL_N; \
-		int SQL_C; \
-		if ( !csync_db_next(SQL_VM, SQL_ERR, \
-					&SQL_C, &dataSQL_V, &dataSQL_N) ) break; \
-		SQL_COUNT++;
-
-#define SQL_V(col) \
-	(dataSQL_V[(col)])
-#endif
-#endif
-
 extern const char* (*db_decode) (const char *value); 
 extern const char* (*db_encode) (const char *value); 
-
-// #if defined(HAVE_LIBSQLITE3)
 
 #define SQL_BEGIN(e, s, ...) \
 { \
@@ -187,7 +166,6 @@ extern const char* (*db_encode) (const char *value);
 
 #define SQL_V(col) \
 	(csync_db_colblob(SQL_VM,(col)))
-// #endif
 #define SQL_FIN }{
 
 #define SQL_END \
