@@ -213,7 +213,7 @@ int csync_check_pure(const char *filename)
 
 	same_len = i+1;
 
-	csync_debug(3, " check: %s %u, %s %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
+	csync_debug(3, "check: %s %u, %s %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
 	/* exact match? */
 	if (dir_len == same_len && same_len == cached.len)
 		return cached.has_symlink;
@@ -465,6 +465,8 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       const char *checktxt_same_version = checktxt;
       const char *inode  = SQL_V(1);
       const char *device = SQL_V(2);
+      // const char *mtime  = SQL_V(3);
+      // const char *type   = SQL_V(4);
       int flag = 0;
       if (strstr(checktxt_db, ":user=") != NULL)
 	flag |= SET_USER; 
