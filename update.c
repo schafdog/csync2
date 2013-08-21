@@ -32,29 +32,30 @@
 #include <stdarg.h>
 #include <signal.h>
 
-#define ERROR_DIRTY        -11
-#define ERROR_OTHER        -12
-#define ERROR_PATH_MISSING -13
-#define ERROR_HARDLINK     -14
-
 #define MAX_UID_SIZE  100
 #define MAX_GID_SIZE  100
 
-#define DIFF 4
-#define DIFF_META 8
+#define DIFF_META 16
+#define DIFF 8
 #define DIFF_BOTH (DIFF & DIFF_META)
+#define IDENTICAL 4
+#define LINK_LATER 3
+#define OK_DRY 2
 #define OK_SKIP 1
 #define SKIP 1
-#define OK_DRY 2
-#define LINK_LATER 3
-#define OK 0
-
+#define OK     0
 #define ERROR -1
 #define MAYBE_AUTO_RESOLVE  -2
 #define SETOWN  -6
 #define SETMOD  -7
 #define SETTIME -8
 #define CLEAR_DIRTY   -9
+#define ERROR_DIRTY        -11
+#define ERROR_OTHER        -12
+#define ERROR_PATH_MISSING -13
+#define ERROR_HARDLINK     -14
+
+
 
 
 int csync_update_file_settime(const char *peername, const char *key_enc, 
@@ -69,7 +70,9 @@ int read_conn_status(const char *file, const char *host)
 	char line[4096];
 	if ( conn_gets(line, 4096) ) {
 	  if ( !strncmp(line, "OK (", 4) ) 
-	    return 0;
+	    return OK;
+	  if (!strncmp(line, "IDENT (", 7))
+	      return IDENTICAL;
 	} else {
 	  connection_closed_error = 1;
 	  strcpy(line, "Connection closed.\n");
@@ -117,7 +120,7 @@ int connect_to_host(const char *peername, int ip_version)
   if ( use_ssl ) {
 #if HAVE_LIBGNUTLS
     conn_printf("SSL\n");
-    if ( read_conn_status(0, peername) ) {
+    if ( read_conn_status(0, peername) < OK) {
       csync_debug(1, "SSL command failed.\n");
       conn_close();
       return -1;
@@ -132,7 +135,7 @@ int connect_to_host(const char *peername, int ip_version)
   }
 
   conn_printf("CONFIG %s\n", url_encode(cfgname));
-  if ( read_conn_status(0, peername) ) {
+  if ( read_conn_status(0, peername) != OK) {
     csync_debug(1, "Config command failed.\n");
     conn_close();
     return -1;
@@ -140,7 +143,7 @@ int connect_to_host(const char *peername, int ip_version)
 
   if (active_grouplist) {
     conn_printf("GROUP %s\n", url_encode(active_grouplist));
-    if ( read_conn_status(0, peername) ) {
+    if ( read_conn_status(0, peername) != OK) {
       csync_debug(1, "Group command failed.\n");
       conn_close();
       return -1;
@@ -544,17 +547,15 @@ int csync_update_reg_file(const char *peername, const char *filename,
     read_conn_status(filename, peername);
     return ERROR;
   }
-  if (read_conn_status(filename, peername))
-    return ERROR;
-  return OK;
+  return read_conn_status(filename, peername);
 }
 
 int csync_update_file_dir(const char *peername, const char *filename, 
 			  int *last_conn_status)
 {
-  if ( (*last_conn_status = read_conn_status(filename, peername)))
+  if ( (*last_conn_status = read_conn_status(filename, peername)) < OK)
     return MAYBE_AUTO_RESOLVE;
-  return 0;
+  return *last_conn_status;
 }
 
 
@@ -681,7 +682,6 @@ int csync_patch_file(const char *key_enc,
 		     int *last_conn_status)
 {
   cmd_printf("PATCH", key_enc, filename_enc, "-",          st, uidptr, gidptr);
-//cmd_printf("SIG",   key_enc, filename_enc, "user/group", st, uidptr, gidptr);
   int rc = csync_update_reg_file(peername, filename, last_conn_status);
   return rc;
 }
@@ -736,17 +736,18 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 int csync_update_file_move(const char* myname, const char *peername, const char *key, const char *filename, const char *operation)
 {
   const char *old_name = (operation + 3);
-  if (OK == csync_file_mv(peername, key, old_name, filename)) {
+  int rc = csync_file_mv(peername, key, old_name, filename);
+  if (rc >= OK) {
     // DO stat on other file, and setown,mod and time on this 
     // (actually it should be correct */
     /* csync_skip_action_do_time(peername, key_enc, filename, filename_enc, 
        &file_stat);*/
     
-    csync_debug(1, "Succes: MV %s %s", old_name, filename);
+    csync_debug(1, "Succes: MV %s %s\n", old_name, filename);
     SQL("Delete moved file from dirty", 
 	"DELETE FROM dirty WHERE (filename = '%s' OR filename = '%s') AND peername = '%s'", 
 	db_encode(filename), db_encode(old_name), db_encode(peername)); 
-    return OK;
+    return rc;
   }
   csync_debug(0, "Failed to MV %s %s \n", old_name, filename);
 
@@ -840,8 +841,8 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	  return rc;
 	break; 
       case DIFF_META:
-	  rc = SETOWN;
-	  rc = CLEAR_DIRTY;
+	rc = SETOWN;
+	//	rc = CLEAR_DIRTY;
       }
     }
 
@@ -851,7 +852,6 @@ int csync_update_file_mod(const char *myname, const char *peername,
       case DIFF:
 	break;
       case SETOWN:
-	
       case SETTIME:
 	rc = csync_update_file_settime(peername, key_enc, filename, filename_enc, &st);
 	csync_clear_dirty(peername, filename, auto_resolve_run);
@@ -875,7 +875,6 @@ int csync_update_file_mod(const char *myname, const char *peername,
 
     switch (mode) {
     case REG_TYPE:
-
     // Attempt to find remote hardlinks that hare similar to current local file. 
     // So we dont need to copy/patch
     // If this doenst work we need to patch
@@ -898,9 +897,8 @@ int csync_update_file_mod(const char *myname, const char *peername,
       rc = csync_patch_file(key_enc, peername, 
 			    filename, filename_enc,
 			    &st, uidptr, gidptr, &last_conn_status);
-    if (rc == OK && st.st_nlink > 1) {
-      char *chk_local = strdup(
-				     csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
+    if (rc >= OK && st.st_nlink > 1) {
+      char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
       rc = csync_update_file_hardlink(peername, key_enc, 
 				      filename, filename_enc, 
 				      &st, uidptr, gidptr,
@@ -958,14 +956,10 @@ int csync_update_file_mod(const char *myname, const char *peername,
       csync_debug(1, "File type (mode=%o) is not supported.\n", st.st_mode);
       rc = ERROR;
     }
-    switch (rc) {
-    case OK:
-    case DIFF:
-      break;
-    default:
+    csync_debug(1, "before setown/settime/setmod rc %d", rc);
+    if (rc < OK)
       return rc;
-    }
-    if (rc != CLEAR_DIRTY) {
+    if (rc != CLEAR_DIRTY && rc != IDENTICAL) {
       if (rc == OK)
 	rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, 
 				      &st, uidptr, gidptr);
@@ -980,9 +974,11 @@ int csync_update_file_mod(const char *myname, const char *peername,
       }
       rc = csync_update_file_settime(peername, key_enc, filename, filename_enc, &st);
     }
-    if (rc != OK && rc != CLEAR_DIRTY)
-      return rc;
-    if (rc == OK) {
+    csync_debug(1, "clear dirty with rc %d", rc);
+    switch (rc) {
+    case OK: 
+    case IDENTICAL:
+    case CLEAR_DIRTY:
       csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc;
     }
@@ -1007,7 +1003,7 @@ int csync_update_file_settime(const char *peername, const char *key_enc,
 			      const struct stat *st)
 {
   if ( !S_ISLNK(st->st_mode) ) {
-    conn_printf("SETIME %s %s %Ld\n",
+    conn_printf("SETTIME %s %s %Ld\n",
 		key_enc, filename_enc,
 		(long long)st->st_mtime);
     if ( read_conn_status(filename, peername) )
