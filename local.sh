@@ -15,10 +15,6 @@ else
     PEER="local"
 fi
 
-if [ "$COMMAND" == "i" ] ; then 
-    $VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
-    exit
-fi 
 echo "Running command $COMMAND" 
 
 function check {
@@ -43,18 +39,19 @@ function check {
     ${PAUSE}
 }
 
-if [ "$COMMAND" != "u" ] ; then 
+if [ "$COMMAND" == "C" ] ; then 
     echo "delete from dirty ; delete from file" | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
-    echo "delete from dirty ; delete from file" | mysql -u csync2_peer -pcsync2_peer csync2_peer
-    echo "delete from dirty ; delete from file" | mysql -h other -u csync2_other -pcsync2_other csync2_other 
     rm -f csync_$NAME.log mysql_$NAME.log
     rm -rf test/$NAME/*
-    rm -rf test/peer/*
-    rsync --delete -av test/local/ other:Projects/csync2/csync2/test/other/
-else 
-    check
-    exit 0;
+    shift
+    COMMAND="$1"
 fi
+
+if [ "$COMMAND" == "i" ] ; then 
+    $VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
+    exit
+fi 
+
 
 shift
 for d in $* ; do 
