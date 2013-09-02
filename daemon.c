@@ -662,7 +662,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
   // TODO Why ignore mtime? 
-  int flags  = IGNORE_MTIME;
+  int flags  = 0; // IGNORE_MTIME;
   if (strcmp("user/group",tag[3]) == 0)
     flags |= SET_USER|SET_GROUP;
   const char *checktxt = csync_genchecktxt_version(&st, filename, 

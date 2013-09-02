@@ -575,7 +575,7 @@ int csync_update_file_sig(const char *peername, const char *filename,
   int peer_version = csync_get_checktxt_version(chk_peer);
   
   // DS Why do we ignore MTIME, IGNORE_LINK
-  int flag = IGNORE_MTIME|IGNORE_LINK;
+  int flag = /* IGNORE_MTIME| */ IGNORE_LINK;
   const char *chk_peer_decoded = url_decode(chk_peer);
   //TODO generate chk text that matches remote usage of uid/user and gid/gid
   char *has_user = strstr(chk_peer_decoded, ":user=");
@@ -956,7 +956,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
       csync_debug(1, "File type (mode=%o) is not supported.\n", st.st_mode);
       rc = ERROR;
     }
-    csync_debug(1, "before setown/settime/setmod rc %d", rc);
+    csync_debug(1, "before setown/settime/setmod rc %d.\n", rc);
     if (rc < OK)
       return rc;
     if (rc != CLEAR_DIRTY && rc != IDENTICAL) {
@@ -974,7 +974,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
       }
       rc = csync_update_file_settime(peername, key_enc, filename, filename_enc, &st);
     }
-    csync_debug(1, "clear dirty with rc %d", rc);
+    csync_debug(1, "clear dirty with rc %d\n", rc);
     switch (rc) {
     case OK: 
     case IDENTICAL:
