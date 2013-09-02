@@ -527,11 +527,15 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
     //TODO restore hardlinks
     struct stat st_patched; 
     int new_rc = stat(filename, &st_patched);
-    if (st.st_nlink > 1) {
-      const char *checktxt = csync_genchecktxt_version(&st_patched, filename, SET_USER|SET_GROUP, db_version);
-      char *operation;
-      struct textlist *tl = csync_check_move_link(filename, checktxt, &st, &operation, csync_hardlink);
+    if (!new_rc) {
+      if (st.st_nlink > 1) {
+	const char *checktxt = csync_genchecktxt_version(&st_patched, filename, SET_USER|SET_GROUP, db_version);
+	char *operation;
+	struct textlist *tl = csync_check_move_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
+      }
     }
+    else
+      csync_debug(0, "Failed to stat patched file: %s %d", filename, new_rc); 
     return OK;
   }
   return ABORT_CMD;
