@@ -43,7 +43,7 @@ function check {
 if [ "$COMMAND" == "C" ] ; then 
     echo "delete from dirty ; delete from file" | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
     rm -f csync_$NAME.log mysql_$NAME.log
-    rm -rf test/$NAME/*
+    rm -rf test/$NAME
     shift
     COMMAND="$1"
 fi
