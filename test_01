@@ -1,2 +1,4 @@
+mkdir test/$NAME
+check "first dir"
 echo first > test/$NAME/first.txt
 check "first file"
