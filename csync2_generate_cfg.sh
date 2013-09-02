@@ -13,6 +13,7 @@ ip-version 		4;
 prefix test {
        on local: `pwd`/test/local;
        on peer:  `pwd`/test/peer;
+       on other:  `pwd`/test/other;
 }
 
 group test {
