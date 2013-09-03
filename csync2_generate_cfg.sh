@@ -17,7 +17,7 @@ prefix test {
 }
 
 group test {
-      host local peer;
+      host local peer other;
       key csync2.key;
       include %test%;
       exclude *~; 
