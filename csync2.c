@@ -789,6 +789,7 @@ int main(int argc, char ** argv)
 	// init syslog if needed. 
 	if (first && csync_syslog && csync_server_child_pid == 0) {
 	  csync_openlog();
+	  first = 0;
 	}
 	// mode keeps its original value, but now checking on server
 	int conn  = -1;

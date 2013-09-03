@@ -906,8 +906,10 @@ int csync_db_update_path(const char *filename, const char *newname) {
   int newname_length  = strlen(filename_encoded);
   //  ASPRINTF(&update_sql, "")
   //csync_debug(1, "SQL UPDATE: %s\n", update_sql);
+  /*
   SQL("Update moved files in DB ", "UPDATE file set filename = concat('%s',substring(filename,%d)) where filename = '%s' or filename like '%s/%%'",
       newname_encoded, filename_length+1, filename_encoded, filename_encoded);
+  */
   //  free(update_sql);
   return 0;
 }
@@ -1057,6 +1059,7 @@ int csync_daemon_dispatch(char *filename,
     csync_daemon_list(filename, tag, *peername);
     break;
   case A_DEBUG:
+    csync_debug(0, "DEBUG from %s \n", *peername); 
     csync_debug_out = stdout;
     if ( tag[1][0] )
       csync_debug_level = atoi(tag[1]);

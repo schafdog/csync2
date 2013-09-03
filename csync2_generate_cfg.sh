@@ -1,7 +1,7 @@
 #!/bin/bash
 
 read -r -d '' VAR <<EOF
-nossl local peer;
+nossl * *;
 
 database "mysql://csync2_$1:csync2_$1@localhost/csync2_$1" ;
 #database test_$1.db;
@@ -17,7 +17,7 @@ prefix test {
 }
 
 group test {
-      host local peer;
+      host local peer other;
       key csync2.key;
       include %test%;
       exclude *~; 
