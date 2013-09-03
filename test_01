@@ -1,4 +1,5 @@
 mkdir test/$NAME
+sleep 2
 check "first dir"
 echo first > test/$NAME/first.txt
 check "first file"

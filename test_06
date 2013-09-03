@@ -1,0 +1,2 @@
+mv test/$NAME/second  test/$NAME/before
+check "move second before (reorder)" 

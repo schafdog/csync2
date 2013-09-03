@@ -1,2 +1,2 @@
-mv test/$NAME/second  test/$NAME/before
-check "move second before (reorder)" 
+mv test/$NAME/before  test/$NAME/dir1/hardlink_soon
+check "move to subdir" 

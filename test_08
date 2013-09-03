@@ -1,2 +1,2 @@
-mv test/$NAME/before  test/$NAME/dir1/hardlink_soon
-check "move to subdir" 
+mv test/$NAME/dir1  test/$NAME/dir2
+check "move subdir" 

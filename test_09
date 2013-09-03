@@ -1,2 +1,1 @@
-mv test/$NAME/dir1  test/$NAME/dir2
 check "move subdir" 
