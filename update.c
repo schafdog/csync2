@@ -1175,8 +1175,7 @@ int csync_diff(const char *myname, const char *peername,
   if ( read_conn_status(0, peername) )
     return finish_close();
   
-  conn_printf("TYPE %s %s\n", url_encode(g->key), 
-	      url_encode(prefixencode(filename)));
+  conn_printf("TYPE %s %s\n", url_encode(g->key), url_encode(prefixencode(filename)));
   if ( read_conn_status(0, peername) ) 
     return finish_close();
   
