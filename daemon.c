@@ -1106,8 +1106,8 @@ void csync_daemon_session(int db_version, int protocol_version)
   char line[4096], *peername=0, *tag[32];
   int i;
   const char *cmd_error  = NULL;
-  
-  csync_daemon_stdin_check(&peeraddr, &peerlen);
+  //TODO only valid for INETD mode since we do not set fd 0 otherwise.
+  //csync_daemon_stdin_check(&peeraddr, &peerlen);
   while ( conn_gets(line, 4096) ) {
     //csync_debug(1, "Command: %s", line);
     if (setup_tag(tag, line))
