@@ -330,7 +330,8 @@ int conn_close()
     active_peer = NULL;
   }
     
-	if ( conn_fd_in != conn_fd_out) close(conn_fd_in);
+	if ( conn_fd_in != conn_fd_out) 
+	  close(conn_fd_in);
 	close(conn_fd_out);
 
 	conn_fd_in  = -1;
@@ -343,40 +344,38 @@ int conn_close()
 static inline int READ(void *buf, size_t count)
 {
 #ifdef HAVE_LIBGNUTLS
-	if (csync_conn_usessl)
-		return gnutls_record_recv(conn_tls_session, buf, count);
-	else
+  if (csync_conn_usessl)
+    return gnutls_record_recv(conn_tls_session, buf, count);
+  else
 #endif
-		return read(conn_fd_in, buf, count);
+    return read(conn_fd_in, buf, count);
 }
 
 static inline int WRITE(const void *buf, size_t count)
 {
-	static int n, total;
-
+  static int n, total;
 #ifdef HAVE_LIBGNUTLS
-	if (csync_conn_usessl)
-		return gnutls_record_send(conn_tls_session, buf, count);
-	else
+  if (csync_conn_usessl)
+    return gnutls_record_send(conn_tls_session, buf, count);
+  else
 #endif
-	{
-		total = 0;
-
-		while (count > total) {
-			n = write(conn_fd_out, ((char *) buf) + total, count - total);
-
-			if (n >= 0)
-				total += n;
-			else {
-				if (errno == EINTR)
-					continue;
-				else
-					return -1;
-			}
-		}
-
-		return total;
+    {
+      total = 0;
+      
+      while (count > total) {
+	n = write(conn_fd_out, ((char *) buf) + total, count - total);
+	
+	if (n >= 0)
+	  total += n;
+	else {
+	  if (errno == EINTR)
+	    continue;
+	  else
+	    return -1;
 	}
+      }
+      return total;
+    }
 }
 
 int conn_raw_read(void *buf, size_t count)
