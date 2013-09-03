@@ -374,7 +374,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
       //close(conn);
       return 0;
     }
-    close(conn);
+    close(*conn);
   }
 
  error:
