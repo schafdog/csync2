@@ -468,7 +468,7 @@ int csync_get_checktxt_version(const char *value) {
     if (value[1] == '2')
       return 2;
   }
-  return 0;
+  return db_version;
 }
 const char* csync_nop(const char *value) {
   return value;
