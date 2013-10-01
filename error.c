@@ -36,29 +36,28 @@ time_t csync_startup_time = 0;
 
 void csync_printtime()
 {
-	if (csync_timestamps || csync_timestamp_out)
-	{
-		time_t now = time(0);
-		char ftbuffer[128];
-
-		if (!csync_startup_time)
-			csync_startup_time = now;
-
-		if (csync_last_printtime+300 < now) {
-			csync_last_printtime = now;
-
-			strftime(ftbuffer, 128, "%Y-%m-%d %H:%M:%S %Z (GMT%z)", localtime(&now));
-
-			if (csync_timestamp_out)
-				fprintf(csync_timestamp_out, "<%d> TIMESTAMP: %s\n", (int)getpid(), ftbuffer);
-
-			if (csync_timestamps) {
-				if (csync_server_child_pid)
-					fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
-				fprintf(csync_debug_out, "TIMESTAMP: %s\n", ftbuffer);
-			}
-		}
+  if (csync_timestamps || csync_timestamp_out) {
+      time_t now = time(0);
+      char ftbuffer[128];
+      
+      if (!csync_startup_time)
+	csync_startup_time = now;
+      
+      if (csync_last_printtime+300 < now) {
+	csync_last_printtime = now;
+	
+	strftime(ftbuffer, 128, "%Y-%m-%d %H:%M:%S %Z (GMT%z)", localtime(&now));
+	
+	if (csync_timestamp_out)
+	  fprintf(csync_timestamp_out, "<%d> TIMESTAMP: %s\n", (int)getpid(), ftbuffer);
+	
+	if (csync_timestamps) {
+	  if (csync_server_child_pid)
+	    fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
+	  fprintf(csync_debug_out, "TIMESTAMP: %s\n", ftbuffer);
 	}
+      }
+    }
 }
 
 void csync_printtotaltime()
