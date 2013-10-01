@@ -330,7 +330,7 @@ static int csync_server_bind(int ip_version)
 /* On fork the child process will return but the parent will continue 
    accepting. On non-forking, the loop has to be done outside.
  */
-static int csync_server_accept_loop(int nonfork, int listenfd)
+static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
 {
   union {
     struct sockaddr sa;
@@ -342,7 +342,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd)
   
   while (1) {
     unsigned addrlen = sizeof(addr);
-    int conn = accept(listenfd, &addr.sa, &addrlen);
+    *conn = accept(listenfd, &addr.sa, &addrlen);
     if (conn < 0) 
       goto error;
 
@@ -369,12 +369,12 @@ static int csync_server_accept_loop(int nonfork, int listenfd)
 		csync_server_child_pid, hbuf, sbuf);
 	fflush(stdout);
       }
-      dup2(conn, 0);
-      dup2(conn, 1);
-      close(conn);
+      //dup2(conn, 0);
+      //dup2(conn, 1);
+      //close(conn);
       return 0;
     }
-    close(conn);
+    close(*conn);
   }
 
  error:
@@ -792,14 +792,13 @@ int main(int argc, char ** argv)
 	  first = 0;
 	}
 	// mode keeps its original value, but now checking on server
+	int conn  = -1;
 	if (server && mode != MODE_INETD) {
 	  if (csync_server_accept_loop(mode == MODE_SINGLE ||
 				       mode == MODE_NOFORK,
-				       listenfd)) 
+				       listenfd, &conn)) 
 	    return 1; // Parent returns
 	}
-
-
 
 	// print time (if -t is set)
 	csync_printtime();
@@ -811,8 +810,11 @@ int main(int argc, char ** argv)
 	  char line[4096], *cmd, *para;
 	  
 	  /* configure conn.c for inetd mode */
-	  conn_set(0, 1);
-	  
+	  if (MODE_INETD == mode)
+	      conn_set(0, 1);
+	  else {
+	    conn_set(conn,dup(conn));
+	  }
 	  if ( !conn_gets(line, 4096) ) 
 	    return 0;
 	  cmd = strtok(line, "\t \r\n");
