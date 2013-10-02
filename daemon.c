@@ -1104,7 +1104,7 @@ void csync_end_command(const char *filename, char *tag[32], const char *cmd_erro
   destroy_tag(tag);
 }
 
-void csync_daemon_session(int db_version, int protocol_version)
+void csync_daemon_session(int db_version, int protocol_version, int mode)
 {
   address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
   socklen_t peerlen = sizeof(peeraddr);
@@ -1112,7 +1112,8 @@ void csync_daemon_session(int db_version, int protocol_version)
   int i;
   const char *cmd_error  = NULL;
   //TODO only valid for INETD mode since we do not set fd 0 otherwise.
-  //csync_daemon_stdin_check(&peeraddr, &peerlen);
+  if (MODE_INETD == mode)  
+    csync_daemon_stdin_check(&peeraddr, &peerlen);
   while ( conn_gets(line, 4096) ) {
     //csync_debug(1, "Command: %s", line);
     if (setup_tag(tag, line))
@@ -1129,7 +1130,7 @@ void csync_daemon_session(int db_version, int protocol_version)
       filename = (char *) prefixsubst(tag[2]);
     const char *other = prefixsubst(tag[3]);
     if (cmd->action == A_HELLO) {
-      csync_debug(1, "Command: %s \n", tag[0], tag[1]);
+      csync_debug(1, "Command: %s %s\n", tag[0], tag[1]);
       if (active_peer)
 	free(active_peer);
       active_peer = strdup(tag[1]);
@@ -1143,7 +1144,6 @@ void csync_daemon_session(int db_version, int protocol_version)
       destroy_tag(tag);
       continue;
     }		  	  
-
     int rc = OK;
     if ( cmd->check_perm )
       on_cygwin_lowercase(filename);
