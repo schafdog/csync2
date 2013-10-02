@@ -1038,7 +1038,8 @@ int main(int argc, char ** argv)
 		  for (i=optind; i < argc; i++) {
 		    char *realname = getrealfn(argv[i]);
 		    csync_check_usefullness(realname, recursive);
-		    csync_mark(realname, 0, active_peerlist, "mark");
+		    csync_mark(realname, 0, active_peerlist, "mark", 
+			       NULL, NULL, NULL);
 		    char *db_encoded = strdup(csync_db_escape(realname));
 		    
 		    if ( recursive ) {
@@ -1058,7 +1059,8 @@ int main(int argc, char ** argv)
 				db_encoded, where_rec)
 			{
 			  char *filename = strdup(db_decode(SQL_V(0)));
-			  csync_mark(filename, 0, active_peerlist, "mark");
+			  csync_mark(filename, 0, active_peerlist, "mark",
+				     NULL, NULL, NULL);
 			  free(filename);
 			} SQL_END;
 		      free(where_rec);
