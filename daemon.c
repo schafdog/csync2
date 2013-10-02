@@ -77,7 +77,8 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	} SQL_END;
 	if (!rc && operation && peername) {
 	  //csync_debug(0, "check dirty: peername %s \n", peername);
-	  csync_mark(filename, myhostname, peername, operation);
+	  csync_mark(filename, myhostname, peername, operation,
+		     NULL, NULL, NULL);
 	}
 	return rc;
 }
@@ -605,7 +606,8 @@ const char *csync_daemon_check_perm(struct csync_command *cmd,
       csync_compare_mode = 0;
     if ( perm ) {
       if ( perm == 2 ) {
-	csync_mark(filename, peername, 0, "perm (slave)");
+	csync_mark(filename, peername, 0, "perm (slave)",
+		   NULL,NULL,NULL);
 	cmd_error = "Permission denied for slave!";
       } else
 	cmd_error = "Permission denied!";
@@ -662,7 +664,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
   // TODO Why ignore mtime? 
-  int flags  = 0; // IGNORE_MTIME;
+  int flags  = IGNORE_MTIME;
   if (strcmp("user/group",tag[3]) == 0)
     flags |= SET_USER|SET_GROUP;
   const char *checktxt = csync_genchecktxt_version(&st, filename, 
@@ -956,7 +958,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   }
   case A_MARK:
-    csync_mark(filename, *peername, 0, "mark");
+    csync_mark(filename, *peername, 0, "mark", NULL, NULL, NULL);
     break;
   case A_TYPE:
      csync_daemon_type(filename, cmd_error);
