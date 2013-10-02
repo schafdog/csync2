@@ -49,6 +49,31 @@
 
 #define DB_SCHEMA_VERSION 0
 
+enum {
+	MODE_NONE,
+	MODE_HINT,
+	MODE_CHECK,
+	MODE_CHECK_AND_UPDATE,
+	MODE_UPDATE,
+	MODE_INETD,
+	MODE_SERVER,
+	MODE_SINGLE,
+	MODE_NOFORK,
+	MODE_MARK,
+	MODE_FORCE,
+	MODE_LIST_HINT,
+	MODE_LIST_FILE,
+	MODE_LIST_SYNC,
+	MODE_TEST_SYNC,
+	MODE_LIST_DIRTY,
+	MODE_REMOVE_OLD,
+	MODE_COMPARE,
+	MODE_SIMPLE,
+	MODE_UPGRADE_DB
+};
+
+
+
 #define csync_fatal(fmt, ...) {\
   csync_debug(0,fmt, ##__VA_ARGS__);\
   exit(1);\
@@ -240,7 +265,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 
 /* daemon.c */
 
-extern void csync_daemon_session(int db_version, int protocol_version);
+extern void csync_daemon_session(int db_version, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
 
 /* ringbuffer.c */

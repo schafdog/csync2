@@ -79,29 +79,6 @@ int csync_new_force = 0;
 
 int csync_dump_dir_fd = -1;
 
-enum {
-	MODE_NONE,
-	MODE_HINT,
-	MODE_CHECK,
-	MODE_CHECK_AND_UPDATE,
-	MODE_UPDATE,
-	MODE_INETD,
-	MODE_SERVER,
-	MODE_SINGLE,
-	MODE_NOFORK,
-	MODE_MARK,
-	MODE_FORCE,
-	MODE_LIST_HINT,
-	MODE_LIST_FILE,
-	MODE_LIST_SYNC,
-	MODE_TEST_SYNC,
-	MODE_LIST_DIRTY,
-	MODE_REMOVE_OLD,
-	MODE_COMPARE,
-	MODE_SIMPLE,
-	MODE_UPGRADE_DB
-};
-
 void help(char *cmd)
 {
 	printf(
@@ -1031,7 +1008,7 @@ int main(int argc, char ** argv)
 		case MODE_SINGLE:
 		case MODE_NOFORK:
 			conn_printf("OK (cmd_finished).\n");
-			csync_daemon_session(db_version, protocol_version);
+			csync_daemon_session(db_version, protocol_version, mode);
 			break;
 
 		case MODE_MARK:
