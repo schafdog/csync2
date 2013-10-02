@@ -575,7 +575,7 @@ int csync_update_file_sig(const char *peername, const char *filename,
   int peer_version = csync_get_checktxt_version(chk_peer);
   
   // DS Why do we ignore MTIME, IGNORE_LINK
-  int flag = /* IGNORE_MTIME| */ IGNORE_LINK;
+  int flag = IGNORE_MTIME|IGNORE_LINK;
   const char *chk_peer_decoded = url_decode(chk_peer);
   //TODO generate chk text that matches remote usage of uid/user and gid/gid
   char *has_user = strstr(chk_peer_decoded, ":user=");
@@ -1315,7 +1315,8 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	    csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); 
 	  ret=0;
 	  if (init_run & 1) 
-	    csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "updated (local)");
+	    csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "updated (local)", 
+		       NULL, "NULL", "NULL");
 	} else {
 	  if ( !remote_reuse )
 	    if ( csync_insynctest_readline(&r_file, &r_checktxt) ) { 
@@ -1330,7 +1331,8 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	    else
 	      csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
 	    if (init_run & 2) 
-	      csync_mark(r_file, 0, (init_run & 4) ? peername : 0, "updated (peer)");
+	      csync_mark(r_file, 0, (init_run & 4) ? peername : 0, "updated (peer)", 
+			 NULL, "NULL", "NULL");
 	    if ( csync_insynctest_readline(&r_file, &r_checktxt) ) { 
 	      remote_eof = 1; 
 	      goto got_remote_eof; 
@@ -1343,7 +1345,9 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	      textlist_add(&diff_list, strdup(l_file), 0);
 	    else
 	      csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
-	    if (init_run & 1) csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "autoupdate with local");
+	    if (init_run & 1) 
+	      csync_mark(l_file, 0, (init_run & 4) ? peername : 0, 
+			 "autoupdate with local", NULL, "NULL", "NULL");
 	    remote_reuse = 1;
 	  } else {
 	    remote_reuse = 0;
@@ -1362,7 +1366,8 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 		  ret=0;
 		}
 		if (init_run & 1) 
-		  csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "updated both");
+		  csync_mark(l_file, 0, (init_run & 4) ? peername : 0, 
+			     "updated both", NULL, "NULL", "NULL");
 	      }
 	    }
 	  }
@@ -1379,7 +1384,8 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
       else
 	csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
       if (init_run & 2) 
-	csync_mark(r_file, 0, (init_run & 4) ? peername : 0, "updated (peer)");
+	csync_mark(r_file, 0, (init_run & 4) ? peername : 0, 
+		   "updated (peer)", NULL, "NULL", "NULL");
     }
   
   if (r_file) free(r_file);
