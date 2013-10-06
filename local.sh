@@ -31,7 +31,9 @@ function check {
 #	echo 'select filename from csync2_peer.file where not filename in (select replace(filename,"/local/", "/peer/") as filename from csync2_local.file);' \
 #	    | mysql -u csync2_local -pcsync2_local
 	rsync --delete -nHav test/local/ peer:`pwd`/test/peer/
-	rsync --delete -nHav test/local/ other:`pwd`/test/other/
+	if [ "$OTHER" != "" ] ; then  
+	    rsync --delete -nHav test/local/ other:`pwd`/test/other/
+	fi
 	#./find_hardlinks.sh test/$NAME > hardlinks_$NAME.txt
 	#./find_hardlinks.sh test/peer > hardlinks_peer.txt
 	#diff hardlinks_$NAME.txt hardlinks_peer.txt
