@@ -86,6 +86,11 @@ AC_ARG_ENABLE([mysql],
 		[enable/disable MySQL support (default is disabled)])],
 	[], [ enable_mysql=no ])
 
+AC_ARG_ENABLE([mysql-percona],
+	[AC_HELP_STRING([--enable-mysql-percona],
+		[enable/disable MySQL (Percona) support (default is disabled)])],
+	[], [ enable_mysql_percona=no ])
+
 AC_ARG_ENABLE([postgres],
 	[AC_HELP_STRING([--enable-postgres],
 		[enable/disable Postgres support (default is disabled)])],
@@ -101,6 +106,19 @@ then
 	AC_CHECK_HEADERS([mysql/mysql.h], , [AC_MSG_ERROR([[mysql header not found; install mysql-devel and dependencies for MySQL Support]])])
 
 	AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
+fi
+
+if test "$enable_mysql_percona" == yes
+then
+	# Check for mysql.
+	# This is a bloody hack for fedora core
+	CFLAGS="$CFLAGS `mysql_config --cflags`"	
+
+	# Check MySQL development header
+	AC_CHECK_HEADERS([mysql.h], , [AC_MSG_ERROR([[mysql header not found; install mysql-devel and dependencies for MySQL Support]])])
+
+	AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
+	AC_DEFINE([HAVE_MYSQL_PERCONA], 1, [Define if mysql (percona) support is wanted])
 fi
 
 if test "$enable_postgres" == yes
