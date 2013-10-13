@@ -89,7 +89,10 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>\n"
 "Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
 "\n"
-"Version: " CSYNC2_VERSION "\n"
+"Version: " CSYNC2_VERSION "\n" 
+#ifdef CSYNC2_VERSION_SHA1
+" " CSYNC2_VERSION_SHA1 "\n"
+#endif
 "\n"
 "This program is free software under the terms of the GNU GPL.\n"
 "\n"
