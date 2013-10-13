@@ -325,6 +325,12 @@ static inline void textlist_add(struct textlist **listhandle, const char *item, 
   textlist_add4(listhandle, item, 0, 0, 0, intitem);
 }
 
+static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
+{
+  if (!(*listhandle) || strcmp((*listhandle)->value, item))
+    textlist_add4(listhandle, item, 0, 0, 0, intitem);
+}
+
 static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
 {
   textlist_add4(listhandle, item, item2, 0, 0, intitem);
