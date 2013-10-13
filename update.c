@@ -764,9 +764,39 @@ int csync_update_file_move(const char* myname, const char *peername, const char 
   return DIFF;
 }
 
+int csync_update_directory(const char *myname, const char *peername,
+			   const char *dirname, int force, int dry_run, int db_version) {
+  
+  struct stat dir_st;
+  const char *key = csync_key(peername, dirname);
+  if ( !key ) {
+    csync_debug(2, "Skipping directory update %s on %s - not in my groups.\n", 
+	        dirname, peername);
+    return OK;
+  }
+  const char *key_enc = db_encode(key);
+
+  if ( lstat_strict(dirname, &dir_st) != 0 ) {
+    csync_debug(0, "ERROR: Cant stat %s.\n", dirname);
+    csync_error_count++;
+    return ERROR;
+  }
+
+  int rc = stat(dirname, &dir_st); 
+  if (!rc && get_file_type(dir_st.st_mode) == DIR_TYPE) {
+    const char *dirname_enc = url_encode(prefixencode(dirname));
+
+    csync_debug(3, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
+    rc = csync_update_file_settime(peername, key_enc, dirname, dirname_enc, &dir_st);
+    return rc;
+  }
+  return ERROR;
+}
+
+
 int csync_update_file_mod(const char *myname, const char *peername,
 			  const char *filename, const char *operation , const char *other,
-			   int force, int dry_run, int db_version)
+			  int force, int dry_run, int db_version)
 {
   struct stat st;
   int last_conn_status = 0, auto_resolve_run = 0,
@@ -832,6 +862,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc;
     }
+
     if (operation && (strncmp("MV", operation, 2) == 0)) {
       switch (rc) {
       case DIFF_BOTH: 
@@ -955,7 +986,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
       csync_debug(1, "File type (mode=%o) is not supported.\n", st.st_mode);
       rc = ERROR;
     }
-    csync_debug(1, "before setown/settime/setmod rc %d.\n", rc);
+    //csync_debug(1, "before setown/settime/setmod rc %d.\n", rc);
     if (rc < OK)
       return rc;
     if (rc != CLEAR_DIRTY && rc != IDENTICAL) {
@@ -1080,20 +1111,35 @@ void csync_update_host(const char *myname, const char *peername,
 				      t->value, t->value2, 
 				      done || t->intvalue, dry_run);
 	//done = check_next_step(rc, done, myname, pername, t->value; t->value2, t->intvalue);
-      last_tn=&(t->next);
+	last_tn=&(t->next);
       }
     }
   }
+  textlist_free(tl);
+  const char *directory = 0; 
+  struct textlist *directory_list = 0;
+
   for (t = tl_mod; t != 0; t = t->next) {
     if (!connection_closed_error)
       rc = csync_update_file_mod(myname, peername,
 				 t->value, t->value2, t->value3, t->intvalue, dry_run, db_version);
-    
-  }
+    char *directory = t->value;
+    char *pos = strrchr(directory, '/');
+    if (pos) {
+      pos[0] = 0;
+      csync_debug(0, "Directory %s ", directory);
+      textlist_add_new(&directory_list, directory, 0);
+    }
 
+  }
   textlist_free(tl_mod);
-  textlist_free(tl);
   
+  for (t = directory_list; t != 0; t = t->next) {
+    csync_debug(0, "Directory list %s ", t->value); 
+    rc = csync_update_directory(myname, peername, t->value, t->intvalue, dry_run, db_version);
+  }
+  textlist_free(directory_list);
+
   conn_printf("BYE\n");
   read_conn_status(0, peername);
   conn_close();
