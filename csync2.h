@@ -240,7 +240,7 @@ extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
-struct textlist *csync_check_move_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
+struct textlist *csync_check_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
 
 
 
@@ -304,26 +304,35 @@ struct textlist {
 	int intvalue;
 	char *value;
 	char *value2;
+	char *value3;
+	char *value4;
 };
 
-static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
-{
-	struct textlist *tmp = *listhandle;
-	*listhandle = malloc(sizeof(struct textlist));
-	(*listhandle)->intvalue = intitem;
-	(*listhandle)->value = (item ? strdup(item) : 0);
-	(*listhandle)->value2 = 0;
-	(*listhandle)->next = tmp;
-}
-
-static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
+static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, const char *item4, int intitem)
 {
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
 	(*listhandle)->value  = (item  ? strdup(item)  : 0);
 	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
+	(*listhandle)->value3 = (item3 ? strdup(item3) : 0);
+	(*listhandle)->value4 = (item4 ? strdup(item4) : 0);
 	(*listhandle)->next = tmp;
+}
+
+static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
+{
+  textlist_add4(listhandle, item, 0, 0, 0, intitem);
+}
+
+static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
+{
+  textlist_add4(listhandle, item, item2, 0, 0, intitem);
+}
+
+static inline void textlist_add3(struct textlist **listhandle, const char *item, const char *item2, const char *item3, int intitem)
+{
+  textlist_add4(listhandle, item, item2, item3, 0, intitem);
 }
 
 static inline void textlist_free(struct textlist *listhandle)
@@ -332,8 +341,12 @@ static inline void textlist_free(struct textlist *listhandle)
 	while (listhandle != 0) {
 		next = listhandle->next;
 		free(listhandle->value);
-		if ( listhandle->value2 )
+		if (listhandle->value2)
 			free(listhandle->value2);
+		if ( listhandle->value3 )
+			free(listhandle->value3);
+		if ( listhandle->value4 )
+			free(listhandle->value4);
 		free(listhandle);
 		listhandle = next;
 	}
