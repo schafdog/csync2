@@ -55,16 +55,16 @@ found_matching_pattern:
 			for (c=a->command; c; c=c->next)
 				SQL("Add action to database",
 					"INSERT INTO action (filename, command, logfile) "
-					"VALUES ('%s', '%s', '%s')", url_encode(filename),
-					url_encode(c->command), url_encode(a->logfile));
+					"VALUES ('%s', '%s', '%s')", db_encode(filename),
+					db_encode(c->command), db_encode(a->logfile));
 		}
 	}
 }
 
 void csync_run_single_command(const char *command, const char *logfile)
 {
-	char *command_clr = strdup(url_decode(command));
-	char *logfile_clr = strdup(url_decode(logfile));
+	char *command_clr = strdup(db_decode(command));
+	char *logfile_clr = strdup(db_decode(logfile));
 	char *real_command, *mark;
 	struct textlist *tl = 0, *t;
 	pid_t pid;

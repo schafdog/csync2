@@ -30,8 +30,14 @@
 #include "dl.h"
 
 #ifdef HAVE_MYSQL
+#ifdef HAVE_MYSQL_PERCONA
+#include <mysql.h>
+#include <mysqld_error.h>
+#else
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
+#endif 
+
 
 static struct db_mysql_fns {
 	MYSQL *(*mysql_init_fn)(MYSQL*);

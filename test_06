@@ -1,2 +1,9 @@
+touch test/$NAME/second
+mkdir test/$NAME/dir1
+check "create second" 
 mv test/$NAME/second  test/$NAME/before
 check "move second before (reorder)" 
+mv test/$NAME/before  test/$NAME/dir1/hardlink_soon
+check "move to subdir"
+mv test/$NAME/hardlink_soon  test/$NAME/moved_up
+check "Moved up"

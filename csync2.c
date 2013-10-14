@@ -79,29 +79,6 @@ int csync_new_force = 0;
 
 int csync_dump_dir_fd = -1;
 
-enum {
-	MODE_NONE,
-	MODE_HINT,
-	MODE_CHECK,
-	MODE_CHECK_AND_UPDATE,
-	MODE_UPDATE,
-	MODE_INETD,
-	MODE_SERVER,
-	MODE_SINGLE,
-	MODE_NOFORK,
-	MODE_MARK,
-	MODE_FORCE,
-	MODE_LIST_HINT,
-	MODE_LIST_FILE,
-	MODE_LIST_SYNC,
-	MODE_TEST_SYNC,
-	MODE_LIST_DIRTY,
-	MODE_REMOVE_OLD,
-	MODE_COMPARE,
-	MODE_SIMPLE,
-	MODE_UPGRADE_DB
-};
-
 void help(char *cmd)
 {
 	printf(
@@ -112,7 +89,10 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>\n"
 "Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
 "\n"
-"Version: " CSYNC2_VERSION "\n"
+"Version: " CSYNC2_VERSION "\n" 
+#ifdef CSYNC2_VERSION_SHA1
+" " CSYNC2_VERSION_SHA1 "\n"
+#endif
 "\n"
 "This program is free software under the terms of the GNU GPL.\n"
 "\n"
@@ -1031,14 +1011,15 @@ int main(int argc, char ** argv)
 		case MODE_SINGLE:
 		case MODE_NOFORK:
 			conn_printf("OK (cmd_finished).\n");
-			csync_daemon_session(db_version, protocol_version);
+			csync_daemon_session(db_version, protocol_version, mode);
 			break;
 
 		case MODE_MARK:
 		  for (i=optind; i < argc; i++) {
 		    char *realname = getrealfn(argv[i]);
 		    csync_check_usefullness(realname, recursive);
-		    csync_mark(realname, 0, active_peerlist, "mark");
+		    csync_mark(realname, 0, active_peerlist, "mark", 
+			       NULL, NULL, NULL);
 		    char *db_encoded = strdup(csync_db_escape(realname));
 		    
 		    if ( recursive ) {
@@ -1058,7 +1039,8 @@ int main(int argc, char ** argv)
 				db_encoded, where_rec)
 			{
 			  char *filename = strdup(db_decode(SQL_V(0)));
-			  csync_mark(filename, 0, active_peerlist, "mark");
+			  csync_mark(filename, 0, active_peerlist, "mark",
+				     NULL, NULL, NULL);
 			  free(filename);
 			} SQL_END;
 		      free(where_rec);
