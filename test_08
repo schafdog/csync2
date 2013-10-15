@@ -1,2 +1,7 @@
+rm -rf test/$NAME/*
+check "make empty" 
+mkdir test/$NAME/dir1  
+check "make dir1" 
 mv test/$NAME/dir1  test/$NAME/dir2
-check "move subdir" 
+check "move subdir dir1 -> dir2" 
+
