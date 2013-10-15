@@ -770,8 +770,7 @@ int csync_update_directory(const char *myname, const char *peername,
   struct stat dir_st;
   const char *key = csync_key(peername, dirname);
   if ( !key ) {
-    csync_debug(2, "Skipping directory update %s on %s - not in my groups.\n", 
-	        dirname, peername);
+    csync_debug(4, "Skipping directory update %s on %s - not in my groups.\n", dirname, peername);
     return OK;
   }
   const char *key_enc = db_encode(key);
@@ -785,7 +784,6 @@ int csync_update_directory(const char *myname, const char *peername,
   int rc = stat(dirname, &dir_st); 
   if (!rc && get_file_type(dir_st.st_mode) == DIR_TYPE) {
     const char *dirname_enc = url_encode(prefixencode(dirname));
-
     csync_debug(3, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
     rc = csync_update_file_settime(peername, key_enc, dirname, dirname_enc, &dir_st);
     return rc;
@@ -1127,7 +1125,7 @@ void csync_update_host(const char *myname, const char *peername,
     char *pos = strrchr(directory, '/');
     if (pos) {
       pos[0] = 0;
-      csync_debug(0, "Directory %s ", directory);
+      csync_debug(3, "Directory %s\n ", directory);
       textlist_add_new(&directory_list, directory, 0);
     }
 
@@ -1135,7 +1133,6 @@ void csync_update_host(const char *myname, const char *peername,
   textlist_free(tl_mod);
   
   for (t = directory_list; t != 0; t = t->next) {
-    csync_debug(0, "Directory list %s ", t->value); 
     rc = csync_update_directory(myname, peername, t->value, t->intvalue, dry_run, db_version);
   }
   textlist_free(directory_list);
