@@ -71,7 +71,7 @@ static void new_group(char *name)
 	t->host = 0;
 	t->pattern = 0;
 	csync_group = t;
-	csync_debug(1, "New group: %s\n", name);
+	csync_debug(3, "New group: %s\n", name);
 }
 
 static void add_host(char *hostname, char *peername, int slave)
@@ -93,7 +93,7 @@ static void add_host(char *hostname, char *peername, int slave)
 		t->slave = slave;
 		t->next = csync_group->host;
 		csync_group->host = t;
-		csync_debug(1, "New group:host: %s %s\n",csync_group->gname, peername);
+		csync_debug(3, "New group:host: %s %s\n",csync_group->gname, peername);
 		free(hostname);
 	}
 }
@@ -133,7 +133,7 @@ static void add_patt(int patterntype, char *pattern)
 	t->pattern = strdup(prefixsubst(pattern));
 	t->next = csync_group->pattern;
 	csync_group->pattern = t;
-	csync_debug(1, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);}
+	csync_debug(3, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);}
 
 static void set_key(char *keyfilename)
 {
@@ -450,7 +450,7 @@ static void new_prefix_entry(char *pattern, char *path)
 			else
 				break;
 
-		csync_debug(2, "Prefix '%s' is set to '%s'.\n", csync_prefix->name, path);
+		csync_debug(3, "Prefix '%s' is set to '%s'.\n", csync_prefix->name, path);
 		csync_prefix->path = path;
 	} else
 		free(path);
