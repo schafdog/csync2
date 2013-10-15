@@ -161,7 +161,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       /* Delete Other file dirty status if differs from file */
       if (result_other && strcmp(file, result_other)) {
 	SQL("Deleting old dirty file entries",
-	    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s' a",
+	    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
 	    db_encode(result_other),
 	    db_encode(pl[pl_idx].peername));
       }
