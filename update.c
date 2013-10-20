@@ -1031,7 +1031,7 @@ int csync_update_file_settime(const char *peername, const char *key_enc,
 			      const struct stat *st)
 {
   if ( !S_ISLNK(st->st_mode) ) {
-    conn_printf("SETTIME %s %s %Ld\n",
+    conn_printf("SETTIME %s %s %Ld \n",
 		key_enc, filename_enc,
 		(long long)st->st_mtime);
     if ( read_conn_status(filename, peername) )
