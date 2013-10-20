@@ -435,7 +435,7 @@ struct textlist *csync_check_link(const char *filename, const char* checktxt, st
     csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
   } SQL_END; 
   if (loop) {
-    return loop(filename_enc, st, tl);
+    tl = loop(filename_enc, st, tl);
   }
   free(filename_enc);
   return tl; 
