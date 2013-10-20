@@ -1002,7 +1002,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
       }
       rc = csync_update_file_settime(peername, key_enc, filename, filename_enc, &st);
     }
-    csync_debug(1, "clear dirty with rc %d\n", rc);
+    csync_debug(3, "clear dirty with rc %d\n", rc);
     switch (rc) {
     case OK: 
     case IDENTICAL:
