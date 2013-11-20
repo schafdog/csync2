@@ -1,2 +1,4 @@
 touch "test/$NAME/database \" problem"
 check "database encoding of \" "
+touch "test/$NAME/database ' problem"
+check "database encoding of ' "

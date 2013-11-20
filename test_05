@@ -1,2 +1,0 @@
-mv test/$NAME/first.txt test/$NAME/second
-check "move first second" 

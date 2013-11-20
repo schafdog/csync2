@@ -1,2 +1,4 @@
 ln -s hej.txt test/$NAME/softlink
 check "softlink"
+ln -s /etc/hosts test/$NAME/absolut_softlink
+check "absolut softlink"

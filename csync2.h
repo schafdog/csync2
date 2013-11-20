@@ -49,6 +49,31 @@
 
 #define DB_SCHEMA_VERSION 0
 
+enum {
+	MODE_NONE,
+	MODE_HINT,
+	MODE_CHECK,
+	MODE_CHECK_AND_UPDATE,
+	MODE_UPDATE,
+	MODE_INETD,
+	MODE_SERVER,
+	MODE_SINGLE,
+	MODE_NOFORK,
+	MODE_MARK,
+	MODE_FORCE,
+	MODE_LIST_HINT,
+	MODE_LIST_FILE,
+	MODE_LIST_SYNC,
+	MODE_TEST_SYNC,
+	MODE_LIST_DIRTY,
+	MODE_REMOVE_OLD,
+	MODE_COMPARE,
+	MODE_SIMPLE,
+	MODE_UPGRADE_DB
+};
+
+
+
 #define csync_fatal(fmt, ...) {\
   csync_debug(0,fmt, ##__VA_ARGS__);\
   exit(1);\
@@ -210,12 +235,12 @@ extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version);
 /* Single file checking but returns possible operation */ 
 extern char *csync_check_single(const char *filename, int init_run, int version); 
-extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation);
+extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation, const char *checktxt, const char *dev, const char *ino);
 extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
-struct textlist *csync_check_move_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
+struct textlist *csync_check_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
 
 
 
@@ -240,7 +265,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 
 /* daemon.c */
 
-extern void csync_daemon_session(int db_version, int protocol_version);
+extern void csync_daemon_session(int db_version, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
 
 /* ringbuffer.c */
@@ -279,26 +304,41 @@ struct textlist {
 	int intvalue;
 	char *value;
 	char *value2;
+	char *value3;
+	char *value4;
 };
 
-static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
-{
-	struct textlist *tmp = *listhandle;
-	*listhandle = malloc(sizeof(struct textlist));
-	(*listhandle)->intvalue = intitem;
-	(*listhandle)->value = (item ? strdup(item) : 0);
-	(*listhandle)->value2 = 0;
-	(*listhandle)->next = tmp;
-}
-
-static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
+static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, const char *item4, int intitem)
 {
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
 	(*listhandle)->value  = (item  ? strdup(item)  : 0);
 	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
+	(*listhandle)->value3 = (item3 ? strdup(item3) : 0);
+	(*listhandle)->value4 = (item4 ? strdup(item4) : 0);
 	(*listhandle)->next = tmp;
+}
+
+static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
+{
+  textlist_add4(listhandle, item, 0, 0, 0, intitem);
+}
+
+static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
+{
+  if (!(*listhandle) || strcmp((*listhandle)->value, item))
+    textlist_add4(listhandle, item, 0, 0, 0, intitem);
+}
+
+static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
+{
+  textlist_add4(listhandle, item, item2, 0, 0, intitem);
+}
+
+static inline void textlist_add3(struct textlist **listhandle, const char *item, const char *item2, const char *item3, int intitem)
+{
+  textlist_add4(listhandle, item, item2, item3, 0, intitem);
 }
 
 static inline void textlist_free(struct textlist *listhandle)
@@ -307,8 +347,12 @@ static inline void textlist_free(struct textlist *listhandle)
 	while (listhandle != 0) {
 		next = listhandle->next;
 		free(listhandle->value);
-		if ( listhandle->value2 )
+		if (listhandle->value2)
 			free(listhandle->value2);
+		if ( listhandle->value3 )
+			free(listhandle->value3);
+		if ( listhandle->value4 )
+			free(listhandle->value4);
 		free(listhandle);
 		listhandle = next;
 	}

@@ -77,7 +77,8 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	} SQL_END;
 	if (!rc && operation && peername) {
 	  //csync_debug(0, "check dirty: peername %s \n", peername);
-	  csync_mark(filename, myhostname, peername, operation);
+	  csync_mark(filename, myhostname, peername, operation,
+		     NULL, NULL, NULL);
 	}
 	return rc;
 }
@@ -531,7 +532,10 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
       if (st.st_nlink > 1) {
 	const char *checktxt = csync_genchecktxt_version(&st_patched, filename, SET_USER|SET_GROUP, db_version);
 	char *operation;
-	struct textlist *tl = csync_check_move_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
+	struct textlist *tl = csync_check_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
+	// csync_hardlink does not return a list. 
+	if (tl) 
+	  textlist_free(tl);
       }
     }
     else
@@ -605,7 +609,8 @@ const char *csync_daemon_check_perm(struct csync_command *cmd,
       csync_compare_mode = 0;
     if ( perm ) {
       if ( perm == 2 ) {
-	csync_mark(filename, peername, 0, "perm (slave)");
+	csync_mark(filename, peername, 0, "perm (slave)",
+		   NULL,NULL,NULL);
 	cmd_error = "Permission denied for slave!";
       } else
 	cmd_error = "Permission denied!";
@@ -662,7 +667,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
   // TODO Why ignore mtime? 
-  int flags  = 0; // IGNORE_MTIME;
+  int flags  = IGNORE_MTIME;
   if (strcmp("user/group",tag[3]) == 0)
     flags |= SET_USER|SET_GROUP;
   const char *checktxt = csync_genchecktxt_version(&st, filename, 
@@ -956,7 +961,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   }
   case A_MARK:
-    csync_mark(filename, *peername, 0, "mark");
+    csync_mark(filename, *peername, 0, "mark", NULL, NULL, NULL);
     break;
   case A_TYPE:
      csync_daemon_type(filename, cmd_error);
@@ -1102,7 +1107,7 @@ void csync_end_command(const char *filename, char *tag[32], const char *cmd_erro
   destroy_tag(tag);
 }
 
-void csync_daemon_session(int db_version, int protocol_version)
+void csync_daemon_session(int db_version, int protocol_version, int mode)
 {
   address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
   socklen_t peerlen = sizeof(peeraddr);
@@ -1110,7 +1115,8 @@ void csync_daemon_session(int db_version, int protocol_version)
   int i;
   const char *cmd_error  = NULL;
   //TODO only valid for INETD mode since we do not set fd 0 otherwise.
-  //csync_daemon_stdin_check(&peeraddr, &peerlen);
+  if (MODE_INETD == mode)  
+    csync_daemon_stdin_check(&peeraddr, &peerlen);
   while ( conn_gets(line, 4096) ) {
     //csync_debug(1, "Command: %s", line);
     if (setup_tag(tag, line))
@@ -1127,7 +1133,7 @@ void csync_daemon_session(int db_version, int protocol_version)
       filename = (char *) prefixsubst(tag[2]);
     const char *other = prefixsubst(tag[3]);
     if (cmd->action == A_HELLO) {
-      csync_debug(1, "Command: %s \n", tag[0], tag[1]);
+      csync_debug(1, "Command: %s %s\n", tag[0], tag[1]);
       if (active_peer)
 	free(active_peer);
       active_peer = strdup(tag[1]);
@@ -1141,7 +1147,6 @@ void csync_daemon_session(int db_version, int protocol_version)
       destroy_tag(tag);
       continue;
     }		  	  
-
     int rc = OK;
     if ( cmd->check_perm )
       on_cygwin_lowercase(filename);

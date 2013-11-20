@@ -1,2 +1,0 @@
-ln -s /etc/hosts test/$NAME/absolut_softlink
-check "absolut softlink"

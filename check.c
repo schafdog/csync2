@@ -84,7 +84,9 @@ void csync_hint(const char *file, int recursive)
 		"VALUES ('%s', %d)", db_encode(file), recursive);
 }
 
-void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation)
+void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter, 
+		const char *operation, const char *checktxt, 
+		      const char *dev, const char *ino, const char *other)
 {
   struct peer *pl = csync_find_peers(file, thispeer);
   int pl_idx;
@@ -99,43 +101,96 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
 
   for (pl_idx=0; pl[pl_idx].peername; pl_idx++)
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "%s %s:%s (peerfilter %s).\n", operation, pl[pl_idx].peername, file, (peerfilter ? peerfilter : "(all)"));
+      csync_debug(1, "%s %s:%s (peerfilter %s).\n", operation, pl[pl_idx].peername, 
+		  file, (peerfilter ? peerfilter : "(all)"));
       short dirty = 1;
-      SQL_BEGIN("Checking old opertion on file",
-		"SELECT operation from dirty where "
-		"filename = '%s' AND peername = '%s'", 
-		db_encode(file),
-		db_encode(pl[pl_idx].peername)
-		)
-	{
-	  const char *old_operation = db_decode(SQL_V(0));
-	  // NEW/MKxxx -> RM => remove from dirty, as it newer happened
-	  if (!strcmp("rm",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
-	    csync_debug(1, "%s %s:%s deleted before syncing. Removing from dirty.", old_operation, pl[pl_idx].peername, file);
-	    dirty = 0;
-	  }
-	  // TODO NEW A -> MV x B (where stat and dev-inode is same) => NEW B 
-
-	} SQL_FIN {
-      } SQL_END;
+      short delete_other = 0;
+      char *result_other = 0;
+      const char *file_new = file;
+      /* We dont currently have a checktxt when marking files */ 
+      if (checktxt) {
+	SQL_BEGIN("Checking old opertion(s) on dirty",
+		  "SELECT operation, filename, other from dirty where "
+		  "checktxt = '%s' AND device = %s AND inode  = %s AND peername = '%s'", 
+		  db_encode(checktxt),
+		  db_encode(dev),
+		  db_encode(ino),
+		  db_encode(pl[pl_idx].peername)
+		  )
+	  {
+	    const char *old_operation;
+	    const char *filename;
+	    const char *other;
+	    old_operation = db_decode(SQL_V(0));
+	    filename = db_decode(SQL_V(1));
+	    other    = db_decode(SQL_V(2));
+	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
+	    if (!strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
+	      csync_debug(1, "%s %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
+	      dirty = 0;
+	      operation = "-";
+	    }
+	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)) && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2))) {
+	      if (!strcmp("RM",old_operation)) {
+		result_other = strdup(filename);
+		delete_other = 1;
+		csync_debug(1, "%s MOVE %s %s.\n", pl[pl_idx].peername, result_other, file);
+		operation = "MV";
+	      } else if  (!strcmp("MV", old_operation)) {
+		result_other = strdup(filename);
+		delete_other = 1;
+		csync_debug(1, "%s MOVE (updated) %s (%s) %s .\n ", pl[pl_idx].peername, result_other, other, file);
+		operation = "MV";
+	      }
+	    }
+	    else if (!strcmp("MV",old_operation) && !strcmp("RM", operation)) {
+	      operation = "RM";
+	      file_new = other;
+	      csync_debug(1, "%s MV->RM %s %s.\n", pl[pl_idx].peername, file, filename, other);
+	      other = 0;
+	    }
+	    break; 
+	  } SQL_FIN {
+	} SQL_END;
+      }
       SQL("Deleting old dirty file entries",
 	  "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
 	  db_encode(file),
 	  db_encode(pl[pl_idx].peername));
       
-      if (dirty) {
-	SQL("Marking File Dirty",
-	    "INSERT INTO dirty (filename, forced, myname, peername, operation) "
-	    "VALUES ('%s', %s, '%s', '%s', '%s')",
-	    db_encode(file),
-	    csync_new_force ? "1" : "0",
-	    db_encode(pl[pl_idx].myname),
-	    db_encode(pl[pl_idx].peername),
-	    (operation ? db_encode(operation): ""));
+      /* Delete Other file dirty status if differs from file */
+      if (result_other && strcmp(file, result_other)) {
+	SQL("Deleting old dirty file entries",
+	    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
+	    db_encode(result_other),
+	    db_encode(pl[pl_idx].peername));
       }
-    }
+      SQL("Marking File Dirty",
+	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) "
+	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, '%s')",
+	  db_encode(file_new),
+	  csync_new_force ? "1" : "0",
+	  db_encode(pl[pl_idx].myname),
+	  db_encode(pl[pl_idx].peername),
+	  (operation ? db_encode(operation): ""), 
+	  db_encode(checktxt),
+	  (dev ? dev : "NULL"),
+	  (ino ? ino : "NULL"),
+	  (result_other ? db_encode(result_other): "")
+	  );
+      if (result_other)
+	free(result_other);
+    };
   free(pl);
 }
+
+void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
+		const char *operation, const char *checktxt, 
+		const char *dev, const char *ino) 
+{
+  csync_mark_other(file, thispeer, peerfilter, operation, checktxt, dev, ino, 0);
+}
+
 
 /* Return path that doesn't exist */ 
 /* Pre-cond: a non-existing file   */
@@ -264,7 +319,7 @@ void csync_check_del(const char *file, int recursive, int init_run)
   char *where_rec = "";
   struct textlist *tl = 0, *t;
   struct stat st;
-  const char *SELECT_SQL = "SELECT filename, checktxt, inode, device from file ";
+  const char *SELECT_SQL = "SELECT filename, checktxt, device, inode from file ";
   if ( recursive ) {
     if ( !strcmp(file, "/") )
       ASPRINTF(&where_rec, "OR 1=1");
@@ -283,24 +338,24 @@ void csync_check_del(const char *file, int recursive, int init_run)
     {
       const char *filename = db_decode(SQL_V(0));
       const char *checktxt = db_decode(SQL_V(1));
-      const char *inode    = db_decode(SQL_V(2));
-      const char *device   = db_decode(SQL_V(3));
+      const char *device   = db_decode(SQL_V(2));
+      const char *inode    = db_decode(SQL_V(3));
       
       if (!csync_match_file(filename))
 	continue;
       
       if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
-	textlist_add(&tl, filename, 0);
+	textlist_add4(&tl, filename, checktxt, device, inode, 0);
     } SQL_END;
 
   for (t = tl; t != 0; t = t->next) {
     if (!init_run) {
-      csync_debug(0, "check_dirty (rm): before mark (all) \n");
-      csync_mark(t->value, 0, 0, "rm"); //, checktxt, inode);
+      //csync_debug(0, "check_dirty (rm): before mark (all) \n");
+      struct stat stat;
+      csync_mark(t->value, 0, 0, "RM", t->value2, t->value3, t->value4);
     }
-    // delay delete, set deleted flags
-    SQL("Mark file as deleted from DB. It isn't with us anymore.",
-	"UPDATE file set status = 1 WHERE filename = '%s'",
+    SQL("Delete file from DB. It isn't with us anymore.",
+	"delete from file WHERE filename = '%s'",
 	db_encode(t->value));
   }
   
@@ -310,9 +365,8 @@ void csync_check_del(const char *file, int recursive, int init_run)
     free(where_rec);
 }
 
-struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl)
+struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st, struct textlist *tl)
 {
-  char *filename_enc = strdup(db_encode(filename));
   struct textlist *t = tl; 
   while (t) {
     char *src  = t->value;
@@ -320,24 +374,25 @@ struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, str
     case OP_HARDLINK: {
       char *operation = "MKHARDLINK";
       SQL("Update operation to move/hardlink",
-	"UPDATE dirty set operation = '%s %s' where filename = '%s'", 
+	"UPDATE dirty set operation = '%s', other='%s' where filename = '%s'", 
 	  operation, filename_enc, db_encode(src));
       break;
     }
+    /*
     case OP_MOVE:
       SQL("Remove delete operation (move)",
 	"DELETE from dirty where filename = '%s'", db_encode(src));
       break; 
+    */
     }
     
     t = t->next;
   }
   textlist_free(tl);
-  free(filename_enc);
   return 0;
 }
 
-struct textlist *csync_check_move_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop)
+struct textlist *csync_check_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop)
 {
   struct textlist *tl = 0, *t;
   int count = 0;
@@ -345,13 +400,9 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
   char *filename_enc = strdup(db_encode(filename));
   struct stat file_stat; 
   SQL_BEGIN("Check for same inode", 
-	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and device = %llu and inode = %llu", filename_enc, dev, st->st_ino) {
+	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and device = %lu and inode = %llu", filename_enc, dev, st->st_ino) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
-    const char *status_value = SQL_V(2);
-    int status = 0;
-    if (status_value)
-      status = atoi(status_value);
     // if the check doesnt compare, it's more than a move/link. 
 
     int rc = stat(db_filename, &file_stat);
@@ -363,23 +414,13 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
       db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
     int i; 
     if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-      if (status == 1) {
-	csync_debug(1, "OPERATION: MV %s to %s\n", db_filename, filename);
-	if (operation) {
-	  *operation = ringbuffer_malloc(strlen(db_filename) + 10);
-	  sprintf(*operation, "MV %s", db_filename);
-	  textlist_add(&tl, db_filename, OP_MOVE);
-	}
-      } else {
-	csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
-	if (operation) {
-	  *operation = ringbuffer_malloc(strlen(db_filename) + 14);
-	  sprintf(*operation, "MKHARDLINK %s", db_filename); 
-	  textlist_add(&tl, db_filename, OP_HARDLINK);
-	}
+      csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
+      if (operation) {
+	*operation = "MKH";
+	textlist_add(&tl, db_filename, OP_HARDLINK);
       }
     } else {
-      csync_debug(1, "check_move_link: other file with same dev/inode. Unknown operation.");
+      csync_debug(1, "check_link: other file with same dev/inode. Unknown operation.");
       csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
       csync_debug(1, ">>> %s: %s\n", db_checktxt, db_filename);
       csync_debug(1, ">>> %s: %s\n", checktxt, filename);
@@ -391,12 +432,12 @@ struct textlist *csync_check_move_link(const char *filename, const char* checktx
       count++; 
     }
   } SQL_FIN {
-    csync_debug(2, "%d files with same dev:inode (%llu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
+    csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
   } SQL_END; 
-  free(filename_enc);
   if (loop) {
-    return loop(filename, st, tl);
+    tl = loop(filename_enc, st, tl);
   }
+  free(filename_enc);
   return tl; 
 }
 
@@ -451,6 +492,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
   int db_version = version;
   const char *encoded = db_encode(file);
   //char *operation = 0;
+  char *other = 0; 
  
   SQL_BEGIN("Checking File",
 	    "SELECT checktxt, inode, device FROM file WHERE "
@@ -482,7 +524,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       }
       if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	csync_debug(2, "%s has changed: \n %s \n %s\n", file, checktxt_same_version, checktxt_db);
-	*operation = ringbuffer_strdup("Modified");
+	*operation = ringbuffer_strdup("MOD");
 	this_is_dirty = 1;
       }
     } SQL_FIN {
@@ -504,8 +546,8 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	int len = readlink(file, target, 1023);
 	if (len > 0) {
 	  target[len] = 0;
-	  *operation = ringbuffer_malloc(len + 20);
-	  sprintf(*operation, "MKLINK %s", target );
+	  *operation = "MKLINK"; 
+	  other = strdup(target);
 	}
 	else
 	  csync_debug(0, "Failed to read link on %s\n", file);
@@ -514,31 +556,27 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     }
   } SQL_END;
   
-  int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
-  if (has_links) {
-    csync_debug(2, "File %s has links: %d\n", file, file_stat->st_nlink);
-  }
   if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
-    struct textlist *tl;
-    tl = csync_check_move_link(file, checktxt, file_stat, operation, 
-			       csync_mark_hardlinks);
-    if (tl)
-      textlist_free(tl);
-    if (this_is_dirty && operation && !*operation) {
-      
+    int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
+    if (has_links) {
+      struct textlist *tl;
+      csync_debug(2, "File %s has links: %d\n", file, file_stat->st_nlink);
+      tl = csync_check_link(file, checktxt, file_stat, operation, csync_mark_hardlinks);
+      if (tl)
+	textlist_free(tl);
     }
 
     unsigned long long dev = (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
     const char *checktxt_encoded = db_encode(checktxt);
     if (is_upgrade) {
       SQL("Update file entry",
-	  "UPDATE file set checktxt='%s', device=%llu, inode=%llu where filename = '%s'",
+	  "UPDATE file set checktxt='%s', device=%lu, inode=%llu where filename = '%s'",
 	  checktxt_encoded, dev, file_stat->st_ino, encoded);
     }
     else {
       SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
       SQL("Adding or updating file entry",
-	  "INSERT INTO file (filename, checktxt, device, inode) VALUES ('%s', '%s', %llu, %llu)",
+	  "INSERT INTO file (filename, checktxt, device, inode) VALUES ('%s', '%s', %lu, %llu)",
 	  encoded, 
 	  checktxt_encoded,
 	  dev,
@@ -547,7 +585,13 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     }
     if (!init_run && this_is_dirty) {
       csync_debug(0, "check_dirty (mod): before mark (all) \n");
-      csync_mark(file, 0, 0, *operation);
+      char dev_str[100];
+      char ino_str[100];
+      sprintf(dev_str, "%lu",  file_stat->st_dev);
+      sprintf(ino_str, "%lu", file_stat->st_ino);
+      csync_mark_other(file, 0, 0, *operation,  checktxt_encoded, dev_str, ino_str, other);
+      if (other) 
+	free(other);
     }
   }
   free(checktxt);
@@ -613,9 +657,6 @@ char *csync_check_recursive(const char *filename, int recursive, int init_run, i
 
 void csync_check(const char *filename, int recursive, int init_run, int version) {
   csync_check_recursive(filename, recursive, init_run, version);
-  // Delayed delete. Not fond of this. Could mess up another run (use a key as status?) but faster
-  SQL("Removing file(s) from DB. It isn't with us anymore.",
-      "delete from file where status = 1");
 }
 
 char *csync_check_single(const char *filename, int init_run, int version)

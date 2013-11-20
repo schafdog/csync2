@@ -1,2 +1,0 @@
-./csync2 -K csync2_local.cfg -N local -f$DEBUG test/local/local
-check "forced update peer"
