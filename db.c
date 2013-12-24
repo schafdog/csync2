@@ -142,8 +142,8 @@ void csync_db_open(const char *file)
 	in_sql_query++;
 
 	if (db_schema_version(db) < DB_SCHEMA_VERSION)
-		if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) != DB_OK)
-			csync_fatal("Cannot create database tables (version requested = %d): %s\n", DB_SCHEMA_VERSION, db_errmsg(db));
+	  if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) != DB_OK)
+	    csync_fatal("Cannot create database tables (version requested = %d): %s\n", DB_SCHEMA_VERSION, db_errmsg(db));
 
 	if (!db_sync_mode)
 		db_exec(db, "PRAGMA synchronous = OFF");
