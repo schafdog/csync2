@@ -374,7 +374,7 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
     case OP_HARDLINK: {
       char *operation = "MKHARDLINK";
       SQL("Update operation to move/hardlink",
-	"UPDATE dirty set operation = '%s %s' where filename = '%s'", 
+	"UPDATE dirty set operation = '%s', other='%s' where filename = '%s'", 
 	  operation, filename_enc, db_encode(src));
       break;
     }
@@ -400,7 +400,7 @@ struct textlist *csync_check_link(const char *filename, const char* checktxt, st
   char *filename_enc = strdup(db_encode(filename));
   struct stat file_stat; 
   SQL_BEGIN("Check for same inode", 
-	    "SELECT filename, checktxt, status FROM file WHERE filename != '%s' and device = %lu and inode = %llu", filename_enc, dev, st->st_ino) {
+	    "SELECT filename, checktxt FROM file WHERE filename != '%s' and device = %lu and inode = %llu", filename_enc, dev, st->st_ino) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
     // if the check doesnt compare, it's more than a move/link. 
@@ -434,10 +434,10 @@ struct textlist *csync_check_link(const char *filename, const char* checktxt, st
   } SQL_FIN {
     csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
   } SQL_END; 
-  free(filename_enc);
   if (loop) {
-    return loop(filename_enc, st, tl);
+    tl = loop(filename_enc, st, tl);
   }
+  free(filename_enc);
   return tl; 
 }
 
