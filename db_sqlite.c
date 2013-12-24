@@ -264,7 +264,7 @@ int db_sqlite_upgrade_to_schema(int version)
 
 	csync_db_sql("Creating dirty table",
 		"CREATE TABLE dirty ("
-		"	filename, forced, myname, peername, operation, "
+		"	filename, forced, myname, peername, operation, device, inode, other"
 		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
 		")");
 
