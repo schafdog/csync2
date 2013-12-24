@@ -1,9 +1,15 @@
 #!/bin/bash
 
+DB=mysql
+if [ "$2" != "" ] ; then
+    DB=$2
+fi  
+
+
 read -r -d '' VAR <<EOF
 nossl * *;
 
-database "mysql://csync2_$1:csync2_$1@localhost/csync2_$1" ;
+database "${DB}://csync2_$1:csync2_$1@localhost/csync2_$1" ;
 #database test_$1.db;
 
 database-version	2;
