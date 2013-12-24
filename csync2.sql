@@ -23,11 +23,10 @@ DROP TABLE IF EXISTS `action`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `action` (
-  `filename` varchar(275) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `command` text,
-  `logfile` text,
-  UNIQUE KEY `filename` (`filename`,`command`(20))
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+  `filename` varchar(1024) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `command`  text,
+  `logfile` text
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +42,7 @@ CREATE TABLE `dirty` (
   `myname` varchar(50) DEFAULT NULL,
   `peername` varchar(50) DEFAULT NULL,
   `operation` varchar(1024) DEFAULT NULL,
-  UNIQUE KEY `filename` (`filename`,`peername`),
+  UNIQUE KEY `filename_peer` (`filename`(200),`peername`),
   KEY `dirty_host` (`peername`(10))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -56,13 +55,13 @@ DROP TABLE IF EXISTS `file`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `file` (
-  `filename` varchar(275) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `filename` varchar(1024) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `checktxt` varchar(200) DEFAULT NULL,
   `inode` bigint(20) DEFAULT NULL,
   `device` int(11) DEFAULT NULL,
   `status` tinyint(1) DEFAULT NULL,
   `operation` varchar(1024) DEFAULT NULL,
-  UNIQUE KEY `filename` (`filename`),
+  UNIQUE KEY `filename` (`filename`(200)),
   KEY `idx_file_inode_device` (`device`,`inode`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -77,7 +76,7 @@ DROP TABLE IF EXISTS `hint`;
 CREATE TABLE `hint` (
   `filename` varchar(275) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `recursive` int(11) DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -90,7 +89,7 @@ DROP TABLE IF EXISTS `host`;
 CREATE TABLE `host` (
   `host` varchar(50) DEFAULT NULL,
   `enabled` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -118,7 +117,7 @@ CREATE TABLE `x509_cert` (
   `peername` varchar(50) DEFAULT NULL,
   `certdata` varchar(255) DEFAULT NULL,
   UNIQUE KEY `peername` (`peername`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
