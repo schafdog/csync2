@@ -372,7 +372,7 @@ int db_mysql_upgrade_to_schema(int version)
  */
 	csync_db_sql("Creating action table",
 		"CREATE TABLE `action` ("
-		"  `filename` varchar(4096) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		"  `filename` varchar(768) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
 		"  `command` text,"
 		"  `logfile` text,"
 		"  UNIQUE KEY `filename` (`filename`(326),`command`(20))"
@@ -380,18 +380,19 @@ int db_mysql_upgrade_to_schema(int version)
 
 	csync_db_sql("Creating dirty table",
 		"CREATE TABLE `dirty` ("
-		"  `filename`  varchar(4096) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		"  `filename`  varchar(768)  CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
 		"  `forced`    int(11)       DEFAULT NULL,"
 		"  `myname`    varchar(50)   DEFAULT NULL,"
 		"  `peername`  varchar(50)   DEFAULT NULL,"
-		"  `operation` varchar(4096) DEFAULT NULL,"
+		"  `operation` varchar(100)  DEFAULT NULL,"
+		"  `other`     varchar(768)  DEFAULT NULL,"
 		"  UNIQUE KEY `filename` (`filename`(316),`peername`),"
 		"  KEY `dirty_host` (`peername`(10))"
 		")");
 
 	csync_db_sql("Creating file table",
 		"CREATE TABLE `file` ("
-		"  `filename` varchar(4096) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		"  `filename` varchar(768) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
 		"  `checktxt` varchar(200) DEFAULT NULL,"
 		"  `device`   bigint DEFAULT NULL,"
 		"  `inode`    bigint DEFAULT NULL,"
@@ -402,7 +403,7 @@ int db_mysql_upgrade_to_schema(int version)
 
 	csync_db_sql("Creating hint table",
 		"CREATE TABLE `hint` ("
-		"  `filename` varchar(4096) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		"  `filename` varchar(768) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
 		"  `recursive` int(11)     DEFAULT NULL"
 		")");
 
