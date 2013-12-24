@@ -72,7 +72,7 @@ enum {
 	MODE_UPGRADE_DB
 };
 
-
+#define DEFAULT_PORT "30865" 
 
 #define csync_fatal(fmt, ...) {\
   csync_debug(0,fmt, ##__VA_ARGS__);\
@@ -371,6 +371,7 @@ struct csync_group_pattern;
 struct csync_group_host {
 	struct csync_group_host *next;
         char *hostname;
+        int port;
 	int on_left_side;
 	int slave;
 };
