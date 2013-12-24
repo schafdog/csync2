@@ -427,27 +427,32 @@ int db_postgres_upgrade_to_schema(int version)
 
 	csync_db_sql("Creating dirty table",
 "CREATE TABLE dirty ("
-"  filename varchar(200) DEFAULT NULL,"
-"  forced int DEFAULT NULL,"
-"  myname varchar(100) DEFAULT NULL,"
-"  peername varchar(100) DEFAULT NULL,"
+"  filename   varchar(200) DEFAULT NULL,"
+"  forced    int           DEFAULT NULL,"
+"  myname    varchar(100)  DEFAULT NULL,"
+"  peername  varchar(100)  DEFAULT NULL,"
+"  checktxt  varchar(255)  DEFAULT NULL,"
+"  device    bigint        DEFAULT NULL,"
+"  inode     bigint        DEFAULT NULL,"
+"  operation varchar(100)  DEFAULT NULL,"
+"  other     varchar(1024) DEFAULT NULL,"
 "  UNIQUE (filename,peername)"
 ");");
 
 	csync_db_sql("Creating file table",
 "CREATE TABLE file ("
 "  filename varchar(1024) DEFAULT NULL,"
-"  checktxt varchar(200) DEFAULT NULL,"
-"  device bigint DEFAULT NULL,"
-"  inode  bigint DEFAULT NULL,"
-"  digest varchar(1024) DEFAULT NULL,"
+"  checktxt varchar(200)  DEFAULT NULL,"
+"  device bigint          DEFAULT NULL,"
+"  inode  bigint          DEFAULT NULL,"
+"  digest varchar(1024)   DEFAULT NULL,"
 "  UNIQUE (filename)"
 ");");
 
 	csync_db_sql("Creating hint table",
 "CREATE TABLE hint ("
-"  filename varchar(255) DEFAULT NULL,"
-"  recursive int DEFAULT NULL"
+"  filename varchar(1024) DEFAULT NULL,"
+"  recursive int          DEFAULT NULL"
 ");");
 
 	csync_db_sql("Creating x509_cert table",
