@@ -15,7 +15,7 @@ main(int argc, char *argv[])
   OpenSSL_add_all_digests();
 
   if(!argv[1]) {
-    printf("Usage: mdtest digestname\n");
+    printf("Usage: digest digestname filename\n");
     exit(1);
   }
 
@@ -49,6 +49,7 @@ main(int argc, char *argv[])
   EVP_MD_CTX_destroy(mdctx);
 
   printf("Digest is (%u): ", total);
-  for(i = 0; i < md_len; i++) printf("%02x", md_value[i]);
+  for(i = 0; i < md_len; i++) 
+    printf("%02x", md_value[i]);
   printf("\n");
 }
