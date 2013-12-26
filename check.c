@@ -131,17 +131,10 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	      operation = "-";
 	    }
 	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)) && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2))) {
-	      if (!strcmp("RM",old_operation)) {
-		result_other = strdup(filename);
-		delete_other = 1;
-		csync_debug(1, "%s MOVE %s %s.\n", pl[pl_idx].peername, result_other, file);
-		operation = "MV";
-	      } else if  (!strcmp("MV", old_operation)) {
-		result_other = strdup(filename);
-		delete_other = 1;
-		csync_debug(1, "%s MOVE (updated) %s (%s) %s .\n ", pl[pl_idx].peername, result_other, other, file);
-		operation = "MV";
-	      }
+	      result_other = strdup(filename);
+	      delete_other = 1;
+	      csync_debug(1, "%s MOVE (%s) %s %s.\n", pl[pl_idx].peername, old_operation, result_other, file);
+	      operation = "MV";
 	    }
 	    else if (!strcmp("MV",old_operation) && !strcmp("RM", operation)) {
 	      operation = "RM";
@@ -165,6 +158,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    db_encode(result_other),
 	    db_encode(pl[pl_idx].peername));
       }
+      if (dirty)
       SQL("Marking File Dirty",
 	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) "
 	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, '%s')",
