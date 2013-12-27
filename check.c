@@ -101,14 +101,13 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 
   for (pl_idx=0; pl[pl_idx].peername; pl_idx++)
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "%s %s:%s (peerfilter %s).\n", operation, pl[pl_idx].peername, 
-		  file, (peerfilter ? peerfilter : "(all)"));
+      csync_debug(1, "mark other operation: %s %s:%s.\n", operation, pl[pl_idx].peername, file);
       short dirty = 1;
-      short delete_other = 0;
       char *result_other = 0;
       const char *file_new = file;
-      /* We dont currently have a checktxt when marking files */ 
+      /* We dont currently have a checktxt when marking files. */ 
       if (checktxt) {
+	
 	SQL_BEGIN("Checking old opertion(s) on dirty",
 		  "SELECT operation, filename, other from dirty where "
 		  "checktxt = '%s' AND device = %s AND inode  = %s AND peername = '%s'", 
@@ -124,22 +123,23 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    old_operation = db_decode(SQL_V(0));
 	    filename = db_decode(SQL_V(1));
 	    other    = db_decode(SQL_V(2));
+	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' ", old_operation, filename, other);
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
 	    if (!strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
-	      csync_debug(1, "%s %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
+	      csync_debug(1, "mark operation %s -> NOP %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
 	      dirty = 0;
 	      operation = "-";
 	    }
-	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)) && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2))) {
+	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)) && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2)) && strstr(checktxt, "type=dir") < 0) {
+	      // Do not do this for directories
 	      result_other = strdup(filename);
-	      delete_other = 1;
-	      csync_debug(1, "%s MOVE (%s) %s %s.\n", pl[pl_idx].peername, old_operation, result_other, file);
+	      csync_debug(1, "mark operation %s->MOVE %s '%s' '%s' '%s'.", old_operation, pl[pl_idx].peername, file, result_other);
 	      operation = "MV";
 	    }
 	    else if (!strcmp("MV",old_operation) && !strcmp("RM", operation)) {
 	      operation = "RM";
 	      file_new = other;
-	      csync_debug(1, "%s MV->RM %s %s.\n", pl[pl_idx].peername, file, filename, other);
+	      csync_debug(1, "mark operation MV->RM %s %s '%s' '%s'.\n", pl[pl_idx].peername, file, filename, other);
 	      other = 0;
 	    }
 	    break; 
