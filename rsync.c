@@ -335,7 +335,7 @@ int csync_rs_check(const char *filename, int isreg)
     csync_debug(3, "Running rs_sig_file() from librsync....\n");
     if (basis_file)
       result = rs_sig_file(basis_file, sig_file,
-			   RS_DEFAULT_BLOCK_LEN, 2*RS_DEFAULT_STRONG_LEN, &stats);
+			   RS_DEFAULT_BLOCK_LEN, RS_MD4_LENGTH, &stats);
     if (result != RS_DONE) {
       csync_debug(0, "Internal error from rsync library!\n");
       rsync_close_error(errno, basis_file, sig_file, 0);
@@ -431,7 +431,7 @@ void csync_rs_sig(const char *filename)
 
   csync_debug(3, "Running rs_sig_file() from librsync..\n");
   result = rs_sig_file(basis_file, sig_file,
-		       RS_DEFAULT_BLOCK_LEN, RS_DEFAULT_STRONG_LEN, &stats);
+		       RS_DEFAULT_BLOCK_LEN, RS_MD4_LENGTH, &stats);
   if (result != RS_DONE)
     csync_fatal("Got an error from librsync, too bad!\n");
 
