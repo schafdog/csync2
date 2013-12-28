@@ -49,7 +49,7 @@ int match_pattern_list(
       }
     }
     if ( matched ) {
-      csync_debug(2, "Match (%c): %s on %s\n",
+      csync_debug(3, "Match (%c): %s on %s\n",
 		  p->isinclude ? '+' : '-', p->pattern, filename);
     }
   next_pattern:
@@ -121,7 +121,7 @@ void csync_check_usefullness(const char *file, int recursive)
     return;
   if ( recursive && csync_step_into(file) ) 
     return;
-  csync_debug(0, "WARNING: Parameter will be ignored: %s\n", file);
+  csync_fatal(0, "FATAL: %s did not match any configuration.\n", file);
 }
 
 int csync_match_file_host(const char *file, const char *myname, const char *peername, const char **keys)
