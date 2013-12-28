@@ -18,6 +18,7 @@ fi
 echo "Running command $COMMAND" 
 
 function cmd {
+    echo cmd $1
     CMD=$1
     $VALGRIND ./csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME # >> csync_$NAME.log 2>&1
     echo "select * from file; select * from dirty;" | mysql -t -u csync2_$NAME -pcsync2_$NAME csync2_$NAME >> mysql_$NAME.log
@@ -43,24 +44,35 @@ function cmd {
     ${PAUSE}
 }
 
+function clean {
+    echo "delete from dirty ; delete from file" | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
+    rm -f csync_$NAME.log mysql_$NAME.log
+    rm -rf test/$NAME/*
+    mkdir -p test/$NAME
+}
+
+function daemon {
+    CMD="$1"
+    if [ "$CMD" == "i" ] ; then 
+	$VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
+    elif [ "$CMD" == "once" ] ; then 
+	$VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860
+    fi 
+}
+
 function check {
     cmd $COMMAND $1
 }
 
 
 if [ "$COMMAND" == "C" ] ; then 
-    echo "delete from dirty ; delete from file" | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
-    rm -f csync_$NAME.log mysql_$NAME.log
-    rm -rf test/$NAME/*
+    clean 
     shift
     COMMAND="$1"
-    mkdir -p test/$NAME
 fi
 
-
 if [ "$COMMAND" == "i" ] ; then 
-    $VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
-    exit
+    daemon i
 fi 
 
 #if [ "$COMMAND" == "-" ] ; then 
@@ -70,6 +82,6 @@ fi
 
 shift
 for d in $* ; do 
-    echo $d
+    echo "Running test script $d"
     source $d
 done
