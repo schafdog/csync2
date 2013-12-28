@@ -131,17 +131,17 @@ int csync_file_backup(const char *filename, const char **cmd_error)
 	    int fd_in, fd_out, i;
 	    int lastSlash = 0;
 	    mode_t mode;
-	    csync_debug(2, "backup %s \n", filename);
+	    csync_debug(4, "backup %s \n", filename);
 	    // Skip generation of directories
 	    rc =  stat(filename, &buf);
-	    csync_debug(2, "backup %s %d \n", filename, rc);
+	    csync_debug(4, "backup %s %d \n", filename, rc);
 	    if (rc != 0) {
 	      csync_debug(1, "Nothing to backup: %s. New file?\n", filename);
 	      return 0;
 	    }
 	    
 	    if (S_ISDIR(buf.st_mode)) {
-	      csync_debug(2, "directory. Skip generation \n");
+	      csync_debug(4, "directory. Skip generation \n");
 	      return 0;
 	    }
 
@@ -167,7 +167,7 @@ int csync_file_backup(const char *filename, const char **cmd_error)
 
 		backup_filename[bak_dir_len+i] = 0;
 
-		csync_debug(2, "mkdir %s \n", backup_filename);
+		csync_debug(4, "mkdir %s \n", backup_filename);
 
 		mkdir(backup_filename, mode);
 		// Dont check the empty string.
@@ -197,7 +197,7 @@ int csync_file_backup(const char *filename, const char **cmd_error)
 	      snprintf(backup_otherfilename+bak_dir_len+filename_len, 10, ".%d", i);
 
 	      rc = rename(backup_filename, backup_otherfilename);
-	      csync_debug(1, "renaming backup files '%s' to '%s'. rc = %d\n", backup_filename, backup_otherfilename, rc);
+	      csync_debug(3, "renaming backup files '%s' to '%s'. rc = %d\n", backup_filename, backup_otherfilename, rc);
 	      
 	    }
 
@@ -214,7 +214,7 @@ int csync_file_backup(const char *filename, const char **cmd_error)
 	      return 1;
 	    }
 
-	    csync_debug(1,"Copying data from %s to backup file %s \n", filename, backup_filename);
+	    csync_debug(4,"Copying data from %s to backup file %s \n", filename, backup_filename);
 
 	    rc  = csync_copy_file(fd_in, fd_out);
 	    if (rc != 0) {
@@ -230,10 +230,10 @@ int csync_file_backup(const char *filename, const char **cmd_error)
 		// return 1;
 	    }
 	    csync_set_backup_file_status(backup_filename, bak_dir_len);
-	    csync_debug(2, "csync_backup loop end\n");
+	    csync_debug(3, "csync_backup loop end\n");
 	  }
 	}
-	csync_debug(2, "csync_backup end\n");
+	csync_debug(3, "csync_backup end\n");
 	return 0;
 }
 
@@ -270,14 +270,15 @@ int csync_set_backup_file_status(char *filename, int backupDirLength) {
   struct stat buf;
   int rc = stat((filename + backupDirLength), &buf);
   if (rc == 0 ) {
-    csync_debug(2, "Stating original file %s rc: %d mode: %o\n", (filename + backupDirLength), rc, buf.st_mode);
+    csync_debug(4, "Stating original file %s rc: %d mode: %o\n", (filename + backupDirLength), rc, buf.st_mode);
 
     rc = chown(filename, buf.st_uid, buf.st_gid);
-    csync_debug(2, "Changing owner of %s to user %d and group %d, rc= %d \n", 
+
+    csync_debug(rc == 0 ? 4:0, "Changing owner of %s to user %d and group %d, rc= %d \n", 
 		filename, buf.st_uid, buf.st_gid, rc);
 
     rc = chmod(filename, buf.st_mode);
-    csync_debug(2, "Changing mode of %s to mode %d, rc= %d \n", 
+    csync_debug(rc == 0 ? 4:0, "Changing mode of %s to mode %d, rc= %d \n", 
 		filename, buf.st_mode, rc);
 
   }
@@ -1087,8 +1088,10 @@ int csync_daemon_dispatch(char *filename,
 }
 
 void csync_end_command(const char *filename, char *tag[32], const char *cmd_error, int rc) {
-  if ( cmd_error )
+  if ( cmd_error ) {
+    csync_debug(0, "Error: %s (%s)\n", cmd_error, filename ? filename : "<no file>");
     conn_printf("%s (%s)\n", cmd_error, filename ? filename : "<no file>");
+  }
   else {
     switch (rc) {
     case OK:
