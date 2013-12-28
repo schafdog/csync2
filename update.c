@@ -80,10 +80,10 @@ int read_conn_status(const char *file, const char *host)
 	if (strncmp(line, "ERROR (Path not found)", 15) == 0)
 	  return ERROR_PATH_MISSING; 
 	if ( file )
-	  csync_debug(0, "While syncing file %s:\n", file);
+	  csync_debug(0, "While syncing file: %s\n", file);
 	else
 	  file = "<no file>";
-	csync_debug(0, "ERROR from peer(%s): %s %s\n", file, host, line);
+	csync_debug(0, "ERROR from %s: %s\n", host, line);
 	csync_error_count++;
 	return !strcmp(line, "File is also marked dirty here!") ? ERROR_DIRTY : ERROR_OTHER;
 }
