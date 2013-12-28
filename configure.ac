@@ -91,17 +91,17 @@ fi
 AC_ARG_ENABLE([mysql],
 	[AC_HELP_STRING([--enable-mysql],
 		[enable/disable MySQL support (default is disabled)])],
-	[], [ enable_mysql=no ])
+	[], [ enable_mysql=yes ])
 
 AC_ARG_ENABLE([mysql-percona],
 	[AC_HELP_STRING([--enable-mysql-percona],
 		[enable/disable MySQL (Percona) support (default is disabled)])],
-	[], [ enable_mysql_percona=no ])
+	[], [ enable_mysql_percona=yes ])
 
 AC_ARG_ENABLE([postgres],
 	[AC_HELP_STRING([--enable-postgres],
 		[enable/disable Postgres support (default is disabled)])],
-	[], [ enable_postgres=no ])
+	[], [ enable_postgres=yes ])
 
 if test "$enable_mysql" == yes
 then
@@ -110,7 +110,7 @@ then
 	CFLAGS="$CFLAGS `mysql_config --cflags`"	
 
 	# Check MySQL development header
-	AC_CHECK_HEADERS([mysql/mysql.h], , [AC_MSG_ERROR([[mysql header not found; install mysql-devel and dependencies for MySQL Support]])])
+	AC_CHECK_HEADERS([mysql/mysql.h, mysql.h], , [AC_MSG_WARN([[mysql header not found; install mysql-devel and dependencies for MySQL Support]])])
 
 	AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
 fi
