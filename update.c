@@ -775,20 +775,19 @@ int csync_update_directory(const char *myname, const char *peername,
   }
   const char *key_enc = db_encode(key);
 
-  if ( lstat_strict(dirname, &dir_st) != 0 ) {
-    csync_debug(0, "ERROR: Cant stat %s.\n", dirname);
-    csync_error_count++;
-    return ERROR;
+  int rc = lstat_strict(dirname, &dir_st);
+  if (rc != 0) {
+    csync_debug(3, "Silent skipping missing directory %s.\n", dirname);
+    return OK;
   }
-
-  int rc = stat(dirname, &dir_st); 
-  if (!rc && get_file_type(dir_st.st_mode) == DIR_TYPE) {
+  if (get_file_type(dir_st.st_mode) == DIR_TYPE) {
     const char *dirname_enc = url_encode(prefixencode(dirname));
     csync_debug(3, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
     rc = csync_update_file_settime(peername, key_enc, dirname, dirname_enc, &dir_st);
     return rc;
   }
-  return ERROR;
+  csync_debug(1, "WARN: directory called on non-directory %s.\n", dirname);
+  return OK;
 }
 
 
@@ -1053,6 +1052,15 @@ int compare_files(const char *filename, const char *pattern, int recursive)
   return 0;
 }
 
+void csync_directory_add(struct textlist **directory_list, char *directory) {
+  char *pos = strrchr(directory, '/');
+  if (pos) {
+    pos[0] = 0;
+    csync_debug(3, "Directory %s\n ", directory);
+    textlist_add_new(directory_list, directory, 0);
+  }
+}
+
 void csync_update_host(const char *myname, const char *peername,
 		       const char **patlist, int patnum, int recursive, 
 		       int dry_run, int ip_version, int db_version)
@@ -1094,6 +1102,7 @@ void csync_update_host(const char *myname, const char *peername,
     return ;
   }
   int rc; 
+  struct textlist *directory_list = 0;
   for (t = tl; t != 0; t = next_t) {
     next_t = t->next;
     if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
@@ -1109,26 +1118,18 @@ void csync_update_host(const char *myname, const char *peername,
 				      t->value, t->value2, 
 				      done || t->intvalue, dry_run);
 	//done = check_next_step(rc, done, myname, pername, t->value; t->value2, t->intvalue);
+	csync_directory_add(&directory_list, t->value);
 	last_tn=&(t->next);
       }
     }
   }
   textlist_free(tl);
-  const char *directory = 0; 
-  struct textlist *directory_list = 0;
 
   for (t = tl_mod; t != 0; t = t->next) {
     if (!connection_closed_error)
       rc = csync_update_file_mod(myname, peername,
 				 t->value, t->value2, t->value3, t->intvalue, dry_run, db_version);
-    char *directory = t->value;
-    char *pos = strrchr(directory, '/');
-    if (pos) {
-      pos[0] = 0;
-      csync_debug(3, "Directory %s\n ", directory);
-      textlist_add_new(&directory_list, directory, 0);
-    }
-
+    csync_directory_add(&directory_list, t->value);
   }
   textlist_free(tl_mod);
   
