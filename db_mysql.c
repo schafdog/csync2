@@ -30,10 +30,10 @@
 #include "dl.h"
 
 #ifdef HAVE_MYSQL
-#ifdef HAVE_MYSQL_PERCONA
+#ifdef HAVE_MYSQL_H
 #include <mysql.h>
 #include <mysqld_error.h>
-#else
+#elif HAVE_MYSQL_MYSQL_H
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
 #endif 
