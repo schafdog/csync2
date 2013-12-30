@@ -71,8 +71,12 @@ AC_ARG_ENABLE([sqlite3],
 
 if test "$enable_sqlite3" == yes
 then
-        AC_CHECK_HEADERS([sqlite3.h], , [AC_MSG_ERROR([[SQLite header not found; install libsqlite3-dev and dependencies for SQLite 3 support]])])
-
+        AC_CHECK_HEADERS([sqlite3.h], , [AC_MSG_WARN([[SQLite header not found; install libsqlite3-dev and dependencies for SQLite 3 support]])],
+[[
+#ifdef HAVE_SQLITE3_H
+#include <sqlite3.h>
+#endif
+]])
 	AC_DEFINE([HAVE_SQLITE3], 1, [Define if sqlite3 support is wanted])
 fi
 
@@ -105,45 +109,50 @@ AC_ARG_ENABLE([postgres],
 
 if test "$enable_mysql" == yes
 then
+	mysql=0
 	# Check for mysql.
 	# This is a bloody hack for fedora core
 	CFLAGS="$CFLAGS `mysql_config --cflags`"	
 
 	# Check MySQL development header
-	AC_CHECK_HEADERS([mysql/mysql.h, mysql.h], , [AC_MSG_WARN([[mysql header not found; install mysql-devel and dependencies for MySQL Support]])], 
+	AC_CHECK_HEADERS([mysql/mysql.h, mysql.h], , [mysql=$((mysql+1))], 
 [[
 #ifdef HAVE_MYSQL_MYSQL_H
 #include <mysql/mysql.h>
 #endif
 #ifdef HAVE_MYSQL_H
 #include <mysql.h>
+#define HAVE_MYSQL_PERCONA 1
 #endif
 ]])
 
-	AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
-fi
-
-if test "$enable_mysql_percona" == yes
-then
-	# Check for mysql.
-	# This is a bloody hack for fedora core
-	CFLAGS="$CFLAGS `mysql_config --cflags`"	
-
-	# Check MySQL development header
-	AC_CHECK_HEADERS([mysql.h], , [AC_MSG_ERROR([[mysql header not found; install mysql-devel and dependencies for MySQL Support]])])
-
-	AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
-	AC_DEFINE([HAVE_MYSQL_PERCONA], 1, [Define if mysql (percona) support is wanted])
+	if test "$mysql" -ne 2 
+	then 
+	     AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
+	else
+	     AC_MSG_WARN([[No MySQL (oracle/percona) headers found. Install mysql-devel and dependencies for MySQL Support]])
+	fi
 fi
 
 if test "$enable_postgres" == yes
 then
-        AC_CHECK_HEADERS([postgresql/libpq-fe.h], , [AC_MSG_ERROR([[postgres header not found; install libpq-dev and dependencies for Postgres support]])])
+	postgres=0
+        AC_CHECK_HEADERS([postgresql/libpq-fe.h], , [postgres=$((postgres+1))], 
+[[
+#ifdef HAVE_POSTGRESQL_LIBPQ-FE_H
+#include <postgresql/libpq-fe.h>
+#endif
+]])
 
-	AC_DEFINE([HAVE_POSTGRES], 1, [Define if postgres support is wanted])
+	if test "$postgres" -eq 0 
+	then
+		AC_DEFINE([HAVE_POSTGRES], 1, [Define if postgres support is wanted])
+	else
+		AC_MSG_WARN([[postgres header not found; install libpq-dev and dependencies for Postgres support]])
+	fi
 fi
 
-# at least one db backend must be configured.
+# at least one db backend must be found. TODO add check on found as well
 
 if test "$enable_postgres" != yes && test "$enable_mysql" != yes &&
    test "$enable_sqlite3" != yes && test "$enable_sqlite" != yes
