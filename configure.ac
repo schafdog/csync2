@@ -97,11 +97,6 @@ AC_ARG_ENABLE([mysql],
 		[enable/disable MySQL support (default is disabled)])],
 	[], [ enable_mysql=yes ])
 
-AC_ARG_ENABLE([mysql-percona],
-	[AC_HELP_STRING([--enable-mysql-percona],
-		[enable/disable MySQL (Percona) support (default is disabled)])],
-	[], [ enable_mysql_percona=yes ])
-
 AC_ARG_ENABLE([postgres],
 	[AC_HELP_STRING([--enable-postgres],
 		[enable/disable Postgres support (default is disabled)])],
