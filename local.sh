@@ -6,58 +6,70 @@ else
     COMMAND=$1
 fi
 
-NAME=${0/.sh/}
-NAME=${NAME/.\//}
+NAME=`basename $0 .sh`
 
 if [ "$NAME" == "local" ] ;  then
     PEER="peer"
 else
     PEER="local"
 fi
+echo $NAME $PEER
 
+COUNT=0
 echo "Running command $COMMAND" 
 
-function cmd {
-    echo cmd $1
-    CMD=$1
-    $VALGRIND ./csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME # >> csync_$NAME.log 2>&1
-    echo "select * from file; select * from dirty;" | mysql -t -u csync2_$NAME -pcsync2_$NAME csync2_$NAME >> mysql_$NAME.log
-    if [ "$2" != "" ] ; then
-	echo "$2";
-    fi
-    if [ "$CMD" == "c" ] ; then 
-	echo "SELECT * from dirty " | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
+function testing {
+    RESULT=$1
+    OLD_RESULT=${RESULT}.res
+    if [ -f ${OLD_RESULT} ] ; then
+	diff $RESULT $OLD_RESULT
     else
-	echo "Test result:" 
-#	echo "SELECT * from dirty " | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
-#	echo 'select filename from csync2_peer.file where not filename in (select replace(filename,"/local/", "/peer/") as filename from csync2_local.file);' \
-#	    | mysql -u csync2_local -pcsync2_local
-	rsync --delete -nHav test/local/ peer:`pwd`/test/peer/
-	if [ "$OTHER" != "" ] ; then  
-	    rsync --delete -nHav test/local/ other:`pwd`/test/other/
-	fi
+	cp $RESULT $OLD_RESULT
+    fi
+}
+
+function cmd {
+    echo cmd $1 $2 > ${TESTNAME}_${COUNT}.log 
+    CMD=$1
+    $VALGRIND ./csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME >> ${TESTNAME}_${COUNT}.log 2>&1
+    testing ${TESTNAME}_${COUNT}.log
+    echo "select filename from file; select filename,operation,other from dirty;" | mysql -t -u csync2_$NAME -pcsync2_$NAME csync2_$NAME  > ${TESTNAME}_${COUNT}.mysql 2> /dev/null
+    testing ${TESTNAME}_${COUNT}.mysql
+    rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}_${COUNT}.rsync
+    testing ${TESTNAME}_${COUNT}.rsync
+    if [ "$OTHER" != "" ] ; then  
+	rsync --delete -nHav test/local/ other:`pwd`/test/other/ > ${TESTNAME}_${COUNT}_other.rsync
+    fi
 	#./find_hardlinks.sh test/$NAME > hardlinks_$NAME.txt
 	#./find_hardlinks.sh test/peer > hardlinks_peer.txt
 	#diff hardlinks_$NAME.txt hardlinks_peer.txt
-	echo "Test result end" 
-    fi
+    let COUNT=$COUNT+1
     ${PAUSE}
 }
 
 function clean {
-    echo "delete from dirty ; delete from file" | mysql -u csync2_$NAME -pcsync2_$NAME csync2_$NAME
-    rm -f csync_$NAME.log mysql_$NAME.log
-    rm -rf test/$NAME/*
-    mkdir -p test/$NAME
+    CNAME=$1
+    if [ "$1" == "" ] ; then
+	CNAME=local
+    fi
+    echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}_${COUNT}.mysql
+    rm -f csync_$CNAME.log mysql_$CNAME.log
+    rm -rf test/$CNAME/*
+    mkdir -p test/$CNAME
+    let COUNT=$COUNT+1
 }
 
 function daemon {
     CMD="$1"
+    echo $NAME $PEER
     if [ "$CMD" == "i" ] ; then 
 	$VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
     elif [ "$CMD" == "once" ] ; then 
-	$VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860
-    fi 
+	./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 & 
+    elif [ "$CMD" == "clean_once" ] ; then 
+	clean peer
+	./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 & 
+    fi    
 }
 
 function check {
@@ -66,7 +78,7 @@ function check {
 
 
 if [ "$COMMAND" == "C" ] ; then 
-    clean 
+    clean $NAME
     shift
     COMMAND="$1"
 fi
@@ -83,5 +95,6 @@ fi
 shift
 for d in $* ; do 
     echo "Running test script $d"
+    TESTNAME=`basename $d .cfg`
     source $d
 done
