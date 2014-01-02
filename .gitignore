@@ -25,3 +25,5 @@ ylwrap
 test/
 *.log
 hardlinks_*.txt
+*.rsync
+*.mysql
