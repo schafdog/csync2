@@ -922,7 +922,7 @@ int main(int argc, char ** argv)
 		case MODE_SIMPLE:
 			if ( argc == optind )
 			{
-			  csync_check("/", 1, init_run, db_version);
+			  csync_check("/", 1, init_run, db_version, 0);
 			  csync_update(myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version);
 			}
 			else
@@ -931,7 +931,7 @@ int main(int argc, char ** argv)
 				for (i=optind; i < argc; i++) {
 					realnames[i-optind] = strdup(getrealfn(argv[i]));
 					csync_check_usefullness(realnames[i-optind], recursive);
-					csync_check(realnames[i-optind], recursive, init_run, db_version);
+					csync_check(realnames[i-optind], recursive, init_run, db_version, 0);
 				}
 				csync_update(myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
 				for (i=optind; i < argc; i++)
@@ -959,7 +959,7 @@ int main(int argc, char ** argv)
 				} SQL_END;
 
 				for (t = tl; t != 0; t = t->next) {
-				  csync_check(t->value, t->intvalue, init_run, db_version);
+				  csync_check(t->value, t->intvalue, init_run, db_version, 0);
 					SQL("Remove processed hint.",
 					    "DELETE FROM hint WHERE filename = '%s' "
 					    "and recursive = %d",
@@ -973,7 +973,7 @@ int main(int argc, char ** argv)
 				for (i=optind; i < argc; i++) {
 					char *realname = getrealfn(argv[i]);
 					csync_check_usefullness(realname, recursive);
-					csync_check(realname, recursive, init_run, db_version);
+					csync_check(realname, recursive, init_run, db_version, 0);
 				}
 			}
 			if (mode != MODE_CHECK_AND_UPDATE)
@@ -1002,7 +1002,7 @@ int main(int argc, char ** argv)
 			for (i=optind; i < argc; i++) {
 				char *realname = getrealfn(argv[i]);
 				csync_check_usefullness(realname, recursive);
-				csync_check(realname, recursive, init_run,db_version);
+				csync_check(realname, recursive, init_run,db_version, 0);
 			}
 			break;
 
