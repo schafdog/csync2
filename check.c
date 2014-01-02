@@ -127,7 +127,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
 	    if (!strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
 	      csync_debug(1, "mark operation %s -> NOP %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
-	      dirty = 1;
+	      dirty = 0;
 	      operation = "NOP";
 	    }
 	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)|| !strcmp("NOP", old_operation)) 
@@ -648,14 +648,15 @@ char *csync_check_recursive(const char *filename, int recursive, int init_run, i
 	csync_check_mod(filename, recursive, 1, init_run, version, &operation, flags);
 
 	const char *file_encoded = db_encode(filename); 
+	/*
 	char *where_rec = "";
 	csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 	SQL("Delete NOPs from dirty.",
 	    "delete from dirty WHERE (filename like '%s' %s) and operation = 'NOP' ",
 	    file_encoded, where_rec);
-
+	*/
 	if (recursive) {
-	  free(where_rec);
+	  //free(where_rec);
 	  return 0;
 	}
 	return operation;
