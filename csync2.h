@@ -232,7 +232,7 @@ struct textlist;
 #define OP_RM       64
 
 extern void csync_hint(const char *file, int recursive);
-extern void csync_check(const char *filename, int recursive, int init_run, int version);
+extern void csync_check(const char *filename, int recursive, int init_run, int version, int flags);
 /* Single file checking but returns possible operation */ 
 extern char *csync_check_single(const char *filename, int init_run, int version); 
 extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation, const char *checktxt, const char *dev, const char *ino);
@@ -249,7 +249,7 @@ struct textlist *csync_check_link(const char *filename, const char* checktxt, st
 void cmd_printf(const char *cmd, const char *key, 
 		const char *filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr);
-int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation);
+int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation, int flags);
 extern void csync_update(const char *myname, char **peers, const char **patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version);
 extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
