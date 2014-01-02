@@ -85,7 +85,7 @@ void csync_hint(const char *file, int recursive)
 }
 
 void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter, 
-		const char *operation, const char *checktxt, 
+		      const char *operation, const char *checktxt, 
 		      const char *dev, const char *ino, const char *other)
 {
   struct peer *pl = csync_find_peers(file, thispeer);
@@ -127,19 +127,20 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
 	    if (!strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
 	      csync_debug(1, "mark operation %s -> NOP %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
-	      dirty = 0;
-	      operation = "-";
+	      dirty = 1;
+	      operation = "NOP";
 	    }
-	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)) && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2)) && strstr(checktxt, "type=dir") < 0) {
+	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)|| !strcmp("NOP", old_operation)) 
+		     && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2)) && strstr(checktxt, "type=dir") == 0) {
 	      // Do not do this for directories
 	      result_other = strdup(filename);
-	      csync_debug(1, "mark operation %s->MOVE %s '%s' '%s' '%s'.", old_operation, pl[pl_idx].peername, file, result_other);
+	      csync_debug(1, "mark operation %s->%s => MOVE %s '%s' '%s'.\n", old_operation, operation, pl[pl_idx].peername, file, result_other);
 	      operation = "MV";
 	    }
 	    else if (!strcmp("MV",old_operation) && !strcmp("RM", operation)) {
 	      operation = "RM";
 	      file_new = other;
-	      csync_debug(1, "mark operation MV->RM %s %s '%s' '%s'.\n", pl[pl_idx].peername, file, filename, other);
+	      csync_debug(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n", pl[pl_idx].peername, file, filename, other);
 	      other = 0;
 	    }
 	    break; 
@@ -308,26 +309,31 @@ int csync_check_pure(const char *filename)
 	}
 }
 
+void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {
+  if ( recursive ) {
+    if ( !strcmp(file_encoded, "/") )
+      ASPRINTF(where_rec, "OR 1=1");
+    else {
+      ASPRINTF(where_rec, "OR filename > '%s/' and filename < '%s0'", 
+	       file_encoded, file_encoded);
+    }
+  }
+}
+
 void csync_check_del(const char *file, int recursive, int init_run)
 {
   char *where_rec = "";
   struct textlist *tl = 0, *t;
   struct stat st;
   const char *SELECT_SQL = "SELECT filename, checktxt, device, inode from file ";
-  if ( recursive ) {
-    if ( !strcmp(file, "/") )
-      ASPRINTF(&where_rec, "OR 1=1");
-    else {
-      const char *file_encoded = db_encode(file);
-      csync_debug(3,"file %s encoded %s \n", file, file_encoded);
-      ASPRINTF(&where_rec, "UNION ALL %s where filename > '%s/' and filename < '%s0'", 
-	       SELECT_SQL, 
-	       file_encoded, file_encoded);
-    }
-  }
+  csync_debug(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
+  const char *file_encoded = db_encode(file);
+  csync_debug(3,"file %s encoded %s \n", file, file_encoded);
+  
+  csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 
   SQL_BEGIN("Checking for removed files",
-	    "%s where filename = '%s' %s ORDER BY filename", 
+	    "%s where (filename = '%s' %s) ORDER BY filename", 
 	    SELECT_SQL, db_encode(file), where_rec)
     {
       const char *filename = db_decode(SQL_V(0));
@@ -435,7 +441,7 @@ struct textlist *csync_check_link(const char *filename, const char* checktxt, st
   return tl; 
 }
 
-void csync_check_dir(const char* file, int recursive, int init_run, int version, int dirdump_this)
+void csync_check_dir(const char* file, int recursive, int init_run, int version, int dirdump_this, int flags)
 {
   struct dirent **namelist;
   int n = 0;
@@ -455,7 +461,7 @@ void csync_check_dir(const char* file, int recursive, int init_run, int version,
 		!strcmp(file, "/") ? "" : file,
 		namelist[n]->d_name);
 	char *operation;
-	if (csync_check_mod(fn, recursive, 0, init_run, version, &operation))
+	if (csync_check_mod(fn, recursive, 0, init_run, version, &operation, flags))
 	  dirdump_this = 1;
       }
       free(namelist[n]);
@@ -477,7 +483,6 @@ void csync_check_dir(const char* file, int recursive, int init_run, int version,
 void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run, int version, char **operation)
 {
   int this_is_dirty = 0;
-  csync_debug(2, "Checking %s.\n", file);
   if (csync_compare_mode)
     printf("%s\n", file);
   char *checktxt = strdup(csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
@@ -536,8 +541,9 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	*operation = ringbuffer_strdup("MKFIFO");
       else if ( S_ISLNK(file_stat->st_mode) ) {
 	// TODO get max path
-	char target[1024];
-	int len = readlink(file, target, 1023);
+	int max = 1024;
+	char target[max];
+	int len = readlink(file, target, max-1);
 	if (len > 0) {
 	  target[len] = 0;
 	  *operation = "MKLINK"; 
@@ -591,7 +597,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
   free(checktxt);
 }
 
-int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation)
+int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation, int flags)
 {
   int check_type = csync_match_file(file);
   int dirdump_this = 0, dirdump_parent = 0;
@@ -616,7 +622,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 	break;
       if ( !S_ISDIR(st.st_mode) ) 
 	break;
-      csync_check_dir(file, recursive, init_run, version, dirdump_this);
+      csync_check_dir(file, recursive, init_run, version, dirdump_this, flags);
       break;
     default:
       csync_debug(2, "Don't check at all: %s\n", file);
@@ -625,36 +631,42 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
   return dirdump_parent;
 }
 
-char *csync_check_recursive(const char *filename, int recursive, int init_run, int version)
+char *csync_check_recursive(const char *filename, int recursive, int init_run, int version, int flags)
 {
 #if __CYGWIN__
 	if (!strcmp(filename, "/")) {
 		filename = "/cygdrive";
 	}
 #endif
+	csync_debug(1, "Running%s check for %s ...\n", recursive ? " recursive" : "", filename);
+
 	// TODO How about swapping deletes and updates? 
-	//struct csync_prefix *p = csync_prefix;
-
-	csync_debug(2, "Running%s check for %s ...\n",
-			recursive ? " recursive" : "", filename);
-
 	if (!csync_compare_mode)
 	   csync_check_del(filename, recursive, init_run);
 	
 	char *operation = 0; 
-	csync_check_mod(filename, recursive, 1, init_run, version, &operation);
-	
-	if (recursive) 
+	csync_check_mod(filename, recursive, 1, init_run, version, &operation, flags);
+
+	const char *file_encoded = db_encode(filename); 
+	char *where_rec = "";
+	csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
+	SQL("Delete NOPs from dirty.",
+	    "delete from dirty WHERE (filename like '%s' %s) and operation = 'NOP' ",
+	    file_encoded, where_rec);
+
+	if (recursive) {
+	  free(where_rec);
 	  return 0;
+	}
 	return operation;
 }
 
-void csync_check(const char *filename, int recursive, int init_run, int version) {
-  csync_check_recursive(filename, recursive, init_run, version);
+void csync_check(const char *filename, int recursive, int init_run, int version, int flags) {
+  csync_check_recursive(filename, recursive, init_run, version, flags);
 }
 
 char *csync_check_single(const char *filename, int init_run, int version)
 {
-  return csync_check_recursive(filename, 0, init_run, version);
+  return csync_check_recursive(filename, 0, init_run, version, 0);
 }
 
