@@ -13,7 +13,6 @@ if [ "$NAME" == "local" ] ;  then
 else
     PEER="local"
 fi
-echo $NAME $PEER
 
 COUNT=0
 echo "Running command $COMMAND" 
@@ -31,7 +30,11 @@ function testing {
 function cmd {
     echo cmd $1 $2 > ${TESTNAME}_${COUNT}.log 
     CMD=$1
-    $VALGRIND ./csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME >> ${TESTNAME}_${COUNT}.log 2>&1
+    if [ "$VALGRIND" != "" ] ; then 
+	$VALGRIND ./csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME 
+    else
+	$VALGRIND ./csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME >> ${TESTNAME}_${COUNT}.log 2>&1
+    fi
     testing ${TESTNAME}_${COUNT}.log
     echo "select filename from file; select filename,operation,other from dirty;" | mysql -t -u csync2_$NAME -pcsync2_$NAME csync2_$NAME  > ${TESTNAME}_${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}_${COUNT}.mysql
@@ -52,11 +55,12 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}_${COUNT}.mysql
+    echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}_${COUNT}.mysql 2> /dev/null
     rm -f csync_$CNAME.log mysql_$CNAME.log
     rm -rf test/$CNAME/*
     mkdir -p test/$CNAME
     let COUNT=$COUNT+1
+    ${PAUSE}
 }
 
 function daemon {
@@ -65,7 +69,7 @@ function daemon {
     if [ "$CMD" == "i" ] ; then 
 	$VALGRIND ./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
     elif [ "$CMD" == "once" ] ; then 
-	./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 & 
+	./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 >> daemon_${NAME}.log 2>&1 & 
     elif [ "$CMD" == "clean_once" ] ; then 
 	clean peer
 	./csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 & 
