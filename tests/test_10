@@ -1,0 +1,12 @@
+mkdir test/$NAME/dir2
+touch test/$NAME/dir2/hardlink
+cmd x "new file: dir2/hardlink"
+ln test/$NAME/dir2/hardlink test/$NAME/2hardlink
+cmd x "hardlink -> 2hardlink"
+ln test/$NAME/2hardlink test/$NAME/1hardlink 
+cmd x "Hardlink count 3"
+echo "PATCH HARDLINK " >> test/$NAME/2hardlink
+check "Patched hardlinks"
+echo hardlink > test/$NAME/4hardlink
+ln   test/$NAME/4hardlink test/$NAME/3hardlink
+check "new hardlink 4 and 3 at once"
