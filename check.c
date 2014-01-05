@@ -84,6 +84,28 @@ void csync_hint(const char *file, int recursive)
 		"VALUES ('%s', %d)", db_encode(file), recursive);
 }
 
+int csync_same_file(const char *file1, const char *file2) {
+  struct stat st1, st2;
+  int rc1 = stat(file1, &st1); 
+  int rc2 = stat(file2, &st2);
+  if (rc1 == 0 && rc2 == 0 && st1.st_ino == st2.st_ino && st1.st_dev == st2.st_dev)
+    return 1;
+  return 0;
+}
+int csync_same_stat_file(struct stat *st1, const char *file2) {
+  struct stat st2;
+  int rc2 = stat(file2, &st2);
+  if (rc2 == 0 && st1->st_ino == st2.st_ino && st1->st_dev == st2.st_dev)
+    return 1;
+  return 0;
+}
+
+int csync_same_stat(struct stat *st1, struct stat *st2) {
+  if (st1->st_ino == st2->st_ino && st1->st_dev == st2->st_dev)
+    return 1;
+  return 0;
+}
+
 void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter, 
 		      const char *operation, const char *checktxt, 
 		      const char *dev, const char *ino, const char *other)
@@ -99,10 +121,13 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
     return;
   }
 
+  struct stat st_file;
+  int rc_file = stat(file, &st_file);
   for (pl_idx=0; pl[pl_idx].peername; pl_idx++)
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
       csync_debug(1, "mark other operation: %s %s:%s.\n", operation, pl[pl_idx].peername, file);
       short dirty = 1;
+      short clean_other = 1;
       char *result_other = 0;
       const char *file_new = file;
       /* We dont currently have a checktxt when marking files. */ 
@@ -123,9 +148,16 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    old_operation = db_decode(SQL_V(0));
 	    filename = db_decode(SQL_V(1));
 	    other    = db_decode(SQL_V(2));
-	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' ", old_operation, filename, other);
+	    
+	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' ", old_operation, filename, other);	    
+	    if (!rc_file && csync_same_stat_file(&st_file, filename)) {
+	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);	 
+	      operation = "MKH";
+	      result_other = strdup(filename);
+	      clean_other = 0; 
+	    }
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
-	    if (!strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
+	    else if (!strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
 	      csync_debug(1, "mark operation %s -> NOP %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
 	      dirty = 0;
 	      operation = "NOP";
@@ -152,8 +184,8 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	  db_encode(file),
 	  db_encode(pl[pl_idx].peername));
       
-      /* Delete Other file dirty status if differs from file */
-      if (result_other && strcmp(file, result_other)) {
+      /* Delete other file dirty status if differs from file */
+      if (clean_other && result_other && strcmp(file, result_other)) {
 	SQL("Deleting old dirty file entries",
 	    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
 	    db_encode(result_other),
@@ -372,10 +404,10 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
     char *src  = t->value;
     switch (t->intvalue) {
     case OP_HARDLINK: {
-      char *operation = "MKHARDLINK";
+      char *operation = "MKH";
       SQL("Update operation to move/hardlink",
-	"UPDATE dirty set operation = '%s', other='%s' where filename = '%s'", 
-	  operation, filename_enc, db_encode(src));
+	"INSERT into dirty (filename, operation, other) values ('%s', '%s' '%s')", 
+	  db_encode(src), operation, filename_enc);
       break;
     }
     /*
@@ -400,7 +432,10 @@ struct textlist *csync_check_link(const char *filename, const char* checktxt, st
   char *filename_enc = strdup(db_encode(filename));
   struct stat file_stat; 
   SQL_BEGIN("Check for same inode", 
-	    "SELECT filename, checktxt FROM file WHERE filename != '%s' and device = %lu and inode = %llu", filename_enc, dev, st->st_ino) {
+	    "SELECT filename, checktxt FROM file "
+            "WHERE filename not in (select filename from dirty where device = %lu and inode = %llu) "
+	    "and filename != '%s' and device = %lu and inode = %llu ", 
+	    dev, st->st_ino, filename_enc, dev, st->st_ino) {
     const char *db_filename  = db_decode(SQL_V(0));
     const char *db_checktxt  = db_decode(SQL_V(1));
     // if the check doesnt compare, it's more than a move/link. 
