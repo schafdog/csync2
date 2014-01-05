@@ -67,27 +67,26 @@ static int connection_closed_error = 1;
 
 int read_conn_status(const char *file, const char *host)
 {
-	char line[4096];
-	if ( conn_gets(line, 4096) ) {
-	  if ( !strncmp(line, "OK (", 4) ) 
-	    return OK;
-	  if (!strncmp(line, "IDENT (", 7))
-	      return IDENTICAL;
-	} else {
-	  connection_closed_error = 1;
-	  strcpy(line, "Connection closed.\n");
-	}
-	if (strncmp(line, "ERROR (Path not found)", 15) == 0)
-	  return ERROR_PATH_MISSING; 
-	if ( file )
-	  csync_debug(0, "While syncing file: %s\n", file);
-	else
-	  file = "<no file>";
-	csync_debug(0, "ERROR from %s: %s\n", host, line);
-	csync_error_count++;
-	return !strcmp(line, "File is also marked dirty here!") ? ERROR_DIRTY : ERROR_OTHER;
+  char line[4096];
+  if ( conn_gets(line, 4096) ) {
+    if ( !strncmp(line, "OK (", 4) ) 
+      return OK;
+    if (!strncmp(line, "IDENT (", 7))
+      return IDENTICAL;
+  } else {
+    connection_closed_error = 1;
+    strcpy(line, "Connection closed.\n");
+  }
+  if (strncmp(line, "ERROR (Path not found)", 15) == 0)
+    return ERROR_PATH_MISSING; 
+  if ( file )
+    csync_debug(0, "While syncing file: %s\n", file);
+  else
+    file = "<no file>";
+  csync_debug(0, "ERROR from %s: %s\n", host, line);
+  csync_error_count++;
+  return !strcmp(line, "File is also marked dirty here!") ? ERROR_DIRTY : ERROR_OTHER;
 }
-
 
 int read_conn_status_allow_missing(const char *file, const char *host) 
 {
@@ -607,7 +606,19 @@ int csync_update_file_sig(const char *peername, const char *filename,
     If there are errors, we need to patch these files instead of linking
 */
 
-int csync_update_file_hardlink(const char *peername, 
+int csync_update_hardlink(const char *peername, const char *key_encoded, const char *filename, const char* path_enc, const char *newpath_enc, int *last_conn_status) 
+{
+  // TODO Check that the target matches the config
+  csync_debug(1, "Hardlinking %s -> %s\n", path_enc, newpath_enc);
+  conn_printf("%s %s %s %s\n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
+  if ((*last_conn_status = read_conn_status(filename, peername))) {
+    csync_debug(0, "Failed to hard link %s %s\n", path_enc, newpath_enc);
+    return ERROR;
+  }
+  return OK;
+}
+
+int csync_update_file_all_hardlink(const char *peername, 
 			       const char *key_encoded, 
 			       const char *filename, 
 			       const char *filename_enc,
@@ -649,16 +660,13 @@ int csync_update_file_hardlink(const char *peername,
 	else
 	  continue;
       }
-      // TODO Check that the target matches the config
-      csync_debug(1, "Hardlinking %s -> %s\n", path, newpath);
-      conn_printf("%s %s %s %s\n", HARDLINK_CMD, key_encoded, path, newpath);
-
-      if ((*last_conn_status = read_conn_status(filename, peername))) {
-	csync_debug(0, "Failed to hard link %s %s\n", path, newpath);
-	found_one = 0; // Reset found_one flag
+      if (csync_update_hardlink(peername, key_encoded, 
+				filename, path, newpath, last_conn_status) != OK) {
 	errors++;
+	found_one = 0; // Reset found_one flag
       }
-      count++;
+      else
+	count++;
     }
   }
 
@@ -873,7 +881,23 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	//	rc = CLEAR_DIRTY;
       }
     }
-
+    if (operation && (strncmp("MKH", operation, 2) == 0)) {
+      
+      const char *other_enc = url_encode(other);
+      struct stat st_other;
+      int rc = stat(other, &st_other);
+      if (rc == 0) {
+	int rc = csync_update_file_sig_rs_diff(peername, key_enc, 
+					       other, other_enc, 
+					       &st, uidptr, gidptr, 
+					       NULL, &last_conn_status);
+      
+	rc = csync_update_hardlink(peername, key_enc, filename, filename_enc, other_enc,
+				   &last_conn_status);    
+	if (rc == OK)
+	  return OK;  
+      }
+    }
     switch (rc)
       {
       case OK: 
@@ -910,11 +934,11 @@ int csync_update_file_mod(const char *myname, const char *peername,
     if (st.st_nlink > 1 && found_diff) {
 
       char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
-      rc = csync_update_file_hardlink(peername, key_enc, filename, filename_enc, 
-				      &st, uidptr, gidptr,
-				      chk_local,
-				      !found_diff,
-				      &last_conn_status);    
+      rc = csync_update_file_all_hardlink(peername, key_enc, filename, filename_enc, 
+					  &st, uidptr, gidptr,
+					  chk_local,
+					  !found_diff,
+					  &last_conn_status);    
 
       free(chk_local);
       if (rc == OK)
@@ -926,11 +950,11 @@ int csync_update_file_mod(const char *myname, const char *peername,
 			    &st, uidptr, gidptr, &last_conn_status);
     if (rc >= OK && st.st_nlink > 1) {
       char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
-      rc = csync_update_file_hardlink(peername, key_enc, 
-				      filename, filename_enc, 
-				      &st, uidptr, gidptr,
-				      chk_local, 1,
-				      &last_conn_status);
+      rc = csync_update_file_all_hardlink(peername, key_enc, 
+					  filename, filename_enc, 
+					  &st, uidptr, gidptr,
+					  chk_local, 1,
+					  &last_conn_status);
       free(chk_local);
     }
     break;
@@ -1070,8 +1094,9 @@ void csync_update_host(const char *myname, const char *peername,
   char *current_name = 0;
   struct stat st;
   SQL_BEGIN("Get files for host from dirty table",
-	    "SELECT filename, operation, other, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
-	    "ORDER by filename ASC", db_encode(peername), db_encode(myname))
+	    "SELECT filename, operation, other, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' ",
+	    //	    "ORDER by filename ASC", 
+	    db_encode(peername), db_encode(myname));
     {
       const char *filename = db_decode(SQL_V(0));
       int i, use_this = patnum == 0;
@@ -1130,7 +1155,11 @@ void csync_update_host(const char *myname, const char *peername,
       rc = csync_update_file_mod(myname, peername,
 				 t->value, t->value2, t->value3, t->intvalue, dry_run, db_version);
     csync_directory_add(&directory_list, t->value);
+    if (t->value3) {
+      csync_directory_add(&directory_list, t->value3);
+    }
   }
+
   textlist_free(tl_mod);
   
   for (t = directory_list; t != 0; t = t->next) {
