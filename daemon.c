@@ -610,8 +610,7 @@ const char *csync_daemon_check_perm(struct csync_command *cmd,
       csync_compare_mode = 0;
     if ( perm ) {
       if ( perm == 2 ) {
-	csync_mark(filename, peername, 0, "perm (slave)",
-		   NULL,NULL,NULL);
+	csync_mark(filename, peername, 0, "perm (slave)", NULL,NULL,NULL);
 	cmd_error = "Permission denied for slave!";
       } else
 	cmd_error = "Permission denied!";
