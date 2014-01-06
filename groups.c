@@ -198,21 +198,22 @@ const char *csync_key(const char *hostname, const char *filename)
 
 int csync_perm(const char *filename, const char *key, const char *hostname)
 {
-	const struct csync_group *g = NULL;
-	struct csync_group_host *h;
-	int false_retcode = 1;
+  const struct csync_group *g = NULL;
+  struct csync_group_host *h;
+  int false_retcode = 1;
 
-	while ( (g=csync_find_next(g, filename)) ) {
-		if ( !hostname )
-			continue;
-		for (h = g->host; h; h = h->next)
-			if (!strcmp(h->hostname, hostname) &&
-			    !strcmp(g->key, key)) {
-				if (!h->slave) return 0;
-				else false_retcode = 2;
-			}
-	}
-
-	return false_retcode;
+  while ( (g=csync_find_next(g, filename)) ) {
+    if ( !hostname )
+      continue;
+    for (h = g->host; h; h = h->next)
+      if (!strcmp(h->hostname, hostname) &&
+	  !strcmp(g->key, key)) {
+	if (!h->slave) 
+	  return 0;
+	else 
+	  false_retcode = 2;
+      }
+  }
+  return false_retcode;
 }
 
