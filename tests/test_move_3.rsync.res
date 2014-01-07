@@ -1,4 +1,1 @@
-./
-deleting Z
-B
 

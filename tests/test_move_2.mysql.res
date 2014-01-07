@@ -1,6 +1,6 @@
-+---------------------------------------------------------+
-| filename                                                |
-+---------------------------------------------------------+
-| /export/home/dennis/Projects/csync2/csync2/test/local   |
-| /export/home/dennis/Projects/csync2/csync2/test/local/Z |
-+---------------------------------------------------------+
++---------------------------------------------------------------+
+| filename                                                      |
++---------------------------------------------------------------+
+| /export/home/dennis/Projects/csync2/csync2/tests/test/local   |
+| /export/home/dennis/Projects/csync2/csync2/tests/test/local/A |
++---------------------------------------------------------------+
