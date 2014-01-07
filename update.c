@@ -643,17 +643,17 @@ int csync_update_file_all_hardlink(const char *peername,
       if (!key) 
 	continue;
       
-      const char *path = filename_enc, *newpath = url_encode(prefixencode(other)); 
+      const char *path = filename_enc, *other_enc = url_encode(prefixencode(other)); 
       int rc; 
       rc = csync_update_file_sig_rs_diff(peername, db_encode(key), 
-					 other, newpath, 
+					 other, other_enc, 
 					 st, uidptr, gidptr, 
 					 NULL, last_conn_status);
       if (!is_identical) {
 	if (rc == OK) {
 	  // We have a remote file that we can use to "reverse" hardlink with
-	  path = newpath;
-	  newpath = filename_enc;
+	  path = other_enc;
+	  other_enc = filename_enc;
 	  // we onlu need one, if it succed
 	  found_one = 1; 
 	}
@@ -661,7 +661,7 @@ int csync_update_file_all_hardlink(const char *peername,
 	  continue;
       }
       if (csync_update_hardlink(peername, key_encoded, 
-				filename, path, newpath, last_conn_status) != OK) {
+				filename, path, other_enc, last_conn_status) != OK) {
 	errors++;
 	found_one = 0; // Reset found_one flag
       }
@@ -830,13 +830,13 @@ int csync_update_file_mod(const char *myname, const char *peername,
     gidptr = "-";
     csync_debug(0, "Failed to lookup gid %d\n", st.st_gid);
   }
-  csync_debug(2, "uid %s gid %s\n", uidptr, gidptr); 
+  csync_debug(3, "uid %s gid %s\n", uidptr, gidptr); 
 
   int not_done = 1;
   const char *key_enc = url_encode(key);
   const char *filename_enc =  url_encode(prefixencode(filename));
   while (not_done) {
-    csync_debug(1, "Updating %s:%s\n", peername, filename);
+    csync_debug(1, "Updating '%s:%s' %s '%s'\n", peername, filename, operation, (other? other : ""));
     
     if ( lstat_strict(filename, &st) != 0 ) {
       csync_debug(0, "ERROR: Cant stat %s.\n", filename);
@@ -883,7 +883,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
     }
     if (operation && (strncmp("MKH", operation, 2) == 0)) {
       
-      const char *other_enc = url_encode(other);
+      const char *other_enc = url_encode(prefixencode(other));
       struct stat st_other;
       int rc = stat(other, &st_other);
       if (rc == 0) {
@@ -892,8 +892,13 @@ int csync_update_file_mod(const char *myname, const char *peername,
 					       &st, uidptr, gidptr, 
 					       NULL, &last_conn_status);
       
-	rc = csync_update_hardlink(peername, key_enc, filename, filename_enc, other_enc,
-				   &last_conn_status);    
+	if (rc == OK) // swap
+	  rc = csync_update_hardlink(peername, key_enc, filename, filename_enc, other_enc,
+				     &last_conn_status);
+	else
+	  rc = csync_update_hardlink(peername, key_enc, other, other_enc, filename_enc,
+				     &last_conn_status);
+
 	if (rc == OK)
 	  return OK;  
       }
@@ -1080,7 +1085,7 @@ void csync_directory_add(struct textlist **directory_list, char *directory) {
   char *pos = strrchr(directory, '/');
   if (pos) {
     pos[0] = 0;
-    csync_debug(3, "Directory %s\n ", directory);
+    csync_debug(3, "Directory %s\n", directory);
     textlist_add_new(directory_list, directory, 0);
   }
 }
@@ -1094,22 +1099,28 @@ void csync_update_host(const char *myname, const char *peername,
   char *current_name = 0;
   struct stat st;
   SQL_BEGIN("Get files for host from dirty table",
-	    "SELECT filename, operation, other, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' ",
-	    //	    "ORDER by filename ASC", 
+	    "SELECT filename, operation, other, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	    "ORDER by filename ASC", 
 	    db_encode(peername), db_encode(myname));
     {
-      const char *filename = db_decode(SQL_V(0));
+      const char *filename  = db_decode(SQL_V(0));
+      const char *operation = db_decode(SQL_V(1));
+      const char *other     = db_decode(SQL_V(2)); 
       int i, use_this = patnum == 0;
       for (i=0; i<patnum && !use_this; i++)
 	if ( compare_files(filename, patlist[i], recursive) ) 
 	  use_this = 1;
-      if (use_this)
-	textlist_add3(&tl, filename, db_decode(SQL_V(1)), db_decode(SQL_V(2)), atoi(SQL_V(3)));
+      if (use_this) {
+	if (strcmp(operation, "MKH"))
+	  textlist_add3(&tl, filename, operation, other, atoi(SQL_V(3)));
+	else
+	  textlist_add3(&tl_mod, filename, operation, other, atoi(SQL_V(3)));
+      }
     } SQL_END;
 
   /* just return if there are no files to update */
-  if ( !tl ) 
-    return;
+    if ( !tl && !tl_mod)
+      return;
   
   if ( connect_to_host(peername, ip_version) ) {
     csync_error_count++;
