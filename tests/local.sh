@@ -80,25 +80,20 @@ function check {
     cmd $COMMAND $1
 }
 
-
-if [ "$COMMAND" == "C" ] ; then 
-    clean $NAME
-    shift
-    COMMAND="$1"
-fi
-
-if [ "$COMMAND" == "i" ] ; then 
-    daemon i
-fi 
-
-#if [ "$COMMAND" == "-" ] ; then 
-#    shift
-#fi 
-
-
-shift
 for d in $* ; do 
-    echo "Running test script $d"
-    TESTNAME=`basename $d .cfg`
-    source $d
+    if [ -f "$d" ] ; then 
+	echo "Running test script $d"
+	TESTNAME=`basename $d .cfg`
+	source $d
+    else
+	if [ "$COMMAND" == "C" ] ; then 
+	    clean $NAME
+	    shift
+	    COMMAND="$1"
+	fi
+	if [ "$COMMAND" == "i" ] ; then 
+	    daemon i
+	    shift
+	fi 
+    fi
 done
