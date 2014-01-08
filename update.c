@@ -893,12 +893,13 @@ int csync_update_file_mod(const char *myname, const char *peername,
 					       NULL, &last_conn_status);
       
 	if (rc == OK) // swap
-	  rc = csync_update_hardlink(peername, key_enc, filename, filename_enc, other_enc,
-				     &last_conn_status);
-	else
 	  rc = csync_update_hardlink(peername, key_enc, other, other_enc, filename_enc,
 				     &last_conn_status);
-
+	else
+	  rc = csync_update_hardlink(peername, key_enc, filename, filename_enc, other_enc,
+				     &last_conn_status);
+	if (rc == OK)
+	  csync_clear_dirty(peername, filename, auto_resolve_run);
 	if (rc == OK)
 	  return OK;  
       }
