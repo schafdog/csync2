@@ -406,7 +406,7 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
     case OP_HARDLINK: {
       char *operation = "MKH";
       SQL("Update operation to move/hardlink",
-	"INSERT into dirty (filename, operation, other) values ('%s', '%s' '%s')", 
+	"INSERT into dirty (filename, operation, other) values ('%s', '%s', '%s')", 
 	  db_encode(src), operation, filename_enc);
       break;
     }
