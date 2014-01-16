@@ -255,90 +255,89 @@ char *csync_check_path(char *filename)
 int csync_check_pure(const char *filename)
 {
 #ifdef __CYGWIN__
-	// For some reason or another does this function __kills__
-	// the performance when using large directories with cygwin.
-	// And there are no symlinks in windows anyways..
-	if (!csync_lowercyg_disable)
-		return 0;
+  // For some reason or another does this function __kills__
+  // the performance when using large directories with cygwin.
+  // And there are no symlinks in windows anyways..
+  if (!csync_lowercyg_disable)
+    return 0;
 #endif
-	struct stat sbuf;
-	int dir_len = 0;
-	int i;
-	int same_len;
+  struct stat sbuf;
+  int dir_len = 0;
+  int i;
+  int same_len;
 
-	/* single entry last query cache
-	 * to speed up checks from deep subdirs */
-	static struct {
-		/* store inclusive trailing slash for prefix match */
-		char *path;
-		/* strlen(path) */
-		int len;
-		/* cached return value */
-		int has_symlink;
-	} cached;
+  /* single entry last query cache
+   * to speed up checks from deep subdirs */
+  static struct {
+    /* store inclusive trailing slash for prefix match */
+    char *path;
+    /* strlen(path) */
+    int len;
+    /* cached return value */
+    int has_symlink;
+  } cached;
 
-	for (i = 0; filename[i]; i++)
-		if (filename[i] == '/')
-			dir_len = i+1;
+  for (i = 0; filename[i]; i++)
+    if (filename[i] == '/')
+      dir_len = i+1;
+  
+  if (dir_len <= 1) /* '/' a symlink? hardly. */
+    return 0;
+  
+  /* identical prefix part */
+  for (i = 0; i < dir_len && i < cached.len; i++)
+    if (filename[i] != cached.path[i])
+      break;
+  
+  /* backtrack to slash */
+  for (--i; i >= 0 && cached.path[i] != '/'; --i)
+    ;
+  same_len = i+1;
 
-	if (dir_len <= 1) /* '/' a symlink? hardly. */
-		return 0;
+  csync_debug(3, "check: %s %u, %s %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
+  /* exact match? */
+  if (dir_len == same_len && same_len == cached.len)
+    return cached.has_symlink;
+  
+  { /* new block for myfilename[] */
+    char myfilename[dir_len+1];
+    char *to_be_cached;
+    int has_symlink = 0;
+    memcpy(myfilename, filename, dir_len);
+    myfilename[dir_len] = '\0';
+    to_be_cached = strdup(myfilename);
+    i = dir_len-1;
+    while (i) {
+      for (; i && myfilename[i] != '/'; --i)
+	;
+      
+      if (i <= 1)
+	break;
+      
+      if (i+1 == same_len) {
+	if (same_len == cached.len) {
+	  /* exact match */
+	  has_symlink = cached.has_symlink;
+	  break;
+	} else if (!cached.has_symlink)
+	  /* prefix of something 'pure' */
+	  break;
+      }
 
-	/* identical prefix part */
-	for (i = 0; i < dir_len && i < cached.len; i++)
-		if (filename[i] != cached.path[i])
-			break;
-
-	/* backtrack to slash */
-	for (--i; i >= 0 && cached.path[i] != '/'; --i);
-		;
-
-	same_len = i+1;
-
-	csync_debug(3, "check: %s %u, %s %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
-	/* exact match? */
-	if (dir_len == same_len && same_len == cached.len)
-		return cached.has_symlink;
-
-	{ /* new block for myfilename[] */
-		char myfilename[dir_len+1];
-		char *to_be_cached;
-		int has_symlink = 0;
-		memcpy(myfilename, filename, dir_len);
-		myfilename[dir_len] = '\0';
-		to_be_cached = strdup(myfilename);
-		i = dir_len-1;
-		while (i) {
-			for (; i && myfilename[i] != '/'; --i)
-				;
-
-			if (i <= 1)
-				break;
-
-			if (i+1 == same_len) {
-				if (same_len == cached.len) {
-					/* exact match */
-					has_symlink = cached.has_symlink;
-					break;
-				} else if (!cached.has_symlink)
-					/* prefix of something 'pure' */
-					break;
-			}
-
-			myfilename[i]=0;
-			if (lstat_strict(myfilename, &sbuf) || S_ISLNK(sbuf.st_mode)) {
-				has_symlink = 1;
-				break;
-			}
-		}
-		if (to_be_cached) { /* strdup can fail. So what. */
-			free(cached.path);
-			cached.path = to_be_cached;
-			cached.len = dir_len;
-			cached.has_symlink = has_symlink;
-		}
-		return has_symlink;
-	}
+      myfilename[i]=0;
+      if (lstat_strict(myfilename, &sbuf) || S_ISLNK(sbuf.st_mode)) {
+	has_symlink = 1;
+	break;
+      }
+    }
+    if (to_be_cached) { /* strdup can fail. So what. */
+      free(cached.path);
+      cached.path = to_be_cached;
+      cached.len = dir_len;
+      cached.has_symlink = has_symlink;
+    }
+    return has_symlink;
+  }
 }
 
 void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {

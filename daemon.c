@@ -85,156 +85,155 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 
 void csync_file_update(const char *filename, const char *peername, int db_version)
 {
-	struct stat st;
-	const char *filename_encoded = db_encode(filename);
-	const char *peername_encoded = db_encode(peername);
-	SQL("Removing file from dirty db",
-			"delete from dirty where filename = '%s' and peername = '%s'",
-	                filename_encoded, peername_encoded);
-	if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename) ) {
-		SQL("Removing file from file db",
-			"delete from file where filename = '%s'",
-		    filename_encoded);
-	} else {
-	  const char *checktxt = csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version);
-		
-	  SQL("Delete old record (if exist) ",
-	      "DELETE FROM file WHERE filename = '%s'",
-	      filename_encoded);	  
-	  SQL("Insert record into file",
-	      "INSERT INTO file (filename, checktxt, inode, device) values ('%s', '%s', %ld, %ld)",
-	      filename_encoded, db_encode(checktxt), st.st_ino, st.st_dev);
-	}
+  struct stat st;
+  const char *filename_encoded = db_encode(filename);
+  const char *peername_encoded = db_encode(peername);
+  SQL("Removing file from dirty db",
+      "delete from dirty where filename = '%s' and peername = '%s'",
+      filename_encoded, peername_encoded);
+  if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename) ) {
+    SQL("Removing file from file db",
+	"delete from file where filename = '%s'",
+	filename_encoded);
+  } else {
+    const char *checktxt = csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version);
+	  
+    SQL("Delete old record (if exist) ",
+	"DELETE FROM file WHERE filename = '%s'",
+	filename_encoded);	  
+    SQL("Insert record into file",
+	"INSERT INTO file (filename, checktxt, inode, device) values ('%s', '%s', %ld, %ld)",
+	filename_encoded, db_encode(checktxt), st.st_ino, st.st_dev);
+  }
 }
 
 void csync_file_flush(const char *filename)
 {
-	SQL("Removing file from dirty db",
-		"delete from dirty where filename ='%s'",
-		db_encode(filename));
+  SQL("Removing file from dirty db",
+      "delete from dirty where filename ='%s'",
+      db_encode(filename));
 }
 
 int csync_file_backup(const char *filename, const char **cmd_error)
 {
-	static char error_buffer[1024];
-	const struct csync_group *g = NULL;
-	struct stat buf;
-	int rc;
-	while ( (g=csync_find_next(g, filename)) ) {
-	  if (g->backup_directory && g->backup_generations > 1) {
-	    //	    const char *filename = prefixsubst(prefixed_filename);
-
-	    int bak_dir_len = strlen(g->backup_directory);
-	    int filename_len = strlen(filename);
-	    char backup_filename[bak_dir_len + filename_len + 10];
-	    char backup_otherfilename[bak_dir_len + filename_len + 10];
-	    int fd_in, fd_out, i;
-	    int lastSlash = 0;
-	    mode_t mode;
-	    csync_debug(4, "backup %s \n", filename);
-	    // Skip generation of directories
-	    rc =  stat(filename, &buf);
-	    csync_debug(4, "backup %s %d \n", filename, rc);
-	    if (rc != 0) {
-	      csync_debug(1, "Nothing to backup: %s. New file?\n", filename);
-	      return 0;
-	    }
-	    
-	    if (S_ISDIR(buf.st_mode)) {
-	      csync_debug(4, "directory. Skip generation \n");
-	      return 0;
-	    }
-
-	    fd_in = open(filename, O_RDONLY);
-	    if (fd_in < 0) 
-	      return 0;
-			
-	    memcpy(backup_filename, g->backup_directory, bak_dir_len);
-	    backup_filename[bak_dir_len] = 0;
-	    mode = 0777;
-
-
-	    for (i=filename_len; i> 0; i--)
-	      if (filename[i] == '/')  {
-		lastSlash = i;
-		break;
-	      }
-			
-	    for (i=0; i < filename_len; i++) {
-		// Create directories in filename
-		// TODO: Get the mode from the orig. dir
-	      if (filename[i] == '/' && i <= lastSlash) {
-
-		backup_filename[bak_dir_len+i] = 0;
-
-		csync_debug(4, "mkdir %s \n", backup_filename);
-
-		mkdir(backup_filename, mode);
-		// Dont check the empty string.
-		if (i!= 0)
-		  csync_set_backup_file_status(backup_filename, bak_dir_len);
-
-	      }
-		backup_filename[bak_dir_len+i] = filename[i];
-	    }
-
-	    backup_filename[bak_dir_len + filename_len] = 0;
-	    backup_filename[bak_dir_len] = '/';
-	    memcpy(backup_otherfilename, backup_filename,
-		   bak_dir_len + filename_len);
-	    
-	    //rc = unlink(
-	    for (i=g->backup_generations-1; i; i--) {
-
-	      if (i != 1)
-		snprintf(backup_filename+bak_dir_len+filename_len, 10, ".%d", i-1);
-	      else
-		backup_filename[bak_dir_len+filename_len] = '\0';
-
-	      rc = stat(backup_filename, &buf);
-	      if (rc != 0) 
-		continue; // File does not exists
-	      snprintf(backup_otherfilename+bak_dir_len+filename_len, 10, ".%d", i);
-
-	      rc = rename(backup_filename, backup_otherfilename);
-	      csync_debug(3, "renaming backup files '%s' to '%s'. rc = %d\n", backup_filename, backup_otherfilename, rc);
-	      
-	    }
-
-	    /* strcpy(backup_filename+bak_dir_len+filename_len, ""); */
-
-	    fd_out = open(backup_filename, O_WRONLY|O_CREAT, 0600);
-
-	    if (fd_out < 0) {
-	      snprintf(error_buffer, 1024,
-		       "Open error while backing up '%s': %s\n",
-		       filename, strerror(errno));
-	      *cmd_error = error_buffer;
-	      close(fd_in);
-	      return 1;
-	    }
-
-	    csync_debug(4,"Copying data from %s to backup file %s \n", filename, backup_filename);
-
-	    rc  = csync_copy_file(fd_in, fd_out);
-	    if (rc != 0) {
-		csync_debug(0, "csync_backup error: copy file\n");
-
-		snprintf(error_buffer, 1024,
-			 "Write error while backing up '%s': %s\n",
-			 filename, strerror(errno));
-
-		*cmd_error = error_buffer;
-		// TODO verify file disapeared ? 
-		// 
-		// return 1;
-	    }
-	    csync_set_backup_file_status(backup_filename, bak_dir_len);
-	    csync_debug(3, "csync_backup loop end\n");
-	  }
-	}
-	csync_debug(3, "csync_backup end\n");
+  static char error_buffer[1024];
+  const struct csync_group *g = NULL;
+  struct stat buf;
+  int rc;
+  while ( (g=csync_find_next(g, filename)) ) {
+    if (g->backup_directory && g->backup_generations > 1) {
+      //	    const char *filename = prefixsubst(prefixed_filename);
+      
+      int bak_dir_len = strlen(g->backup_directory);
+      int filename_len = strlen(filename);
+      char backup_filename[bak_dir_len + filename_len + 10];
+      char backup_otherfilename[bak_dir_len + filename_len + 10];
+      int fd_in, fd_out, i;
+      int lastSlash = 0;
+      mode_t mode;
+      csync_debug(4, "backup %s \n", filename);
+      // Skip generation of directories
+      rc =  stat(filename, &buf);
+      csync_debug(4, "backup %s %d \n", filename, rc);
+      if (rc != 0) {
+	csync_debug(1, "Nothing to backup: %s. New file?\n", filename);
 	return 0;
+      }
+	    
+      if (S_ISDIR(buf.st_mode)) {
+	csync_debug(4, "directory. Skip generation \n");
+	return 0;
+      }
+
+      fd_in = open(filename, O_RDONLY);
+      if (fd_in < 0) 
+	return 0;
+      
+      memcpy(backup_filename, g->backup_directory, bak_dir_len);
+      backup_filename[bak_dir_len] = 0;
+      mode = 0777;
+      
+
+      for (i=filename_len; i> 0; i--)
+	if (filename[i] == '/')  {
+	  lastSlash = i;
+	  break;
+	}
+      
+      for (i=0; i < filename_len; i++) {
+	// Create directories in filename
+	// TODO: Get the mode from the orig. dir
+	if (filename[i] == '/' && i <= lastSlash) {
+	  
+	  backup_filename[bak_dir_len+i] = 0;
+	  
+	  csync_debug(4, "mkdir %s \n", backup_filename);
+	  
+	  mkdir(backup_filename, mode);
+	  // Dont check the empty string.
+	  if (i!= 0)
+	    csync_set_backup_file_status(backup_filename, bak_dir_len);
+	  
+	}
+	backup_filename[bak_dir_len+i] = filename[i];
+      }
+
+      backup_filename[bak_dir_len + filename_len] = 0;
+      backup_filename[bak_dir_len] = '/';
+      memcpy(backup_otherfilename, backup_filename,
+	     bak_dir_len + filename_len);
+      
+      //rc = unlink(
+      for (i=g->backup_generations-1; i; i--) {
+	if (i != 1)
+	  snprintf(backup_filename+bak_dir_len+filename_len, 10, ".%d", i-1);
+	else
+	  backup_filename[bak_dir_len+filename_len] = '\0';
+	rc = stat(backup_filename, &buf);
+	if (rc != 0) 
+	  continue; // File does not exists
+	snprintf(backup_otherfilename+bak_dir_len+filename_len, 10, ".%d", i);
+	
+	rc = rename(backup_filename, backup_otherfilename);
+	csync_debug(3, "renaming backup files '%s' to '%s'. rc = %d\n", 
+		    backup_filename, backup_otherfilename, rc);
+	
+      }
+
+      /* strcpy(backup_filename+bak_dir_len+filename_len, ""); */
+
+      fd_out = open(backup_filename, O_WRONLY|O_CREAT, 0600);
+      
+      if (fd_out < 0) {
+	snprintf(error_buffer, 1024,
+		 "Open error while backing up '%s': %s\n",
+		 filename, strerror(errno));
+	*cmd_error = error_buffer;
+	close(fd_in);
+	return 1;
+      }
+
+      csync_debug(4,"Copying data from %s to backup file %s \n", filename, backup_filename);
+
+      rc  = csync_copy_file(fd_in, fd_out);
+      if (rc != 0) {
+	csync_debug(0, "csync_backup error: copy file\n");
+	
+	snprintf(error_buffer, 1024,
+		 "Write error while backing up '%s': %s\n",
+		 filename, strerror(errno));
+
+	*cmd_error = error_buffer;
+	// TODO verify file disapeared ? 
+	// 
+	// return 1;
+      }
+      csync_set_backup_file_status(backup_filename, bak_dir_len);
+      csync_debug(3, "csync_backup loop end\n");
+    }
+  }
+  csync_debug(3, "csync_backup end\n");
+  return 0;
 }
 
 int csync_copy_file(int fd_in, int fd_out) 
