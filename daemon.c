@@ -728,9 +728,9 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
   utb.modtime = atoll(time);
   if ( utime(filename, &utb) ) {
     *cmd_error = strerror(errno);
-    return errno;
+    return ERROR;
   }
-  return 0;
+  return OK;
 }
 
 void csync_daemon_list(char *filename, char *tag[32], char *peername) 
