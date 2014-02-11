@@ -594,9 +594,9 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
   if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
     int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
     if (has_links) {
-      struct textlist *tl;
+      struct textlist *tl = NULL;
       csync_debug(2, "File %s has links: %d\n", file, file_stat->st_nlink);
-      tl = csync_check_link(file, checktxt, file_stat, operation, csync_mark_hardlinks);
+      //tl = csync_check_link(file, checktxt, file_stat, operation, csync_mark_hardlinks);
       if (tl)
 	textlist_free(tl);
     }
