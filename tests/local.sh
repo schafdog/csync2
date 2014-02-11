@@ -27,25 +27,29 @@ function testing {
     fi
 }
 
+
 function cmd {
-    echo cmd $1 $2 > ${TESTNAME}_${COUNT}.log 
     CMD=$1
+    if [ "$3" == "" ] ; then
+	HOST=$NAME
+    fi
+    echo cmd $CMD \"$2\" $HOST > ${TESTNAME}_${COUNT}.log 
     if [ "$VALGRIND" != "" ] ; then 
-	$VALGRIND ../csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME 
+	$VALGRIND ../csync2 -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test
     else
-	$VALGRIND ../csync2 -p 30860 -K csync2_$NAME.cfg -N $NAME -${CMD}r$DEBUG test/$NAME >> ${TESTNAME}_${COUNT}.log 2>&1
+	$VALGRIND ../csync2 -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test >> ${TESTNAME}_${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}_${COUNT}.log
-    echo "select filename from file; select filename,operation,other from dirty;" | mysql -t -u csync2_$NAME -pcsync2_$NAME csync2_$NAME  > ${TESTNAME}_${COUNT}.mysql 2> /dev/null
+    echo "select filename from file; select peername,filename,operation,other from dirty;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST  > ${TESTNAME}_${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}_${COUNT}.mysql
     rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}_${COUNT}.rsync
     testing ${TESTNAME}_${COUNT}.rsync
     if [ "$OTHER" != "" ] ; then  
 	rsync --delete -nHav test/local/ other:`pwd`/test/other/ > ${TESTNAME}_${COUNT}_other.rsync
     fi
-	#./find_hardlinks.sh test/$NAME > hardlinks_$NAME.txt
+	#./find_hardlinks.sh test/$HOST > hardlinks_$HOST.txt
 	#./find_hardlinks.sh test/peer > hardlinks_peer.txt
-	#diff hardlinks_$NAME.txt hardlinks_peer.txt
+	#diff hardlinks_$HOST.txt hardlinks_peer.txt
     let COUNT=$COUNT+1
     ${PAUSE}
 }
@@ -77,7 +81,7 @@ function daemon {
 }
 
 function check {
-    cmd $COMMAND $1
+    cmd c $1 $2
 }
 
 for d in $* ; do 
