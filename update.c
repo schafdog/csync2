@@ -815,10 +815,24 @@ int csync_update_file_mod(const char *myname, const char *peername,
   }
 
   if ( lstat_strict(filename, &st) != 0 ) {
-    csync_debug(0, "ERROR: Cant stat %s.\n", filename);
+    if (other) {
+      if ( lstat_strict(other, &st) != 0 )
+	csync_debug(0, "ERROR: Cannot stat both files: %s %s.\n", filename, other, operation);
+      else
+	csync_debug(0, "ERROR: Cannot stat file: %s Other present: %s.\n", filename, other, operation);
+      SQL("Split operation", 
+	  "insert into dirty (myname, peername, filename) values ('%s', '%s', '%s')", db_encode(myname), db_encode(peername), db_encode(other));
+
+    }
+    else {
+      csync_debug(0, "ERROR: Cannot stat %s %s.\n", filename, operation);
+    }    
+    SQL("Clear operation", 
+	"UPDATE dirty set operation = '-' where myname = '%s' and peername = '%s' and filename = '%s'", db_encode(myname), db_encode(peername), db_encode(filename));
     csync_error_count++;
     return ERROR;
   }
+  
   char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
   char *uidptr = uid_to_name(st.st_uid, uid, MAX_UID_SIZE);
   char *gidptr = gid_to_name(st.st_gid, gid, MAX_GID_SIZE);
@@ -1107,15 +1121,17 @@ void csync_update_host(const char *myname, const char *peername,
       const char *filename  = db_decode(SQL_V(0));
       const char *operation = db_decode(SQL_V(1));
       const char *other     = db_decode(SQL_V(2)); 
+      const char *forced_str= db_decode(SQL_V(3));
+      int forced = forced_str ? atoi(forced_str) : 0; 
       int i, use_this = patnum == 0;
       for (i=0; i<patnum && !use_this; i++)
 	if ( compare_files(filename, patlist[i], recursive) ) 
 	  use_this = 1;
       if (use_this) {
-	if (strcmp(operation, "MKH"))
-	  textlist_add3(&tl, filename, operation, other, atoi(SQL_V(3)));
+	if (!operation || strcmp(operation, "MKH"))
+	  textlist_add3(&tl, filename, operation, other, forced);
 	else
-	  textlist_add3(&tl_mod, filename, operation, other, atoi(SQL_V(3)));
+	  textlist_add3(&tl_mod, filename, operation, other, forced);
       }
     } SQL_END;
 
