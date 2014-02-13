@@ -882,7 +882,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
       return rc;
     }
 
-    if (operation && (strncmp("MV", operation, 2) == 0)) {
+    if (operation && (strcmp("MV", operation) == 0)) {
       switch (rc) {
       case DIFF_BOTH: 
       case DIFF:
@@ -895,7 +895,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	//	rc = CLEAR_DIRTY;
       }
     }
-    if (operation && (strncmp("MKH", operation, 2) == 0)) {
+    if (operation && (strcmp("MKH", operation) == 0) && other) {
       
       const char *other_enc = url_encode(prefixencode(other));
       struct stat st_other;
