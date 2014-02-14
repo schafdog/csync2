@@ -47,6 +47,14 @@
 #define IGNORE_LINK 64
 #define IGNORE_    128
 
+#if __DARWIN_C_LEVEL
+#define DEV_FORMAT "%u"
+#define INO_FORMAT "%llu"
+#else
+#define DEV_FORMAT "%llu"
+#define INO_FORMAT "%llu"
+#endif
+
 #define DB_SCHEMA_VERSION 0
 
 enum {

@@ -621,8 +621,8 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       csync_debug(0, "check_dirty (mod): before mark (all) \n");
       char dev_str[100];
       char ino_str[100];
-      sprintf(dev_str, "%lu",  file_stat->st_dev);
-      sprintf(ino_str, "%lu", file_stat->st_ino);
+      sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
+      sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
       csync_mark_other(file, 0, 0, *operation,  checktxt_encoded, dev_str, ino_str, other);
       if (other) 
 	free(other);
