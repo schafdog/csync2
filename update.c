@@ -75,7 +75,8 @@ int read_conn_status(const char *file, const char *host)
       return IDENTICAL;
   } else {
     connection_closed_error = 1;
-    strcpy(line, "Connection closed.\n");
+    strcpy(line, "ERROR: Read conn status: Connection closed.\n");
+    csync_fatal(line);
   }
   if (strncmp(line, "ERROR (Path not found)", 15) == 0)
     return ERROR_PATH_MISSING; 
