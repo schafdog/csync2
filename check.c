@@ -19,6 +19,9 @@
  */
 
 #include "csync2.h"
+#include "digest.h"
+#include "db_api.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,7 +30,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-
+#include <fcntl.h>
+#include <stdio.h>
 
 #ifdef __CYGWIN__
 
@@ -194,7 +198,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       if (dirty)
       SQL("Marking File Dirty",
 	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) "
-	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, '%s')",
+	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s)",
 	  db_encode(file_new),
 	  csync_new_force ? "1" : "0",
 	  db_encode(pl[pl_idx].myname),
@@ -203,7 +207,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	  db_encode(checktxt),
 	  (dev ? dev : "NULL"),
 	  (ino ? ino : "NULL"),
-	  (result_other ? db_encode(result_other): "")
+	  csync_db_escape_quote(result_other)
 	  );
       if (result_other)
 	free(result_other);
@@ -517,6 +521,7 @@ void csync_check_dir(const char* file, int recursive, int init_run, int version,
 void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run, int version, char **operation)
 {
   int this_is_dirty = 0;
+  int calc_digest = 0;
   if (csync_compare_mode)
     printf("%s\n", file);
   char *checktxt = strdup(csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
@@ -526,9 +531,8 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
   const char *encoded = db_encode(file);
   //char *operation = 0;
   char *other = 0; 
- 
   SQL_BEGIN("Checking File",
-	    "SELECT checktxt, inode, device FROM file WHERE "
+	    "SELECT checktxt, inode, device, digest FROM file WHERE "
 	    "filename = '%s' ", encoded)
     {
       db_version = csync_get_checktxt_version(SQL_V(0));
@@ -538,8 +542,9 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       }
       const char *checktxt_db = db_decode(SQL_V(0));
       const char *checktxt_same_version = checktxt;
-      const char *inode  = SQL_V(1);
-      const char *device = SQL_V(2);
+      const char *inode    = SQL_V(1);
+      const char *device   = SQL_V(2);
+      const char *digest_p = SQL_V(3);
       // const char *mtime  = SQL_V(3);
       // const char *type   = SQL_V(4);
       int flag = 0;
@@ -548,6 +553,10 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       if (strstr(checktxt_db, ":group=") != NULL)
 	flag |= SET_GROUP; 
       if (!inode || !device) {
+	is_upgrade = 1;
+      }
+      if (!digest_p && strstr(checktxt, "type=reg")) {
+	calc_digest = 1;
 	is_upgrade = 1;
       }
       if (db_version != version || flag != (SET_USER|SET_GROUP)) {
@@ -563,8 +572,10 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     } SQL_FIN {
     if ( SQL_COUNT == 0 ) {
       csync_debug(2, "New file: %s\n", file);
-      if (S_ISREG(file_stat->st_mode)) 
+      if (S_ISREG(file_stat->st_mode)) {
 	*operation = ringbuffer_strdup("NEW");
+	calc_digest = 1; 
+      }
       else if (S_ISDIR(file_stat->st_mode)) 
 	*operation = ringbuffer_strdup("MKDIR");
       else if (S_ISCHR(file_stat->st_mode))
@@ -589,7 +600,19 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       this_is_dirty = 1;
     }
   } SQL_END;
-  
+
+  char *digest = NULL; 
+  if (calc_digest) {
+    int fileno = open(file, O_RDONLY); 
+    unsigned char md_value[EVP_MAX_MD_SIZE];
+    unsigned int md_len = 0;
+    int rc = dsync_digest(fileno, "sha1", md_value, &md_len);
+    digest = malloc(2*md_len+1);
+    if (!rc) 
+      dsync_digest_hex(md_value, md_len, digest);
+    close(fileno);
+  }
+
   if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
     int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
     if (has_links) {
@@ -604,17 +627,18 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     const char *checktxt_encoded = db_encode(checktxt);
     if (is_upgrade) {
       SQL("Update file entry",
-	  "UPDATE file set checktxt='%s', device=%lu, inode=%llu where filename = '%s'",
-	  checktxt_encoded, dev, file_stat->st_ino, encoded);
+	  "UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s where filename = '%s'",
+	  checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(db_encode(digest)), encoded);
     }
     else {
       SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
       SQL("Adding or updating file entry",
-	  "INSERT INTO file (filename, checktxt, device, inode) VALUES ('%s', '%s', %lu, %llu)",
+	  "INSERT INTO file (filename, checktxt, device, inode, digest) VALUES ('%s', '%s', %lu, %llu, %s)",
 	  encoded, 
 	  checktxt_encoded,
 	  dev,
-	  file_stat->st_ino
+	  file_stat->st_ino,
+	  csync_db_quote(db_encode(digest))
 	  );
     }
     if (!init_run && this_is_dirty) {
@@ -628,6 +652,8 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	free(other);
     }
   }
+  if (digest)
+    free(digest);
   free(checktxt);
 }
 
