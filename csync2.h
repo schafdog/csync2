@@ -175,6 +175,8 @@ extern void csync_db_fin(void *vmx, const char *err);
 extern const void * csync_db_colblob(void *stmtx,int col);
 extern char *db_default_database(char *dbdir, char *myhostname, char *cfg_name);
 extern const char *csync_db_escape(const char *);
+extern const char *csync_db_quote(const char *filename); 
+extern const char *csync_db_escape_quote(const char *filename); 
 
 
 
@@ -303,7 +305,6 @@ const char *url_decode(const char *in);
 /* another ringbuffer here. so use it with care!! */
 const char *prefixsubst(const char *in);
 const char *prefixencode(const char *filename);
-
 
 /* textlist implementation */
 
