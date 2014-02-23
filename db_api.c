@@ -113,6 +113,8 @@ const char *db_errmsg(db_conn_p conn)
 
 const char *db_escape(db_conn_p conn, const char *string)
 {
+  if (!string) 
+    return string;
   if (conn && conn->escape)
     return conn->escape(conn, string);
   csync_debug(0, "No Connection (%p) or escape method configured.", conn, (conn? conn->escape : 0));
