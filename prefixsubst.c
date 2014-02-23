@@ -21,7 +21,7 @@
 #include "csync2.h"
 #include <stdio.h>
 
-#define RINGBUFF_LEN 10
+#define RINGBUFF_LEN 100
 
 static char *ringbuff[RINGBUFF_LEN];
 static int ringbuff_counter = 0;
