@@ -630,12 +630,14 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     else {
       SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
       SQL("Adding or updating file entry",
-	  "INSERT INTO file (filename, checktxt, device, inode, digest) VALUES ('%s', '%s', %lu, %llu, %s)",
+	  "INSERT INTO file (filename, checktxt, device, inode, digest, mode, size) VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu)",
 	  encoded, 
 	  checktxt_encoded,
 	  dev,
 	  file_stat->st_ino,
-	  csync_db_quote(digest)
+	  csync_db_quote(digest),
+	  file_stat->st_mode, 
+	  file_stat->st_size 
 	  );
     }
     if (!init_run && this_is_dirty) {

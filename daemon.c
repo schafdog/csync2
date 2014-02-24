@@ -111,8 +111,8 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
 	"DELETE FROM file WHERE filename = '%s'",
 	filename_encoded);	  
     SQL("Insert record into file",
-	"INSERT INTO file (filename, checktxt, inode, device, digest) values ('%s', '%s', %ld, %ld, %s)",
-	filename_encoded, db_encode(checktxt), st.st_ino, st.st_dev, csync_db_quote(digest));
+	"INSERT INTO file (filename, checktxt, inode, device, digest, mode, size) values ('%s', '%s', %ld, %ld, %s, %ld, %ld)",
+	filename_encoded, db_encode(checktxt), st.st_ino, st.st_dev, csync_db_quote(digest), st.st_mode, st.st_size);
     if (digest) 
       free(digest);
   }
