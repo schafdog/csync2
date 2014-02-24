@@ -603,14 +603,11 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 
   char *digest = NULL; 
   if (calc_digest) {
-    int fileno = open(file, O_RDONLY); 
-    unsigned char md_value[EVP_MAX_MD_SIZE];
-    unsigned int md_len = 0;
-    int rc = dsync_digest(fileno, "sha1", md_value, &md_len);
-    digest = malloc(2*md_len+1);
-    if (!rc) 
-      dsync_digest_hex(md_value, md_len, digest);
-    close(fileno);
+    int size = 2*EVP_MAX_MD_SIZE+1;
+    digest = malloc(size);
+    int rc = dsync_digest_path_hex(file, "sha1", digest, size);
+    if (rc)
+      csync_debug(0, "Error generating digest: %s %d", digest, rc);
   }
 
   if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
@@ -628,7 +625,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     if (is_upgrade) {
       SQL("Update file entry",
 	  "UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s where filename = '%s'",
-	  checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(db_encode(digest)), encoded);
+	  checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest), encoded);
     }
     else {
       SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
@@ -638,7 +635,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	  checktxt_encoded,
 	  dev,
 	  file_stat->st_ino,
-	  csync_db_quote(db_encode(digest))
+	  csync_db_quote(digest)
 	  );
     }
     if (!init_run && this_is_dirty) {

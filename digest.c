@@ -43,6 +43,24 @@ void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *
   }
 }
 
+
+int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, int size) {
+  int fileno = open(filename, O_RDONLY);
+  if (fileno < 0)
+    return fileno;
+  unsigned char md_value[EVP_MAX_MD_SIZE];
+  unsigned int md_len = 0;
+  int rc = dsync_digest(fileno, digest_name, md_value, &md_len);
+  close(fileno);
+  if (rc)
+    return rc;
+  if (size < 2*md_len+1)
+    return -1;
+  dsync_digest_hex(md_value, md_len, digest_str);
+  return 0;
+}
+
+
 #ifdef DIGEST_STANDALONE
 int main(int argc, char *argv[])
 {

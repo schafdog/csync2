@@ -20,6 +20,7 @@
 
 
 #include "csync2.h"
+#include "digest.h"
 #include "uidgid.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -96,14 +97,24 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
 	"delete from file where filename = '%s'",
 	filename_encoded);
   } else {
+    char *digest = NULL;
     const char *checktxt = csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version);
-	  
+    if (S_ISREG(st.st_mode)) {
+      int size = 2*EVP_MAX_MD_SIZE+1;
+      digest = malloc(size);
+      int rc = dsync_digest_path_hex(filename, "sha1", digest, size);
+      if (rc)
+	csync_debug(0, "Error generating digest: %s %d", digest, rc);
+    }
+
     SQL("Delete old record (if exist) ",
 	"DELETE FROM file WHERE filename = '%s'",
 	filename_encoded);	  
     SQL("Insert record into file",
-	"INSERT INTO file (filename, checktxt, inode, device) values ('%s', '%s', %ld, %ld)",
-	filename_encoded, db_encode(checktxt), st.st_ino, st.st_dev);
+	"INSERT INTO file (filename, checktxt, inode, device, digest) values ('%s', '%s', %ld, %ld, %s)",
+	filename_encoded, db_encode(checktxt), st.st_ino, st.st_dev, csync_db_quote(digest));
+    if (digest) 
+      free(digest);
   }
 }
 
