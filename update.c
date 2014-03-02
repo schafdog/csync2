@@ -761,9 +761,9 @@ int csync_update_file_move(const char* myname, const char *peername, const char 
   csync_debug(0, "Failed to MV %s %s \n", other, filename);
 
   SQL("Update operation to new (failed mv)", 
-      "UPDATE dirty SET operation = 'new (failed mv)' WHERE filename = '%s' ", 
-      db_encode(filename), "0", myname, 
-      db_encode(peername), "new (failed mv)");
+      "UPDATE dirty SET operation = 'new (failed mv)' WHERE filename = '%s' and myname = '%s' and peername = '%s' ", 
+      db_encode(filename), myname, 
+      db_encode(peername));
 
   SQL("Update operation to delete (failed mv)",
           "INSERT INTO dirty (filename, forced, myname, peername, operation) "
