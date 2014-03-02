@@ -96,7 +96,7 @@ void db_set_logger(db_conn_p conn, void (*logger)(int lv, const char *fmt, ...))
   conn->logger = logger;
 }
 
-void db_close(db_conn_p conn)
+void db_conn_close(db_conn_p conn)
 {
   if (!conn || !conn->close)
     return;
