@@ -35,6 +35,7 @@ struct db_conn_t {
   int         (*upgrade_to_schema) (int version);
   const char* (*escape) (db_conn_p conn, const char *string);
   void        (*free)   (db_conn_p conn, const char *escaped);
+  void        (*shutdown) ();
 };
 
 struct db_stmt_t {
@@ -51,7 +52,8 @@ struct db_stmt_t {
 //struct db_conn *db_conn;
 
 int       db_open(const char *file, int type, db_conn_p *db);
-void      db_close(db_conn_p conn);
+void      db_close();
+void      db_conn_close(db_conn_p conn);
 
 int       db_exec(db_conn_p conn, const char* exec);
 int       db_exec2(db_conn_p conn, const char* exec, void (*callback)(void *, int, int), void *data, const char **err);
