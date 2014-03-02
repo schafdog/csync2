@@ -111,12 +111,12 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
 }
 
 void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter, 
-		      const char *operation, const char *checktxt, 
+		      const char *operation_org, const char *checktxt, 
 		      const char *dev, const char *ino, const char *other)
 {
   struct peer *pl = csync_find_peers(file, thispeer);
   int pl_idx;
-
+  const char *operation;
   csync_schedule_commands(file, thispeer == 0);
 
   if ( ! pl ) {
@@ -127,13 +127,18 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 
   struct stat st_file;
   int rc_file = stat(file, &st_file);
-  for (pl_idx=0; pl[pl_idx].peername; pl_idx++)
+  for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
+    operation = operation_org;
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "mark other operation: %s %s:%s.\n", operation, pl[pl_idx].peername, file);
+      csync_debug(1, "mark other operation: %s %s:%s '%s'.\n", operation, pl[pl_idx].peername, file, (other ? other : "-"));
+      if (operation && strcmp("MV", operation) == 0 && other == NULL) {
+	csync_debug(1, "mark other MV operation missing other %s %s \n", pl[pl_idx].peername, file);
+	operation = "-";
+      }
       short dirty = 1;
       short clean_other = 1;
       char *result_other = 0;
-      const char *file_new = file;
+      char *file_new = strdup(file);
       /* We dont currently have a checktxt when marking files. */ 
       if (checktxt) {
 	
@@ -175,10 +180,13 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    }
 	    else if (!strcmp("MV",old_operation) && !strcmp("RM", operation)) {
 	      operation = "RM";
-	      file_new = other;
+	      file_new = strdup(other);
+	      result_other = strdup(filename);
+	      clean_other = 1;
 	      csync_debug(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n", pl[pl_idx].peername, file, filename, other);
 	      other = 0;
 	    }
+	    // Run only once? 
 	    break; 
 	  } SQL_FIN {
 	} SQL_END;
@@ -188,8 +196,8 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	  db_encode(file_new),
 	  db_encode(pl[pl_idx].peername));
       
-      /* Delete other file dirty status if differs from file */
-      if (clean_other && result_other && strcmp(file, result_other)) {
+      /* Delete other file dirty status if differs from file_new */
+      if (clean_other && result_other && strcmp(file_new, result_other)) {
 	SQL("Deleting old dirty file entries",
 	    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
 	    db_encode(result_other),
@@ -207,11 +215,16 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	  db_encode(checktxt),
 	  (dev ? dev : "NULL"),
 	  (ino ? ino : "NULL"),
-	  csync_db_escape_quote(result_other)
+	  csync_db_escape_quote((result_other ? result_other : other))
 	  );
-      if (result_other)
+      free(file_new);
+      file_new = 0;
+      if (result_other) {
 	free(result_other);
+	result_other = 0;
+      }
     };
+  };
   free(pl);
 }
 
