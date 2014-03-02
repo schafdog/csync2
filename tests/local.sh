@@ -21,7 +21,7 @@ function testing {
     RESULT=$1
     OLD_RESULT=${RESULT}.res
     if [ -f ${OLD_RESULT} ] ; then
-	diff $RESULT $OLD_RESULT
+	diff $RESULT $OLD_RESULT | tee ${RESULT}.diff
     else
 	cp $RESULT $OLD_RESULT
     fi
