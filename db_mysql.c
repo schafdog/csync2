@@ -52,6 +52,7 @@ static struct db_mysql_fns {
 	void (*mysql_free_result_fn)(MYSQL_RES *);
 	unsigned int (*mysql_warning_count_fn)(MYSQL *);
         unsigned long (*mysql_real_escape_string_fn)(MYSQL *mysql, char *to, const char *from, unsigned long length);
+        void (*mysql_library_end_fn)();
 } f;
 
 static void *dl_handle;
@@ -80,6 +81,7 @@ static void db_mysql_dlopen(void)
         LOOKUP_SYMBOL(dl_handle, mysql_free_result);
         LOOKUP_SYMBOL(dl_handle, mysql_warning_count);
 	LOOKUP_SYMBOL(dl_handle, mysql_real_escape_string);
+	//LOOKUP_SYMBOL(dl_handle, mysql_library_end);
 }
 
 
@@ -177,6 +179,7 @@ fatal:
   conn->upgrade_to_schema = db_mysql_upgrade_to_schema;
   conn->escape  = db_mysql_escape;
   //  conn->free    = db_mysql_free;
+  conn->shutdown = f.mysql_library_end_fn;
 
   return rc;
 #else
@@ -195,6 +198,8 @@ void db_mysql_close(db_conn_p conn)
   f.mysql_close_fn(conn->private);
   conn->private = 0;
   free(conn);
+  // TODO wrong place
+  //f.mysql_library_end_fn();
 }
 
 const char *db_mysql_errmsg(db_conn_p conn)
