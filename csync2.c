@@ -1149,7 +1149,7 @@ int main(int argc, char ** argv)
 		}
 
 		case MODE_LIST_DIRTY:
-			retval = 2;
+			retval = 0;
 			SQL_BEGIN("DB Dump - Dirty",
 				"SELECT forced, myname, peername, filename, operation FROM dirty ORDER BY filename")
 			{
@@ -1163,7 +1163,7 @@ int main(int argc, char ** argv)
 				force = atoi(SQL_V(0));
 			      printf("%s%s\t%s\t%s\t%s\n", (force ? "F " : "  "), SQL_V(4),
 				     db_decode(SQL_V(1)), peername, filename);
-			      retval = -1;
+			      retval++;
 			    }
 			  }
 			} SQL_END;
