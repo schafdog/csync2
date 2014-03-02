@@ -160,7 +160,7 @@ void csync_db_close()
 	        SQL("COMMIT ", "COMMIT ");
 		tqueries_counter = -10;
 	}
-	db_close(db);
+	db_conn_close(db);
 	begin_commit_recursion--;
 	db = 0;
 }
