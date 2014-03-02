@@ -22,8 +22,8 @@ missing
 patch.txt
 stamp-h1
 ylwrap
-test/
 *.log
 hardlinks_*.txt
 *.rsync
 *.mysql
+tests/*.diff
