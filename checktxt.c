@@ -53,9 +53,9 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 
 	xxprintf("v%d", version);
 
-	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode))
-	  xxprintf(":mtime=%llu", 
-		   flags & IGNORE_MTIME ? (long long)0 : (long long)st->st_mtime);
+	//	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode))
+	xxprintf(":mtime=%llu", 
+		 flags & IGNORE_MTIME ? (long long)0 : (long long)st->st_mtime);
 	
 	if ( !csync_ignore_mod )
 		xxprintf(":mode=%d", (int)st->st_mode);
