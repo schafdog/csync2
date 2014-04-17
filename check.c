@@ -140,7 +140,9 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       char *result_other = 0;
       char *file_new = strdup(file);
       /* We dont currently have a checktxt when marking files. */ 
-      if (checktxt) {
+      /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run, 
+	 and thus leaking other side */
+      if (0 && checktxt) {
 	
 	SQL_BEGIN("Checking old opertion(s) on dirty",
 		  "SELECT operation, filename, other from dirty where "
