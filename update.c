@@ -1164,6 +1164,9 @@ void csync_update_host(const char *myname, const char *peername,
       *last_tn = next_t;
       t->next = tl_mod;
       tl_mod = t;
+      if (S_ISDIR(st.st_mode))
+	textlist_add(&directory_list, t->value, 0);
+	
     } else {
       csync_debug(3, "Dirty item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error) {
@@ -1172,6 +1175,7 @@ void csync_update_host(const char *myname, const char *peername,
 				      t->value, t->value2, 
 				      done || t->intvalue, dry_run);
 	//done = check_next_step(rc, done, myname, pername, t->value; t->value2, t->intvalue);
+	// Dont think this is needed any
 	csync_directory_add(&directory_list, t->value);
 	last_tn=&(t->next);
       }
