@@ -46,6 +46,8 @@
 #define OK     0
 #define ERROR -1
 #define MAYBE_AUTO_RESOLVE  -2
+#define CONN_CLOSE  -3
+
 #define SETOWN  -6
 #define SETMOD  -7
 #define SETTIME -8
@@ -76,7 +78,8 @@ int read_conn_status(const char *file, const char *host)
   } else {
     connection_closed_error = 1;
     strcpy(line, "ERROR: Read conn status: Connection closed.\n");
-    csync_fatal(line);
+    csync_debug(0, line);
+    return CONN_CLOSE;
   }
   if (strncmp(line, "ERROR (Path not found)", 15) == 0)
     return ERROR_PATH_MISSING; 
@@ -271,8 +274,12 @@ int csync_check_auto_resolve(const char *peername, const char *key_enc,
 	}
 	  
 	conn_printf("%s %s %s\n", cmd, key_enc, filename_enc);
-	if ( read_conn_status(filename, peername) ) 
+	int rc = read_conn_status(filename, peername);
+	if (rc < OK) {
+	  if (rc == CONN_CLOSE)
+	    return rc; 
 	  return auto_resolve_error();
+	}
 	
 	if ( !conn_gets(buffer, 4096) ) 
 	  return auto_resolve_error();
