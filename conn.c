@@ -356,7 +356,7 @@ static inline int READ(void *buf, size_t count)
   /* Initialize the timeout data structure. */
   timeout.tv_sec = 60;
   timeout.tv_usec = 0;
-  int rc = select (1, &set, NULL, NULL, &timeout);
+  int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
   if (rc == 0)
     return -2;
   if (rc < 0)
