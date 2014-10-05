@@ -656,7 +656,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	  );
     }
     if (!init_run && this_is_dirty) {
-      csync_debug(0, "check_dirty (mod): before mark (all) \n");
+      //      csync_debug(0, "check_dirty (mod): before mark (all) \n");
       char dev_str[100];
       char ino_str[100];
       sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
