@@ -46,6 +46,8 @@
 #define OK     0
 #define ERROR -1
 #define MAYBE_AUTO_RESOLVE  -2
+#define CONN_CLOSE  -3
+
 #define SETOWN  -6
 #define SETMOD  -7
 #define SETTIME -8
@@ -76,7 +78,8 @@ int read_conn_status(const char *file, const char *host)
   } else {
     connection_closed_error = 1;
     strcpy(line, "ERROR: Read conn status: Connection closed.\n");
-    csync_fatal(line);
+    csync_debug(0, line);
+    return CONN_CLOSE;
   }
   if (strncmp(line, "ERROR (Path not found)", 15) == 0)
     return ERROR_PATH_MISSING; 
@@ -271,8 +274,12 @@ int csync_check_auto_resolve(const char *peername, const char *key_enc,
 	}
 	  
 	conn_printf("%s %s %s\n", cmd, key_enc, filename_enc);
-	if ( read_conn_status(filename, peername) ) 
+	int rc = read_conn_status(filename, peername);
+	if (rc < OK) {
+	  if (rc == CONN_CLOSE)
+	    return rc; 
 	  return auto_resolve_error();
+	}
 	
 	if ( !conn_gets(buffer, 4096) ) 
 	  return auto_resolve_error();
@@ -1164,6 +1171,9 @@ void csync_update_host(const char *myname, const char *peername,
       *last_tn = next_t;
       t->next = tl_mod;
       tl_mod = t;
+      if (S_ISDIR(st.st_mode))
+	textlist_add(&directory_list, t->value, 0);
+	
     } else {
       csync_debug(3, "Dirty item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error) {
@@ -1172,6 +1182,7 @@ void csync_update_host(const char *myname, const char *peername,
 				      t->value, t->value2, 
 				      done || t->intvalue, dry_run);
 	//done = check_next_step(rc, done, myname, pername, t->value; t->value2, t->intvalue);
+	// Dont think this is needed any
 	csync_directory_add(&directory_list, t->value);
 	last_tn=&(t->next);
       }

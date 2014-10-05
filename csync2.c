@@ -326,6 +326,15 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
     if (conn < 0) 
       goto error;
 
+
+    struct timeval tv;
+
+    tv.tv_sec = 60;
+    tv.tv_usec = 0 ;
+    /* Not working for inet, but conn now uses select to detect data */
+    if (setsockopt(*conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof tv))
+	csync_debug(0, "Failed to set socket rcv timeout");
+
     fflush(stdout); fflush(stderr);
 
     if (nonfork || !fork()) {

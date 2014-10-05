@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
@@ -346,9 +347,21 @@ static inline int READ(void *buf, size_t count)
 #ifdef HAVE_LIBGNUTLS
   if (csync_conn_usessl)
     return gnutls_record_recv(conn_tls_session, buf, count);
-  else
 #endif
-    return read(conn_fd_in, buf, count);
+  fd_set set;
+  struct timeval timeout;
+  /* Initialize the file descriptor set. */
+  FD_ZERO (&set);
+  FD_SET (conn_fd_in, &set);
+  /* Initialize the timeout data structure. */
+  timeout.tv_sec = 60;
+  timeout.tv_usec = 0;
+  int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
+  if (rc == 0)
+    return -2;
+  if (rc < 0)
+    return rc;
+  return read(conn_fd_in, buf, count);
 }
 
 static inline int WRITE(const void *buf, size_t count)
@@ -389,7 +402,10 @@ int conn_raw_read(void *buf, size_t count)
 		else {
 			buf_start = 0;
 			buf_end = READ(buffer, 512);
-			if (buf_end < 0) { buf_end=0; return -1; }
+			if (buf_end < 0) { 
+			  buf_end=0; 
+			  return -1; 
+			}
 		}
 	}
 
@@ -402,7 +418,6 @@ int conn_raw_read(void *buf, size_t count)
 
 		return real_count;
 	}
-
 	return 0;
 }
 
