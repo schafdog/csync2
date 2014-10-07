@@ -482,8 +482,8 @@ void conn_printf(const char *fmt, ...)
 	va_end(ap);
 
 	buffer[size] = 0;
-	//csync_debug(2, "%s> %s", myhostname, buffer);
 	conn_write(buffer, size);
+	csync_debug(1, "%s> %s", "local", buffer);
 }
 
 size_t conn_gets_newline(char *s, size_t size, int remove_newline)
