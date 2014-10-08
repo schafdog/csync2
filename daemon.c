@@ -543,7 +543,10 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
       if (st.st_nlink > 1) {
 	const char *checktxt = csync_genchecktxt_version(&st_patched, filename, SET_USER|SET_GROUP, db_version);
 	char *operation;
-	struct textlist *tl = csync_check_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
+
+	// TODO scan file for hardlinks to old file. 
+	// check_link now works on dirty
+	struct textlist *tl = NULL; // csync_check_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
 	// csync_hardlink does not return a list. 
 	if (tl) 
 	  textlist_free(tl);
