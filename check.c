@@ -444,54 +444,62 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
 
 struct textlist *csync_check_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop)
 {
-  struct textlist *tl = 0, *t;
-  int count = 0;
-  unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
-  char *filename_enc = strdup(db_encode(filename));
-  struct stat file_stat; 
-  SQL_BEGIN("Check for same inode", 
-	    "SELECT filename, checktxt FROM file "
-            "WHERE filename not in (select filename from dirty where device = %lu and inode = %llu) "
-	    "and filename != '%s' and device = %lu and inode = %llu ", 
-	    dev, st->st_ino, filename_enc, dev, st->st_ino) {
-    const char *db_filename  = db_decode(SQL_V(0));
-    const char *db_checktxt  = db_decode(SQL_V(1));
-    // if the check doesnt compare, it's more than a move/link. 
-
-    int rc = stat(db_filename, &file_stat);
-    int db_version = csync_get_checktxt_version(db_checktxt);
-    if (rc) {
-      csync_debug(1, "Unable to stat move/hardlink candidate: %s\n", db_filename);
+    struct textlist *tl = 0, *t;
+    int count = 0;
+    unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
+    char *filename_enc = strdup(db_encode(filename));
+    struct stat file_stat; 
+    SQL_BEGIN("Check for same inode", 
+	      "SELECT filename, checktxt FROM file "
+	      "WHERE filename not in (select filename from dirty where device = %lu and inode = %llu) "
+	      "and filename != '%s' and device = %lu and inode = %llu ", 
+	      dev, st->st_ino, filename_enc, dev, st->st_ino) {
+	const char *db_filename  = db_decode(SQL_V(0));
+	const char *db_checktxt  = db_decode(SQL_V(1));
+	// if the check doesnt compare, it's more than a move/link. 
+	
+	int rc = stat(db_filename, &file_stat);
+	int db_version = csync_get_checktxt_version(db_checktxt);
+	int i = 0; 
+	if (rc) {
+	    csync_debug(1, "Other file not found. Posible MOVE operation: %s\n", db_filename);
+	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
+		csync_debug(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
+		if (operation) {
+		    *operation = "MV";
+		    textlist_add(&tl, db_filename, OP_MOVE);
+		}
+	    }
+	} else { // LINK, not MV
+	    db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
+	    int i; 
+	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
+		csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
+		if (operation) {
+		    *operation = "MKH";
+		    textlist_add(&tl, db_filename, OP_HARDLINK);
+		}
+	    } else { // LINK not verified
+		csync_debug(1, "check_link: other file with same dev/inode, but different checktxt.");
+		csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
+		csync_debug(1, ">>> %s: %s\n", db_checktxt, db_filename);
+		csync_debug(1, ">>> %s: %s\n", checktxt, filename);
+		
+		if (count > 1) {
+		    csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
+		    csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
+		}
+		count++; 
+	    }
+	}
+    } SQL_FIN {
+	csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
+    } SQL_END; 
+    if (loop) {
+	tl = loop(filename_enc, st, tl);
     }
-    else
-      db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
-    int i; 
-    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-      csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
-      if (operation) {
-	*operation = "MKH";
-	textlist_add(&tl, db_filename, OP_HARDLINK);
-      }
-    } else {
-      csync_debug(1, "check_link: other file with same dev/inode. Unknown operation.");
-      csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
-      csync_debug(1, ">>> %s: %s\n", db_checktxt, db_filename);
-      csync_debug(1, ">>> %s: %s\n", checktxt, filename);
-      
-      if (count > 1) {
-	csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
-	csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
-      }
-      count++; 
-    }
-  } SQL_FIN {
-    csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
-  } SQL_END; 
-  if (loop) {
-    tl = loop(filename_enc, st, tl);
-  }
-  free(filename_enc);
-  return tl; 
+    free(filename_enc);
+    return tl; 
 }
 
 void csync_check_dir(const char* file, int recursive, int init_run, int version, int dirdump_this, int flags)
