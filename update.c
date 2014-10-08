@@ -658,7 +658,7 @@ int csync_update_file_all_hardlink(const char *peername,
 					 st, uidptr, gidptr, 
 					 NULL, last_conn_status);
       if (!is_identical) {
-	if (rc == OK) {
+	if (rc == CLEAR_DIRTY) {
 	  // We have a remote file that we can use to "reverse" hardlink with
 	  path = other_enc;
 	  other_enc = filename_enc;
@@ -673,9 +673,8 @@ int csync_update_file_all_hardlink(const char *peername,
 	errors++;
 	found_one = 0; // Reset found_one flag
       }
-      else
-	count++;
     }
+    count++;
   }
 
   if (!is_identical) {
@@ -960,17 +959,18 @@ int csync_update_file_mod(const char *myname, const char *peername,
     // If this doenst work we need to patch
     rc = OK;
     if (st.st_nlink > 1 && found_diff) {
+	// TODO this should not be ness. if the first hardlinked file was patched. 
+	// Try to find another file that has been updated and link with it (instead of patching again)
+	char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
+	rc = csync_update_file_all_hardlink(peername, key_enc, filename, filename_enc, 
+					    &st, uidptr, gidptr,
+					    chk_local,
+					    0, // Differs
+					    &last_conn_status);    
 
-      char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
-      rc = csync_update_file_all_hardlink(peername, key_enc, filename, filename_enc, 
-					  &st, uidptr, gidptr,
-					  chk_local,
-					  !found_diff,
-					  &last_conn_status);    
-
-      free(chk_local);
-      if (rc == OK)
-	return OK;
+	free(chk_local);
+	if (rc == OK)
+	    return OK;
     }
     if (found_diff)
       rc = csync_patch_file(key_enc, peername, 
@@ -1119,6 +1119,7 @@ void csync_update_host(const char *myname, const char *peername,
 {
   struct textlist *tl = 0, *t, *next_t;
   struct textlist *tl_mod = 0, **last_tn=&tl;
+  struct textlist *tl_last = NULL;
   char *current_name = 0;
   struct stat st;
   SQL_BEGIN("Get files for host from dirty table",
@@ -1137,9 +1138,12 @@ void csync_update_host(const char *myname, const char *peername,
 	if ( compare_files(filename, patlist[i], recursive) ) 
 	  use_this = 1;
       if (use_this) {
-	if (!operation || strcmp(operation, "MKH"))
+	  if (!operation || strcmp(operation, "MKH")) {
 	    textlist_add4(&tl, filename, operation, other, checktxt, forced);
-	else
+	    if (tl_last == NULL)
+		tl_last = tl;
+	  }
+	  else
 	    textlist_add4(&tl_mod, filename, operation, other, checktxt, forced);
       }
     } SQL_END;
@@ -1174,7 +1178,6 @@ void csync_update_host(const char *myname, const char *peername,
       tl_mod = t;
       if (S_ISDIR(st.st_mode))
 	textlist_add(&directory_list, t->value, 0);
-	
     } else {
       csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error) {
@@ -1186,21 +1189,28 @@ void csync_update_host(const char *myname, const char *peername,
 		  found_move = 1;
 		  csync_debug(1,"Move operation found: %s => %s. Skipping delete.\n", t->value, ml->value);
 		  // Could improve by creating a move operation, but we should find it anyway
+		  ml = ml->next;
+		  t->value2 =  strdup("MV"); // operation
+		  t->value3 =  ml->value; // other
+		  ml->value = NULL;
+		  t->intvalue = ml->intvalue;
+		  break;
+		  
 	      }
 	      ml = ml->next;
 	  } 
+	  textlist_free(ml);
+
 	  if (!found_move) {
 	      rc = csync_update_file_del(myname, peername, 
 					 t->value, t->value2, 
 					 t->intvalue, dry_run);
 	      csync_directory_add(&directory_list, t->value);
 	  }
-	last_tn=&(t->next);
+	  last_tn=&(t->next);
       }
     }
   }
-  textlist_free(tl);
-
   for (t = tl_mod; t != 0; t = t->next) {
     if (!connection_closed_error)
       rc = csync_update_file_mod(myname, peername,
@@ -1210,6 +1220,15 @@ void csync_update_host(const char *myname, const char *peername,
       csync_directory_add(&directory_list, t->value3);
     }
   }
+
+  // Rerun for MVs
+  for (t = tl; t != 0; t = next_t) {
+      if (t->intvalue == OP_MOVE)
+	  rc = csync_update_file_mod(myname, peername,
+				     t->value, t->value2, t->value3, t->intvalue, dry_run, db_version);
+  }
+  textlist_free(tl);
+
 
   textlist_free(tl_mod);
   
