@@ -505,7 +505,7 @@ struct textlist *csync_check_link(const char *peername, const char *filename, co
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 		csync_debug(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
 		if (operation) {
-		    *operation = "MV";
+		    *operation = strdup("MV");
 		    textlist_add(&tl, db_filename, OP_MOVE);
 		}
 	    }
