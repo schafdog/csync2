@@ -442,22 +442,61 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
   return 0;
 }
 
-struct textlist *csync_check_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop)
+struct textlist *csync_check_same_dev_inode(const char *peername, const char *filename, struct stat *st)
 {
     struct textlist *tl = 0, *t;
     int count = 0;
-    unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
+    unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev); 
+    char *peername_enc = strdup(db_encode(peername));
     char *filename_enc = strdup(db_encode(filename));
-    struct stat file_stat; 
     SQL_BEGIN("Check for same inode", 
-	      "SELECT filename, checktxt FROM file "
-	      "WHERE filename not in (select filename from dirty where device = %lu and inode = %llu) "
-	      "and filename != '%s' and device = %lu and inode = %llu ", 
-	      dev, st->st_ino, filename_enc, dev, st->st_ino) {
+	      "SELECT filename, checktxt FROM dirty "
+	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' ", 
+	      dev, st->st_ino, peername_enc, filename_enc) {
 	const char *db_filename  = db_decode(SQL_V(0));
 	const char *db_checktxt  = db_decode(SQL_V(1));
-	// if the check doesnt compare, it's more than a move/link. 
-	
+	textlist_add2(&tl, db_filename, db_checktxt, 0);
+    } SQL_FIN {
+	csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
+    } SQL_END; 
+    free(filename_enc);
+    free(peername_enc);
+    return tl; 
+}
+
+struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, struct stat *st)
+{
+    struct textlist *t;
+    struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, st);
+    struct stat file_stat;
+    int count = 0;
+    for (t = db_tl; t != NULL; t = t->next) {
+	const char *db_filename = t->value;
+	const char *db_checktxt = t->value2;
+	int rc = stat(db_filename, &file_stat);
+	int db_version = csync_get_checktxt_version(db_checktxt);
+	int i = 0; 
+	if (!rc) {
+	    csync_debug(1, "Other file found. Posible MOVE operation: %s\n", db_filename);
+	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
+		csync_debug(1, "OPERATION: MOVE %s to %s\n", filename, db_filename);
+		t->intvalue = OP_MOVE;
+	    }
+	}
+    }
+    return db_tl;
+}
+
+
+struct textlist *csync_check_link(const char *peername, const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop)
+{
+    struct textlist *t, *tl = NULL;
+    struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, st);
+    struct stat file_stat;
+    int count = 0;
+    for (t = db_tl; t != NULL; t = t->next) {
+	const char *db_filename = t->value;
+	const char *db_checktxt = t->value2;
 	int rc = stat(db_filename, &file_stat);
 	int db_version = csync_get_checktxt_version(db_checktxt);
 	int i = 0; 
@@ -492,13 +531,8 @@ struct textlist *csync_check_link(const char *filename, const char* checktxt, st
 		count++; 
 	    }
 	}
-    } SQL_FIN {
-	csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
-    } SQL_END; 
-    if (loop) {
-	tl = loop(filename_enc, st, tl);
     }
-    free(filename_enc);
+    textlist_free(db_tl);
     return tl; 
 }
 
