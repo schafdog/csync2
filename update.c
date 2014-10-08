@@ -638,7 +638,7 @@ int csync_update_file_all_hardlink(const char *peername,
 			       int *last_conn_status) 
 {
   char *operation;
-  struct textlist *tl = csync_check_link(filename, checktxt, st, &operation, NULL);
+  struct textlist *tl = csync_check_link(peername, filename, checktxt, st, &operation, NULL);
   struct textlist *t = tl; 
   int found_one = 0;
   int errors = 0;
@@ -1122,14 +1122,15 @@ void csync_update_host(const char *myname, const char *peername,
   char *current_name = 0;
   struct stat st;
   SQL_BEGIN("Get files for host from dirty table",
-	    "SELECT filename, operation, other, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	    "SELECT filename, operation, other, checktxt, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
 	    "ORDER by filename ASC", 
 	    db_encode(peername), db_encode(myname));
     {
       const char *filename  = db_decode(SQL_V(0));
       const char *operation = db_decode(SQL_V(1));
       const char *other     = db_decode(SQL_V(2)); 
-      const char *forced_str= db_decode(SQL_V(3));
+      const char *checktxt  = db_decode(SQL_V(3)); 
+      const char *forced_str= db_decode(SQL_V(4));
       int forced = forced_str ? atoi(forced_str) : 0; 
       int i, use_this = patnum == 0;
       for (i=0; i<patnum && !use_this; i++)
@@ -1137,9 +1138,9 @@ void csync_update_host(const char *myname, const char *peername,
 	  use_this = 1;
       if (use_this) {
 	if (!operation || strcmp(operation, "MKH"))
-	  textlist_add3(&tl, filename, operation, other, forced);
+	    textlist_add4(&tl, filename, operation, other, checktxt, forced);
 	else
-	  textlist_add3(&tl_mod, filename, operation, other, forced);
+	    textlist_add4(&tl_mod, filename, operation, other, checktxt, forced);
       }
     } SQL_END;
 
@@ -1175,15 +1176,25 @@ void csync_update_host(const char *myname, const char *peername,
 	textlist_add(&directory_list, t->value, 0);
 	
     } else {
-      csync_debug(3, "Dirty item %s %s %d \n", t->value, t->value2, t->intvalue);
+      csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error) {
-	int done = 0; 
-	rc = csync_update_file_del(myname, peername, 
-				      t->value, t->value2, 
-				      done || t->intvalue, dry_run);
-	//done = check_next_step(rc, done, myname, pername, t->value; t->value2, t->intvalue);
-	// Dont think this is needed any
-	csync_directory_add(&directory_list, t->value);
+	  char *operation = NULL;
+	  struct textlist *ml = csync_check_move(peername, t->value, t->value4, &st);
+	  int found_move = 0;
+	  while (ml) {
+	      if (ml->intvalue == OP_MOVE) {
+		  found_move = 1;
+		  csync_debug(1,"Move operation found: %s => %s. Skipping delete.\n", t->value, ml->value);
+		  // Could improve by creating a move operation, but we should find it anyway
+	      }
+	      ml = ml->next;
+	  } 
+	  if (!found_move) {
+	      rc = csync_update_file_del(myname, peername, 
+					 t->value, t->value2, 
+					 t->intvalue, dry_run);
+	      csync_directory_add(&directory_list, t->value);
+	  }
 	last_tn=&(t->next);
       }
     }
