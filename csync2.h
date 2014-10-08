@@ -250,7 +250,8 @@ extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
-struct textlist *csync_check_link(const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
+struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, struct stat *st);
+struct textlist *csync_check_link(const char *peername, const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
 
 
 
