@@ -1189,13 +1189,11 @@ void csync_update_host(const char *myname, const char *peername,
 		  found_move = 1;
 		  csync_debug(1,"Move operation found: %s => %s. Skipping delete.\n", t->value, ml->value);
 		  // Could improve by creating a move operation, but we should find it anyway
-		  ml = ml->next;
 		  t->value2 =  strdup("MV"); // operation
 		  t->value3 =  ml->value; // other
 		  ml->value = NULL;
 		  t->intvalue = ml->intvalue;
 		  break;
-		  
 	      }
 	      ml = ml->next;
 	  } 
