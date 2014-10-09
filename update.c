@@ -889,13 +889,16 @@ int csync_update_file_mod(const char *myname, const char *peername,
       return rc;
     }
 
+
+    csync_debug(0, "check move %s %s %s ", operation, filename, other);
     if (operation && (strcmp("MV", operation) == 0)) {
-      switch (rc) {
-      case DIFF_BOTH: 
-      case DIFF:
-	rc = csync_update_file_move(myname, peername, key, filename, operation, other);
-	if (rc == OK)
-	  return rc;
+	switch (rc) {
+	case DIFF_BOTH: 
+	case DIFF:
+	    rc = csync_update_file_move(myname, peername, key, filename, operation, other);
+	    if (rc == OK)
+		return rc;
+	    csync_debug(0, "ERROR: move failed: %s %s ", filename, other);
 	break; 
       case DIFF_META:
 	rc = SETOWN;
@@ -1182,22 +1185,30 @@ void csync_update_host(const char *myname, const char *peername,
       csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error) {
 	  char *operation = NULL;
-	  struct textlist *ml = csync_check_move(peername, t->value, t->value4, &st);
+	  struct textlist *move_list = csync_check_move(peername, t->value, t->value4, &st);
 	  int found_move = 0;
+	  struct textlist *ml = move_list;
+	  struct textlist **last_ml = &move_list;
 	  while (ml) {
 	      if (ml->intvalue == OP_MOVE) {
+		  // remove the node from move_list
+		  *last_ml = ml->next;
+		  // add it to front of modified list
+		  ml->next = tl_mod;
+		  tl_mod = ml;
 		  found_move = 1;
+
 		  csync_debug(1,"Move operation found: %s => %s. Skipping delete.\n", t->value, ml->value);
 		  // Could improve by creating a move operation, but we should find it anyway
-		  t->value2 =  strdup("MV"); // operation
-		  t->value3 =  ml->value; // other
-		  ml->value = NULL;
-		  t->intvalue = ml->intvalue;
+		  ml->value;                        // newname (exist)
+		  ml->value3  =  strdup(t->value);  // oldname
+		  ml->value2 =  strdup("MV");       // operation
 		  break;
 	      }
+	      last_ml = &(ml->next);
 	      ml = ml->next;
 	  } 
-	  textlist_free(ml);
+	  textlist_free(move_list);
 
 	  if (!found_move) {
 	      rc = csync_update_file_del(myname, peername, 
@@ -1219,12 +1230,6 @@ void csync_update_host(const char *myname, const char *peername,
     }
   }
 
-  // Rerun for MVs
-  for (t = tl; t != 0; t = next_t) {
-      if (t->intvalue == OP_MOVE)
-	  rc = csync_update_file_mod(myname, peername,
-				     t->value, t->value2, t->value3, t->intvalue, dry_run, db_version);
-  }
   textlist_free(tl);
 
 
