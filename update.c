@@ -194,7 +194,7 @@ static int get_master_slave_status(const char *peername, const char *filename)
 }
 
 
-int csync_file_mv(const char *peername, const char *key, const char *filename, const char *new_name)
+int csync_update_file_mv(const char *peername, const char *key, const char *filename, const char *new_name)
 {
   conn_printf("MV %s %s %s\n", url_encode(key), 
 	      url_encode(prefixencode(filename)), 
@@ -687,7 +687,7 @@ int csync_update_file_all_hardlink(const char *peername,
   return OK;
 }
 
-int csync_patch_file(const char *key_enc, 
+int csync_update_file_patch(const char *key_enc, 
 		     const char *peername, 
 		     const char *filename, 
 		     const char *filename_enc,
@@ -750,7 +750,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 
 int csync_update_file_move(const char* myname, const char *peername, const char *key, const char *filename, const char *operation, const char *other)
 {
-  int rc = csync_file_mv(peername, key, other, filename);
+  int rc = csync_update_file_mv(peername, key, other, filename);
   if (rc >= OK) {
     // DO stat on other file, and setown,mod and time on this 
     // (actually it should be correct */
@@ -765,17 +765,6 @@ int csync_update_file_move(const char* myname, const char *peername, const char 
     return rc;
   }
   csync_debug(0, "Failed to MV %s %s \n", other, filename);
-
-  SQL("Update operation to new (failed mv)", 
-      "UPDATE dirty SET operation = 'new (failed mv)' WHERE filename = '%s' and myname = '%s' and peername = '%s' ", 
-      db_encode(filename), myname, 
-      db_encode(peername));
-
-  SQL("Update operation to delete (failed mv)",
-          "INSERT INTO dirty (filename, forced, myname, peername, operation) "
-      "VALUES ('%s', %s, '%s', '%s', '%s')",
-      db_encode(other), "0", myname, 
-      db_encode(peername), "rm (failed mv)");
   return DIFF;
 }
 
@@ -899,6 +888,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	    if (rc == OK)
 		return rc;
 	    csync_debug(0, "ERROR: move failed: %s %s ", filename, other);
+	    operation = "-";
 	break; 
       case DIFF_META:
 	rc = SETOWN;
@@ -976,7 +966,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	    return OK;
     }
     if (found_diff)
-      rc = csync_patch_file(key_enc, peername, 
+      rc = csync_update_file_patch(key_enc, peername, 
 			    filename, filename_enc,
 			    &st, uidptr, gidptr, &last_conn_status);
     if (rc >= OK && st.st_nlink > 1) {
