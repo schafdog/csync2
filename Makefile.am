@@ -35,7 +35,7 @@ EXTRA_DIST = csync2.cfg csync2.xinetd
 
 AM_YFLAGS = -d
 BUILT_SOURCES = cfgfile_parser.h
-LIBS += -ldl -lssl
+LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
              private_librsync private_libsqlite config.log		
 
