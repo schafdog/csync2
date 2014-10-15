@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT(csync2, 2.0rc1, csync2@lists.linbit.com)
+AC_INIT(csync2, 2.0-rc2, csync2@lists.linbit.com)
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_SRCDIR(csync2.c)
@@ -32,6 +32,11 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_YACC
 AM_PROG_LEX
+
+if test "$CC" == "clang"
+then 
+   CFLAGS="$CFLAGS -Qunused-arguments " 
+fi 
 
 # check for large file support
 AC_SYS_LARGEFILE
