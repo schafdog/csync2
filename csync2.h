@@ -21,7 +21,7 @@
 #ifndef CSYNC2_H
 #define CSYNC2_H 1
 
-#define CSYNC2_VERSION "2.0-rc1"
+// #define CSYNC2_VERSION "2.0-rc2"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 #include <errno.h>
 
 #define MATCH_NEXT 2
@@ -49,10 +50,10 @@
 
 #if __DARWIN_C_LEVEL
 #define DEV_FORMAT "%u"
-#define INO_FORMAT "%llu"
+#define INO_FORMAT "%"PRIu64
 #else
-#define DEV_FORMAT "%llu"
-#define INO_FORMAT "%llu"
+#define DEV_FORMAT "%"PRIu64
+#define INO_FORMAT "%"PRIu64
 #endif
 
 #define DB_SCHEMA_VERSION 0
