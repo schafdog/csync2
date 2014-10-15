@@ -21,6 +21,9 @@
 %{
 #include "cfgfile_parser.h"
 #include <string.h>
+#include <stdio.h>
+int fileno(FILE *);
+char *strdup(const char *);
 
 #define MAX_INCLUDE_DEPTH 10
 YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
