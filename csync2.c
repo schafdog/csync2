@@ -79,8 +79,7 @@ int csync_new_force = 0;
 
 int csync_dump_dir_fd = -1;
 
-void help(char *cmd)
-{
+void csync_version() {
 	printf(
 "\n"
 PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
@@ -89,10 +88,15 @@ PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 "Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>\n"
 "Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
 "\n"
-"Version: " CSYNC2_VERSION "\n" 
 #ifdef CSYNC2_VERSION_SHA1
 " " CSYNC2_VERSION_SHA1 "\n"
 #endif
+	       );
+}
+void help(char *cmd)
+{
+    csync_version();
+    printf(
 "\n"
 "This program is free software under the terms of the GNU GPL.\n"
 "\n"
@@ -548,9 +552,13 @@ int main(int argc, char ** argv)
 
 	int cmd_db_version = 0;
 	int cmd_ip_version = 0;
-	while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:")) != -1 ) {
+	while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:V")) != -1 ) {
 
 		switch (opt) {
+		case 'V':
+		    csync_version();
+		    exit(0);
+		  break;
 		case '1':
 		  db_version = 1;
 		  cmd_db_version = 1;
