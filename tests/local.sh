@@ -32,24 +32,18 @@ function cmd {
     CMD=$1
     if [ "$3" == "" ] ; then
 	HOST=$NAME
+	# TODO Fix peername somehow
     fi
-    echo cmd $CMD \"$2\" $HOST > ${TESTNAME}_${COUNT}.log 
+    echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
     if [ "$VALGRIND" != "" ] ; then 
-	$VALGRIND ../csync2 -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test
+	$VALGRIND ../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test
     else
-	$VALGRIND ../csync2 -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test >> ${TESTNAME}_${COUNT}.log 2>&1
+	$VALGRIND ../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
-    testing ${TESTNAME}_${COUNT}.log
-    echo "select filename from file; select peername,filename,operation,other from dirty;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST  > ${TESTNAME}_${COUNT}.mysql 2> /dev/null
-    testing ${TESTNAME}_${COUNT}.mysql
-    rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}_${COUNT}.rsync
-    testing ${TESTNAME}_${COUNT}.rsync
-    if [ "$OTHER" != "" ] ; then  
-	rsync --delete -nHav test/local/ other:`pwd`/test/other/ > ${TESTNAME}_${COUNT}_other.rsync
-    fi
-	#./find_hardlinks.sh test/$HOST > hardlinks_$HOST.txt
-	#./find_hardlinks.sh test/peer > hardlinks_peer.txt
-	#diff hardlinks_$HOST.txt hardlinks_peer.txt
+    testing ${TESTNAME}/${COUNT}.log
+    echo "select filename from file; select peername,filename,operation,other from dirty;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST  > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+    testing ${TESTNAME}/${COUNT}.mysql
+    rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
     let COUNT=$COUNT+1
     ${PAUSE}
 }
@@ -59,7 +53,7 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}_${COUNT}.mysql 2> /dev/null
+    echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     rm -f csync_$CNAME.log mysql_$CNAME.log
     rm -rf test/$CNAME/*
     mkdir -p test/$CNAME
@@ -87,11 +81,13 @@ function check {
 for d in $* ; do 
     if [ -f "$d" ] ; then 
 	echo "Running test script $d"
-	TESTNAME=`basename $d .cfg`
+	TESTNAME=`basename $d .test`
+	mkdir -p ${TESTNAME}
 	source $d
     else
 	if [ "$COMMAND" == "C" ] ; then 
-	    clean $NAME
+	    echo "cmd C: Do not work!" 
+	    #clean $NAME
 	    shift
 	    COMMAND="$1"
 	fi
