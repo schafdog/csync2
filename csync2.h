@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <inttypes.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #define MATCH_NEXT 2
 #define MATCH_INTO 1
