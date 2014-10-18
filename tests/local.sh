@@ -30,6 +30,8 @@ function testing {
 
 function cmd {
     CMD=$1
+    DESC=$2
+    echo "${COUNT}. CMD $CMD $DESC" 
     if [ "$3" == "" ] ; then
 	HOST=$NAME
 	# TODO Fix peername somehow
@@ -38,18 +40,20 @@ function cmd {
     if [ "$VALGRIND" != "" ] ; then 
 	$VALGRIND ../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test
     else
-	$VALGRIND ../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test >> ${TESTNAME}/${COUNT}.log 2>&1
+	../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
-    echo "select filename from file; select peername,filename,operation,other from dirty;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST  > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+    echo "select filename from file; select peername,filename,operation,other from dirty;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
     rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
+    echo "${COUNT}. $CMD ${DESC} end" 
     let COUNT=$COUNT+1
     ${PAUSE}
 }
 
 function clean {
     CNAME=$1
+    echo "${COUNT}. clean ${CNAME}" 
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
