@@ -442,7 +442,7 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
   return 0;
 }
 
-struct textlist *csync_check_same_dev_inode(const char *peername, const char *filename, struct stat *st)
+struct textlist *csync_check_same_dev_inode(const char *peername, const char *filename, const char *digest, struct stat *st)
 {
     struct textlist *tl = 0, *t;
     int count = 0;
@@ -450,9 +450,13 @@ struct textlist *csync_check_same_dev_inode(const char *peername, const char *fi
     char *peername_enc = strdup(db_encode(peername));
     char *filename_enc = strdup(db_encode(filename));
     SQL_BEGIN("Check for same inode", 
-	      "SELECT filename, checktxt FROM dirty "
-	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' ", 
-	      dev, st->st_ino, peername_enc, filename_enc) {
+	      "SELECT filename, checktxt, digest FROM dirty "
+	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' and digest = '%s' " 
+	      " UNION "
+	      "SELECT filename, checktxt, digest FROM file "
+	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' and digest = '%s' ", 
+	      dev, st->st_ino, peername_enc, filename_enc, digest,  
+	      dev, st->st_ino, peername_enc, filename_enc, digest) {
 	const char *db_filename  = db_decode(SQL_V(0));
 	const char *db_checktxt  = db_decode(SQL_V(1));
 	textlist_add2(&tl, db_filename, db_checktxt, 0);
@@ -464,10 +468,10 @@ struct textlist *csync_check_same_dev_inode(const char *peername, const char *fi
     return tl; 
 }
 
-struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, struct stat *st)
+struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st)
 {
     struct textlist *t;
-    struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, st);
+    struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, digest, st);
     struct stat file_stat;
     int count = 0;
     for (t = db_tl; t != NULL; t = t->next) {
@@ -488,10 +492,11 @@ struct textlist *csync_check_move(const char *peername, const char *filename, co
 }
 
 
-struct textlist *csync_check_link(const char *peername, const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop)
+struct textlist *csync_check_link(const char *peername, const char *filename, const char* checktxt, const char *digest,
+				  struct stat *st, char **operation, textlist_loop_t loop)
 {
     struct textlist *t, *tl = NULL;
-    struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, st);
+    struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, digest, st);
     struct stat file_stat;
     int count = 0;
     for (t = db_tl; t != NULL; t = t->next) {
