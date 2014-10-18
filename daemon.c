@@ -68,7 +68,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	int rc = 0;
 	char *operation = csync_check_single(filename, 0, version);
 	if (isflush) 
-	  return 0;
+	    return 0;
 	SQL_BEGIN("Check if file is dirty",
 		"SELECT 1 FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
 		  db_encode(filename), db_encode(peername))
@@ -76,10 +76,19 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 		rc = 1;
 		*cmd_error = "File is also marked dirty here!";
 	} SQL_END;
-	if (!rc && operation && peername) {
+	// Already marked???
+	
+	int isModDir = 0;
+	if (operation)
+	    isModDir = !strcmp(operation, "MOD_DIR");
+	if (!rc && operation && !isModDir && peername) {
 	  //csync_debug(0, "check dirty: peername %s \n", peername);
 	  csync_mark(filename, myhostname, peername, operation,
 		     NULL, NULL, NULL);
+	}
+	if (isModDir) {
+	    rc = 0;
+	    csync_debug(0, "Ignoring dirty directory %s", filename);
 	}
 	return rc;
 }
@@ -1162,19 +1171,20 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
       destroy_tag(tag);
       continue;
     }		  	  
-    int rc = OK;
+    int rc = OK, isDirty = 0;
     if ( cmd->check_perm )
       on_cygwin_lowercase(filename);
     
     if ((cmd_error = csync_daemon_check_perm(cmd, filename, peername,tag[1])))
       rc = ABORT_CMD;
 
-    if (rc == OK && cmd->check_dirty && 
+      if (rc == OK && cmd->check_dirty && 
 	csync_check_dirty(filename, peername, 
 			  cmd->action == A_FLUSH, 
 			  db_version, &cmd_error)) {
-      rc = ABORT_CMD;
-      // cmd_error is set on error
+	  rc  = ABORT_CMD;
+	  //	  csync_debug(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
+	  isDirty  = 1;
     }
     else {
       if (rc == OK && cmd->unlink )
