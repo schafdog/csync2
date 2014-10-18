@@ -1,0 +1,30 @@
+# Typical pattern of Maildir action. 
+# Files is received in tmp, but instantly moved to new. 
+# On read (by server) moved to cur. 
+# When marked read rename to filename,S
+# When deleted hardlinked to .Trash, renamed to filename,ST
+clean local
+clean peer
+mkdir -p test/$NAME/Maildir/cur
+mkdir -p test/$NAME/Maildir/new
+mkdir -p test/$NAME/Maildir/tmp
+mkdir -p test/$NAME/Maildir/.Trash/cur
+#
+echo NewMail > test/$NAME/Maildir/tmp/123
+mv test/$NAME/Maildir/tmp/123 test/$NAME/Maildir/new/123
+cmd x "New Maildir/new/123 with transit in tmp "
+#
+mv test/$NAME/Maildir/new/123 test/$NAME/Maildir/cur/123
+cmd x "move Maildir/new/123 Maildir/.Trash/cur/123"
+#
+mv test/$NAME/Maildir/cur/123 test/$NAME/Maildir/cur/123,S
+cmd x "move Maildir/cur/123 Maildir/cur/123,S (mark read)"
+sleep 2
+cmd u "move Maildir/cur/123 Maildir/.Trash/cur/123 (2 sec delay)"
+# Delete email: hardlink in Trash and rename
+ln test/$NAME/Maildir/cur/123,S test/$NAME/Maildir/.Trash/cur/123,S 
+mv test/$NAME/Maildir/cur/123,S test/$NAME/Maildir/cur/123,ST
+cmd x "Delete email: ln Maildir/cur/123,S Maildir/.Trash/cur/123,S. mv 123,S 123,ST"
+rm -rf test/$NAME/Maildir
+sleep 2
+cmd x "clean up"
