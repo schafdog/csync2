@@ -408,8 +408,8 @@ int csync_next_step(int rc, int auto_run, const char *myname, const char *peerna
 
 
 int csync_update_file_del(const char *myname, const char *peername,
-			     const char *filename, 
-			     const char *operation, int force, int dry_run)
+			  const char *filename, 
+			  const char *operation, const char *digest, int force, int dry_run)
 {
   int last_conn_status = 0, auto_resolve_run = 0;
   const char *key = csync_key(peername, filename);
@@ -634,11 +634,12 @@ int csync_update_file_all_hardlink(const char *peername,
 			       const char *uidptr,
 			       const char *gidptr, 
 			       const char *checktxt,
+			       const char *digest,
 			       int is_identical,
 			       int *last_conn_status) 
 {
   char *operation;
-  struct textlist *tl = csync_check_link(peername, filename, checktxt, st, &operation, NULL);
+  struct textlist *tl = csync_check_link(peername, filename, checktxt, digest, st, &operation, NULL);
   struct textlist *t = tl; 
   int found_one = 0;
   int errors = 0;
@@ -796,7 +797,8 @@ int csync_update_directory(const char *myname, const char *peername,
 
 
 int csync_update_file_mod(const char *myname, const char *peername,
-			  const char *filename, const char *operation , const char *other,
+			  const char *filename, const char *operation , 
+			  const char *digest, const char *other,
 			  int force, int dry_run, int db_version)
 {
   struct stat st;
@@ -955,10 +957,12 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	// TODO this should not be ness. if the first hardlinked file was patched. 
 	// Try to find another file that has been updated and link with it (instead of patching again)
 	char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
-	rc = csync_update_file_all_hardlink(peername, key_enc, filename, filename_enc, 
+	rc = csync_update_file_all_hardlink(peername, key_enc, filename, filename_enc,
 					    &st, uidptr, gidptr,
 					    chk_local,
+					    digest,
 					    0, // Differs
+					    
 					    &last_conn_status);    
 
 	free(chk_local);
@@ -974,7 +978,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
       rc = csync_update_file_all_hardlink(peername, key_enc, 
 					  filename, filename_enc, 
 					  &st, uidptr, gidptr,
-					  chk_local, 1,
+					  chk_local, digest, 1,
 					  &last_conn_status);
       free(chk_local);
     }
@@ -1116,7 +1120,7 @@ void csync_update_host(const char *myname, const char *peername,
   char *current_name = 0;
   struct stat st;
   SQL_BEGIN("Get files for host from dirty table",
-	    "SELECT filename, operation, other, checktxt, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	    "SELECT filename, operation, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
 	    "ORDER by filename ASC", 
 	    db_encode(peername), db_encode(myname));
     {
@@ -1124,7 +1128,8 @@ void csync_update_host(const char *myname, const char *peername,
       const char *operation = db_decode(SQL_V(1));
       const char *other     = db_decode(SQL_V(2)); 
       const char *checktxt  = db_decode(SQL_V(3)); 
-      const char *forced_str= db_decode(SQL_V(4));
+      const char *digest    = db_decode(SQL_V(4)); 
+      const char *forced_str= db_decode(SQL_V(5));
       int forced = forced_str ? atoi(forced_str) : 0; 
       int i, use_this = patnum == 0;
       for (i=0; i<patnum && !use_this; i++)
@@ -1132,12 +1137,12 @@ void csync_update_host(const char *myname, const char *peername,
 	  use_this = 1;
       if (use_this) {
 	  if (!operation || strcmp(operation, "MKH")) {
-	    textlist_add4(&tl, filename, operation, other, checktxt, forced);
+	      textlist_add5(&tl, filename, operation, other, checktxt, digest, forced);
 	    if (tl_last == NULL)
 		tl_last = tl;
 	  }
 	  else
-	    textlist_add4(&tl_mod, filename, operation, other, checktxt, forced);
+	      textlist_add5(&tl_mod, filename, operation, other, checktxt, digest, forced);
       }
     } SQL_END;
 
@@ -1175,7 +1180,7 @@ void csync_update_host(const char *myname, const char *peername,
       csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error) {
 	  char *operation = NULL;
-	  struct textlist *move_list = csync_check_move(peername, t->value, t->value4, &st);
+	  struct textlist *move_list = csync_check_move(peername, t->value, t->value4, t->value5, &st);
 	  int found_move = 0;
 	  struct textlist *ml = move_list;
 	  struct textlist **last_ml = &move_list;
@@ -1202,7 +1207,7 @@ void csync_update_host(const char *myname, const char *peername,
 
 	  if (!found_move) {
 	      rc = csync_update_file_del(myname, peername, 
-					 t->value, t->value2, 
+					 t->value, t->value2, t->value5,
 					 t->intvalue, dry_run);
 	      csync_directory_add(&directory_list, t->value);
 	  }
@@ -1213,7 +1218,7 @@ void csync_update_host(const char *myname, const char *peername,
   for (t = tl_mod; t != 0; t = t->next) {
     if (!connection_closed_error)
       rc = csync_update_file_mod(myname, peername,
-				 t->value, t->value2, t->value3, t->intvalue, dry_run, db_version);
+				 t->value, t->value2, t->value3, t->value5, t->intvalue, dry_run, db_version);
     csync_directory_add(&directory_list, t->value);
     if (t->value3) {
       csync_directory_add(&directory_list, t->value3);
