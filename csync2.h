@@ -319,6 +319,8 @@ struct textlist {
     char *value3;
     char *value4;
     char *value5;
+    int num;
+    char **values;
     void *data;
     void (*destroy)(void *data);
 };
@@ -334,7 +336,25 @@ static inline void textlist_add_struct(struct textlist **listhandle, void *data,
 }    
 
 static inline void textlist_add_var(struct textlist **listhandle, int intitem, int num, ...) {
+    /* Initializing arguments to store all values after num */
+    struct textlist *tmp = *listhandle;
+    va_list arguments;
 
+    *listhandle = malloc(sizeof(struct textlist));
+    (*listhandle)->intvalue = intitem;
+    (*listhandle)->num = num;
+    (*listhandle)->values = calloc(sizeof(char*),num);
+    (*listhandle)->data = NULL;
+    (*listhandle)->destroy = NULL;
+    va_start ( arguments, num );           
+    /* Sum all the inputs; we still rely on the function caller to tell us how
+     * many there are */
+    for ( int x = 0; x < num; x++ ) {
+	char *item = va_arg ( arguments, char * ); 
+	(*listhandle)->values[x] = (item  ? strdup(item)  : 0);
+    }
+    va_end ( arguments );                  // Cleans up the list
+    (*listhandle)->next = tmp;
 }
 
 static inline void textlist_add5(struct textlist **listhandle, const char *item, const char *item2, 
