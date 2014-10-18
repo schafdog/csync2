@@ -1,0 +1,62 @@
+16,17d15
+< Trying to fetch a row from the database.
+< Trying to fetch a row from the database.
+23,24c21
+< Trying to fetch a row from the database.
+< DB get blob: /export/home/dennis/Projects/csync2/csync2/tests/test/local DB get blob: v2:mtime=1413417732:mode=16877:user=dennis:group=schafroth:type=dir DB get blob: 2065 DB get blob: 3424520 Match (+): /export/home/dennis/Projects/csync2/csync2/tests/test/local on /export/home/dennis/Projects/csync2/csync2/tests/test/local
+---
+> Match (+): /export/home/dennis/Projects/csync2/csync2/tests/test/local on /export/home/dennis/Projects/csync2/csync2/tests/test/local
+26,28c23
+< Trying to fetch a row from the database.
+< DB get blob: /export/home/dennis/Projects/csync2/csync2/tests/test/local/B DB get blob: v2:mtime=1413417725:mode=33188:user=dennis:group=schafroth:type=reg:size=2 DB get blob: 2065 DB get blob: 1810433 Match (+): /export/home/dennis/Projects/csync2/csync2/tests/test/local on /export/home/dennis/Projects/csync2/csync2/tests/test/local/B
+< Trying to fetch a row from the database.
+---
+> Match (+): /export/home/dennis/Projects/csync2/csync2/tests/test/local on /export/home/dennis/Projects/csync2/csync2/tests/test/local/B
+32a28,31
+> SQL: SELECT operation, filename, other from dirty where checktxt = 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2' AND device = 2065 AND inode  = 1811025 AND peername = 'peer'
+> mark other: Old operation: MV '/export/home/dennis/Projects/csync2/csync2/tests/test/local/B' '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z' mark operation MV->RM peer '/export/home/dennis/Projects/csync2/csync2/tests/test/local/B' '/export/home/dennis/Projects/csync2/csync2/tests/test/local/B' '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z'.
+> SQL Query finished.
+> Deleting old dirty file entries SQL: DELETE FROM dirty WHERE filename = '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z' AND peername = 'peer'
+34c33
+< Marking File Dirty SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/B', 0, 'local', 'peer', 'RM', 'v2:mtime=1413417725:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1810433, NULL)
+---
+> Marking File Dirty SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z', 0, 'local', 'peer', 'RM', 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1811025, '/export/home/dennis/Projects/csync2/csync2/tests/test/local/B')
+35a35,37
+> SQL: SELECT operation, filename, other from dirty where checktxt = 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2' AND device = 2065 AND inode  = 1811025 AND peername = 'other'
+> mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/B' '(null)' mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/B deleted before syncing. Removing from dirty.
+> SQL Query finished.
+37d38
+< Marking File Dirty SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/B', 0, 'local', 'other', 'RM', 'v2:mtime=1413417725:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1810433, NULL)
+43,46c44,45
+< Trying to fetch a row from the database.
+< DB get blob: v2:mtime=1413417732:mode=16877:user=dennis:group=schafroth:type=dir DB get blob: v2:mtime=1413417732:mode=16877:user=dennis:group=schafroth:type=dir DB get blob: 3424520 DB get blob: 2065 DB get blob: (null) csync_cmpchecktxt A: v2:mtime=1413417732:mode=16877:user=dennis:group=schafroth:type=dir 
+< csync_cmpchecktxt B: v2:mtime=1413417732:mode=16877:user=dennis:group=schafroth:type=dir 
+< Trying to fetch a row from the database.
+---
+> csync_cmpchecktxt A: v2:mode=16877:user=dennis:group=schafroth:type=dir 
+> csync_cmpchecktxt B: v2:mode=16877:user=dennis:group=schafroth:type=dir 
+51d49
+< Trying to fetch a row from the database.
+55c53,54
+< Adding or updating file entry SQL: INSERT INTO file (filename, checktxt, device, inode, digest, mode, size) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/C', 'v2:mtime=1413417725:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1810433, '7d157d7c000ae27db146575c08ce30df893d3a64', 33188, 2)
+---
+> Adding or updating file entry SQL: INSERT INTO file (filename, checktxt, device, inode, digest, mode, size) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/C', 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1811025, '7d157d7c000ae27db146575c08ce30df893d3a64', 33188, 2)
+> check_dirty (mod): before mark (all) 
+58a58,60
+> SQL: SELECT operation, filename, other from dirty where checktxt = 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2' AND device = 2065 AND inode  = 1811025 AND peername = 'peer'
+> mark other: Old operation: RM '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z' '/export/home/dennis/Projects/csync2/csync2/tests/test/local/B' mark operation RM->NEW => MOVE peer '/export/home/dennis/Projects/csync2/csync2/tests/test/local/C' '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z'.
+> SQL Query finished.
+60c62,63
+< Marking File Dirty SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/C', 0, 'local', 'peer', 'NEW', 'v2:mtime=1413417725:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1810433, NULL)
+---
+> Deleting old dirty file entries SQL: DELETE FROM dirty WHERE filename = '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z' AND peername = 'peer'
+> Marking File Dirty SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/C', 0, 'local', 'peer', 'MV', 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1811025, '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Z')
+61a65,66
+> SQL: SELECT operation, filename, other from dirty where checktxt = 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2' AND device = 2065 AND inode  = 1811025 AND peername = 'other'
+> SQL Query finished.
+63c68
+< Marking File Dirty SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/C', 0, 'local', 'other', 'NEW', 'v2:mtime=1413417725:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1810433, NULL)
+---
+> Marking File Dirty SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) VALUES ('/export/home/dennis/Projects/csync2/csync2/tests/test/local/C', 0, 'local', 'other', 'NEW', 'v2:mtime=1393759166:mode=33188:user=dennis:group=schafroth:type=reg:size=2', 2065, 1811025, NULL)
+65d69
+< Trying to fetch a row from the database.

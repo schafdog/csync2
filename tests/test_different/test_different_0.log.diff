@@ -1,0 +1,6 @@
+1,2c1,2
+< cmd x "" localhost
+< Can not open config file `csync2_localhost.cfg': No such file or directory
+---
+> cmd c "Updated" both
+> Can not open config file `csync2_both.cfg': No such file or directory
