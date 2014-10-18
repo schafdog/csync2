@@ -63,12 +63,28 @@ int csync_unlink(const char *filename, int ign, const char **cmd_error)
 	return rc;
 }
 
+void csync_file_flush(const char *filename)
+{
+  SQL("Removing file from dirty db",
+      "delete from dirty where filename ='%s'",
+      db_encode(filename));
+}
+
 int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
 {
 	int rc = 0;
 	char *operation = csync_check_single(filename, 0, version);
+	int isModDir = 0;
+	if (operation)
+	    isModDir = !strcmp(operation, "MOD_DIR");	
 	if (isflush) 
 	    return 0;
+	if (isModDir) {
+	    rc = 0;
+	    csync_debug(0, "Ignoring dirty directory %s\n", filename);
+	    csync_file_flush(filename);
+	    return 0;
+	}
 	SQL_BEGIN("Check if file is dirty",
 		"SELECT 1 FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
 		  db_encode(filename), db_encode(peername))
@@ -76,19 +92,11 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 		rc = 1;
 		*cmd_error = "File is also marked dirty here!";
 	} SQL_END;
-	// Already marked???
 	
-	int isModDir = 0;
-	if (operation)
-	    isModDir = !strcmp(operation, "MOD_DIR");
-	if (!rc && operation && !isModDir && peername) {
+	if (!rc && operation && peername) {
 	  //csync_debug(0, "check dirty: peername %s \n", peername);
 	  csync_mark(filename, myhostname, peername, operation,
 		     NULL, NULL, NULL);
-	}
-	if (isModDir) {
-	    rc = 0;
-	    csync_debug(0, "Ignoring dirty directory %s", filename);
 	}
 	return rc;
 }
@@ -125,13 +133,6 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
     if (digest) 
       free(digest);
   }
-}
-
-void csync_file_flush(const char *filename)
-{
-  SQL("Removing file from dirty db",
-      "delete from dirty where filename ='%s'",
-      db_encode(filename));
 }
 
 int csync_file_backup(const char *filename, const char **cmd_error)
