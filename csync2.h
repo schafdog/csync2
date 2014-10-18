@@ -375,7 +375,7 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, 
 				 const char *item4, int intitem)
 {
-    textlist_add4(listhandle, item, item2, item3, 0,  intitem);
+    textlist_add5(listhandle, item, item2, item3, item4, 0, intitem);
 }
 
 static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
