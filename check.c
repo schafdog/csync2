@@ -454,9 +454,9 @@ struct textlist *csync_check_same_dev_inode(const char *peername, const char *fi
 	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' and digest = '%s' " 
 	      " UNION "
 	      "SELECT filename, checktxt, digest FROM file "
-	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' and digest = '%s' ", 
+	      "WHERE device = %lu and inode = %llu and filename != '%s' and digest = '%s' ", 
 	      dev, st->st_ino, peername_enc, filename_enc, digest,  
-	      dev, st->st_ino, peername_enc, filename_enc, digest) {
+	      dev, st->st_ino, filename_enc, digest) {
 	const char *db_filename  = db_decode(SQL_V(0));
 	const char *db_checktxt  = db_decode(SQL_V(1));
 	textlist_add2(&tl, db_filename, db_checktxt, 0);
@@ -629,6 +629,8 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	csync_debug(2, "%s has changed: \n %s \n %s\n", file, checktxt_same_version, checktxt_db);
 	*operation = ringbuffer_strdup("MOD");
+	if (strstr(checktxt, "type=dir"))
+	    *operation = ringbuffer_strdup("MOD_DIR");
 	this_is_dirty = 1;
       }
     } SQL_FIN {
