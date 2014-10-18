@@ -627,10 +627,11 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	  is_upgrade = 1;
       }
       if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
-	csync_debug(2, "%s has changed: \n %s \n %s\n", file, checktxt_same_version, checktxt_db);
-	*operation = ringbuffer_strdup("MOD");
 	if (strstr(checktxt, "type=dir"))
 	    *operation = ringbuffer_strdup("MOD_DIR");
+	else
+	    *operation = ringbuffer_strdup("MOD");
+	csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n", file, checktxt_same_version, checktxt_db, *operation);
 	this_is_dirty = 1;
       }
     } SQL_FIN {
