@@ -251,8 +251,9 @@ extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
-struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, struct stat *st);
-struct textlist *csync_check_link(const char *peername, const char *filename, const char* checktxt, struct stat *st, char **operation, textlist_loop_t loop);
+struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st);
+struct textlist *csync_check_link(const char *peername, const char *filename, const char* checktxt, const char *digest,
+				  struct stat *st, char **operation, textlist_loop_t loop);
 
 
 
@@ -311,15 +312,33 @@ const char *prefixencode(const char *filename);
 /* textlist implementation */
 
 struct textlist {
-	struct textlist *next;
-	int intvalue;
-	char *value;
-	char *value2;
-	char *value3;
-	char *value4;
+    struct textlist *next;
+    int intvalue;
+    char *value;
+    char *value2;
+    char *value3;
+    char *value4;
+    char *value5;
+    void *data;
+    void (*destroy)(void *data);
 };
 
-static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, const char *item4, int intitem)
+static inline void textlist_add_struct(struct textlist **listhandle, void *data, void (*destroy) (void *))
+{
+    struct textlist *tmp = *listhandle;
+    *listhandle = malloc(sizeof(struct textlist));
+    (*listhandle)->intvalue = 0;
+    (*listhandle)->data = data;
+    (*listhandle)->destroy = destroy;
+    (*listhandle)->next = tmp;
+}    
+
+static inline void textlist_add_var(struct textlist **listhandle, int intitem, int num, ...) {
+
+}
+
+static inline void textlist_add5(struct textlist **listhandle, const char *item, const char *item2, 
+				 const char *item3, const char *item4, const char *item5, int intitem)
 {
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
@@ -328,7 +347,14 @@ static inline void textlist_add4(struct textlist **listhandle, const char *item,
 	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
 	(*listhandle)->value3 = (item3 ? strdup(item3) : 0);
 	(*listhandle)->value4 = (item4 ? strdup(item4) : 0);
+	(*listhandle)->value5 = (item5 ? strdup(item5) : 0);
 	(*listhandle)->next = tmp;
+}
+
+static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, 
+				 const char *item4, int intitem)
+{
+    textlist_add4(listhandle, item, item2, item3, 0,  intitem);
 }
 
 static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
@@ -369,6 +395,17 @@ static inline void textlist_free(struct textlist *listhandle)
 	}
 }
 
+static inline void textlist_free_struct(struct textlist *listhandle)
+{
+    struct textlist *next;
+    while (listhandle != 0) {
+	next = listhandle->next;
+	if (listhandle->data) 
+	    listhandle->destroy(listhandle->data);
+	free(listhandle);
+	listhandle = next;
+    }
+}
 
 void csync_config_destroy();
 
