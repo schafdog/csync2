@@ -1180,7 +1180,7 @@ void csync_update_host(const char *myname, const char *peername,
       csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
       if (!connection_closed_error) {
 	  char *operation = NULL;
-	  struct textlist *move_list = csync_check_move(peername, t->value, t->value4, t->value5, &st);
+	  struct textlist *move_list = NULL; // csync_check_move(peername, t->value, t->value4, t->value5, &st);
 	  int found_move = 0;
 	  struct textlist *ml = move_list;
 	  struct textlist **last_ml = &move_list;
