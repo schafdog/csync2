@@ -1110,18 +1110,28 @@ void csync_directory_add(struct textlist **directory_list, char *directory) {
   }
 }
 
+struct dirty_row {
+    char *filename;
+    char *digest;
+    char *checktxt;
+    int forced;
+    int operation; 
+    long long *dev;
+    long long *inode;
+};
+
 void csync_update_host(const char *myname, const char *peername,
 		       const char **patlist, int patnum, int recursive, 
 		       int dry_run, int ip_version, int db_version)
 {
   struct textlist *tl = 0, *t, *next_t;
-  struct textlist *tl_mod = 0, **last_tn=&tl;
-  struct textlist *tl_last = NULL;
+  struct textlist *tl_del = 0, **last_tn=&tl;
   char *current_name = 0;
   struct stat st;
+  /* order DESC since building the list reverse the order */
   SQL_BEGIN("Get files for host from dirty table",
 	    "SELECT filename, operation, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
-	    "ORDER by filename ASC", 
+	    "ORDER by filename DESC", 
 	    db_encode(peername), db_encode(myname));
     {
       const char *filename  = db_decode(SQL_V(0));
@@ -1136,18 +1146,12 @@ void csync_update_host(const char *myname, const char *peername,
 	if ( compare_files(filename, patlist[i], recursive) ) 
 	  use_this = 1;
       if (use_this) {
-	  if (!operation || strcmp(operation, "MKH")) {
-	      textlist_add5(&tl, filename, operation, other, checktxt, digest, forced);
-	    if (tl_last == NULL)
-		tl_last = tl;
-	  }
-	  else
-	      textlist_add5(&tl_mod, filename, operation, other, checktxt, digest, forced);
+	  textlist_add5(&tl, filename, operation, other, checktxt, digest, forced);
       }
     } SQL_END;
 
   /* just return if there are no files to update */
-    if ( !tl && !tl_mod)
+    if ( !tl)
       return;
   
   if ( connect_to_host(peername, ip_version) ) {
@@ -1170,65 +1174,32 @@ void csync_update_host(const char *myname, const char *peername,
   for (t = tl; t != 0; t = next_t) {
     next_t = t->next;
     if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
-      /* Build list of modified files in "right" order */
-      *last_tn = next_t;
-      t->next = tl_mod;
-      tl_mod = t;
-      if (S_ISDIR(st.st_mode))
-	textlist_add(&directory_list, t->value, 0);
+	if (!connection_closed_error)
+	    rc = csync_update_file_mod(myname, peername,
+				       t->value, t->value2, t->value3, t->value5, t->intvalue, dry_run, db_version);
+	csync_directory_add(&directory_list, t->value);
+	if (t->value3) {
+	    csync_directory_add(&directory_list, t->value3);
+	}
+	if (S_ISDIR(st.st_mode))
+	    textlist_add(&directory_list, t->value, 0);
+	last_tn=&(t->next);
     } else {
-      csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
-      if (!connection_closed_error) {
-	  char *operation = NULL;
-	  struct textlist *move_list = NULL; // csync_check_move(peername, t->value, t->value4, t->value5, &st);
-	  int found_move = 0;
-	  struct textlist *ml = move_list;
-	  struct textlist **last_ml = &move_list;
-	  while (ml) {
-	      if (ml->intvalue == OP_MOVE) {
-		  // remove the node from move_list
-		  *last_ml = ml->next;
-		  // add it to front of modified list
-		  ml->next = tl_mod;
-		  tl_mod = ml;
-		  found_move = 1;
-
-		  csync_debug(1,"Move operation found: %s => %s. Skipping delete.\n", t->value, ml->value);
-		  // Could improve by creating a move operation, but we should find it anyway
-		  //ml->value;                      // newname (exist)
-		  ml->value3  =  strdup(t->value);  // oldname
-		  ml->value2 =  strdup("MV");       // operation
-		  break;
-	      }
-	      last_ml = &(ml->next);
-	      ml = ml->next;
-	  } 
-	  textlist_free(move_list);
-
-	  if (!found_move) {
-	      rc = csync_update_file_del(myname, peername, 
-					 t->value, t->value2, t->value5,
-					 t->intvalue, dry_run);
-	      csync_directory_add(&directory_list, t->value);
-	  }
-	  last_tn=&(t->next);
-      }
+	/* Reverse order (deepest first when deleting. otherwise we need recursive deleting */
+	csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
+	*last_tn = next_t;
+	t->next = tl_del;
+	tl_del = t;
     }
   }
-  for (t = tl_mod; t != 0; t = t->next) {
-    if (!connection_closed_error)
-      rc = csync_update_file_mod(myname, peername,
-				 t->value, t->value2, t->value3, t->value5, t->intvalue, dry_run, db_version);
-    csync_directory_add(&directory_list, t->value);
-    if (t->value3) {
-      csync_directory_add(&directory_list, t->value3);
-    }
-  }
-
   textlist_free(tl);
-
-
-  textlist_free(tl_mod);
+  for (t = tl_del; t != 0; t = t->next) {
+      rc = csync_update_file_del(myname, peername, 
+				 t->value, t->value2, t->value5,
+				 t->intvalue, dry_run);
+      csync_directory_add(&directory_list, t->value);
+  }
+  textlist_free(tl_del);
   
   for (t = directory_list; t != 0; t = t->next) {
     rc = csync_update_directory(myname, peername, t->value, t->intvalue, dry_run, db_version);
