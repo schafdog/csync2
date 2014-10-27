@@ -451,12 +451,8 @@ struct textlist *csync_check_same_dev_inode(const char *peername, const char *fi
     char *filename_enc = strdup(db_encode(filename));
     SQL_BEGIN("Check for same inode", 
 	      "SELECT filename, checktxt, digest FROM dirty "
-	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' and digest = '%s' " 
-	      " UNION "
-	      "SELECT filename, checktxt, digest FROM file "
-	      "WHERE device = %lu and inode = %llu and filename != '%s' and digest = '%s' ", 
-	      dev, st->st_ino, peername_enc, filename_enc, digest,  
-	      dev, st->st_ino, filename_enc, digest) {
+	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' ",
+	      dev, st->st_ino, peername_enc, filename_enc) {
 	const char *db_filename  = db_decode(SQL_V(0));
 	const char *db_checktxt  = db_decode(SQL_V(1));
 	textlist_add2(&tl, db_filename, db_checktxt, 0);
