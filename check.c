@@ -442,6 +442,23 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
   return 0;
 }
 
+struct textlist *csync_check_all_same_dev_inode()
+{
+    struct textlist *tl = 0, *t;
+    int count = 0;
+    SQL_BEGIN("Check for same dev:inode for all dirty", 
+	      "SELECT peername, device, inode, checktxt, count(*) AS DUPS from dirty group by 1,2,3,4 having DUPS > 1") {
+	const char *db_peername  = db_decode(SQL_V(0));
+	const char *db_device    = db_decode(SQL_V(1));
+	const char *db_inode     = db_decode(SQL_V(2));
+	const char *db_checktxt  = db_decode(SQL_V(3));
+	textlist_add4(&tl, db_peername, db_device, db_inode, db_checktxt, 0);
+    } SQL_FIN {
+	csync_debug(2, "%d files with multiple dev:inode.\n", SQL_COUNT);
+    } SQL_END; 
+    return tl; 
+}
+
 struct textlist *csync_check_same_dev_inode(const char *peername, const char *filename, const char *digest, struct stat *st)
 {
     struct textlist *tl = 0, *t;
@@ -450,9 +467,13 @@ struct textlist *csync_check_same_dev_inode(const char *peername, const char *fi
     char *peername_enc = strdup(db_encode(peername));
     char *filename_enc = strdup(db_encode(filename));
     SQL_BEGIN("Check for same inode", 
-	      "SELECT filename, checktxt, digest FROM dirty "
-	      "WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' ",
-	      dev, st->st_ino, peername_enc, filename_enc) {
+	      " SELECT filename, checktxt, digest FROM dirty "
+	      " WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' "
+	      " UNION "
+	      " SELECT filename, checktxt, digest FROM file " 
+	      " WHERE device = %lu and inode = %llu and filename != '%s' ",
+	      dev, st->st_ino, peername_enc, filename_enc,
+	      dev, st->st_ino, filename_enc) {
 	const char *db_filename  = db_decode(SQL_V(0));
 	const char *db_checktxt  = db_decode(SQL_V(1));
 	textlist_add2(&tl, db_filename, db_checktxt, 0);
@@ -476,8 +497,8 @@ struct textlist *csync_check_move(const char *peername, const char *filename, co
 	int rc = stat(db_filename, &file_stat);
 	int db_version = csync_get_checktxt_version(db_checktxt);
 	int i = 0; 
-	if (!rc) {
-	    csync_debug(1, "Other file found. Posible MOVE operation: %s\n", db_filename);
+	if (rc) {
+	    csync_debug(1, "Other file not found. Posible MOVE operation: %s\n", db_filename);
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 		csync_debug(1, "OPERATION: MOVE %s to %s\n", filename, db_filename);
 		t->intvalue = OP_MOVE;
@@ -488,8 +509,8 @@ struct textlist *csync_check_move(const char *peername, const char *filename, co
 }
 
 
-struct textlist *csync_check_link(const char *peername, const char *filename, const char* checktxt, const char *digest,
-				  struct stat *st, char **operation, textlist_loop_t loop)
+struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, const char *digest,
+				  struct stat *st, textlist_loop_t loop)
 {
     struct textlist *t, *tl = NULL;
     struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, digest, st);
@@ -505,20 +526,14 @@ struct textlist *csync_check_link(const char *peername, const char *filename, co
 	    csync_debug(1, "Other file not found. Posible MOVE operation: %s\n", db_filename);
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 		csync_debug(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
-		if (operation) {
-		    *operation = strdup("MV");
-		    textlist_add(&tl, db_filename, OP_MOVE);
-		}
+		textlist_add(&tl, db_filename, OP_MOVE);
 	    }
 	} else { // LINK, not MV
 	    db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
 	    int i; 
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 		csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
-		if (operation) {
-		    *operation = "MKH";
-		    textlist_add(&tl, db_filename, OP_HARDLINK);
-		}
+		textlist_add(&tl, db_filename, OP_HARDLINK);
 	    } else { // LINK not verified
 		csync_debug(1, "check_link: other file with same dev/inode, but different checktxt.");
 		csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
@@ -782,10 +797,23 @@ char *csync_check_recursive(const char *filename, int recursive, int init_run, i
 	return operation;
 }
 
+
+void csync_combined_operation(const char *peername, const char *dev, const char *inode, const char *checktxt) {
+
+}
+
 void csync_check(const char *filename, int recursive, int init_run, int version, int flags) {
   csync_check_recursive(filename, recursive, init_run, version, flags);
   // TODO combined operations?
+  struct textlist *dub_entries = csync_check_all_same_dev_inode(); 
+  struct textlist *ptr = dub_entries;
+  while (ptr != NULL) {
+      csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4); 
+      ptr = ptr->next;
+  }
+  textlist_free(dub_entries);
 }
+
 
 char *csync_check_single(const char *filename, int init_run, int version)
 {
