@@ -91,6 +91,7 @@ function daemon {
 
 function killdaemon {
     kill `cat daemon.pid`
+    rm daemon.pid
 }
 
 function check {
