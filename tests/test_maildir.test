@@ -3,6 +3,7 @@
 # On read (by server) moved to cur. 
 # When marked read rename to filename,S
 # When deleted hardlinked to .Trash, renamed to filename,ST
+daemon d PEER
 clean local
 clean peer
 mkdir -p test/$NAME/Maildir/cur
@@ -28,3 +29,4 @@ cmd x "Delete email: ln Maildir/cur/123,S Maildir/.Trash/cur/123,S. mv 123,S 123
 rm -rf test/$NAME/Maildir
 sleep 2
 cmd x "clean up"
+killdaemon d PEER
