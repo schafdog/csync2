@@ -639,7 +639,7 @@ int csync_update_file_all_hardlink(const char *peername,
 			       int *last_conn_status) 
 {
   char *operation;
-  struct textlist *tl = csync_check_link(peername, filename, checktxt, digest, st, &operation, NULL);
+  struct textlist *tl = csync_check_link_move(peername, filename, checktxt, digest, st, NULL);
   struct textlist *t = tl; 
   int found_one = 0;
   int errors = 0;
@@ -749,11 +749,11 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 }
 
 
-int csync_update_file_move(const char* myname, const char *peername, const char *key, const char *filename, const char *operation, const char *other)
+int csync_update_file_move(const char* myname, const char *peername, const char *key, const char *filename, const char *other)
 {
   int rc = csync_update_file_mv(peername, key, other, filename);
   if (rc >= OK) {
-    // DO stat on other file, and setown,mod and time on this 
+
     // (actually it should be correct */
     /* csync_skip_action_do_time(peername, key_enc, filename, filename_enc, 
        &file_stat);*/
@@ -797,8 +797,8 @@ int csync_update_directory(const char *myname, const char *peername,
 
 
 int csync_update_file_mod(const char *myname, const char *peername,
-			  const char *filename, const char *operation , 
-			  const char *digest, const char *other,
+			  const char *filename, const char *operation, const char *other,
+			  const char *checktxt, const char *digest, 
 			  int force, int dry_run, int db_version)
 {
   struct stat st;
@@ -880,24 +880,8 @@ int csync_update_file_mod(const char *myname, const char *peername,
       return rc;
     }
 
-
-    csync_debug(0, "check move %s %s %s ", operation, filename, other);
-    if (operation && (strcmp("MV", operation) == 0)) {
-	switch (rc) {
-	case DIFF_BOTH: 
-	case DIFF:
-	    rc = csync_update_file_move(myname, peername, key, filename, operation, other);
-	    if (rc == OK)
-		return rc;
-	    csync_debug(0, "ERROR: move failed: %s %s ", filename, other);
-	    operation = "-";
-	break; 
-      case DIFF_META:
-	rc = SETOWN;
-	//	rc = CLEAR_DIRTY;
-      }
-    }
     if (operation && (strcmp("MKH", operation) == 0) && other) {
+      csync_debug(0, "check hardlink %s %s %s \n", operation, filename,  other);
       
       const char *other_enc = url_encode(prefixencode(other));
       struct stat st_other;
@@ -918,6 +902,51 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	  csync_clear_dirty(peername, filename, auto_resolve_run);
 	if (rc == OK)
 	  return OK;  
+      }
+    }
+
+    
+    struct textlist *link_move_list = csync_check_link_move(peername, filename, checktxt, digest, &st, NULL);
+    struct textlist *list_ptr = link_move_list;
+    while (list_ptr) {
+	other = list_ptr->value;
+	switch (list_ptr->intvalue) {
+	case OP_MOVE: {
+	    csync_debug(0, "check move: %s %s \n ", filename, other);
+	    rc = csync_update_file_move(myname, peername, key, filename, other);
+	    if (rc == OK)
+		return rc;
+	    break;
+	}
+	case OP_HARDLINK: { 
+	    const char *other_enc = url_encode(prefixencode(other));
+	    rc = csync_update_hardlink(peername, key_enc, other, other_enc, filename_enc,
+				       &last_conn_status);
+	    if (rc == OK)
+		csync_clear_dirty(peername, filename, auto_resolve_run);
+	    
+	    break;
+	}
+	default:
+	    csync_debug(0, "Unknown duplicate: %s \n", other);
+	}
+	list_ptr = list_ptr->next;
+    }
+    textlist_free(link_move_list);
+
+    if (operation && strcmp("MV", operation) == 0) {
+	switch (rc) {
+	case DIFF_BOTH: 
+	case DIFF:
+	    rc = csync_update_file_move(myname, peername, key, filename, other);
+	    if (rc == OK)
+		return rc;
+	    csync_debug(0, "ERROR: move failed: %s %s ", filename, other);
+	    operation = "-";
+	break; 
+      case DIFF_META:
+	rc = SETOWN;
+	//	rc = CLEAR_DIRTY;
       }
     }
     switch (rc)
@@ -1176,7 +1205,7 @@ void csync_update_host(const char *myname, const char *peername,
     if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
 	if (!connection_closed_error)
 	    rc = csync_update_file_mod(myname, peername,
-				       t->value, t->value2, t->value3, t->value5, t->intvalue, dry_run, db_version);
+				       t->value, t->value2, t->value3, t->value4, t->value5, t->intvalue, dry_run, db_version);
 	csync_directory_add(&directory_list, t->value);
 	if (t->value3) {
 	    csync_directory_add(&directory_list, t->value3);
