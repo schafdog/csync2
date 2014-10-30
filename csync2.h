@@ -382,11 +382,22 @@ static inline void textlist_add(struct textlist **listhandle, const char *item, 
 {
   textlist_add4(listhandle, item, 0, 0, 0, intitem);
 }
-
+static inline int textlist_in_list(struct textlist *listhandle, const char *item, int intitem) {
+    while (listhandle) {
+	if (!strcmp(listhandle->value, item)) {
+	    listhandle->intvalue = intitem;
+	    return 1;
+	}
+	listhandle = listhandle->next;
+    };
+}
 static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
 {
-  if (!(*listhandle) || strcmp((*listhandle)->value, item))
-    textlist_add4(listhandle, item, 0, 0, 0, intitem);
+    if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem))
+	textlist_add4(listhandle, item, 0, 0, 0, intitem);
+  else {
+      csync_debug(3, "Skipping textlist_add_new: %s\n", item);
+  }
 }
 
 static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
