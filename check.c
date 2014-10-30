@@ -784,6 +784,7 @@ char *csync_check_recursive(const char *filename, int recursive, int init_run, i
 
 void csync_check(const char *filename, int recursive, int init_run, int version, int flags) {
   csync_check_recursive(filename, recursive, init_run, version, flags);
+  // TODO combined operations?
 }
 
 char *csync_check_single(const char *filename, int init_run, int version)
