@@ -27,7 +27,6 @@ function testing {
     fi
 }
 
-
 function cmd {
     CMD=$1
     DESC=$2
@@ -35,6 +34,14 @@ function cmd {
     if [ "$3" == "" ] ; then
 	HOST=$NAME
 	# TODO Fix peername somehow
+    fi
+    if [ "$CMD" == "daemon" ] ; then 
+	daemon d
+	return 
+    fi
+    if [ "$CMD" == "killdaemon" ] ; then 
+	killdaemon
+	return 
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
     if [ "$VALGRIND" != "" ] ; then 
@@ -46,7 +53,7 @@ function cmd {
     echo "select filename from file; select peername,filename,operation,other from dirty;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
     rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
-    echo "${COUNT}. $CMD ${DESC} end" 
+    echo "${COUNT}. END $CMD ${DESC}" 
     let COUNT=$COUNT+1
     ${PAUSE}
 }
@@ -68,14 +75,23 @@ function clean {
 function daemon {
     CMD="$1"
     echo $NAME $PEER
-    if [ "$CMD" == "i" ] ; then 
-	$VALGRIND ../csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
+    if [ "$CMD" == "d" ] ; then 
+	$VALGRIND ../csync2 -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1 &
+    elif [ "$CMD" == "i" ] ; then 
+	$VALGRIND ../csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1
+	echo "$!" > daemon.pid
+	sleep 1
     elif [ "$CMD" == "once" ] ; then 
 	../csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 >> daemon_${NAME}.log 2>&1 & 
     elif [ "$CMD" == "clean_once" ] ; then 
 	clean peer
 	../csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 & 
     fi    
+}
+
+function killdaemon {
+    kill `cat daemon.pid`
+    rm daemon.pid
 }
 
 function check {
@@ -97,6 +113,8 @@ for d in $* ; do
 	fi
 	if [ "$COMMAND" == "i" ] ; then 
 	    daemon i
+	    shift
+	    TESTNAME=$1
 	    shift
 	fi 
     fi
