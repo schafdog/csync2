@@ -621,7 +621,7 @@ int csync_update_hardlink(const char *peername, const char *key_encoded, const c
   conn_printf("%s %s %s %s\n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
   if ((*last_conn_status = read_conn_status(filename, peername))) {
     csync_debug(0, "Failed to hard link %s %s\n", path_enc, newpath_enc);
-    return ERROR;
+    return ERROR_HARDLINK;
   }
   return OK;
 }
@@ -966,8 +966,11 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	return rc;
       case OK_DRY:
 	return rc;
+      case ERROR_HARDLINK:
+	  csync_debug(1, "HARDLINK failed. Continuing with PATCH\n");
+	  break;
       default:
-	csync_debug(0, "Unhandled return code: %d ", rc);
+	csync_debug(0, "Unhandled return code: %d \n", rc);
 	return rc;
       }
     int link_later = 0;
