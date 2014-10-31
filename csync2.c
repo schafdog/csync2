@@ -72,6 +72,7 @@ int csync_error_count = 0;
 int csync_debug_level = 0;
 FILE *csync_debug_out = 0;
 int csync_syslog = 0;
+char *log_file = 0;
 
 int csync_server_child_pid = 0;
 int csync_timestamps = 0;
@@ -195,6 +196,20 @@ void help(char *cmd)
 "		Use mysql database in URL:\n"
 "		mysql://[<user>:<password>@]<hostname>/<database>\n"
 "\n"
+"Options:"
+"       -l \n"
+"              Use syslog local0 facility\n"
+"       -O logfile\n" 
+"              Use logfile for logging\n"
+"       -K configfile\n" 
+"              Use this config file\n"
+"\n"
+"Test Options: NEVER use in production \n"
+"       -N myname \n"
+"              Override hostname \n"
+"       -Z peername\n"
+"              Allow connections from peername without checking \n"
+"\n" 
 "Creating key file:\n"
 "	%s -k filename\n"
 "\n"
@@ -643,6 +658,9 @@ int main(int argc, char ** argv)
 				break;
 			case 'l':
 				csync_syslog = 1;
+				break;
+			case 'O':
+  			        log_file = strdup(optarg);
 				break;
 			case 'h':
 				if ( mode != MODE_NONE ) help(argv[0]);
