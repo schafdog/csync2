@@ -1,0 +1,9 @@
+daemon d PEER
+clean local
+clean peer
+mkdir -p test/$NAME/new
+echo hej >  test/$NAME/new/new_file
+ln test/$NAME/new/new_file test/$NAME/new/hardlinked
+cmd c "3 two new files hardlinked (check)"
+cmd u "3 two new files hardlinked (update)"
+killdaemon
