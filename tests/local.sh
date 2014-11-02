@@ -76,7 +76,8 @@ function daemon {
     CMD="$1"
     echo $NAME $PEER
     if [ "$CMD" == "d" ] ; then 
-	$VALGRIND ../csync2 -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1 &
+	../csync2 -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1 &
+	echo "$!" > daemon.pid
     elif [ "$CMD" == "i" ] ; then 
 	$VALGRIND ../csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1
 	echo "$!" > daemon.pid
