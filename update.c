@@ -1214,7 +1214,7 @@ void csync_update_host(const char *myname, const char *peername,
 	    csync_directory_add(&directory_list, t->value3);
 	}
 	if (S_ISDIR(st.st_mode))
-	    textlist_add(&directory_list, t->value, 0);
+	    textlist_add_new(&directory_list, t->value, 0);
 	last_tn=&(t->next);
     } else {
 	/* Reverse order (deepest first when deleting. otherwise we need recursive deleting */

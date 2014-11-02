@@ -392,12 +392,15 @@ static inline int textlist_in_list(struct textlist *listhandle, const char *item
     };
     return 0;
 }
+
 static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
 {
-    if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem))
+    if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem)) {
 	textlist_add4(listhandle, item, 0, 0, 0, intitem);
-  else {
-      csync_debug(2, "Skipping textlist_add_new: %s\n", item);
+	csync_debug(3, "Adding textlist_add_new: %s\n", item);
+    }
+    else {
+      csync_debug(3, "Skipping textlist_add_new: %s\n", item);
   }
 }
 
