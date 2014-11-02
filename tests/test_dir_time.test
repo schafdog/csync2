@@ -1,0 +1,13 @@
+#
+# 
+#
+daemon d PEER
+clean local
+clean peer
+mkdir -p test/$NAME/dir1
+cmd x "New directory" 
+sleep 3
+touch test/$NAME/dir1/new_file
+rm  test/$NAME/dir1/new_file
+cmd x "New directory timestamp"
+killdaemon d PEER
