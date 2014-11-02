@@ -4,10 +4,10 @@
 daemon d PEER
 clean local
 clean peer
-mkdir -p test/$NAME/dir1
+mkdir -p test/$NAME/usr/local/sbin
 cmd x "New directory" 
 sleep 3
-touch test/$NAME/dir1/new_file
-rm  test/$NAME/dir1/new_file
+echo asdasdadad > test/$NAME/usr/local/sbin/hej
 cmd x "New directory timestamp"
+cmd x "New directory timestamp (second run)"
 killdaemon d PEER
