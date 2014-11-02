@@ -581,14 +581,16 @@ int csync_update_file_sig(const char *peername, const char *filename,
   
   int peer_version = csync_get_checktxt_version(chk_peer);
   
-  // DS Why do we ignore MTIME, IGNORE_LINK
-  int flag = IGNORE_MTIME|IGNORE_LINK;
+  int flag = IGNORE_LINK;
+  // DS We should prob. only ignore MTIME for regular files if at all.
   const char *chk_peer_decoded = url_decode(chk_peer);
   //TODO generate chk text that matches remote usage of uid/user and gid/gid
   char *has_user = strstr(chk_peer_decoded, ":user=");
   flag |=  (has_user != NULL ? SET_USER : 0);
   char *has_group = strstr(chk_peer_decoded, ":group=");
   flag |= (has_group != NULL ? SET_GROUP : 0);
+  if (!S_ISDIR(st->st_mode)) 
+      flag |= IGNORE_MTIME;
   csync_debug(3, "Flags for gencheck: %d \n", flag);
   if (!chk_local) 
     chk_local = csync_genchecktxt_version(st, filename, flag, 
@@ -1016,6 +1018,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
     }
     break;
     case DIR_TYPE:
+      
       cmd_printf("MKDIR", key_enc, filename_enc, "-", &st, uidptr, gidptr);
       rc = csync_update_file_dir(peername, filename, &last_conn_status);
       break;
