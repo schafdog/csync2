@@ -466,6 +466,19 @@ int conn_write(const void *buf, size_t count)
 	return WRITE(buf, count);
 }
 
+void  conn_remove_key(char *buf) {
+    char *key_start = strtok(buf, " ");
+    if (!key_start)
+	return;
+    key_start++;
+    while (*key_start != 0 && *key_start != ' ')
+	key_start++;
+    char *after = key_start++;
+    while (*after != 0) {
+	*(key_start++) == *(after++);
+    }
+}
+
 void conn_printf(const char *fmt, ...)
 {
 	char dummy = 0, *buffer = 0;
@@ -483,7 +496,8 @@ void conn_printf(const char *fmt, ...)
 
 	buffer[size] = 0;
 	conn_write(buffer, size);
-	csync_debug(1, "%s> %s", "local", buffer);
+	conn_remove_key(buffer);
+	csync_debug(1, "CONN %s> %s\n", myhostname, buffer);
 }
 
 size_t conn_gets_newline(char *s, size_t size, int remove_newline)
