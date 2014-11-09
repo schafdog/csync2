@@ -48,7 +48,6 @@ extern char *active_peer;
  
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 
-
 int csync_unlink(const char *filename, int ign, const char **cmd_error)
 {
 	struct stat st;
@@ -1028,6 +1027,7 @@ int csync_daemon_dispatch(char *filename,
   }
   case A_MKDIR: {
     int rc = csync_daemon_mkdir(filename, cmd_error);
+    csync_debug(1, "mkdir %s rc = %d errno = %d", filename, rc, errno);
     if (rc != OK)
       return rc;
   } // fall through on OK
@@ -1170,7 +1170,7 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
       active_peer = strdup(tag[1]);
     }
     else
-      csync_debug(1, "%s> %s %s %s %s %s %s %s %s %s \n", active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
+      csync_debug(1, "CONN %s> %s %s %s %s %s %s %s %s %s \n", active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
 
     cmd_error = 0;
 
