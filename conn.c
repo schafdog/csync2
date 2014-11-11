@@ -467,16 +467,27 @@ int conn_write(const void *buf, size_t count)
 }
 
 void  conn_remove_key(char *buf) {
-    char *key_start = strtok(buf, " ");
-    if (!key_start)
-	return;
-    key_start++;
-    while (*key_start != 0 && *key_start != ' ')
-	key_start++;
-    char *after = key_start++;
-    while (*after != 0) {
-	*(key_start++) == *(after++);
-    }
+    if (strncmp(buf,"SIG",3) || strncmp(buf, "PATCH", 5))
+	return ;
+    char *ptr = buf;
+    while (*ptr != 0 && *ptr != ' ')
+	ptr++;
+    if (*ptr == 0) 
+	return ;
+
+    char *after = ptr;
+    while (*(++after) != 0 && *after != ' '); 
+    if (*after == 0)
+	return; 
+    after++;
+    while (*after != 0) 
+	*(ptr++) = *(after++);
+    *(ptr++) = *(after++);
+
+/*    
+    while (*(--after) != ' ')
+	*after = 0;
+*/
 }
 
 void conn_printf(const char *fmt, ...)
