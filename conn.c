@@ -467,7 +467,9 @@ int conn_write(const void *buf, size_t count)
 }
 
 void  conn_remove_key(char *buf) {
-    if (strncmp(buf,"SIG",3) || strncmp(buf, "PATCH", 5))
+    if (strncmp(buf, "SIG", 3) && 
+	strncmp(buf, "PATCH", 5) && 
+	strncmp(buf, "SETTIME", 7))
 	return ;
     char *ptr = buf;
     while (*ptr != 0 && *ptr != ' ')
@@ -475,19 +477,23 @@ void  conn_remove_key(char *buf) {
     if (*ptr == 0) 
 	return ;
 
-    char *after = ptr;
-    while (*(++after) != 0 && *after != ' '); 
+    char *after = ++ptr;
+    // key start
+    while (*(after) != 0 && *after != ' ')
+	after++; 
     if (*after == 0)
 	return; 
     after++;
+    // Field after key start
     while (*after != 0) 
 	*(ptr++) = *(after++);
-    *(ptr++) = *(after++);
-
-/*    
-    while (*(--after) != ' ')
-	*after = 0;
-*/
+    *ptr = *after;
+    
+    /*    if (strncmp(buf, "SIG"))
+	return
+    */
+    while (*(--ptr) != ' ')
+	*ptr = 0;
 }
 
 void conn_printf(const char *fmt, ...)
