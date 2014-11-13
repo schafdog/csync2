@@ -361,7 +361,7 @@ int csync_update_file_setown(const char *peername, const char *key_enc,
 			     const struct stat *st, const char *uidptr, const char *gidptr)
 {
   // Optimize this. The daemon could have done this in the command.
-  conn_printf("SETOWN %s %s - %d %d %s %s \n",
+  conn_printf("SETOWN %s %s - %d %d %s %s\n",
 	      key_enc, filename_enc,
 	      st->st_uid, st->st_gid, uidptr, gidptr);
   return read_conn_status(filename, peername);
@@ -480,7 +480,7 @@ int csync_update_file_del(const char *myname, const char *peername,
     }
     int skip_delete = 0;
     int rc; 
-    conn_printf("DEL %s %s\n", key_enc, filename_enc);
+    conn_printf("DEL %s %s \n", key_enc, filename_enc);
     rc = read_conn_status(filename, peername);
     if (rc != OK) 
       auto_resolve_run = csync_check_auto_resolve2(peername, filename, 
@@ -525,7 +525,7 @@ int get_file_type(int st_mode) {
 void cmd_printf(const char *cmd, const char *key, 
 		const char *filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr) {
-  conn_printf("%s %s %s %s %d %d %s %s %d %Ld \n", 
+  conn_printf("%s %s %s %s %d %d %s %s %d %Ld\n", 
 	      cmd, key, filename, secondname,
 	      st->st_uid, st->st_gid, 
 	      uidptr, gidptr,
@@ -620,7 +620,7 @@ int csync_update_hardlink(const char *peername, const char *key_encoded, const c
 {
   // TODO Check that the target matches the config
   csync_debug(1, "Hardlinking %s -> %s\n", path_enc, newpath_enc);
-  conn_printf("%s %s %s %s\n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
+  conn_printf("%s %s %s %s \n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
   if ((*last_conn_status = read_conn_status(filename, peername))) {
     csync_debug(0, "Failed to hard link %s %s\n", path_enc, newpath_enc);
     return ERROR_HARDLINK;
@@ -699,7 +699,7 @@ int csync_update_file_patch(const char *key_enc,
 		     const char *gidptr,
 		     int *last_conn_status)
 {
-  cmd_printf("PATCH", key_enc, filename_enc, "-",          st, uidptr, gidptr);
+  cmd_printf("PATCH", key_enc, filename_enc, "-", st, uidptr, gidptr);
   int rc = csync_update_reg_file(peername, filename, last_conn_status);
   return rc;
 }
@@ -1114,7 +1114,7 @@ int csync_update_file_settime(const char *peername, const char *key_enc,
 			      const struct stat *st)
 {
   if ( !S_ISLNK(st->st_mode) ) {
-    conn_printf("SETTIME %s %s %Ld \n",
+    conn_printf("SETTIME %s %s %Ld\n",
 		key_enc, filename_enc,
 		(long long)st->st_mtime);
     if ( read_conn_status(filename, peername) )
