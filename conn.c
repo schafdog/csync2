@@ -467,9 +467,9 @@ int conn_write(const void *buf, size_t count)
 }
 
 void  conn_remove_key(char *buf) {
-    if (strncmp(buf, "SIG", 3) && 
-	strncmp(buf, "PATCH", 5) && 
-	strncmp(buf, "SETTIME", 7))
+    if (!strncmp(buf, "HELLO", 5) ||
+	!strncmp(buf, "CONFIG", 6) || 
+	!strncmp(buf, "BYE", 3))
 	return ;
     char *ptr = buf;
     while (*ptr != 0 && *ptr != ' ')
@@ -488,10 +488,7 @@ void  conn_remove_key(char *buf) {
     while (*after != 0) 
 	*(ptr++) = *(after++);
     *ptr = *after;
-    
-    /*    if (strncmp(buf, "SIG"))
-	return
-    */
+    // Will remove last word if not ending with a space
     while (*(--ptr) != ' ')
 	*ptr = 0;
 }
