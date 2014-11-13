@@ -44,13 +44,13 @@ function cmd {
 	return 
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
-    if [ "$VALGRIND" != "" ] ; then 
-	$VALGRIND ../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test
+    if [ "$GDB" != "" ] ; then 
+	$GDB ../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test
     else
 	../csync2 -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
-    echo "select filename from file sort by filename; select peername,filename,operation,other from dirty sort by filename;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+    echo "select filename from file order by filename; select peername,filename,operation,other from dirty order by filename;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
     rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
     echo "${COUNT}. END $CMD ${DESC}" 
@@ -79,7 +79,7 @@ function daemon {
 	../csync2 -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1 &
 	echo "$!" > daemon.pid
     elif [ "$CMD" == "i" ] ; then 
-	$VALGRIND ../csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1
+	$GDB ../csync2 -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1
 	echo "$!" > daemon.pid
 	sleep 1
     elif [ "$CMD" == "once" ] ; then 
