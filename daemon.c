@@ -48,7 +48,6 @@ extern char *active_peer;
  
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 
-
 int csync_unlink(const char *filename, int ign, const char **cmd_error)
 {
 	struct stat st;
@@ -321,7 +320,7 @@ struct csync_command {
 
 enum {
   A_SIG, A_FLUSH, A_MARK, A_TYPE, A_GETTM, A_GETSZ, A_DEL, A_PATCH, A_CREATE,
-  A_MKDIR, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV, 
+  A_MKDIR, A_MOD, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV, 
   A_SETOWN, A_SETMOD, A_SETTIME, A_LIST, A_GROUP,
   A_DEBUG, A_HELLO, A_BYE
 };
@@ -343,6 +342,7 @@ struct csync_command cmdtab[] = {
 	{ "patch",	1, 1, 2, 1, 1, A_PATCH	},
 	{ "create",	1, 1, 2, 1, 1, A_CREATE	},
 	{ "mkdir",	1, 1, 1, 1, 1, A_MKDIR	},
+	{ "mod",	1, 1, 1, 1, 1, A_MOD	},
 	{ "mkchr",	1, 1, 1, 1, 1, A_MKCHR	},
 	{ "mkblk",	1, 1, 1, 1, 1, A_MKBLK	},
 	{ "mkfifo",	1, 1, 1, 1, 1, A_MKFIFO	},
@@ -689,8 +689,11 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   }
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
-  // TODO Why ignore mtime? 
-  int flags  = IGNORE_MTIME;
+  // TODO Why ignore mtime?  
+  int flags; 
+  // Prob. all non-regular files, but testing with directories
+  if (!S_ISDIR(st.st_mode))
+      flags |= IGNORE_MTIME;
   if (strcmp("user/group",tag[3]) == 0)
     flags |= SET_USER|SET_GROUP;
   const char *checktxt = csync_genchecktxt_version(&st, filename, 
@@ -1024,9 +1027,12 @@ int csync_daemon_dispatch(char *filename,
   }
   case A_MKDIR: {
     int rc = csync_daemon_mkdir(filename, cmd_error);
+    csync_debug(1, "mkdir %s rc = %d errno = %d", filename, rc, errno);
     if (rc != OK)
       return rc;
-    rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
+  } // fall through on OK
+  case A_MOD: {
+    int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
     if (rc != OK)
       return rc;
     rc = csync_daemon_setmod(filename, mod, cmd_error);
@@ -1164,7 +1170,7 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
       active_peer = strdup(tag[1]);
     }
     else
-      csync_debug(1, "%s> %s %s %s %s %s %s %s %s %s \n", active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
+      csync_debug(1, "CONN %s> %s %s %s %s %s %s %s %s %s \n", active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
 
     cmd_error = 0;
 

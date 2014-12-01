@@ -55,8 +55,6 @@ static char *cfgfile = 0;
 static char *dbdir = DBDIR;
 char *cfgname = "";
 
-char myhostname[256] = "";
-char *csync_port = "30865";
 char *active_grouplist = 0;
 char *active_peerlist = 0;
 char **active_peers = 0;
@@ -68,17 +66,7 @@ int  ip_version = AF_UNSPEC;
 extern int yyparse();
 extern FILE *yyin;
 
-int csync_error_count = 0;
-int csync_debug_level = 0;
-FILE *csync_debug_out = 0;
-int csync_syslog = 0;
 char *log_file = 0;
-
-int csync_server_child_pid = 0;
-int csync_timestamps = 0;
-int csync_new_force = 0;
-
-int csync_dump_dir_fd = -1;
 
 void csync_version() {
 	printf(

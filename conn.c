@@ -466,6 +466,33 @@ int conn_write(const void *buf, size_t count)
 	return WRITE(buf, count);
 }
 
+void  conn_remove_key(char *buf) {
+    if (!strncmp(buf, "HELLO", 5) ||
+	!strncmp(buf, "CONFIG", 6) || 
+	!strncmp(buf, "BYE", 3))
+	return ;
+    char *ptr = buf;
+    while (*ptr != 0 && *ptr != ' ')
+	ptr++;
+    if (*ptr == 0) 
+	return ;
+
+    char *after = ++ptr;
+    // key start
+    while (*(after) != 0 && *after != ' ')
+	after++; 
+    if (*after == 0)
+	return; 
+    after++;
+    // Field after key start
+    while (*after != 0) 
+	*(ptr++) = *(after++);
+    *ptr = *after;
+    // Will remove last word if not ending with a space
+    while (*(--ptr) != ' ')
+	*ptr = 0;
+}
+
 void conn_printf(const char *fmt, ...)
 {
 	char dummy = 0, *buffer = 0;
@@ -483,7 +510,8 @@ void conn_printf(const char *fmt, ...)
 
 	buffer[size] = 0;
 	conn_write(buffer, size);
-	csync_debug(1, "%s> %s", "local", buffer);
+	conn_remove_key(buffer);
+	csync_debug(1, "CONN %s> %s\n", myhostname, buffer);
 }
 
 size_t conn_gets_newline(char *s, size_t size, int remove_newline)
