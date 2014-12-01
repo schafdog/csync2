@@ -1261,8 +1261,10 @@ void csync_update(const char *myhostname, char *active_peers[], const char ** pa
       while (active_peers[i]) {
 	if (!strcmp(active_peers[i], t->value)) {
 	    found = 1;
-	    while (active_peers[i])
-	      active_peers[i] = active_peers[++i];
+	    while (active_peers[i]) {
+	      active_peers[i] = active_peers[i+1];
+	      ++i;
+	    }
 	    break;
 	}
 	i++;
