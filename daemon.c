@@ -117,7 +117,7 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
     char *digest = NULL;
     const char *checktxt = csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version);
     if (S_ISREG(st.st_mode)) {
-      int size = 2*EVP_MAX_MD_SIZE+1;
+      int size = 2*DIGEST_MAX_SIZE+1;
       digest = malloc(size);
       int rc = dsync_digest_path_hex(filename, "sha1", digest, size);
       if (rc)

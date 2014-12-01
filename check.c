@@ -679,7 +679,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 
   char *digest = NULL; 
   if (calc_digest) {
-    int size = 2*EVP_MAX_MD_SIZE+1;
+    int size = 2*DIGEST_MAX_SIZE+1;
     digest = malloc(size);
     int rc = dsync_digest_path_hex(file, "sha1", digest, size);
     if (rc)
