@@ -1617,19 +1617,18 @@ void csync_remove_old()
       const char *filename  = db_decode(SQL_V(0)); 
       const char *localname = db_decode(SQL_V(1));
       const char *peername  = db_decode(SQL_V(2));
-      
-      while ((g=csync_find_next(g, filename)) != 0) {
+      int found = 0;
+      while (!found && (g=csync_find_next(g, filename)) != 0) {
 	if (!strcmp(g->myname, SQL_V(1)))
 	  for (h = g->host; h; h = h->next) {
-	    if (!strcmp(h->hostname, SQL_V(2)))
-	      goto this_dirty_record_is_ok;
+	    if (!strcmp(h->hostname, SQL_V(2))) {
+	      found = 1;
+	      break;
+	    }
 	  }
       }
-      
-      textlist_add2(&tl, filename, peername, 0);
-      
-    this_dirty_record_is_ok:
-      ;
+      if (!found)
+	textlist_add2(&tl, filename, peername, 0);
     } SQL_END;
   for (t = tl; t != 0; t = t->next) {
     const char *filename = t->value;
