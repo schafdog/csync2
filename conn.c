@@ -54,7 +54,13 @@ int conn_connect(const char *peername, int ip_version)
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
 	int sfd, s;
-
+	char *port = NULL; 
+	char peer[strlen(peername)+1];
+	strcpy(peer, peername);
+	char *p_peer = strtok_r(peer, ":", &port);
+	if (!port) {
+	  port = csync_port;
+	}
 	/* Obtain address(es) matching host/port */
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = ip_version;	/* Allow IPv4 or IPv6 */
@@ -62,7 +68,7 @@ int conn_connect(const char *peername, int ip_version)
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;	/* Any protocol */
 
-	s = getaddrinfo(peername, csync_port, &hints, &result);
+	s = getaddrinfo(p_peer, port, &hints, &result);
 	if (s != 0) {
 		csync_debug(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
 		return -1;
