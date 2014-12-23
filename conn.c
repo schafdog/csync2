@@ -54,16 +54,13 @@ int conn_connect(const char *peername, int ip_version)
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
 	int sfd, s;
-	char *port = NULL; 
+	char *port = csync_port; 
 	char peer[strlen(peername)+1];
 	strcpy(peer, peername);
 	char *posColon = strchr(peer, ':');
 	if (posColon) {
 	    *posColon = 0;
 	    port = posColon+1;
-	}
-	else {
-	  port = csync_port;
 	}
 	/* Obtain address(es) matching host/port */
 	memset(&hints, 0, sizeof(struct addrinfo));
