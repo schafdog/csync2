@@ -57,7 +57,7 @@ int conn_connect(const char *peername, int ip_version)
 	char *port = NULL; 
 	char peer[strlen(peername)+1];
 	strcpy(peer, peername);
-	char *posColon = strpos(peer, ":");
+	char *posColon = strchr(peer, ':');
 	if (posColon) {
 	    *posColon = 0;
 	    port = posColon+1;
