@@ -57,8 +57,12 @@ int conn_connect(const char *peername, int ip_version)
 	char *port = NULL; 
 	char peer[strlen(peername)+1];
 	strcpy(peer, peername);
-	char *p_peer = strtok_r(peer, ":", &port);
-	if (!port) {
+	char *posColon = strpos(peer, ":");
+	if (posColon) {
+	    *posColon = 0;
+	    port = posColon+1;
+	}
+	else {
 	  port = csync_port;
 	}
 	/* Obtain address(es) matching host/port */
@@ -68,7 +72,7 @@ int conn_connect(const char *peername, int ip_version)
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;	/* Any protocol */
 
-	s = getaddrinfo(p_peer, port, &hints, &result);
+	s = getaddrinfo(peer, port, &hints, &result);
 	if (s != 0) {
 		csync_debug(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
 		return -1;
