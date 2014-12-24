@@ -367,14 +367,14 @@ int csync_rs_check(const char *filename, int isreg)
     csync_debug(2, "Signature size differs: local don't exist, peer=%d\n", size);
     found_diff = 1;
   }
-  csync_debug(3, "Receiving %ld bytes ..\n", size);
+  csync_debug(3, "Receiving signature %ld bytes ..\n", size);
 
   while ( size > 0 ) {
     chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
     rc = conn_read(buffer1, chunk);
 
     if ( rc <= 0 )
-      csync_fatal("Read-error while receiving data.\n");
+      csync_fatal("Read-error while receiving signature data.\n");
     chunk = rc;
 
     if (sig_file) {
