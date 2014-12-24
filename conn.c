@@ -456,6 +456,17 @@ void conn_debug(const char *name, const char*buf, size_t count)
 	fprintf(csync_debug_out, "\n");
 }
 
+int conn_read_get_content_length(long *size) 
+{
+    char *buffer[100];
+    int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
+    if (!strcmp(buffer, "ERROR\n")) {
+	errno=EIO;
+	return -1;
+    }
+    return rc;
+}
+
 int conn_read(void *buf, size_t count)
 {
 	int pos, rc;
