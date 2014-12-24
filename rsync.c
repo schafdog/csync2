@@ -38,6 +38,7 @@
 #include <w32api/windows.h>
 #endif
 
+#define CHUNK_SIZE 4096
 
 /* This has been taken from rsync:lib/compat.c */
 
@@ -225,7 +226,7 @@ static FILE *paranoid_tmpfile()
 
 void csync_send_file(FILE *in)
 {
-  char buffer[512];
+  char buffer[CHUNK_SIZE];
   int rc, chunk;
   long size;
 
@@ -237,7 +238,7 @@ void csync_send_file(FILE *in)
   conn_printf("octet-stream %ld\n", size);
 
   while ( size > 0 ) {
-    chunk = size > 512 ? 512 : size;
+    chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
     rc = fread(buffer, 1, chunk, in);
 
     if ( rc <= 0 )
@@ -273,19 +274,20 @@ void csync_send_error()
 
 int csync_recv_file(FILE *out)
 {
-  char buffer[512];
+  char buffer[CHUNK_SIZE];
   int rc, chunk;
   long size;
 
-  if ( !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", &size) != 1 ) {
-    if (!strcmp(buffer, "ERROR\n")) { errno=EIO; return -1; }
-    csync_fatal("Format-error while receiving data (octet-stream %ld) .\n", size);
+  if (conn_read_get_content_length(&size)) {
+      if (errno == EIO)
+	  return -1;
+      csync_fatal("Format-error while receiving data length for file (%ld) .\n", size);
   }
 
   csync_debug(3, "Receiving %ld bytes ..\n", size);
 
   while ( size > 0 ) {
-    chunk = size > 512 ? 512 : size;
+    chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
     rc = conn_read(buffer, chunk);
 
     if ( rc <= 0 )
@@ -309,7 +311,7 @@ int csync_recv_file(FILE *out)
 int csync_rs_check(const char *filename, int isreg)
 {
   FILE *basis_file = 0, *sig_file = 0;
-  char buffer1[512], buffer2[512];
+  char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
   int rc, chunk, found_diff = 0;
   int backup_errno;
   rs_stats_t stats;
@@ -348,8 +350,8 @@ int csync_rs_check(const char *filename, int isreg)
   {
     char line[100];
     csync_debug(3, "Reading signature size from peer....\n");
-    if ( !conn_gets(line, 100) || sscanf(line, "octet-stream %ld\n", &size) != 1 )
-      csync_fatal("Format-error while receiving data. (signature %ld) \n", size);
+    if (conn_read_get_content_length(&size))
+      csync_fatal("Format-error while receiving data length for signature (%ld) \n", size);
   }
 
   if (sig_file) {
@@ -368,7 +370,7 @@ int csync_rs_check(const char *filename, int isreg)
   csync_debug(3, "Receiving %ld bytes ..\n", size);
 
   while ( size > 0 ) {
-    chunk = size > 512 ? 512 : size;
+    chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
     rc = conn_read(buffer1, chunk);
 
     if ( rc <= 0 )
