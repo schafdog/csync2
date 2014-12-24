@@ -458,7 +458,7 @@ void conn_debug(const char *name, const char*buf, size_t count)
 
 int conn_read_get_content_length(long *size) 
 {
-    char *buffer[100];
+    char buffer[100];
     int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
     if (!strcmp(buffer, "ERROR\n")) {
 	errno=EIO;
@@ -508,30 +508,54 @@ void  conn_remove_key(char *buf) {
     while (*after != 0) 
 	*(ptr++) = *(after++);
     *ptr = *after;
-    // Will remove last word if not ending with a space
+    /*
+      Will remove last word if not ending with a space
+      Good for removing time for log compare. Should be configurable though
+    */
     while (*(--ptr) != ' ')
-	*ptr = 0;
+       *ptr = 0;
 }
 
 void conn_printf(const char *fmt, ...)
 {
-	char dummy = 0, *buffer = 0;
-	va_list ap;
-	int size;
+    char dummy = 0, *buffer = 0;
+    va_list ap;
+    int size;
 
-	va_start(ap, fmt);
-	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = alloca(size+1);
-	va_end(ap);
+    va_start(ap, fmt);
+    size = vsnprintf(&dummy, 1, fmt, ap);
+    buffer = alloca(size+1);
+    va_end(ap);
+    
+    va_start(ap, fmt);
+    vsnprintf(buffer, size+1, fmt, ap);
+    va_end(ap);
+    
+    buffer[size] = 0;
+    conn_write(buffer, size);
+    conn_remove_key(buffer);
+    csync_debug(1, "CONN %s> %s\n", myhostname, buffer);
+}
 
-	va_start(ap, fmt);
-	vsnprintf(buffer, size+1, fmt, ap);
-	va_end(ap);
+void conn_printf_cmd_filepath(const char *cmd, const char *file, const char *key_enc, const char *fmt, ...)
+{
+    char dummy = 0, *buffer = 0;
+    va_list ap;
+    int size;
 
-	buffer[size] = 0;
-	conn_write(buffer, size);
-	conn_remove_key(buffer);
-	csync_debug(1, "CONN %s> %s\n", myhostname, buffer);
+    va_start(ap, fmt);
+    size = vsnprintf(&dummy, 1, fmt, ap);
+    buffer = alloca(size+1);
+    va_end(ap);
+    
+    va_start(ap, fmt);
+    vsnprintf(buffer, size+1, fmt, ap);
+    va_end(ap);
+    
+    buffer[size] = 0;
+    conn_write(buffer, size);
+    conn_remove_key(buffer);
+    csync_debug(1, "CONN %s> %s\n", myhostname, buffer);
 }
 
 size_t conn_gets_newline(char *s, size_t size, int remove_newline)
