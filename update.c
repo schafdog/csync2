@@ -616,16 +616,17 @@ int csync_update_file_sig(const char *peername, const char *filename,
     If there are errors, we need to patch these files instead of linking
 */
 
-int csync_update_hardlink(const char *peername, const char *key_encoded, const char *filename, const char* path_enc, const char *newpath_enc, int *last_conn_status) 
+int csync_update_hardlink(const char *peername, const char *key_encoded, const char *filename, 
+			  const char* path_enc, const char *newpath_enc, int *last_conn_status) 
 {
-  // TODO Check that the target matches the config
-  csync_debug(1, "Hardlinking %s -> %s\n", path_enc, newpath_enc);
-  conn_printf("%s %s %s %s \n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
-  if ((*last_conn_status = read_conn_status(filename, peername))) {
-    csync_debug(0, "Failed to hard link %s %s\n", path_enc, newpath_enc);
-    return ERROR_HARDLINK;
-  }
-  return OK;
+    // TODO Check that the target matches the config
+    csync_debug(1, "Hardlinking %s -> %s\n", path_enc, newpath_enc);
+    conn_printf("%s %s %s %s \n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
+    if ((*last_conn_status = read_conn_status(filename, peername))) {
+	csync_debug(0, "Failed to hard link %s %s\n", path_enc, newpath_enc);
+	return ERROR_HARDLINK;
+    }
+    return OK;
 }
 
 int csync_update_file_all_hardlink(const char *peername, 
