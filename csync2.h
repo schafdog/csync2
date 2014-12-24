@@ -452,6 +452,14 @@ struct csync_nossl;
 struct csync_group;
 struct csync_group_host;
 struct csync_group_pattern;
+struct csync_hostinfo; 
+
+struct csync_hostinfo {
+    char *name; // Alias
+    char *host; 
+    char *port; // service or port number
+    struct csync_hostinfo *next;
+};
 
 struct csync_group_host {
 	struct csync_group_host *next;
@@ -532,6 +540,7 @@ enum CSYNC_AUTO_METHOD {
 extern struct csync_group  *csync_group;
 extern struct csync_prefix *csync_prefix;
 extern struct csync_nossl  *csync_nossl;
+extern struct csync_hostinfo  *csync_hostinfo;
 
 extern unsigned csync_lock_timeout;
 extern char *csync_tempdir;
