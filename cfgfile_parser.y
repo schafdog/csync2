@@ -428,7 +428,7 @@ static void new_hostinfo_entry(char *name, char *host_service)
 	 *pos_port = 0;
 	 p->port = pos_port+1;
      }
-     csync_debug(0, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
+     csync_debug(3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
      p->next = csync_hostinfo;
      csync_hostinfo = p;
 }
