@@ -156,6 +156,7 @@ extern int conn_check_peer_cert(const char *peername, int callfatal);
 extern int conn_close();
 
 extern int conn_read(void *buf, size_t count);
+extern int conn_read_get_content_length(long *size);
 extern int conn_write(const void *buf, size_t count);
 size_t conn_gets_newline(char *s, size_t size, int remove_newline);
 
