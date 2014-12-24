@@ -26,9 +26,10 @@
 #include <fnmatch.h>
 #include <ctype.h>
 
-struct csync_group  *csync_group  = 0;
-struct csync_prefix *csync_prefix = 0;
-struct csync_nossl  *csync_nossl  = 0;
+struct csync_group    *csync_group  = 0;
+struct csync_prefix   *csync_prefix = 0;
+struct csync_nossl    *csync_nossl  = 0;
+struct csync_hostinfo *csync_hostinfo = 0;
 
 int csync_ignore_uid = 0;
 int csync_ignore_gid = 0;
@@ -415,6 +416,23 @@ static void set_ip_version(const char *version)
   cfg_ip_version = atoi(version);
 }
 
+static void new_hostinfo_entry(char *name, char *host_service)
+{
+     struct csync_hostinfo *p =
+	 calloc(sizeof(struct csync_hostinfo), 1);
+     p->name = name;
+     p->host = host_service;
+     p->port = NULL;
+     char *pos_port = strchr(host_service, ':'); 
+     if (pos_port) {
+	 *pos_port = 0;
+	 p->port = pos_port+1;
+     }
+     csync_debug(0, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
+     p->next = csync_hostinfo;
+     csync_hostinfo = p;
+}
+
 static void new_prefix(const char *pname)
 {
 	struct csync_prefix *p =
@@ -423,7 +441,7 @@ static void new_prefix(const char *pname)
 	p->next = csync_prefix;
 	csync_prefix = p;
 }
-
+ 
 static void new_prefix_entry(char *pattern, char *path)
 {
 	int i;
@@ -509,7 +527,7 @@ static void disable_cygwin_lowercase_hack()
 %token TK_PREFIX TK_ON TK_COLON TK_POPEN TK_PCLOSE
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
 %token TK_TEMPDIR
-%token TK_LOCK_TIMEOUT
+%token TK_LOCK_TIMEOUT TK_HOSTS
 %token <txt> TK_STRING
 
 %%
@@ -524,6 +542,9 @@ block:
 |	TK_PREFIX TK_STRING
 		{ new_prefix($2); }
 		TK_BLOCK_BEGIN prefix_list TK_BLOCK_END
+		{ }
+|	TK_HOSTS 
+		TK_BLOCK_BEGIN alias_list TK_BLOCK_END
 		{ }
 |	TK_NOSSL TK_STRING TK_STRING TK_STEND
 		{ new_nossl($2, $3); }
@@ -554,6 +575,12 @@ prefix_list:
 	/* empty */
 |	prefix_list TK_ON TK_STRING TK_COLON TK_STRING TK_STEND
 		{ new_prefix_entry($3, on_cygwin_lowercase($5)); }
+;
+
+alias_list:
+	/* empty */
+|	alias_list TK_STRING TK_COLON TK_STRING TK_STEND
+		{ new_hostinfo_entry($2, $4); }
 ;
 
 block_header:

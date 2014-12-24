@@ -72,6 +72,7 @@ int include_stack_ptr = 0;
 "do-local-only"	{ return TK_DOLOCALONLY; }
 
 "prefix"	{ return TK_PREFIX; }
+"hosts"         { return TK_HOSTS; }
 "on"		{ return TK_ON; }
 
 "lock-timeout"		{ return TK_LOCK_TIMEOUT; }
