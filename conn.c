@@ -54,13 +54,15 @@ int conn_connect(const char *peername, int ip_version)
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
 	int sfd, s;
-	char *port = csync_port; 
-	char peer[strlen(peername)+1];
-	strcpy(peer, peername);
-	char *posColon = strchr(peer, ':');
-	if (posColon) {
-	    *posColon = 0;
-	    port = posColon+1;
+	struct csync_hostinfo *p = csync_hostinfo; 
+	char *port = csync_port;
+	while (p) {
+	    if (!strcmp(peername, p->name)) {
+		peername = p->host;
+		port = p->port;
+		break;
+	    }
+	    p = p->next;
 	}
 	/* Obtain address(es) matching host/port */
 	memset(&hints, 0, sizeof(struct addrinfo));
@@ -69,7 +71,7 @@ int conn_connect(const char *peername, int ip_version)
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;	/* Any protocol */
 
-	s = getaddrinfo(peer, port, &hints, &result);
+	s = getaddrinfo(peername, port, &hints, &result);
 	if (s != 0) {
 		csync_debug(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
 		return -1;
