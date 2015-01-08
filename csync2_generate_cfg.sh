@@ -1,15 +1,23 @@
 #!/bin/bash
 
-DB=mysql
-if [ "$2" != "" ] ; then
-    DB=$2
-fi  
+DB=${DB:-mysql}
+USER=${USER:-}
+PW=${PW:-}
 
+if [ "$PW" != "" ] ; then 
+    USER_PW=$USER:${PW}@
+else
+    USER_PW=${USER}@
+fi
 
+PORT=${PORT:-}
+if [ "$PORT" != "" ] ; then 
+    PORT=":${PORT}"
+fi
 read -r -d '' VAR <<EOF
 nossl * *;
 
-database "${DB}://csync2_$1:csync2_$1@localhost/csync2_$1" ;
+database "${DB}://${USER_PW}localhost${PORT}/csync2_$1" ;
 #database test_$1.db;
 
 database-version	2;
