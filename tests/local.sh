@@ -99,6 +99,12 @@ function check {
     cmd c $1 $2
 }
 
+if [ ! -f csync2_${NAME}.cfg ] ; then
+    echo "Missing config file:  csync2_${NAME}.cfg" 
+    exit
+fi 
+
+TESTNAME=.
 for d in $* ; do 
     if [ -f "$d" ] ; then 
 	echo "Running test script $d"
