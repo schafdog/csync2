@@ -447,7 +447,7 @@ struct textlist *csync_check_all_same_dev_inode()
     struct textlist *tl = 0, *t;
     int count = 0;
     SQL_BEGIN("Check for same dev:inode for all dirty", 
-	      "SELECT peername, device, inode, checktxt, count(*) AS DUPS from dirty group by 1,2,3,4 having DUPS > 1") {
+	      "SELECT peername, device, inode, checktxt, count(*) from dirty group by 1,2,3,4 having count(*) > 1") {
 	const char *db_peername  = db_decode(SQL_V(0));
 	const char *db_device    = db_decode(SQL_V(1));
 	const char *db_inode     = db_decode(SQL_V(2));
