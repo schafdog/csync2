@@ -89,9 +89,9 @@ static void db_postgres_dlopen(void)
    If an optional keyword is not given, the value of the parameter is not changed.
 */
 
-static int db_pgsql_parse_url(char *url, char **host, char **user, char **pass, char **database, unsigned int *port) 
+static int db_pgsql_parse_url(char *url, char **host, char **user, char **pass, char **database, unsigned int *port)
 {
-  char *pos = strchr(url, '@'); 
+  char *pos = strchr(url, '@');
   if (pos) {
     *(pos) = 0;
     *(user) = url;
@@ -216,7 +216,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   conn->errmsg = db_postgres_errmsg;
   conn->prepare = db_postgres_prepare;
   conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
-  conn->escape = db_postgres_escape;  
+  conn->escape = db_postgres_escape;
   free(pg_conn_info);
 
   return DB_OK;
@@ -243,7 +243,7 @@ const char *db_postgres_errmsg(db_conn_p conn)
 }
 
 
-int db_postgres_exec(db_conn_p conn, const char *sql) 
+int db_postgres_exec(db_conn_p conn, const char *sql)
 {
   PGresult *res;
 
@@ -332,7 +332,7 @@ const void* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column)
   row_p = (int*)stmt->private2;
 
   if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
-    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n", 
+    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n",
                 *row_p, f.PQntuples_fn(result));
     return NULL;
   }
@@ -351,7 +351,7 @@ const char *db_postgres_stmt_get_column_text(db_stmt_p stmt, int column)
   row_p = (int*)stmt->private2;
 
   if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
-    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n", 
+    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n",
                 *row_p, f.PQntuples_fn(result));
     return NULL;
   }
@@ -370,7 +370,7 @@ int db_postgres_stmt_get_column_int(db_stmt_p stmt, int column)
   row_p = (int*)stmt->private2;
 
   if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
-    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n", 
+    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n",
                 *row_p, f.PQntuples_fn(result));
     return 0;
   }
@@ -407,6 +407,7 @@ int db_postgres_stmt_close(db_stmt_p stmt)
 }
 
 
+#define FILE_LENGTH 275
 int db_postgres_upgrade_to_schema(int version)
 {
 	if (version < 0)
@@ -418,66 +419,65 @@ int db_postgres_upgrade_to_schema(int version)
 	csync_debug(2, "Upgrading database schema to version %d.\n", version);
 
 	csync_db_sql("Creating action table",
-"CREATE TABLE action ("
-"  filename varchar(255) DEFAULT NULL,"
-"  command text,"
-"  logfile text,"
-"  UNIQUE (filename,command)"
-");");
+		     "CREATE TABLE action ("
+		     "  filename varchar(%u) DEFAULT NULL,"
+		     "  command varchar(1000),"
+		     "  logfile varchar(1000),"
+		     "  UNIQUE (filename,command));", FILE_LENGTH);
 
 	csync_db_sql("Creating dirty table",
-"CREATE TABLE dirty ("
-"  filename   varchar(200) DEFAULT NULL,"
-"  forced    int           DEFAULT NULL,"
-"  myname    varchar(100)  DEFAULT NULL,"
-"  peername  varchar(100)  DEFAULT NULL,"
-"  checktxt  varchar(255)  DEFAULT NULL,"
-"  device    bigint        DEFAULT NULL,"
-"  inode     bigint        DEFAULT NULL,"
-"  operation varchar(100)  DEFAULT NULL,"
-"  other     varchar(1000) DEFAULT NULL,"
-"  file_id   bigint        DEFAULT NULL,"
-"  UNIQUE (filename,peername)"
-");");
+		     "CREATE TABLE dirty ("
+		     "  filename  varchar(%u)   DEFAULT NULL,"
+		     "  forced    int           DEFAULT NULL,"
+		     "  myname    varchar(50)   DEFAULT NULL,"
+		     "  peername  varchar(50)   DEFAULT NULL,"
+		     "  checktxt  varchar(255)  DEFAULT NULL,"
+		     "  device    bigint        DEFAULT NULL,"
+		     "  inode     bigint        DEFAULT NULL,"
+		     "  operation varchar(100)  DEFAULT NULL,"
+		     "  other     varchar(%u)   DEFAULT NULL,"
+		     "  file_id   bigint        DEFAULT NULL,"
+		     "  UNIQUE (filename,peername)"
+		     ");", FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql("Creating file table",
-"CREATE TABLE file ("
-"  id     serial8                     ,"
-"  parent bigint          DEFAULT NULL,"		     
-"  filename varchar(1000) DEFAULT NULL,"
-"  basename varchar(1000) DEFAULT NULL,"
-"  hostname varchar(100)  DEFAULT NULL,"
-"  checktxt varchar(200)  DEFAULT NULL,"
-"  device bigint          DEFAULT NULL,"
-"  inode  bigint          DEFAULT NULL,"
-"  size   bigint          DEFAULT NULL,"
-"  mode   int             DEFAULT NULL,"
-"  digest varchar(130)    DEFAULT NULL,"
-"  UNIQUE (id),"
-"  UNIQUE (filename)"
-");");
+		     "CREATE TABLE file ("
+		     //		     "  id     serial                      ,"
+		     "  parent bigint          DEFAULT NULL,"
+		     "  filename varchar(%u)   DEFAULT NULL,"
+		     "  basename varchar(%u)   DEFAULT NULL,"
+		     "  hostname varchar(50)   DEFAULT NULL,"
+		     "  checktxt varchar(100)  DEFAULT NULL,"
+		     "  device bigint          DEFAULT NULL,"
+		     "  inode  bigint          DEFAULT NULL,"
+		     "  size   bigint          DEFAULT NULL,"
+		     "  mode   int             DEFAULT NULL,"
+		     "  digest varchar(130)    DEFAULT NULL,"
+		     //		     "  UNIQUE (id),"
+		     "  UNIQUE (filename)"
+		     ");", FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql("Creating hint table",
-"CREATE TABLE hint ("
-"  filename varchar(1000) DEFAULT NULL,"
-"  recursive int          DEFAULT NULL"
-");");
+		     "CREATE TABLE hint ("
+		     "  filename varchar(%u)   DEFAULT NULL,"
+		     "  recursive int          DEFAULT NULL"
+		     ");", FILE_LENGTH);
 
 	csync_db_sql("Creating x509_cert table",
-"CREATE TABLE x509_cert ("
-"  peername varchar(255) DEFAULT NULL,"
-"  certdata varchar(255) DEFAULT NULL,"
-"  UNIQUE (peername)"
-");");
+		     "CREATE TABLE x509_cert ("
+		     "  peername varchar(50) DEFAULT NULL,"
+		     "  certdata varchar(255) DEFAULT NULL,"
+		     "  UNIQUE (peername)"
+		     ");");
 
 	return DB_OK;
 }
 
-const char* db_postgres_escape(db_conn_p conn, const char *string) 
+const char* db_postgres_escape(db_conn_p conn, const char *string)
 {
   int rc = DB_ERROR;
   if (!conn)
-    return 0; 
+    return 0;
 
   if (!conn->private) {
     return 0;
