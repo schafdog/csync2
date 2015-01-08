@@ -93,7 +93,7 @@ int db_mysql_parse_url(char *url, char **host, char **user, char **pass, char **
     *(pos) = 0;
     *(user) = url;
     url = pos + 1;
-    // TODO password
+
     pos = strchr(*user, ':');
     if (pos) {
       *(pos) = 0;
@@ -362,6 +362,7 @@ int db_mysql_stmt_close(db_stmt_p stmt)
 }
 
 
+#define FILE_LENGTH 275
 int db_mysql_upgrade_to_schema(int version)
 {
 	if (version < 0)
@@ -377,16 +378,16 @@ int db_mysql_upgrade_to_schema(int version)
  */
 	csync_db_sql("Creating action table",
 		"CREATE TABLE `action` ("
-		"  `filename` varchar(512) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
-		"  `command`  varchar(512),"
+		"  `filename` varchar(%u) DEFAULT NULL,"
+		"  `command`  varchar(%u),"
 		"  `logfile` text,"
-		"  UNIQUE KEY `filename` (`filename`(326),`command`(20))"
-		") ENGINE=MyISAM ");
+		"  UNIQUE KEY `filename` (`filename`(%u),`command`(20))"
+		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql("Creating dirty table",
 		"CREATE TABLE `dirty` ("
-		"  `id`       bigint AUTO_INCREMENT,"
-		"  `filename`  varchar(275)  CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		     //		"  `id`        bigint        AUTO_INCREMENT,"
+		"  `filename`  varchar(%u)   DEFAULT NULL,"
 		"  `forced`    int(11)       DEFAULT NULL,"
 		"  `myname`    varchar(50)   DEFAULT NULL,"
 		"  `peername`  varchar(50)   DEFAULT NULL,"
@@ -394,32 +395,34 @@ int db_mysql_upgrade_to_schema(int version)
 	        "  `checktxt`  varchar(200)  DEFAULT NULL,"
 	        "  `device`    bigint        DEFAULT NULL,"
 	        "  `inode`     bigint        DEFAULT NULL,"
-		"  `other`     varchar(275)  DEFAULT NULL,"
+		"  `other`     varchar(%u)  DEFAULT NULL,"
 		"  `file_id`   bigint        DEFAULT NULL,"
-		"  UNIQUE KEY `filename` (`filename`(316),`peername`),"
-		"  KEY `dirty_host` (`peername`(10))"
-		") ENGINE=MyISAM");
+		"  UNIQUE KEY `filename` (`filename`(%u),`peername`)"
+		     //		"  KEY `dirty_host` (`peername`(10))"
+		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql("Creating file table",
 		"CREATE TABLE `file` ("
-		"  `id`       bigint AUTO_INCREMENT,"
-		"  `parent`   bigint DEFAULT NULL,"
-		"  `filename` varchar(275) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
-		"  `hostname` varchar(275) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		     //		"  `id`       bigint AUTO_INCREMENT,"
+		     //		"  `parent`   bigint DEFAULT NULL,"
+		"  `filename` varchar(%u)  DEFAULT NULL,"
+		"  `hostname` varchar(50)  DEFAULT NULL,"
 		"  `checktxt` varchar(200) DEFAULT NULL,"
 		"  `device`   bigint DEFAULT NULL,"
 		"  `inode`    bigint DEFAULT NULL,"
 		"  `size`     bigint DEFAULT NULL,"
 		"  `mode`     int    DEFAULT NULL,"
-		"  `digest`   varchar(1024) DEFAULT NULL,"
-		"  UNIQUE KEY `filename` (`filename`(333))"
-		") ENGINE=MyISAM");
+		"  `time`     int    DEFAULT NULL,"
+		"  `type`     int    DEFAULT NULL,"
+		"  `digest`   varchar(130) DEFAULT NULL,"
+		"  UNIQUE KEY `filename` (`filename`(%u))"
+		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql("Creating hint table",
 		"CREATE TABLE `hint` ("
-		"  `filename` varchar(275) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,"
+		"  `filename` varchar(%u) DEFAULT NULL,"
 		"  `recursive` int(11)     DEFAULT NULL"
-		") ENGINE=MyISAM");
+		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
 
 	csync_db_sql("Creating x509_cert table",
 		"CREATE TABLE `x509_cert` ("
