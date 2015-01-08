@@ -524,9 +524,32 @@ int match_peer(char **active_peers, const char *peer) {
 
 void csync_config_destroy();
 
+int check_file_args(char *files[], int file_count, char *realnames[], int recursive, int do_check, int init_run) {
+  int count = 0;
+  for (int i = 0; i < file_count; i++) {
+    const char *real_name = getrealfn(files[i]);
+    if (real_name == NULL) {
+      csync_debug(0, "%s did not match a real path. Skipping", files[i]);
+    }
+    else {
+      realnames[count] = strdup(real_name);
+      csync_check_usefullness(realnames[count], recursive);
+      if (do_check)
+	csync_check(realnames[count], recursive, init_run, db_version, 0);
+      count++;
+    }
+  }
+  return count; 
+}
+
+void csync_realnames_free(char *files[], int count) {
+  for (int i=0; i < count; i++) {
+    free(files[i]);
+  }
+}
+
 int main(int argc, char ** argv)
-{
-	struct textlist *tl = 0, *t;
+{	struct textlist *tl = 0, *t;
 	int mode = MODE_NONE;
 	int mode_test_auto_diff = 0;
 	int init_run = 0;
@@ -941,6 +964,7 @@ int main(int argc, char ** argv)
 	for (i=optind; i < argc; i++)
 		on_cygwin_lowercase(argv[i]);
 
+	
 	switch (mode) {
 		case MODE_SIMPLE:
 			if ( argc == optind )
@@ -950,23 +974,22 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				char *realnames[argc-optind];
-				for (i=optind; i < argc; i++) {
-					realnames[i-optind] = strdup(getrealfn(argv[i]));
-					csync_check_usefullness(realnames[i-optind], recursive);
-					csync_check(realnames[i-optind], recursive, init_run, db_version, 0);
-				}
-				csync_update(myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
-				for (i=optind; i < argc; i++)
-					free(realnames[i-optind]);
+			  char *realnames[argc-optind];
+			  int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 1, init_run);
+			  csync_update(myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version);
+			  csync_realnames_free(realnames, count);
 			}
 			break;
-
 		case MODE_HINT:
 			for (i=optind; i < argc; i++) {
-				char *realname = getrealfn(argv[i]);
-				csync_check_usefullness(realname, recursive);
-				csync_hint(realname, recursive);
+			  char *realname = getrealfn(argv[i]);
+			  if (realname != NULL) { 
+			    csync_check_usefullness(realname, recursive);
+			    csync_hint(realname, recursive);
+			  }
+			  else {
+			    csync_debug(0, "%s did not match a real path. Skipping.", argv[i]); 
+			  }
 			}
 			break;
 
@@ -993,14 +1016,13 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				for (i=optind; i < argc; i++) {
-					char *realname = getrealfn(argv[i]);
-					csync_check_usefullness(realname, recursive);
-					csync_check(realname, recursive, init_run, db_version, 0);
-				}
+			  char *realnames[argc-optind];
+			  int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 1, init_run);
+			  csync_realnames_free(realnames, count);
 			}
-			if (mode != MODE_CHECK_AND_UPDATE)
-				break;
+			if (mode != MODE_CHECK_AND_UPDATE) {
+			  break;
+			}
 
 		case MODE_UPDATE:
 			if ( argc == optind )
@@ -1009,23 +1031,24 @@ int main(int argc, char ** argv)
 			}
 			else
 			{
-				char *realnames[argc-optind];
-				for (i=optind; i < argc; i++) {
-					realnames[i-optind] = strdup(getrealfn(argv[i]));
-					csync_check_usefullness(realnames[i-optind], recursive);
-				}
-				csync_update(myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
-				for (i=optind; i < argc; i++)
-					free(realnames[i-optind]);
+			  char *realnames[argc-optind];
+			  int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 0, 0);
+			  csync_update(myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
+			  csync_realnames_free(realnames, count);
 			}
 			break;
 
 		case MODE_COMPARE:
 			csync_compare_mode = 1;
 			for (i=optind; i < argc; i++) {
-				char *realname = getrealfn(argv[i]);
-				csync_check_usefullness(realname, recursive);
-				csync_check(realname, recursive, init_run,db_version, 0);
+			  char *realname = getrealfn(argv[i]);
+			  if (realname != NULL) {
+			    csync_check_usefullness(realname, recursive);
+			    csync_check(realname, recursive, init_run,db_version, 0);
+			  }
+			  else {
+			    csync_debug(0, "%s is not a real path", argv[i]);
+			  }
 			}
 			break;
 
