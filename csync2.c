@@ -936,12 +936,15 @@ int main(int argc, char ** argv)
 	csync_debug(2, "IP Version:    %s\n",    (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
 
 	{
-		const struct csync_group *g;
-		for (g=csync_group; g; g=g->next)
-		  if ( g->myname )
-		    break;
-		  else
-		    csync_fatal("This host (%s) is not a member of any configured group.\n", myhostname);
+	   int found = 0;
+	   const struct csync_group *g;
+	   for (g=csync_group; g; g=g->next)
+	      if ( g->myname ) {
+		 found = 1;
+		 break;
+	      }
+	   if (!found)
+	      csync_fatal("This host (%s) is not a member of any configured group.\n", myhostname);
 	}
 
 	csync_db_open(csync_database);
