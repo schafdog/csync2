@@ -393,7 +393,8 @@ void csync_check_del(const char *file, int recursive, int init_run)
       
       if (!csync_match_file(filename))
 	continue;
-      
+
+      // Not found
       if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
 	textlist_add4(&tl, filename, checktxt, device, inode, 0);
     } SQL_END;
@@ -735,14 +736,17 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation, int flags)
 {
   int check_type = csync_match_file(file);
-  int dirdump_this = 0, dirdump_parent = 0;
+  int dirdump_this = 0, dirdump_parent = MATCH_NONE;
   int this_is_dirty = 0;
   struct stat st;
   
   if ( check_type>0 && lstat_strict(file, &st) != 0 ) {
     if ( ignnoent ) 
       return 0;
-    csync_fatal("This should not happen: Can't stat %s.\n", file);
+    csync_debug(0, "check_mod: ERROR: Can't stat %s.\n", file);
+    // TODO verify what to return, since caller of csync_check_mod is only checking for non-zero.
+    // return ERROR;
+    return  MATCH_NONE;
   }
 
   switch ( check_type ) 
