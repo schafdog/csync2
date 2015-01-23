@@ -7,12 +7,10 @@ clean peer
 mkdir -p test/$NAME/usr/local/sbin
 cmd x "New directory" 
 sleep 2
-touch test/$NAME/usr/local/sbin
-cmd c "New dir timestamp (check)"
-cmd u "New dir timestamp (update)"
-touch test/$NAME/usr/local
-cmd c "New dir timestamp (check)"
-cmd u "New dir timestamp (update)"
+echo hej > test/$NAME/usr/local/sbin/hej
+rm test/$NAME/usr/local/sbin/hej
+cmd c "New dir timestamp due to file (check)"
+cmd u "New dir timestamp due to file (update)"
 #
 touch test/$NAME/usr/local
 cmd m "New dir timestamp (mark)"

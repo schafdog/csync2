@@ -1,4 +1,4 @@
-cmd u "New dir timestamp (update)" local
+cmd u "New dir timestamp due to file (update)" local
 Reading symbols from shared library libmysqlclient.so
 Connecting to host peer (PLAIN) ...
 CONN local> CONFIG 
