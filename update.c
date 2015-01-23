@@ -1019,7 +1019,6 @@ int csync_update_file_mod(const char *myname, const char *peername,
     }
     break;
     case DIR_TYPE:
-      
       cmd_printf("MKDIR", key_enc, filename_enc, "-", &st, uidptr, gidptr);
       rc = csync_update_file_dir(peername, filename, &last_conn_status);
       break;
