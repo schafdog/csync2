@@ -1027,10 +1027,11 @@ int csync_daemon_dispatch(char *filename,
   }
   case A_MKDIR: {
     int rc = csync_daemon_mkdir(filename, cmd_error);
-    csync_debug(1, "mkdir %s rc = %d errno = %d", filename, rc, errno);
+    csync_debug(1, "mkdir %s rc = %d errno = %d err = %s\n", filename, rc, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
-  } // fall through on OK
+    // fall through on OK
+  } 
   case A_MOD: {
     int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
     if (rc != OK)
