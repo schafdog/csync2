@@ -395,8 +395,9 @@ int db_mysql_upgrade_to_schema(int version)
 	        "  `checktxt`  varchar(200)  DEFAULT NULL,"
 	        "  `device`    bigint        DEFAULT NULL,"
 	        "  `inode`     bigint        DEFAULT NULL,"
-		"  `other`     varchar(%u)  DEFAULT NULL,"
+		"  `other`     varchar(%u)   DEFAULT NULL,"
 		"  `file_id`   bigint        DEFAULT NULL,"
+		"  `digest`    varchar(130)  DEFAULT NULL,"
 		"  UNIQUE KEY `filename` (`filename`(%u),`peername`)"
 		     //		"  KEY `dirty_host` (`peername`(10))"
 		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
