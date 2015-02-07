@@ -15,4 +15,9 @@ cmd u "New dir timestamp due to file (update)"
 touch test/$NAME/usr/local
 cmd m "New dir timestamp (mark)"
 cmd u "New dir timestamp (update)"
+#
+echo hej > test/$NAME/usr/local/sbin/hej
+cmd x "New file" 
+rm test/$NAME/usr/local/sbin/hej
+cmd x "New file deleted" 
 killdaemon d PEER
