@@ -358,12 +358,12 @@ int csync_check_auto_resolve2(const char *peername, const char* filename, int la
 
 int csync_update_file_setown(const char *peername, const char *key_enc,
 			     const char *filename, const char *filename_enc,
-			     const struct stat *st, const char *uidptr, const char *gidptr)
+			     const struct stat *st, const char *uid, const char *gid)
 {
   // Optimize this. The daemon could have done this in the command.
   conn_printf("SETOWN %s %s - %d %d %s %s\n",
 	      key_enc, filename_enc,
-	      st->st_uid, st->st_gid, uidptr, gidptr);
+	      st->st_uid, st->st_gid, uid, gid);
   return read_conn_status(filename, peername);
     
 }
@@ -379,7 +379,7 @@ int csync_update_file_setmod(const char *peername, const char *key_enc,
 int csync_next_step(int rc, int auto_run, const char *myname, const char *peername,
 		    const char *key_enc,
 		    const char *filename, const char *filename_enc, 
-		    const struct stat *st, const char *uidptr, const char *gidptr,
+		    const struct stat *st, const char *uid, const char *gid,
 		    const char *operation, int force, int dry_run)
 {
   if (dry_run)
@@ -389,7 +389,7 @@ int csync_next_step(int rc, int auto_run, const char *myname, const char *peerna
 
   switch (rc) {
   case SETOWN:
-	rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, st, uidptr, gidptr);
+	rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, st, uid, gid);
   case SETMOD:
     rc = csync_update_file_setmod(peername, key_enc, filename, filename_enc, st);
   case SETTIME:
@@ -524,11 +524,11 @@ int get_file_type(int st_mode) {
 /* PRE: all values must have been encoded */
 void cmd_printf(const char *cmd, const char *key, 
 		const char *filename, const char *secondname,
-		const struct stat *st, const char *uidptr, const char* gidptr) {
+		const struct stat *st, const char *uid, const char* gid) {
   conn_printf("%s %s %s %s %d %d %s %s %d %Ld\n", 
 	      cmd, key, filename, secondname,
 	      st->st_uid, st->st_gid, 
-	      uidptr, gidptr,
+	      uid, gid,
 	      st->st_mode, (long long) st->st_mtime);
 }
 
@@ -568,7 +568,7 @@ int csync_update_file_dir(const char *peername, const char *filename,
 
 /* PRE: command SIG have been sent */
 int csync_update_file_sig(const char *peername, const char *filename, 
-			  const struct stat *st, const char *chk_local)
+			  const struct stat *st, const char *chk_local, int log_level)
 {
   int i = 0;
   char chk_peer[4096];
@@ -596,10 +596,10 @@ int csync_update_file_sig(const char *peername, const char *filename,
     chk_local = csync_genchecktxt_version(st, filename, flag, 
 					  peer_version);
   if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
-    csync_debug(2, "File is different on peer (cktxt char #%d).\n", i);
-    csync_debug(2, ">>> PEER:  %s\n>>> LOCAL: %s\n", 
-		chk_peer_decoded, chk_local);
-    return DIFF_META;
+     csync_debug(log_level, "File is different on peer (cktxt char #%d).\n", i);
+     csync_debug(log_level, ">>> PEER:  %s\n>>> LOCAL: %s\n", 
+		 chk_peer_decoded, chk_local);
+     return DIFF_META;
   }
   return OK;
 }
@@ -634,8 +634,8 @@ int csync_update_file_all_hardlink(const char *peername,
 			       const char *filename, 
 			       const char *filename_enc,
 			       struct stat  *st, 
-			       const char *uidptr,
-			       const char *gidptr, 
+			       const char *uid,
+			       const char *gid, 
 			       const char *checktxt,
 			       const char *digest,
 			       int is_identical,
@@ -659,8 +659,8 @@ int csync_update_file_all_hardlink(const char *peername,
       int rc; 
       rc = csync_update_file_sig_rs_diff(peername, db_encode(key), 
 					 other, other_enc, 
-					 st, uidptr, gidptr, 
-					 NULL, last_conn_status);
+					 st, uid, gid, 
+					 NULL, last_conn_status, 2);
       if (!is_identical) {
 	if (rc == CLEAR_DIRTY) {
 	  // We have a remote file that we can use to "reverse" hardlink with
@@ -696,25 +696,41 @@ int csync_update_file_patch(const char *key_enc,
 		     const char *filename, 
 		     const char *filename_enc,
 		     const struct stat *st, 
-		     const char *uidptr, 
-		     const char *gidptr,
+		     const char *uid, 
+		     const char *gid,
 		     int *last_conn_status)
 {
-  cmd_printf("PATCH", key_enc, filename_enc, "-", st, uidptr, gidptr);
+  cmd_printf("PATCH", key_enc, filename_enc, "-", st, uid, gid);
   int rc = csync_update_reg_file(peername, filename, last_conn_status);
   return rc;
+}
+
+int csync_stat(const char *filename, struct stat *st, char uid[MAX_UID_SIZE], char gid[MAX_GID_SIZE])
+{
+   int rc = lstat_strict(filename, st);
+   if (rc != 0)
+      return rc;
+
+   if (uid_to_name(st->st_uid, uid, MAX_UID_SIZE, "-")) {
+      csync_debug(0, "Failed to lookup uid %d\n", st->st_uid);
+   }
+   if (gid_to_name(st->st_gid, gid, MAX_GID_SIZE, "-")) {
+      csync_debug(0, "Failed to lookup gid %d\n", st->st_gid);
+   }
+   csync_debug(3, "uid %s gid %s\n", uid, gid); 
+   return rc;
 }
 
 int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const char *filename, const char *filename_enc,
 				  const struct stat *st, 
-				  const char *uidptr, const char *gidptr,
+				  const char *uid, const char *gid,
 				  const char *chk_local, 
-				  int *last_conn_status)
+				  int *last_conn_status, int log_level)
 {
   int found_diff_meta = 0, found_diff = 0;
-  cmd_printf("SIG", key_enc, filename_enc, "user/group", st, uidptr, gidptr);
-  int rc = csync_update_file_sig(peername, filename, st, chk_local);
+  cmd_printf("SIG", key_enc, filename_enc, "user/group", st, uid, gid);
+  int rc = csync_update_file_sig(peername, filename, st, chk_local, log_level);
   if (rc == DIFF_META)
     found_diff_meta = DIFF_META;
 
@@ -798,13 +814,13 @@ int csync_update_directory(const char *myname, const char *peername,
   return OK;
 }
 
-
 int csync_update_file_mod(const char *myname, const char *peername,
 			  const char *filename, const char *operation, const char *other,
 			  const char *checktxt, const char *digest, 
 			  int force, int dry_run, int db_version)
 {
   struct stat st;
+  char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
   int last_conn_status = 0, auto_resolve_run = 0,
     found_diff = 0, found_diff_meta = 0;
   
@@ -814,8 +830,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 		filename, peername);
     return OK;
   }
-
-  if ( lstat_strict(filename, &st) != 0 ) {
+  if ( csync_stat(filename, &st, uid, gid) != 0 ) {
     if (other) {
       if ( lstat_strict(other, &st) != 0 )
 	csync_debug(0, "ERROR: Cannot stat both files: %s %s.\n", filename, other, operation);
@@ -834,19 +849,6 @@ int csync_update_file_mod(const char *myname, const char *peername,
     return ERROR;
   }
   
-  char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
-  char *uidptr = uid_to_name(st.st_uid, uid, MAX_UID_SIZE);
-  char *gidptr = gid_to_name(st.st_gid, gid, MAX_GID_SIZE);
-  if (uidptr == NULL) {
-    uidptr = "-";
-    csync_debug(0, "Failed to lookup uid %d\n", st.st_uid);
-  }
-  if (gidptr == NULL) {
-    gidptr = "-";
-    csync_debug(0, "Failed to lookup gid %d\n", st.st_gid);
-  }
-  csync_debug(3, "uid %s gid %s\n", uidptr, gidptr); 
-
   int not_done = 1;
   const char *key_enc = url_encode(key);
   const char *filename_enc =  url_encode(prefixencode(filename));
@@ -868,9 +870,9 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	return ERROR;
     } 
     int rc = csync_update_file_sig_rs_diff(peername, key_enc, 
-				       filename, filename_enc, 
-				       &st, uidptr, gidptr, 
-				       NULL, &last_conn_status);
+					   filename, filename_enc, 
+					   &st, uid, gid, 
+					   NULL, &last_conn_status, 2);
     if (rc >= 0) {
       found_diff = rc & DIFF;
       found_diff_meta = rc & DIFF_META;
@@ -892,8 +894,8 @@ int csync_update_file_mod(const char *myname, const char *peername,
       if (rc == 0) {
 	int rc = csync_update_file_sig_rs_diff(peername, key_enc, 
 					       other, other_enc, 
-					       &st, uidptr, gidptr, 
-					       NULL, &last_conn_status);
+					       &st, uid, gid, 
+					       NULL, &last_conn_status, 2);
       
 	if (rc == OK) // swap
 	  rc = csync_update_hardlink(peername, key_enc, other, other_enc, filename_enc,
@@ -993,7 +995,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	// Try to find another file that has been updated and link with it (instead of patching again)
 	char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
 	rc = csync_update_file_all_hardlink(peername, key_enc, filename, filename_enc,
-					    &st, uidptr, gidptr,
+					    &st, uid, gid,
 					    chk_local,
 					    digest,
 					    0, // Differs
@@ -1007,19 +1009,19 @@ int csync_update_file_mod(const char *myname, const char *peername,
     if (found_diff)
       rc = csync_update_file_patch(key_enc, peername, 
 			    filename, filename_enc,
-			    &st, uidptr, gidptr, &last_conn_status);
+			    &st, uid, gid, &last_conn_status);
     if (rc >= OK && st.st_nlink > 1) {
       char *chk_local = strdup(csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version));
       rc = csync_update_file_all_hardlink(peername, key_enc, 
 					  filename, filename_enc, 
-					  &st, uidptr, gidptr,
+					  &st, uid, gid,
 					  chk_local, digest, 1,
 					  &last_conn_status);
       free(chk_local);
     }
     break;
     case DIR_TYPE:
-      cmd_printf("MKDIR", key_enc, filename_enc, "-", &st, uidptr, gidptr);
+      cmd_printf("MKDIR", key_enc, filename_enc, "-", &st, uid, gid);
       rc = csync_update_file_dir(peername, filename, &last_conn_status);
       break;
     case CHR_TYPE:
@@ -1073,7 +1075,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
     if (rc != CLEAR_DIRTY && rc != IDENTICAL) {
       if (rc == OK)
 	rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, 
-				      &st, uidptr, gidptr);
+				      &st, uid, gid);
       if (rc != OK)
 	return rc;
       
@@ -1295,7 +1297,6 @@ int csync_diff(const char *myname, const char *peername,
   const struct csync_group *g = 0;
   const struct csync_group_host *h;
   char buffer[512];
-  size_t rc;
   int found = 0; 
   while (!found && (g=csync_find_next(g, filename)) ) {
     if ( !g->myname || strcmp(g->myname, myname) ) 
@@ -1323,7 +1324,18 @@ int csync_diff(const char *myname, const char *peername,
   if ( read_conn_status(0, peername) )
     return finish_close();
   
-  conn_printf("TYPE %s %s\n", url_encode(g->key), url_encode(prefixencode(filename)));
+  const char *key_enc  = url_encode(g->key);
+  const char *filename_enc = url_encode(prefixencode(filename));
+  struct stat st; 
+  char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
+  csync_stat(filename, &st, uid, gid);
+  int last_conn_status; 
+  int rc = csync_update_file_sig_rs_diff(peername, key_enc, 
+					 filename, filename_enc, 
+					 &st, uid, gid, 
+					 NULL, &last_conn_status, 0);
+
+  conn_printf("TYPE %s %s\n", key_enc, filename);
   if ( read_conn_status(0, peername) ) 
     return finish_close();
   
