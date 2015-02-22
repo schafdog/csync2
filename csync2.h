@@ -275,7 +275,8 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const struct stat *st, 
 				  const char *uidptr, const char *gidptr,
 				  const char *chk_local, 
-				  int *last_conn_status);
+				  int *last_conn_status, 
+				  int log_level);
 
 
 /* daemon.c */
