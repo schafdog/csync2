@@ -160,5 +160,9 @@ then
 	AC_MSG_ERROR([No database backend configured. Please enable either sqlite, sqlite3, mysql or postgres.])
 fi
 
-AC_CONFIG_FILES([Makefile])
-AC_OUTPUT
+# AC_CONFIG_FILES([Makefile])
+AC_OUTPUT([
+	Makefile
+	tests/Makefile
+])
+
