@@ -74,19 +74,6 @@ cert:
 	rm $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr
 
 
-## hack for building private librsync and private libsqlite ##
-
-private_librsync:
-	tar xvzf $(librsync_source_file) | cut -f1 -d/ | sed '1 p; d;' > librsync.dir
-	test -s librsync.dir && cd $$( cat librsync.dir ) && ./configure --enable-static --disable-shared
-	make -C $$( cat librsync.dir )
-	cp $$( cat librsync.dir )/.libs/librsync.a $$( cat librsync.dir )/libprivatersync.a
-	touch private_librsync
-
-private_libsqlite:
-	tar xvzf $(libsqlite_source_file) | cut -f1 -d/ | sed '1 p; d;' > libsqlite.dir
-	test -s libsqlite.dir && cd $$( cat libsqlite.dir ) && ./configure --enable-static --disable-shared
-	make -C $$( cat libsqlite.dir )
-	cp $$( cat libsqlite.dir )/.libs/libsqlite.a $$( cat libsqlite.dir )/libprivatesqlite.a
-	touch private_libsqlite
+tests:
+	make -C tests
 
