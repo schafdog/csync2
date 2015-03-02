@@ -98,60 +98,60 @@ static size_t strlcpy(char *d, const char *s, size_t bufsize)
 
 static int get_tmpname(char *fnametmp, const char *fname)
 {
-  int maxname, added, length = 0;
-  const char *f;
-  char *suf;
+   int maxname, added, length = 0;
+   const char *f;
+   char *suf;
 
-  static unsigned counter_limit;
-  unsigned counter;
+   static unsigned counter_limit;
+   unsigned counter;
 
-  if ((f = strrchr(fname, '/')) != NULL) {
-    ++f;
-    length = f - fname;
-    /* copy up to and including the slash */
-    strlcpy(fnametmp, fname, length + 1);
-  } else
-    f = fname;
-  fnametmp[length++] = '.';
+   if ((f = strrchr(fname, '/')) != NULL) {
+      ++f;
+      length = f - fname;
+      /* copy up to and including the slash */
+      strlcpy(fnametmp, fname, length + 1);
+   } else
+      f = fname;
+   fnametmp[length++] = '.';
+   
+   /* The maxname value is bufsize, and includes space for the '\0'.
+    * NAME_MAX needs an extra -1 for the name's leading dot. */
+   maxname = MIN(MAXPATHLEN - length - TMPNAME_SUFFIX_LEN,
+		 NAME_MAX - 1 - TMPNAME_SUFFIX_LEN);
 
-  /* The maxname value is bufsize, and includes space for the '\0'.
-   * NAME_MAX needs an extra -1 for the name's leading dot. */
-  maxname = MIN(MAXPATHLEN - length - TMPNAME_SUFFIX_LEN,
-		NAME_MAX - 1 - TMPNAME_SUFFIX_LEN);
+   if (maxname < 1) {
+      csync_debug(1, "temporary filename too long: %s\n", fname);
+      fnametmp[0] = '\0';
+      return 0;
+   }
 
-  if (maxname < 1) {
-    csync_debug(1, "temporary filename too long: %s\n", fname);
-    fnametmp[0] = '\0';
-    return 0;
-  }
+   added = strlcpy(fnametmp + length, f, maxname);
+   if (added >= maxname)
+      added = maxname - 1;
+   suf = fnametmp + length + added;
 
-  added = strlcpy(fnametmp + length, f, maxname);
-  if (added >= maxname)
-    added = maxname - 1;
-  suf = fnametmp + length + added;
+   if (!counter_limit) {
+      counter_limit = (unsigned)getpid() + MAX_UNIQUE_LOOP;
+      if (counter_limit > MAX_UNIQUE_NUMBER || counter_limit < MAX_UNIQUE_LOOP)
+	 counter_limit = MAX_UNIQUE_LOOP;
+      
+      counter = counter_limit - MAX_UNIQUE_LOOP;
 
-  if (!counter_limit) {
-    counter_limit = (unsigned)getpid() + MAX_UNIQUE_LOOP;
-    if (counter_limit > MAX_UNIQUE_NUMBER || counter_limit < MAX_UNIQUE_LOOP)
-      counter_limit = MAX_UNIQUE_LOOP;
-
-    counter = counter_limit - MAX_UNIQUE_LOOP;
-
-    /* This doesn't have to be very good because we don't need
-     * to worry about someone trying to guess the values:  all
-     * a conflict will do is cause a device, special file, hard
-     * link, or symlink to fail to be created.  Also: avoid
-     * using mktemp() due to gcc's annoying warning. */
-    while (1) {
-      snprintf(suf, TMPNAME_SUFFIX_LEN+1, ".%d", counter);
-      if (access(fnametmp, 0) < 0)
-	break;
-      if (++counter >= counter_limit)
-	return 0;
-    }
-  } else
-    memcpy(suf, TMPNAME_SUFFIX, TMPNAME_SUFFIX_LEN+1);
-
+      /* This doesn't have to be very good because we don't need
+       * to worry about someone trying to guess the values:  all
+       * a conflict will do is cause a device, special file, hard
+       * link, or symlink to fail to be created.  Also: avoid
+       * using mktemp() due to gcc's annoying warning. */
+      while (1) {
+	 snprintf(suf, TMPNAME_SUFFIX_LEN+1, ".%d", counter);
+	 if (access(fnametmp, 0) < 0)
+	    break;
+	 if (++counter >= counter_limit)
+	    return 0;
+      }
+   } else
+      memcpy(suf, TMPNAME_SUFFIX, TMPNAME_SUFFIX_LEN+1);
+   
   return 1;
 }
 
