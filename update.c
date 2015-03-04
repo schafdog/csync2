@@ -1230,7 +1230,7 @@ void csync_update_host(const char *myname, const char *peername,
 	    rc = csync_update_file_mod(myname, peername,
 				       t->value, t->value2, t->value3, t->value4, t->value5, t->intvalue, dry_run, db_version);
 	if (rc == CONN_CLOSE || connection_closed_error) {
-	   csync_debug(0, "Connection closed on updating %d", t->value);
+	   csync_debug(0, "Connection closed on updating %s\n", t->value);
 	   break;
 	}
 	csync_directory_add(&directory_list, t->value);
@@ -1242,7 +1242,7 @@ void csync_update_host(const char *myname, const char *peername,
 	last_tn=&(t->next);
     } else {
 	/* Reverse order (deepest first when deleting. otherwise we need recursive deleting */
-	csync_debug(3, "Dirty (deleted) item %s %s %d \n", t->value, t->value2, t->intvalue);
+	csync_debug(3, "Dirty (deleted) item %s %s %d\n", t->value, t->value2, t->intvalue);
 	*last_tn = next_t;
 	t->next = tl_del;
 	tl_del = t;
@@ -1254,17 +1254,17 @@ void csync_update_host(const char *myname, const char *peername,
 				 t->value, t->value2, t->value5,
 				 t->intvalue, dry_run);
       if (rc == CONN_CLOSE || connection_closed_error) {
-	 csync_debug(0, "Connection closed on updating %d", t->value);
+	 csync_debug(0, "Connection closed on deleting  %s\n", t->value);
 	 break;
       }
       csync_directory_add(&directory_list, t->value);
   }
   textlist_free(tl_del);
 
-  for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
+  for (t = directory_list; rc != CONN_CLOSE && !connection_closed_error && t != 0; t = t->next) {
     rc = csync_update_directory(myname, peername, t->value, t->intvalue, dry_run, db_version);
     if (rc == CONN_CLOSE || connection_closed_error) {
-       csync_debug(0, "Connection closed on setting time on directory %d", t->value);
+       csync_debug(0, "Connection closed on setting time on directory %s\n", t->value);
        break;
     }
   }
