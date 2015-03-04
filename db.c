@@ -36,7 +36,7 @@ int db_sync_mode = 1;
 extern int db_type; 
 static db_conn_p db = 0;
 // TODO make configurable
-static int wait_length = 1;
+static int wait_length = 0;
 
 static int get_dblock_timeout()
 {
@@ -104,7 +104,7 @@ void csync_db_maycommit()
 
 	now = time(0);
 
-	if ((now - last_wait_cycle) > 10) {
+	if (wait_length && (now - last_wait_cycle) > 10) {
 		SQL("COMMIT", "COMMIT ");
 		if (wait_length) {
 		  csync_debug(3, "Waiting %d secs so others can lock the database (%d - %d)...\n", wait_length, (int)now, (int)last_wait_cycle);
