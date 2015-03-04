@@ -59,8 +59,8 @@ void csync_db_alarmhandler(int signum)
 
 	begin_commit_recursion++;
 
-	//csync_debug(3, "Database idle in transaction. Forcing COMMIT.\n");
-	SQL("COMMIT ", "COMMIT ");
+	// csync_debug(3, "Database idle in transaction. Forcing COMMIT.\n");
+	SQL("COMMIT (alarmhandler)", "COMMIT ");
 	tqueries_counter = -10;
 
 	begin_commit_recursion--;
@@ -117,7 +117,7 @@ void csync_db_maycommit()
 	}
 
 	if ((tqueries_counter > 1000) || ((now - transaction_begin) > 3)) {
-	        SQL("COMMIT ", "COMMIT ");
+	        SQL("COMMIT (1000) ", "COMMIT ");
 		tqueries_counter = 0;
 		begin_commit_recursion--;
 		return;
@@ -157,7 +157,7 @@ void csync_db_close()
 
 	begin_commit_recursion++;
 	if (tqueries_counter > 0) {
-	        SQL("COMMIT ", "COMMIT ");
+	        SQL("COMMIT (close)", "COMMIT ");
 		tqueries_counter = -10;
 	}
 	db_conn_close(db);
