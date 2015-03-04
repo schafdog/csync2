@@ -460,9 +460,10 @@ int conn_read_get_content_length(long *size)
 {
     char buffer[100];
     int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
+    csync_debug(2, "Content length in buffer: '%s' size: %ld rc; %d \n", buffer, *size, rc);
     if (!strcmp(buffer, "ERROR\n")) {
-	errno=EIO;
-	return -1;
+       errno=EIO;
+       return -1;
     }
     return rc;
 }
