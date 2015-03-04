@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <signal.h>
 
 long csync_last_printtime = 0;
 FILE *csync_timestamp_out = 0;
@@ -126,9 +127,13 @@ void csync_fatal2(const char *fmt, ...)
 void csync_debug(int lv, const char *fmt, ...)
 {
 	va_list ap;
-	if ( csync_debug_level < lv ) return;
-
- 	if (!csync_syslog) {
+	if ( csync_debug_level < lv )
+	   return;
+	sigset_t x, old;
+ 	sigemptyset (&x);
+	sigaddset(&x, SIGUSR1);
+	sigprocmask(SIG_BLOCK, &x, &old);
+	if (!csync_syslog) {
 	  csync_printtime();
 	
 	  if (csync_timestamps)
@@ -147,7 +152,7 @@ void csync_debug(int lv, const char *fmt, ...)
 	  va_end(ap);
 	}
 	csync_messages_printed++;
-	
+	sigprocmask(SIG_SETMASK, &old, NULL);
 	if (lv < 0)
 	  exit(1);
 }
