@@ -370,7 +370,15 @@ static inline int READ(void *buf, size_t count)
     return -2;
   if (rc < 0)
     return rc;
-  return read(conn_fd_in, buf, count);
+  int length = 0; 
+  while (1) {
+     length = read(conn_fd_in, buf, count);
+     if (length == -1 && errno == EINTR)
+	csync_debug(2, "Interupted while reading");
+     else
+	return length;
+  }
+  return length;
 }
 
 static inline int WRITE(const void *buf, size_t count)
@@ -458,14 +466,15 @@ void conn_debug(const char *name, const char*buf, size_t count)
 
 int conn_read_get_content_length(long *size) 
 {
-    char buffer[100];
-    int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
-    csync_debug(2, "Content length in buffer: '%s' size: %ld rc; %d \n", buffer, *size, rc);
-    if (!strcmp(buffer, "ERROR\n")) {
-       errno=EIO;
-       return -1;
-    }
-    return rc;
+   char buffer[100];
+   *size = 0;
+   int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
+   csync_debug(2, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
+   if (!strcmp(buffer, "ERROR\n")) {
+      errno=EIO;
+      return -1;
+   }
+   return rc;
 }
 
 int conn_read(void *buf, size_t count)
