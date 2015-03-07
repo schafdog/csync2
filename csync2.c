@@ -548,6 +548,13 @@ void csync_realnames_free(char *files[], int count) {
   }
 }
 
+void select_recursive(char *db_encoded, char **where_rec) {
+   ASPRINTF(where_rec,
+	    " filename > '%s/' "
+	    " and filename < '%s0'",
+	    db_encoded, db_encoded);
+}
+
 int main(int argc, char ** argv)
 {	struct textlist *tl = 0, *t;
 	int mode = MODE_NONE;
@@ -764,15 +771,16 @@ int main(int argc, char ** argv)
 	}
 
 	if ( optind < argc &&
-			mode != MODE_HINT && mode != MODE_MARK &&
-			mode != MODE_FORCE && mode != MODE_SIMPLE &&
-			mode != MODE_UPDATE && mode != MODE_CHECK &&
-			mode != MODE_COMPARE &&
-			mode != MODE_CHECK_AND_UPDATE &&
-			mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
-	                mode != MODE_UPGRADE_DB &&
-	                update_format == 0)
-		help(argv[0]);
+	     mode != MODE_HINT && mode != MODE_MARK &&
+	     mode != MODE_FORCE && mode != MODE_SIMPLE &&
+	     mode != MODE_UPDATE && mode != MODE_CHECK &&
+	     mode != MODE_COMPARE &&
+	     mode != MODE_CHECK_AND_UPDATE &&
+	     mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
+	     mode != MODE_UPGRADE_DB &&
+	     mode != MODE_LIST_DIRTY &&
+	     update_format == 0)
+	   help(argv[0]);
 
 	if ( mode == MODE_TEST_SYNC && optind != argc &&
 	     optind+1 != argc && optind+2 != argc && optind+3 != argc)
@@ -1199,8 +1207,19 @@ int main(int argc, char ** argv)
 
 		case MODE_LIST_DIRTY:
 			retval = 0;
+			char *where = "";
+			if (optind < argc) {
+			   char *realname = getrealfn(argv[optind]);
+			   const char *db_encoded = db_encode(realname);
+			   ASPRINTF(&where,
+				    "where filename = '%s' or "
+				    "      filename > '%s/' and " 
+				    "      filename < '%s0'",
+				    db_encoded, db_encoded, db_encoded);
+			}
 			SQL_BEGIN("DB Dump - Dirty",
-				"SELECT forced, myname, peername, filename, operation FROM dirty ORDER BY filename")
+				  "SELECT forced, myname, peername, filename, operation FROM dirty %s ORDER BY filename", 
+				  where)
 			{
 			  const char *peername = db_decode(SQL_V(2));
 			  const char *filename = db_decode(SQL_V(3));
@@ -1216,6 +1235,8 @@ int main(int argc, char ** argv)
 			    }
 			  }
 			} SQL_END;
+			if (where[0] != 0)
+			   free(where);
 			break;
 
 		case MODE_REMOVE_OLD:
