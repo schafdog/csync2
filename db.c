@@ -123,8 +123,8 @@ void csync_db_maycommit()
 		return;
 	}
 
-	signal(SIGALRM, csync_db_alarmhandler);
-	alarm(10);
+	//signal(SIGALRM, csync_db_alarmhandler);
+	//alarm(10);
 
 	begin_commit_recursion--;
 	return;
