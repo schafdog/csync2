@@ -624,6 +624,8 @@ int csync_update_hardlink(const char *peername, const char *key_encoded, const c
     conn_printf("%s %s %s %s \n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
     if ((*last_conn_status = read_conn_status(filename, peername))) {
 	csync_debug(0, "Failed to hard link %s %s\n", path_enc, newpath_enc);
+	if (*last_conn_status == CONN_CLOSE) 
+	   return *last_conn_status; 
 	return ERROR_HARDLINK;
     }
     return OK;
@@ -852,7 +854,10 @@ int csync_update_file_mod(const char *myname, const char *peername,
 
   int not_done = 1;
   const char *key_enc = url_encode(key);
-  const char *filename_enc =  url_encode(prefixencode(filename));
+  const char *enc_tmp = url_encode(prefixencode(filename));
+  /* Need to live while doing a lot of url_encode. Dont want to delete on every return */
+  char filename_enc[strlen(enc_tmp)+1];
+  strcpy(filename_enc, enc_tmp);
   while (not_done) {
     csync_debug(1, "Updating '%s:%s' %s '%s'\n", peername, filename, operation, (other? other : ""));
 
@@ -906,6 +911,8 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	else
 	   rc = csync_update_hardlink(peername, key_enc, filename, filename_enc, other_enc,
 				     &last_conn_status);
+	if (rc == CONN_CLOSE)
+	   return rc;
 	if (rc == OK) {
 	   csync_clear_dirty(peername, filename, auto_resolve_run);
 	   return rc;
@@ -933,14 +940,17 @@ int csync_update_file_mod(const char *myname, const char *peername,
 				       &last_conn_status);
 	    if (rc == CONN_CLOSE)
 	       return rc;
-	    if (rc == OK)
+	    if (rc == OK) {
 		csync_clear_dirty(peername, filename, auto_resolve_run);
+		return OK;
+	    }
 	    break;
 	}
 	default:
 	    csync_debug(0, "Unknown duplicate: %s \n", other);
 	}
-	list_ptr = list_ptr->next;
+	if (list_ptr)
+	   list_ptr = list_ptr->next;
     }
     textlist_free(link_move_list);
 
