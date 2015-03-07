@@ -63,7 +63,7 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	char user[100];
 	int rc = uid_to_name(st->st_uid, user, 100, NULL);
 	if ( !csync_ignore_uid ) {
-	  if (user && (flags & SET_USER)) {
+	  if (!rc && (flags & SET_USER)) {
 	    xxprintf(":user=%s", user);
 	  }
 	  else {
@@ -74,7 +74,7 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	char *group = user;
 	rc = gid_to_name(st->st_gid, group, 100, NULL);
 	if ( !csync_ignore_gid ) {
-	  if (group && (flags & SET_GROUP)) {
+	  if (!rc && (flags & SET_GROUP)) {
 	    xxprintf(":group=%s", group);
 	  }
 	  else {
