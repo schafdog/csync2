@@ -898,7 +898,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 					       other, other_enc,
 					       &st, uid, gid,
 					       NULL, &last_conn_status, 2);
-	if (rc == CONN_CLOSE);
+	if (rc == CONN_CLOSE)
 	   return rc;
 	if (rc == OK) // swap
 	   rc = csync_update_hardlink(peername, key_enc, other, other_enc, filename_enc,
