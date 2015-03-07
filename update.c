@@ -1261,13 +1261,14 @@ void csync_update_host(const char *myname, const char *peername,
   }
   textlist_free(tl_del);
 
-  for (t = directory_list; rc != CONN_CLOSE && !connection_closed_error && t != 0; t = t->next) {
-    rc = csync_update_directory(myname, peername, t->value, t->intvalue, dry_run, db_version);
-    if (rc == CONN_CLOSE || connection_closed_error) {
-       csync_debug(0, "Connection closed on setting time on directory %s\n", t->value);
-       break;
-    }
-  }
+  if (!dry_run)
+     for (t = directory_list; rc != CONN_CLOSE && !connection_closed_error && t != 0; t = t->next) {
+	rc = csync_update_directory(myname, peername, t->value, t->intvalue, dry_run, db_version);
+	if (rc == CONN_CLOSE || connection_closed_error) {
+	   csync_debug(0, "Connection closed on setting time on directory %s\n", t->value);
+	   break;
+	}
+     }
   textlist_free(directory_list);
 
   conn_printf("BYE\n");
