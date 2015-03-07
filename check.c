@@ -313,7 +313,7 @@ int csync_check_pure(const char *filename)
     ;
   same_len = i+1;
 
-  csync_debug(2, "check_pure: filename: '%s' %u, cached path: '%s' %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
+  csync_debug(3, "check_pure: filename: '%s' %u, cached path: '%s' %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
   /* exact match? */
   if (dir_len == same_len && same_len == cached.len)
     return cached.has_symlink;
