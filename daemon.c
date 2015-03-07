@@ -1034,12 +1034,15 @@ int csync_daemon_dispatch(char *filename,
   } 
   case A_MOD: {
     int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
+    csync_debug(1, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n", filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
     rc = csync_daemon_setmod(filename, mod, cmd_error);
+    csync_debug(1, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, mod, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
     rc = csync_daemon_settime(filename, time, cmd_error);
+    csync_debug(1, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
     if (rc  != OK)
       return rc;
     return IDENTICAL;
@@ -1205,9 +1208,9 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
 			       &cmd_error);
 	  
       if (rc == OK || rc ==  IDENTICAL) {
-	// check updates done
-	csync_debug(4, "DEBUG peername: check update '%s' '%s' '%s' \n", peername, filename, (otherfile ? otherfile : "-" )); 
-	csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
+	 // check updates done
+	 csync_debug(1, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" )); 
+	 csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
       }
       else if (rc == NEXT_CMD){
 	// Already send an reply
