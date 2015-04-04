@@ -405,7 +405,7 @@ int verify_peername(const char *name, address_t *peeraddr)
 
 	/* Obtain address(es) matching host */
 	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;     /* Allow IPv4 or IPv6 */
+	hints.ai_family = af;     /* Use the family of the peeraddr  */
 	hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
 
 	s = getaddrinfo(name, NULL, &hints, &result);
@@ -426,12 +426,12 @@ int verify_peername(const char *name, address_t *peeraddr)
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
 	  char ip_string[INET6_ADDRSTRLEN];
 	  csync_debug(2, "IP: %s\n", csync_inet_ntop((address_t *) rp->ai_addr, ip_string, sizeof(ip_string)));
-		/* both IPv4 */
+		/* IPv4 */
 		if (af == AF_INET && rp->ai_family == AF_INET &&
 		    !memcmp(&((struct sockaddr_in*)rp->ai_addr)->sin_addr,
 			    &peeraddr->sa_in.sin_addr, sizeof(struct in_addr)))
 			break;
-		/* both IPv6 */
+		/* IPv6 */
 		if (af == AF_INET6 && rp->ai_family == AF_INET6 &&
 		    !memcmp(&((struct sockaddr_in6*)rp->ai_addr)->sin6_addr,
 			    &peeraddr->sa_in6.sin6_addr, sizeof(struct in6_addr)))
