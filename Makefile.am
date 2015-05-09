@@ -28,7 +28,7 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 		 ringbuffer.c uidgid.c uidgid.h \
 		 csync2.h db_api.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
 		 csync2-compare \
-		 digest.c digest.h \
+		 digest.c digest.h version.h \
 		 csync2.1
 
 EXTRA_DIST = csync2.cfg csync2.xinetd
@@ -79,3 +79,9 @@ cert:
 tests:
 	make -C tests
 
+check_version: FORCE
+	@./version.sh $(objects)
+
+FORCE:
+
+all-local: check_version
