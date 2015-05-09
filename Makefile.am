@@ -36,14 +36,12 @@ EXTRA_DIST = csync2.cfg csync2.xinetd
 GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
 
 AM_YFLAGS = -d
-BUILT_SOURCES = cfgfile_parser.h version.h
+BUILT_SOURCES = cfgfile_parser.h check_version
 LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
              private_librsync private_libsqlite config.log		
 
 DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in configure
-
-version.h: check_version
 
 check_version: FORCE
 	./version.sh $(objects)
