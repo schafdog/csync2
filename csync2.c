@@ -688,11 +688,16 @@ int main(int argc, char ** argv)
 				if ( mode != MODE_NONE ) help(argv[0]);
 				mode = MODE_SIMPLE;
 				break;
+			case 'f':
+				if ( mode != MODE_NONE ) help(argv[0]);
+				mode = MODE_FORCE;
+				break;
 			case 'c':
 				if ( mode != MODE_NONE ) help(argv[0]);
 				mode = MODE_CHECK;
 				break;
 			case 'u':
+			   mode |=  MODE_UPDATE;
 				if ( mode == MODE_CHECK )
 					mode = MODE_CHECK_AND_UPDATE;
 				else {
@@ -720,10 +725,6 @@ int main(int argc, char ** argv)
 			case 'm':
 				if ( mode != MODE_NONE ) help(argv[0]);
 				mode = MODE_MARK;
-				break;
-			case 'f':
-				if ( mode != MODE_NONE ) help(argv[0]);
-				mode = MODE_FORCE;
 				break;
 			case 'H':
 				if ( mode != MODE_NONE ) help(argv[0]);
@@ -1004,6 +1005,31 @@ int main(int argc, char ** argv)
 			}
 			break;
 
+		case MODE_FORCE:
+			for (i=optind; i < argc; i++) {
+				char *realname = getrealfn(argv[i]);
+				char *pfname = strdup(prefixencode(realname));
+				char *where_rec = "";
+
+				if ( recursive ) {
+					if ( !strcmp(realname, "/") )
+						ASPRINTF(&where_rec, "or 1=1");
+					else
+						ASPRINTF(&where_rec, "or (filename > '%s/' "
+							"and filename < '%s0')",
+							db_encode(realname), db_encode(realname));
+				}
+
+				SQL("Mark file as to be forced",
+					"UPDATE dirty SET forced = 1 WHERE filename = '%s' %s",
+					db_encode(realname), where_rec);
+
+				if ( recursive )
+					free(where_rec);
+				free(pfname);
+			}
+			break;
+
 		case MODE_CHECK:
 		case MODE_CHECK_AND_UPDATE:
 			if ( argc == optind )
@@ -1031,6 +1057,7 @@ int main(int argc, char ** argv)
 			  int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 1, init_run);
 			  csync_realnames_free(realnames, count);
 			}
+			// Depends on MODE_UPDATE being right after in the switch
 			if (mode != MODE_CHECK_AND_UPDATE) {
 			  break;
 			}
@@ -1105,31 +1132,6 @@ int main(int argc, char ** argv)
 		    free(db_encoded);
 		  }
 		  break;
-
-		case MODE_FORCE:
-			for (i=optind; i < argc; i++) {
-				char *realname = getrealfn(argv[i]);
-				char *pfname = strdup(prefixencode(realname));
-				char *where_rec = "";
-
-				if ( recursive ) {
-					if ( !strcmp(realname, "/") )
-						ASPRINTF(&where_rec, "or 1=1");
-					else
-						ASPRINTF(&where_rec, "or (filename > '%s/' "
-							"and filename < '%s0')",
-							db_encode(realname), db_encode(realname));
-				}
-
-				SQL("Mark file as to be forced",
-					"UPDATE dirty SET forced = 1 WHERE filename = '%s' %s",
-					db_encode(realname), where_rec);
-
-				if ( recursive )
-					free(where_rec);
-				free(pfname);
-			}
-			break;
 
 		case MODE_LIST_HINT:
 			retval = 2;
