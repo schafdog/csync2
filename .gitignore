@@ -27,3 +27,6 @@ hardlinks_*.txt
 *.rsync
 *.mysql
 tests/*.diff
+tests/test
+*.cpp
+mkstemp
