@@ -688,13 +688,12 @@ int main(int argc, char ** argv)
 	    if ( mode != MODE_NONE ) help(argv[0]);
 	    mode = MODE_SIMPLE;
 	    break;
-	case 'f':
-	    if ( mode != MODE_NONE ) help(argv[0]);
-	    mode = MODE_FORCE;
-	    break;
 	case 'c':
 	    if ( mode != MODE_NONE ) help(argv[0]);
 	    mode = MODE_CHECK;
+	    break;
+	case 'f':
+	    mode |= MODE_FORCE;
 	    break;
 	case 'u':
 	    if ( mode == MODE_CHECK || mode == MODE_FORCE)
@@ -1002,30 +1001,6 @@ nofork:
 	    };
 	};
     };
-    if (mode & MODE_FORCE) {
-	for (i=optind; i < argc; i++) {
-	    char *realname = getrealfn(argv[i]);
-	    char *pfname = strdup(prefixencode(realname));
-	    char *where_rec = "";
-
-	    if ( recursive ) {
-		if ( !strcmp(realname, "/") )
-		    ASPRINTF(&where_rec, "or 1=1");
-		else
-		    ASPRINTF(&where_rec, "or (filename > '%s/' "
-			     "and filename < '%s0')",
-			     db_encode(realname), db_encode(realname));
-	    }
-
-	    SQL("Mark file as to be forced",
-		"UPDATE dirty SET forced = 1 WHERE filename = '%s' %s",
-		db_encode(realname), where_rec);
-
-	    if ( recursive )
-		free(where_rec);
-	    free(pfname);
-	}
-    };
 
     if (mode & MODE_CHECK) {
 	if ( argc == optind )
@@ -1052,6 +1027,30 @@ nofork:
 	    char *realnames[argc-optind];
 	    int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 1, init_run);
 	    csync_realnames_free(realnames, count);
+	}
+    };
+
+    if (mode & MODE_FORCE) {
+	for (i=optind; i < argc; i++) {
+	    char *realname = getrealfn(argv[i]);
+	    char *pfname = strdup(prefixencode(realname));
+	    char *where_rec = "";
+
+	    if ( recursive ) {
+		if ( !strcmp(realname, "/") )
+		    ASPRINTF(&where_rec, "or 1=1");
+		else
+		    ASPRINTF(&where_rec, "or (filename > '%s/' "
+			     "and filename < '%s0')",
+			     db_encode(realname), db_encode(realname));
+	    };
+	    SQL("Mark file as to be forced",
+		"UPDATE dirty SET forced = 1 WHERE filename = '%s' %s",
+		db_encode(realname), where_rec);
+
+	    if ( recursive )
+		free(where_rec);
+	    free(pfname);
 	}
     };
 
