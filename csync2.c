@@ -19,6 +19,7 @@
  */
 
 #include "csync2.h"
+#include "version.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -77,8 +78,8 @@ void csync_version() {
 	"Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>\n"
 	"Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
 	"\n"
-#ifdef GIT_VERSION
-	" " GIT_VERSION "\n"
+#ifdef CSYNC_GIT_VERSION
+	" " CSYNC_GIT_VERSION "\n"
 #endif
 	);
 }
