@@ -17,6 +17,8 @@ configure.lineno
 csync2
 #csync2.sql
 depcomp
+compile
+test-driver
 install-sh
 missing
 patch.txt
