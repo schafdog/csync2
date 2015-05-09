@@ -30,3 +30,5 @@ tests/*.diff
 tests/test
 *.cpp
 mkstemp
+version.h
+version.h.new
