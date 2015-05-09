@@ -33,6 +33,8 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 
 EXTRA_DIST = csync2.cfg csync2.xinetd
 
+GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
+
 AM_YFLAGS = -d
 BUILT_SOURCES = cfgfile_parser.h
 LIBS += -ldl -lssl -lcrypto
@@ -44,7 +46,7 @@ DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=$(LIBGNUTLS_CFLAGS) -std=c99 -O0
+AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) -std=c99 -O0
 AM_LDFLAGS=$(LIBGNUTLS_LIBS)
 
 if PRIVATE_LIBRSYNC
