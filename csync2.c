@@ -708,18 +708,16 @@ int main(int argc, char ** argv)
 	    mode = MODE_COMPARE;
 	    break;
 	case 'i':
-	    if ( mode == MODE_INETD )
-		mode = MODE_SERVER;
-	    else if ( mode == MODE_SERVER )
-		mode = MODE_SINGLE;
-	    else if ( mode == MODE_SINGLE )
-		mode = MODE_NOFORK;
-	    else {
-		if ( mode != MODE_NONE ) 
+	   if (mode == MODE_NONE ) {
+	      mode = MODE_INETD;	      
+	   }
+	   else {
+	      mode *= 2;
+	      if (mode > MODE_NOFORK) {
 		    help(argv[0]);
-		mode = MODE_INETD;
-	    }
-	    break;
+	      };
+	   };
+	   break;
 	case 'm':
 	    if ( mode != MODE_NONE ) help(argv[0]);
 	    mode = MODE_MARK;
@@ -771,8 +769,10 @@ int main(int argc, char ** argv)
 
     if ( optind < argc &&
 	 mode != MODE_HINT && mode != MODE_MARK &&
-	 mode != MODE_FORCE && mode != MODE_SIMPLE &&
-	 mode != MODE_UPDATE && mode != MODE_CHECK &&
+	 !(mode & MODE_FORCE) &&
+	 mode != MODE_SIMPLE &&
+	 !(mode & MODE_UPDATE) &&
+	 mode != MODE_CHECK &&
 	 mode != MODE_COMPARE &&
 	 mode != MODE_CHECK_AND_UPDATE &&
 	 mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
@@ -806,18 +806,17 @@ int main(int argc, char ** argv)
 	myhostname[i] = tolower(myhostname[i]);
 	
     int listenfd;
-    if ( mode == MODE_SERVER || mode == MODE_SINGLE || mode == MODE_NOFORK) {
+    int server = mode & MODE_DAEMON;
+    int server_standalone =  mode & MODE_STANDALONE;
+    if (server_standalone) {
 	listenfd = csync_server_bind(ip_version);
 	if (listenfd == -1) {
 	    exit(1);
-	}
-    }
+	};
+    };
 
     int first = 1;
-    int server = (mode == MODE_INETD  || 
-		  mode == MODE_SERVER || 
-		  mode == MODE_SINGLE || 
-		  mode == MODE_NOFORK);
+    
 nofork:
     // init syslog if needed. 
     if (first && csync_syslog && csync_server_child_pid == 0) {
@@ -826,11 +825,10 @@ nofork:
     }
     // mode keeps its original value, but now checking on server
     int conn  = -1;
-    if (server && mode != MODE_INETD) {
-	if (csync_server_accept_loop(mode == MODE_SINGLE ||
-				     mode == MODE_NOFORK,
-				     listenfd, &conn)) 
-	    return 1; // Parent returns
+    if (server_standalone) {
+       if (csync_server_accept_loop(mode & (MODE_SINGLE || MODE_NOFORK),
+				    listenfd, &conn)) 
+	  return 1; // Parent returns
     }
 
     // print time (if -t is set)
@@ -843,7 +841,7 @@ nofork:
 	char line[4096], *cmd, *para;
 	  
 	/* configure conn.c for inetd mode */
-	if (MODE_INETD == mode)
+	if (MODE_INETD & mode)
 	    conn_set(0, 1);
 	else {
 	    conn_set(conn,dup(conn));
@@ -887,11 +885,11 @@ nofork:
 	    if ( !(cfgname[i] >= '0' && cfgname[i] <= '9') &&
 		 !(cfgname[i] >= 'a' && cfgname[i] <= 'z') ) {
 		char *error  = "Config names are limited to [a-z0-9]+.\n";
-		if (mode == MODE_INETD)
+		if (mode & MODE_INETD)
 		    conn_printf(error);
 		else
 		    csync_fatal(error);
-		return mode != MODE_INETD;
+		return !(mode & MODE_INETD);
 	    }
 
 	ASPRINTF(&file_config, ETCDIR "/csync2_%s.cfg", cfgname);
@@ -1082,7 +1080,7 @@ nofork:
 	}
     };
 
-    if (mode == MODE_INETD || mode == MODE_SERVER || mode == MODE_SINGLE || mode == MODE_NOFORK) {
+    if (server) {
 	conn_printf("OK (cmd_finished).\n");
 	csync_daemon_session(db_version, protocol_version, mode);
     };
