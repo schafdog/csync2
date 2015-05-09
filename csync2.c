@@ -77,8 +77,8 @@ void csync_version() {
 	"Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>\n"
 	"Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
 	"\n"
-#ifdef CSYNC2_VERSION_SHA1
-	" " CSYNC2_VERSION_SHA1 "\n"
+#ifdef GIT_VERSION
+	" " GIT_VERSION "\n"
 #endif
 	);
 }

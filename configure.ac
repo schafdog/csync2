@@ -41,12 +41,12 @@ fi
 # check for large file support
 AC_SYS_LARGEFILE
 
-if test -d ${srcdir}/.git; then
-   sha=`git show --pretty=format:%H|head -1`
-else
-        sha=`head -1 ${srcdir}/ChangeLog|awk '{print $2}'`
-fi
-AC_DEFINE_UNQUOTED([CSYNC2_VERSION_SHA1], ["$sha"], [Git SHA1])
+#if test -d ${srcdir}/.git; then
+#   sha=`git show --pretty=format:%H|head -1`
+#else
+#        sha=`head -1 ${srcdir}/ChangeLog|awk '{print $2}'`
+#fi
+#AC_DEFINE_UNQUOTED([CSYNC2_VERSION_SHA1], ["$sha"], [Git SHA1])
 
 # Check for librsync.
 AC_ARG_WITH([librsync-source],
