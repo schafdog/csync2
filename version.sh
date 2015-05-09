@@ -8,7 +8,7 @@ cat <<EOF > version.h.new
 #endif
 EOF
 
-if !(diff -q version.h.new version.h) ;  then
-    echo "New git version" ;
+if !(diff -q version.h.new version.h > /dev/null) ;  then
+    echo "New git version: $GIT_VERSION" ;
     cp version.h.new version.h
 fi

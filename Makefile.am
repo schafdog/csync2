@@ -44,7 +44,7 @@ CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
 DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in configure
 
 check_version: FORCE
-	./version.sh $(objects)
+	@./version.sh $(objects)
 
 dist-clean-local:
 	rm -rf autom4te.cache
