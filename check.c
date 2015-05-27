@@ -646,7 +646,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	  flag |= SET_GROUP; 
       
       if (update_dev_inode(file_stat, device, inode) ) {
-	  csync_debug(0, "File %s: device:inode has changed: %s:%s -> %llu:%llu\n", file, device, inode, file_stat->st_dev, file_stat->st_ino);
+	  csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu\n", file, device, inode, file_stat->st_dev, file_stat->st_ino);
 	  is_upgrade = 1;
       }
       if (!digest_p && strstr(checktxt, "type=reg")) {
