@@ -28,23 +28,28 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 		 ringbuffer.c uidgid.c uidgid.h \
 		 csync2.h db_api.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
 		 csync2-compare \
-		 digest.c digest.h \
+		 digest.c digest.h version.h \
 		 csync2.1
 
 EXTRA_DIST = csync2.cfg csync2.xinetd
 
+GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
+
 AM_YFLAGS = -d
-BUILT_SOURCES = cfgfile_parser.h
+BUILT_SOURCES = cfgfile_parser.h check_version
 LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
              private_librsync private_libsqlite config.log		
 
 DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in configure
 
+check_version: FORCE
+	@./version.sh $(objects)
+
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=$(LIBGNUTLS_CFLAGS) -std=c99 -O0
+AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) -std=c99 -O0
 AM_LDFLAGS=$(LIBGNUTLS_LIBS)
 
 if PRIVATE_LIBRSYNC
@@ -74,19 +79,7 @@ cert:
 	rm $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr
 
 
-## hack for building private librsync and private libsqlite ##
+tests:
+	make -C tests
 
-private_librsync:
-	tar xvzf $(librsync_source_file) | cut -f1 -d/ | sed '1 p; d;' > librsync.dir
-	test -s librsync.dir && cd $$( cat librsync.dir ) && ./configure --enable-static --disable-shared
-	make -C $$( cat librsync.dir )
-	cp $$( cat librsync.dir )/.libs/librsync.a $$( cat librsync.dir )/libprivatersync.a
-	touch private_librsync
-
-private_libsqlite:
-	tar xvzf $(libsqlite_source_file) | cut -f1 -d/ | sed '1 p; d;' > libsqlite.dir
-	test -s libsqlite.dir && cd $$( cat libsqlite.dir ) && ./configure --enable-static --disable-shared
-	make -C $$( cat libsqlite.dir )
-	cp $$( cat libsqlite.dir )/.libs/libsqlite.a $$( cat libsqlite.dir )/libprivatesqlite.a
-	touch private_libsqlite
-
+FORCE:

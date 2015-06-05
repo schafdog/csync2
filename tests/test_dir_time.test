@@ -6,11 +6,18 @@ clean local
 clean peer
 mkdir -p test/$NAME/usr/local/sbin
 cmd x "New directory" 
-sleep 5
-echo asdasdadad > test/$NAME/usr/local/sbin/hej
-sleep 5
+sleep 2
+echo hej > test/$NAME/usr/local/sbin/hej
 rm test/$NAME/usr/local/sbin/hej
-cmd c "New directory timestamp (check)"
-cmd u "New directory timestamp (update)"
-cmd x "New directory timestamp (second run)"
+cmd c "New dir timestamp due to file (check)"
+cmd u "New dir timestamp due to file (update)"
+#
+touch test/$NAME/usr/local
+cmd m "New dir timestamp (mark)"
+cmd u "New dir timestamp (update)"
+#
+echo hej > test/$NAME/usr/local/sbin/hej
+cmd x "New file" 
+rm test/$NAME/usr/local/sbin/hej
+cmd x "New file deleted" 
 killdaemon d PEER

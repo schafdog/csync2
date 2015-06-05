@@ -38,7 +38,7 @@ uid_t name_to_uid(char const *name, gid_t *gid)
 
 }
 
-char *uid_to_name(uid_t uid, char *buffer, int length)
+int uid_to_name(uid_t uid, char *buffer, int length, const char *default_value)
 {
   long buflen = sysconf(_SC_GETPW_R_SIZE_MAX);
   if (buflen == -1)
@@ -47,14 +47,17 @@ char *uid_to_name(uid_t uid, char *buffer, int length)
   // requires c99
   char buf[buflen];
   struct passwd pwbuf, *pwbufp;
-  if (0 != getpwuid_r(uid, &pwbuf, buf, buflen, &pwbufp) || !pwbufp)
-    return NULL;
+  if (0 != getpwuid_r(uid, &pwbuf, buf, buflen, &pwbufp) || !pwbufp) {
+     if (default_value)
+	strncpy(buffer, default_value, length);
+     return -1;
+  };
   strncpy(buffer, pwbufp->pw_name, length); 
-  return buffer;
+  return 0;
 
 }
 
-char *gid_to_name(gid_t gid, char *buffer, int length) 
+int gid_to_name(gid_t gid, char *buffer, int length, const char *default_value) 
 {
   long buflen = sysconf(_SC_GETGR_R_SIZE_MAX);
   if (buflen == -1)
@@ -64,10 +67,13 @@ char *gid_to_name(gid_t gid, char *buffer, int length)
   char buf[buflen];
   struct passwd pwbuf, *pwbufp;
   struct group grpbuf, *grpbufp;
-  if (0 != getgrgid_r(gid, &grpbuf, buf, buflen, &grpbufp) || !grpbufp)
-    return NULL;
+  if (0 != getgrgid_r(gid, &grpbuf, buf, buflen, &grpbufp) || !grpbufp) {
+     if (default_value)
+	strncpy(buffer, default_value, length);
+     return -1;
+  };
   strncpy(buffer, grpbufp->gr_name, length); 
-  return buffer;
+  return 0;
 } 
 
 uid_t name_to_gid(char const *name)

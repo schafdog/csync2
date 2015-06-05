@@ -313,7 +313,7 @@ int csync_check_pure(const char *filename)
     ;
   same_len = i+1;
 
-  csync_debug(3, "check: %s %u, %s %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
+  csync_debug(3, "check_pure: filename: '%s' %u, cached path: '%s' %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
   /* exact match? */
   if (dir_len == same_len && same_len == cached.len)
     return cached.has_symlink;
@@ -393,7 +393,8 @@ void csync_check_del(const char *file, int recursive, int init_run)
       
       if (!csync_match_file(filename))
 	continue;
-      
+
+      // Not found
       if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
 	textlist_add4(&tl, filename, checktxt, device, inode, 0);
     } SQL_END;
@@ -591,6 +592,24 @@ void csync_check_dir(const char* file, int recursive, int init_run, int version,
   }
 }
 
+static int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
+{
+    if (!dev)
+	return 1;
+    if (!ino)
+	return 1;
+
+    unsigned long long dev_no = atoll(dev);
+    unsigned long long ino_no = atoll(ino);
+    if (file_stat->st_dev != dev_no) {
+	return 1;
+    }
+    if (file_stat->st_ino != ino_no) {	
+	return 1;
+    }
+    return 0;
+}
+
 void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run, int version, char **operation)
 {
   int this_is_dirty = 0;
@@ -622,11 +641,13 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
       // const char *type   = SQL_V(4);
       int flag = 0;
       if (strstr(checktxt_db, ":user=") != NULL)
-	flag |= SET_USER; 
+	  flag |= SET_USER; 
       if (strstr(checktxt_db, ":group=") != NULL)
-	flag |= SET_GROUP; 
-      if (!inode || !device) {
-	is_upgrade = 1;
+	  flag |= SET_GROUP; 
+      
+      if (update_dev_inode(file_stat, device, inode) ) {
+	  csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu\n", file, device, inode, file_stat->st_dev, file_stat->st_ino);
+	  is_upgrade = 1;
       }
       if (!digest_p && strstr(checktxt, "type=reg")) {
 	calc_digest = 1;
@@ -735,14 +756,17 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation, int flags)
 {
   int check_type = csync_match_file(file);
-  int dirdump_this = 0, dirdump_parent = 0;
+  int dirdump_this = 0, dirdump_parent = MATCH_NONE;
   int this_is_dirty = 0;
   struct stat st;
   
   if ( check_type>0 && lstat_strict(file, &st) != 0 ) {
     if ( ignnoent ) 
       return 0;
-    csync_fatal("This should not happen: Can't stat %s.\n", file);
+    csync_debug(0, "check_mod: ERROR: Can't stat %s.\n", file);
+    // TODO verify what to return, since caller of csync_check_mod is only checking for non-zero.
+    // return ERROR;
+    return  MATCH_NONE;
   }
 
   switch ( check_type ) 

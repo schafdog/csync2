@@ -60,10 +60,10 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	if ( !csync_ignore_mod )
 		xxprintf(":mode=%d", (int)st->st_mode);
 
-	char buf[100]; 
-	char *user = uid_to_name(st->st_uid, buf, 100);
+	char user[100];
+	int rc = uid_to_name(st->st_uid, user, 100, NULL);
 	if ( !csync_ignore_uid ) {
-	  if (user && (flags & SET_USER)) {
+	  if (!rc && (flags & SET_USER)) {
 	    xxprintf(":user=%s", user);
 	  }
 	  else {
@@ -71,9 +71,10 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	  }
 	}
 
-	char *group = gid_to_name(st->st_gid, buf, 100);
+	char *group = user;
+	rc = gid_to_name(st->st_gid, group, 100, NULL);
 	if ( !csync_ignore_gid ) {
-	  if (group && (flags & SET_GROUP)) {
+	  if (!rc && (flags & SET_GROUP)) {
 	    xxprintf(":group=%s", group);
 	  }
 	  else {

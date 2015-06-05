@@ -36,7 +36,7 @@ int db_sync_mode = 1;
 extern int db_type; 
 static db_conn_p db = 0;
 // TODO make configurable
-static int wait_length = 1;
+static int wait_length = 0;
 
 static int get_dblock_timeout()
 {
@@ -59,8 +59,8 @@ void csync_db_alarmhandler(int signum)
 
 	begin_commit_recursion++;
 
-	//csync_debug(3, "Database idle in transaction. Forcing COMMIT.\n");
-	SQL("COMMIT ", "COMMIT ");
+	// csync_debug(3, "Database idle in transaction. Forcing COMMIT.\n");
+	SQL("COMMIT (alarmhandler)", "COMMIT ");
 	tqueries_counter = -10;
 
 	begin_commit_recursion--;
@@ -104,7 +104,7 @@ void csync_db_maycommit()
 
 	now = time(0);
 
-	if ((now - last_wait_cycle) > 10) {
+	if (wait_length && (now - last_wait_cycle) > 10) {
 		SQL("COMMIT", "COMMIT ");
 		if (wait_length) {
 		  csync_debug(3, "Waiting %d secs so others can lock the database (%d - %d)...\n", wait_length, (int)now, (int)last_wait_cycle);
@@ -117,14 +117,14 @@ void csync_db_maycommit()
 	}
 
 	if ((tqueries_counter > 1000) || ((now - transaction_begin) > 3)) {
-	        SQL("COMMIT ", "COMMIT ");
+	        SQL("COMMIT (1000) ", "COMMIT ");
 		tqueries_counter = 0;
 		begin_commit_recursion--;
 		return;
 	}
 
-	signal(SIGALRM, csync_db_alarmhandler);
-	alarm(10);
+	//signal(SIGALRM, csync_db_alarmhandler);
+	//alarm(10);
 
 	begin_commit_recursion--;
 	return;
@@ -157,7 +157,7 @@ void csync_db_close()
 
 	begin_commit_recursion++;
 	if (tqueries_counter > 0) {
-	        SQL("COMMIT ", "COMMIT ");
+	        SQL("COMMIT (close)", "COMMIT ");
 		tqueries_counter = -10;
 	}
 	db_conn_close(db);

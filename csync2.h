@@ -60,26 +60,29 @@
 #define DB_SCHEMA_VERSION 0
 
 enum {
-	MODE_NONE,
-	MODE_HINT,
-	MODE_CHECK,
-	MODE_CHECK_AND_UPDATE,
-	MODE_UPDATE,
-	MODE_INETD,
-	MODE_SERVER,
-	MODE_SINGLE,
-	MODE_NOFORK,
-	MODE_MARK,
-	MODE_FORCE,
-	MODE_LIST_HINT,
-	MODE_LIST_FILE,
-	MODE_LIST_SYNC,
-	MODE_TEST_SYNC,
-	MODE_LIST_DIRTY,
-	MODE_REMOVE_OLD,
-	MODE_COMPARE,
-	MODE_SIMPLE,
-	MODE_UPGRADE_DB
+	MODE_NONE = 0,
+	MODE_HINT = 1,
+	MODE_CHECK = 2,
+	MODE_UPDATE = 4,
+	MODE_CHECK_AND_UPDATE = MODE_CHECK+MODE_UPDATE,
+	MODE_INETD =  8,
+	MODE_SERVER = 16,
+	MODE_SINGLE = 32,
+	MODE_NOFORK = 64,
+	MODE_STANDALONE = MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
+	MODE_DAEMON  = MODE_INETD|MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
+	MODE_FORCE = 256,
+	MODE_LIST_HINT = 512,
+	MODE_LIST_FILE = 1024,
+	MODE_LIST_SYNC = 2048,
+	MODE_TEST_SYNC = 4096,
+	MODE_LIST_DIRTY = 8192,
+	MODE_REMOVE_OLD = 16384,
+	MODE_COMPARE = 32768,
+	MODE_SIMPLE =  65536,
+	MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
+	MODE_MARK = 2*MODE_UPGRADE_DB,
+
 };
 
 #define DEFAULT_PORT "30865" 
@@ -275,7 +278,8 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const struct stat *st, 
 				  const char *uidptr, const char *gidptr,
 				  const char *chk_local, 
-				  int *last_conn_status);
+				  int *last_conn_status, 
+				  int log_level);
 
 
 /* daemon.c */

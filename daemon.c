@@ -405,7 +405,7 @@ int verify_peername(const char *name, address_t *peeraddr)
 
 	/* Obtain address(es) matching host */
 	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;     /* Allow IPv4 or IPv6 */
+	hints.ai_family = af;     /* Use the family of the peeraddr  */
 	hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
 
 	s = getaddrinfo(name, NULL, &hints, &result);
@@ -426,12 +426,12 @@ int verify_peername(const char *name, address_t *peeraddr)
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
 	  char ip_string[INET6_ADDRSTRLEN];
 	  csync_debug(2, "IP: %s\n", csync_inet_ntop((address_t *) rp->ai_addr, ip_string, sizeof(ip_string)));
-		/* both IPv4 */
+		/* IPv4 */
 		if (af == AF_INET && rp->ai_family == AF_INET &&
 		    !memcmp(&((struct sockaddr_in*)rp->ai_addr)->sin_addr,
 			    &peeraddr->sa_in.sin_addr, sizeof(struct in_addr)))
 			break;
-		/* both IPv6 */
+		/* IPv6 */
 		if (af == AF_INET6 && rp->ai_family == AF_INET6 &&
 		    !memcmp(&((struct sockaddr_in6*)rp->ai_addr)->sin6_addr,
 			    &peeraddr->sa_in6.sin6_addr, sizeof(struct in6_addr)))
@@ -1027,18 +1027,22 @@ int csync_daemon_dispatch(char *filename,
   }
   case A_MKDIR: {
     int rc = csync_daemon_mkdir(filename, cmd_error);
-    csync_debug(1, "mkdir %s rc = %d errno = %d", filename, rc, errno);
+    csync_debug(1, "mkdir %s rc = %d errno = %d err = %s\n", filename, rc, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
-  } // fall through on OK
+    // fall through on OK
+  } 
   case A_MOD: {
     int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
+    csync_debug(1, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n", filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
     rc = csync_daemon_setmod(filename, mod, cmd_error);
+    csync_debug(1, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, mod, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
     rc = csync_daemon_settime(filename, time, cmd_error);
+    csync_debug(1, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
     if (rc  != OK)
       return rc;
     return IDENTICAL;
@@ -1204,9 +1208,9 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
 			       &cmd_error);
 	  
       if (rc == OK || rc ==  IDENTICAL) {
-	// check updates done
-	csync_debug(4, "DEBUG peername: check update '%s' '%s' '%s' \n", peername, filename, (otherfile ? otherfile : "-" )); 
-	csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
+	 // check updates done
+	 csync_debug(1, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" )); 
+	 csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
       }
       else if (rc == NEXT_CMD){
 	// Already send an reply
