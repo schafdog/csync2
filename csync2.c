@@ -827,7 +827,7 @@ nofork:
     // mode keeps its original value, but now checking on server
     int conn  = -1;
     if (server_standalone) {
-       if (csync_server_accept_loop(mode & (MODE_SINGLE || MODE_NOFORK),
+       if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK),
 				    listenfd, &conn)) 
 	  return 1; // Parent returns
     }
