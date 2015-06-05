@@ -49,7 +49,7 @@ check_version: FORCE
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) -std=c99 -O0
+AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) -std=c99 -O0 -Wno-deprecated-declarations
 AM_LDFLAGS=$(LIBGNUTLS_LIBS)
 
 if PRIVATE_LIBRSYNC
