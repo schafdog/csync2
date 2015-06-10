@@ -838,9 +838,10 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	csync_debug(0, "ERROR: Cannot stat both files: %s %s.\n", filename, other, operation);
       else
 	csync_debug(0, "ERROR: Cannot stat file: %s Other present: %s.\n", filename, other, operation);
-      SQL("Split operation",
-	  "insert into dirty (myname, peername, filename) values ('%s', '%s', '%s')", db_encode(myname), db_encode(peername), db_encode(other));
 
+      SQL("Split operation",
+	  "insert into dirty (myname, peername, filename) values ('%s', '%s', '%s')",
+	  db_encode(myname), db_encode(peername), db_encode(other));
     }
     else {
       csync_debug(0, "ERROR: Cannot stat %s %s.\n", filename, operation);
