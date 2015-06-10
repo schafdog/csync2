@@ -544,7 +544,7 @@ void conn_printf(const char *fmt, ...)
     buffer[size] = 0;
     conn_write(buffer, size);
     conn_remove_key(buffer);
-    csync_debug(1, "CONN %s> %s\n", myhostname, buffer);
+    csync_debug(1, "CONN %s < %s\n", active_peer, buffer);
 }
 
 void conn_printf_cmd_filepath(const char *cmd, const char *file, const char *key_enc, const char *fmt, ...)
@@ -565,7 +565,7 @@ void conn_printf_cmd_filepath(const char *cmd, const char *file, const char *key
     buffer[size] = 0;
     conn_write(buffer, size);
     conn_remove_key(buffer);
-    csync_debug(1, "CONN %s> %s\n", myhostname, buffer);
+    csync_debug(1, "CONN %s < %s\n", active_peer, buffer);
 }
 
 size_t conn_gets_newline(char *s, size_t size, int remove_newline)
