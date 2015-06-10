@@ -47,6 +47,8 @@
 #  define DBDIR REAL_DBDIR
 #endif
 
+int yylex_destroy(void);
+
 char *csync_database = 0;
 
 int db_type = DB_SQLITE3;
@@ -492,13 +494,13 @@ char **peers = NULL;
 char ** parse_peerlist(char *peerlist) {
     if (peerlist == NULL)
 	return peers;
-    peers = malloc(sizeof(peers[100]));
+    peers = calloc(sizeof(peers), 100);
     int i = 0;
-    char *saveptr;
-    peers[i] = strtok_r(peerlist, ",", &saveptr);
-    while ((peers[++i] = strtok_r(NULL, ",", &saveptr)))
-	;
-    peers[++i] = NULL;
+    char *saveptr = NULL;
+    while ((peers[++i] = strtok_r(peerlist, ",", &saveptr))) {
+	csync_debug(2, "New peer: %s\n", peers[i]);
+	peerlist = NULL;
+    };
     return peers;
 }
 
@@ -643,7 +645,7 @@ int main(int argc, char ** argv)
 	    break;
 	case 'P':
 	    active_peerlist = optarg;
-	    active_peers = parse_peerlist(active_peerlist);
+	    active_peers = parse_peerlist(active_peerlist);	
 	    break;
 	case 'B':
 	    db_blocking_mode = 0;
@@ -903,7 +905,7 @@ nofork:
 		    file_config, strerror(errno));
     yyparse();
     fclose(yyin);
-
+    yylex_destroy();
     // Move configuration versions into place, if configured.
     if (cfg_db_version != -1) {
 	if (cmd_db_version) 
@@ -1237,6 +1239,10 @@ nofork:
     csync_run_commands();
     csync_db_close();
     csync_config_destroy();
+    if (active_peers) {
+	free(active_peers);
+	csync_debug(1, "Freed active_peers %p\n", active_peers);
+    }
     if (csync_server_child_pid ) {
 	csync_debug(1, "Connection closed.\n");
 	  
