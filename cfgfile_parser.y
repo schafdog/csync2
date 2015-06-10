@@ -77,26 +77,28 @@ static void new_group(char *name)
 
 static void add_host(char *hostname, char *peername, int slave)
 {
-	int i;
-	for (i=0; hostname[i]; i++)
-		hostname[i] = tolower(hostname[i]);
-	for (i=0; peername[i]; i++)
-		peername[i] = tolower(peername[i]);
-	if ( strcmp(hostname, myhostname) == 0 ) {
-		csync_group->local_slave = slave;
-		csync_group->myname = peername;
-		free(hostname);
-	} else {
-		struct csync_group_host *t =
-			calloc(sizeof(struct csync_group_host), 1);
-		t->hostname = peername;
-		t->on_left_side = !csync_group->myname;
-		t->slave = slave;
-		t->next = csync_group->host;
-		csync_group->host = t;
-		csync_debug(3, "New group:host: %s %s\n",csync_group->gname, peername);
-		free(hostname);
-	}
+    int i;
+    for (i=0; hostname[i]; i++)
+	hostname[i] = tolower(hostname[i]);
+    for (i=0; peername[i]; i++)
+	peername[i] = tolower(peername[i]);
+    if ( strcmp(hostname, myhostname) == 0 ) {
+	csync_group->local_slave = slave;
+	if (!csync_group->myname)
+	    csync_group->myname = peername;
+	else
+	    free(peername);
+    } else {
+	struct csync_group_host *t =
+	    calloc(sizeof(struct csync_group_host), 1);
+	t->hostname = peername;
+	t->on_left_side = !csync_group->myname;
+	t->slave = slave;
+	t->next = csync_group->host;
+	csync_group->host = t;
+	csync_debug(3, "New group:host: %s %s\n",csync_group->gname, peername);
+    }
+    free(hostname);
 }
 
 static void add_patt(int patterntype, char *pattern)
@@ -134,196 +136,199 @@ static void add_patt(int patterntype, char *pattern)
 	t->pattern = strdup(prefixsubst(pattern));
 	t->next = csync_group->pattern;
 	csync_group->pattern = t;
-	csync_debug(3, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);}
+	csync_debug(3, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);
+	free(pattern);
+}
 
 static void set_key(char *keyfilename)
 {
-	FILE *keyfile;
-	char line[1024];
-	int i;
+    FILE *keyfile;
+    char line[1024];
+    int i;
 
-	if ( csync_group->key )
-		csync_fatal("Config error: a group might only have one key.\n");
+    if ( csync_group->key )
+	csync_fatal("Config error: a group might only have one key.\n");
+    
+    if ( (keyfile = fopen(keyfilename, "r")) == 0 ||
+	 fgets(line, 1024, keyfile) == 0 )
+	csync_fatal("Config error: Can't read keyfile %s.\n", keyfilename);
 
-	if ( (keyfile = fopen(keyfilename, "r")) == 0 ||
-	     fgets(line, 1024, keyfile) == 0 )
-		csync_fatal("Config error: Can't read keyfile %s.\n", keyfilename);
+    for (i=0; line[i]; i++) {
+	if (line[i] == '\n') { line[i]=0; break; }
+	if ( !(line[i] >= 'A' && line[i] <= 'Z') &&
+	     !(line[i] >= 'a' && line[i] <= 'z') &&
+	     !(line[i] >= '0' && line[i] <= '9') &&
+	     line[i] != '.' && line[i] != '_' )
+	    csync_fatal("Unallowed character '%c' in key file %s.\n",
+			line[i], keyfilename);
+    }
 
-	for (i=0; line[i]; i++) {
-		if (line[i] == '\n') { line[i]=0; break; }
-		if ( !(line[i] >= 'A' && line[i] <= 'Z') &&
-		     !(line[i] >= 'a' && line[i] <= 'z') &&
-		     !(line[i] >= '0' && line[i] <= '9') &&
-		     line[i] != '.' && line[i] != '_' )
-			csync_fatal("Unallowed character '%c' in key file %s.\n",
-					line[i], keyfilename);
-	}
+    if ( strlen(line) < 32 )
+	csync_fatal("Config error: Key in file %s is too short.\n", keyfilename);
 
-	if ( strlen(line) < 32 )
-		csync_fatal("Config error: Key in file %s is too short.\n", keyfilename);
-
-	csync_group->key = strdup(line);
-	free(keyfilename);
-	fclose(keyfile);
+    csync_group->key = strdup(line);
+    free(keyfilename);
+    fclose(keyfile);
 }
 
 static void set_auto(char *auto_method)
 {
-	int method_id = -1;
+    int method_id = -1;
+    
+    if (csync_group->auto_method >= 0)
+	csync_fatal("Config error: a group might only have one auto-setting.\n");
+    
+    if (!strcmp(auto_method, "none"))
+	method_id = CSYNC_AUTO_METHOD_NONE;
 
-	if (csync_group->auto_method >= 0)
-		csync_fatal("Config error: a group might only have one auto-setting.\n");
+    if (!strcmp(auto_method, "first"))
+	method_id = CSYNC_AUTO_METHOD_FIRST;
 
-	if (!strcmp(auto_method, "none"))
-		method_id = CSYNC_AUTO_METHOD_NONE;
+    if (!strcmp(auto_method, "younger"))
+	method_id = CSYNC_AUTO_METHOD_YOUNGER;
+    
+    if (!strcmp(auto_method, "older"))
+	method_id = CSYNC_AUTO_METHOD_OLDER;
+    
+    if (!strcmp(auto_method, "bigger"))
+	method_id = CSYNC_AUTO_METHOD_BIGGER;
+    
+    if (!strcmp(auto_method, "smaller"))
+	method_id = CSYNC_AUTO_METHOD_SMALLER;
 
-	if (!strcmp(auto_method, "first"))
-		method_id = CSYNC_AUTO_METHOD_FIRST;
+    if (!strcmp(auto_method, "left"))
+	method_id = CSYNC_AUTO_METHOD_LEFT;
 
-	if (!strcmp(auto_method, "younger"))
-		method_id = CSYNC_AUTO_METHOD_YOUNGER;
+    if (!strcmp(auto_method, "right"))
+	method_id = CSYNC_AUTO_METHOD_RIGHT;
 
-	if (!strcmp(auto_method, "older"))
-		method_id = CSYNC_AUTO_METHOD_OLDER;
+    if (method_id < 0)
+	csync_fatal("Config error: Unknown auto-setting '%s' (use "
+		    "'none', 'younger', 'older', 'bigger', 'smaller', "
+		    "'left' or 'right').\n", auto_method);
 
-	if (!strcmp(auto_method, "bigger"))
-		method_id = CSYNC_AUTO_METHOD_BIGGER;
-
-	if (!strcmp(auto_method, "smaller"))
-		method_id = CSYNC_AUTO_METHOD_SMALLER;
-
-	if (!strcmp(auto_method, "left"))
-		method_id = CSYNC_AUTO_METHOD_LEFT;
-
-	if (!strcmp(auto_method, "right"))
-		method_id = CSYNC_AUTO_METHOD_RIGHT;
-
-	if (method_id < 0)
-		csync_fatal("Config error: Unknown auto-setting '%s' (use "
-			"'none', 'younger', 'older', 'bigger', 'smaller', "
-			"'left' or 'right').\n", auto_method);
-
-	csync_group->auto_method = method_id;
-	free(auto_method);
+    csync_group->auto_method = method_id;
+    free(auto_method);
 }
 
 static void set_bak_dir(char *dir)
 {
-	csync_group->backup_directory = dir;
+    csync_group->backup_directory = dir;
 }
 
 static void set_bak_gen(char *gen)
 {
-	csync_group->backup_generations = atoi(gen);
-	free(gen);
+    csync_group->backup_generations = atoi(gen);
+    free(gen);
 }
 
 static void check_group()
 {
-	if ( ! csync_group->key )
-		csync_fatal("Config error: every group must have a key.\n");
+    if ( ! csync_group->key )
+	csync_fatal("Config error: every group must have a key.\n");
 
-	if ( csync_group->auto_method < 0 )
-		csync_group->auto_method = CSYNC_AUTO_METHOD_NONE;
-
-	/* re-order hosts and pattern */
-	{
-		struct csync_group_host *t = csync_group->host;
-		csync_group->host = 0;
-		while ( t ) {
-			struct csync_group_host *next = t->next;
-			t->next = csync_group->host;
-			csync_group->host = t;
-			t = next;
-		}
+    if ( csync_group->auto_method < 0 )
+	csync_group->auto_method = CSYNC_AUTO_METHOD_NONE;
+    
+    /* re-order hosts and pattern */
+    {
+	struct csync_group_host *t = csync_group->host;
+	csync_group->host = 0;
+	while ( t ) {
+	    struct csync_group_host *next = t->next;
+	    t->next = csync_group->host;
+	    csync_group->host = t;
+	    t = next;
 	}
-	{
-		struct csync_group_pattern *t = csync_group->pattern;
-		csync_group->pattern = 0;
-		while ( t ) {
-			struct csync_group_pattern *next = t->next;
-			t->next = csync_group->pattern;
-			csync_group->pattern = t;
-			t = next;
-		}
+    }
+    {
+	struct csync_group_pattern *t = csync_group->pattern;
+	csync_group->pattern = 0;
+	while ( t ) {
+	    struct csync_group_pattern *next = t->next;
+	    t->next = csync_group->pattern;
+	    csync_group->pattern = t;
+	    t = next;
 	}
+    }
 
-	if (active_peerlist) {
-		struct csync_group_host *h;
-		int i=0, thisplen;
+    if (active_peerlist) {
+	struct csync_group_host *h;
+	int i=0, thisplen;
 
-		while (active_peerlist[i]) {
-			thisplen = strcspn(active_peerlist + i, ",");
+	while (active_peerlist[i]) {
+	    thisplen = strcspn(active_peerlist + i, ",");
 
-			for (h=csync_group->host; h; h=h->next)
-				if (strlen(h->hostname) == thisplen && !strncmp(active_peerlist + i, h->hostname, thisplen))
-					goto foundactivepeers;
+	    for (h=csync_group->host; h; h=h->next)
+		if (strlen(h->hostname) == thisplen && !strncmp(active_peerlist + i, h->hostname, thisplen))
+		    goto foundactivepeers;
 
-			i += thisplen;
-			while (active_peerlist[i] == ',') i++;
-		}
-	} else
+	    i += thisplen;
+	    while (active_peerlist[i] == ',') i++;
+	}
+    } else
 foundactivepeers:
-		csync_group->hasactivepeers = 1;
+	csync_group->hasactivepeers = 1;
 
-	if (active_grouplist && csync_group->myname)
+    if (active_grouplist && csync_group->myname)
+    {
+	int i=0, gnamelen = strlen(csync_group->gname);
+
+	while (active_grouplist[i])
 	{
-		int i=0, gnamelen = strlen(csync_group->gname);
-
-		while (active_grouplist[i])
-		{
-			if ( !strncmp(active_grouplist+i, csync_group->gname, gnamelen) &&
-			     (active_grouplist[i+gnamelen] == ',' || !active_grouplist[i+gnamelen]) )
-				goto found_asactive;
-			while (active_grouplist[i])
-				if (active_grouplist[i++]==',') break;
-		}
-
-		csync_group->myname = 0;
-found_asactive:	;
+	    if ( !strncmp(active_grouplist+i, csync_group->gname, gnamelen) &&
+		 (active_grouplist[i+gnamelen] == ',' || !active_grouplist[i+gnamelen]) )
+		goto found_asactive;
+	    while (active_grouplist[i])
+		if (active_grouplist[i++]==',') break;
 	}
+
+	csync_group->myname = 0;
+found_asactive:	;
+    }
 }
 
 static void new_action()
 {
-	struct csync_group_action *t =
-		calloc(sizeof(struct csync_group_action), 1);
-	t->next = csync_group->action;
-	t->logfile = strdup("/dev/null");
-	csync_group->action = t;
+    struct csync_group_action *t =
+	calloc(sizeof(struct csync_group_action), 1);
+    t->next = csync_group->action;
+    t->logfile = strdup("/dev/null");
+    csync_group->action = t;
 }
 
 static void action_pattern_destroy(struct csync_group_action_pattern *pattern) {
-  if (!pattern)
-    return ;
-  action_pattern_destroy(pattern->next);
-  //free(pattern->pattern);
-  free(pattern);
+    if (!pattern)
+      return ;
+    action_pattern_destroy(pattern->next);
+    free(pattern->pattern);
+    free(pattern);
 }
 
 static void action_command_destroy(struct csync_group_action_command *command) {
   if (!command)
     return ;
   action_command_destroy(command->next);
-  //free(command->command);
+  free((void *) command->command);
   free(command);
 }
 
 static void action_destroy(struct csync_group_action *action) {
-  if (!action)
-    return;
-  action_destroy(action->next);
-  action_pattern_destroy(action->pattern);
-  free((void *) action->logfile);
-  free(action);
+    if (!action)
+	return;
+    action_destroy(action->next);
+    action_pattern_destroy(action->pattern);
+    action_command_destroy(action->command);
+    free((void *) action->logfile);
+    free(action);
 }
 
 static void host_destroy(struct csync_group_host *host) {
-  if (!host)
-    return ; 
-  host_destroy(host->next);
-  free(host->hostname);
-  free(host);
+    if (!host)
+	return ; 
+    host_destroy(host->next);
+    free(host->hostname);
+    free(host);
 }
 
 static void pattern_destroy(struct csync_group_pattern *pattern) {
@@ -335,29 +340,31 @@ static void pattern_destroy(struct csync_group_pattern *pattern) {
 }
 
 void csync_config_destroy_group(struct csync_group *group) {
-  if (!group) 
-    return ; 
-  csync_config_destroy_group(group->next);
-  host_destroy(group->host);
-  pattern_destroy(group->pattern);
-  action_destroy(group->action);
+    if (!group) 
+	return ; 
+    csync_config_destroy_group(group->next);
+    host_destroy(group->host);
+    pattern_destroy(group->pattern);
+    action_destroy(group->action);
+    if (group->myname)
+	free((void *) group->myname);
+    if (group->gname)
+	free((void *) group->gname);
+    if (group->key)
+	free((void *) group->key);
+    if (group->backup_directory)
+	free((void *) group->backup_directory);
+    free(group);
 }
-
-void csync_config_destroy() {
-  csync_config_destroy_group(csync_group);
-  csync_group = 0;
-  // TOOD other struct
-}
-
 
 static void add_action_pattern(char *pattern)
 {
-	struct csync_group_action_pattern *t =
-		calloc(sizeof(struct csync_group_action_pattern), 1);
-	t->star_matches_slashes = !!strstr(pattern, "**");
-	t->pattern = pattern;
-	t->next = csync_group->action->pattern;
-	csync_group->action->pattern = t;
+    struct csync_group_action_pattern *t =
+	calloc(sizeof(struct csync_group_action_pattern), 1);
+    t->star_matches_slashes = !!strstr(pattern, "**");
+    t->pattern = pattern;
+    t->next = csync_group->action->pattern;
+    csync_group->action->pattern = t;
 }
 
 static void add_action_exec(char *command)
@@ -371,7 +378,10 @@ static void add_action_exec(char *command)
 
 static void set_action_logfile(const char *logfile)
 {
-	csync_group->action->logfile = logfile;
+    const char *oldlog = csync_group->action->logfile;
+    if (oldlog)
+	free((void *) oldlog);
+    csync_group->action->logfile = logfile;
 }
 
 static void set_action_dolocal()
@@ -441,7 +451,17 @@ static void new_prefix(const char *pname)
 	p->next = csync_prefix;
 	csync_prefix = p;
 }
- 
+
+static void prefix_destroy(struct csync_prefix  *prefix)
+{
+    if (!prefix)
+	return ;
+    prefix_destroy(prefix->next);
+    free((void *) prefix->name);
+    free((void *) prefix->path);
+    free(prefix);
+}
+
 static void new_prefix_entry(char *pattern, char *path)
 {
 	int i;
@@ -485,6 +505,17 @@ static void new_nossl(const char *from, const char *to)
 	csync_nossl = t;
 }
 
+
+static void nossl_destroy(struct csync_nossl *t)
+{
+    if (!t)
+	return;
+    nossl_destroy(t->next);
+    free((void *)t->pattern_from);
+    free((void *)t->pattern_to);
+    free(t);
+}
+
 static void new_ignore(char *propname)
 {
 	if ( !strcmp(propname, "uid") )
@@ -499,6 +530,14 @@ static void new_ignore(char *propname)
 		csync_fatal("Config error: Unknown 'ignore' porperty: '%s'.\n", propname);
 
 	free(propname);
+}
+
+void csync_config_destroy() {
+    prefix_destroy(csync_prefix);
+    nossl_destroy(csync_nossl);
+    csync_config_destroy_group(csync_group);
+    csync_group = 0;
+    // TOOD other struct
 }
 
 static void disable_cygwin_lowercase_hack()
