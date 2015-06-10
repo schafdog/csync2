@@ -81,6 +81,12 @@ check_failed:
 
 #endif /* __CYGWIN__ */
 
+#define CHECK_NEW_RM 1
+#define CHECK_NEW_MOD 1
+#define CHECK_MV_RM  0
+#define CHECK_RM_MV  0
+#define CHECK_HARDLINK 0
+
 void csync_hint(const char *file, int recursive)
 {
 	SQL("Adding Hint",
@@ -142,12 +148,13 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       /* We dont currently have a checktxt when marking files. */ 
       /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run, 
 	 and thus leaking other side */
-      if (0 && checktxt) {
+      if (1 && checktxt) {
 	
 	SQL_BEGIN("Checking old opertion(s) on dirty",
 		  "SELECT operation, filename, other from dirty where "
-		  "checktxt = '%s' AND device = %s AND inode  = %s AND peername = '%s'", 
+		  "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' ",
 		  db_encode(checktxt),
+		  db_encode(file),
 		  db_encode(dev),
 		  db_encode(ino),
 		  db_encode(pl[pl_idx].peername)
@@ -161,26 +168,32 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    other    = db_decode(SQL_V(2));
 	    
 	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' ", old_operation, filename, other);	    
-	    if (!rc_file && csync_same_stat_file(&st_file, filename)) {
+	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
 	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);	 
 	      operation = "MKH";
 	      result_other = strdup(filename);
 	      clean_other = 0; 
 	    }
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
-	    else if (!strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
+	    else if (CHECK_NEW_RM && !strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
 	      csync_debug(1, "mark operation %s -> NOP %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
 	      dirty = 0;
 	      operation = "NOP";
 	    }
-	    else if ((!strcmp("RM",old_operation) || !strcmp("MV", old_operation)|| !strcmp("NOP", old_operation)) 
+	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
+	    else if (CHECK_NEW_MOD && !strncmp("MOD",operation, 3) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
+	      csync_debug(1, "mark operation %s -> %s %s:%s (not synced) .\n", operation, old_operation, pl[pl_idx].peername, file);
+	      operation = old_operation;
+	      dirty = 1;
+	    }
+	    else if (CHECK_RM_MV && (!strcmp("RM",old_operation) || !strcmp("MV", old_operation)|| !strcmp("NOP", old_operation)) 
 		     && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2)) && strstr(checktxt, "type=dir") == 0) {
 	      // Do not do this for directories
 	      result_other = strdup(filename);
 	      csync_debug(1, "mark operation %s->%s => MOVE %s '%s' '%s'.\n", old_operation, operation, pl[pl_idx].peername, file, result_other);
 	      operation = "MV";
 	    }
-	    else if (!strcmp("MV",old_operation) && !strcmp("RM", operation)) {
+	    else if (CHECK_MV_RM && !strcmp("MV",old_operation) && !strcmp("RM", operation)) {
 	      operation = "RM";
 	      file_new = strdup(other);
 	      result_other = strdup(filename);
@@ -524,7 +537,7 @@ struct textlist *csync_check_link_move(const char *peername, const char *filenam
 	int db_version = csync_get_checktxt_version(db_checktxt);
 	int i = 0; 
 	if (rc) {
-	    csync_debug(1, "Other file not found. Posible MOVE operation: %s\n", db_filename);
+	    csync_debug(1, "check_link_move: Other file not found. Posible MOVE operation: %s\n", db_filename);
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 		csync_debug(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
 		textlist_add(&tl, db_filename, OP_MOVE);
