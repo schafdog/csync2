@@ -14,7 +14,7 @@ CONFIG_CLEAN_FILES=*.log *.dif
 clean-local:
 	rm -f *.log *.dif
 
-all: tests
+all: tests ../csync2
 
 tests: different dir_time maildir move_local simple
 

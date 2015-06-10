@@ -1,0 +1,13 @@
+clean 
+echo A > test/$NAME/A
+cmd c "new A" 
+echo B > test/$NAME/A
+cmd c "modified A (but not synced) => new A" 
+rm test/$NAME/A
+mkdir test/$NAME/newdir
+cmd c "newdir newdir" 
+sleep 2 
+touch test/$NAME/newdir
+cmd c "modified newdir, but still new"
+rmdir test/$NAME/newdir
+cmd c "rm newdir (removed from dirty)"
