@@ -534,9 +534,11 @@ static void new_ignore(char *propname)
 
 void csync_config_destroy() {
     prefix_destroy(csync_prefix);
+    csync_prefix = NULL;
     nossl_destroy(csync_nossl);
+    csync_nossl = NULL;
     csync_config_destroy_group(csync_group);
-    csync_group = 0;
+    csync_group = NULL;
     // TOOD other struct
 }
 
