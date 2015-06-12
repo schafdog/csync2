@@ -488,9 +488,16 @@ struct textlist *csync_check_same_dev_inode(const char *peername, const char *fi
 	      " WHERE device = %lu and inode = %llu and filename != '%s' ",
 	      dev, st->st_ino, peername_enc, filename_enc,
 	      dev, st->st_ino, filename_enc) {
-	const char *db_filename  = db_decode(SQL_V(0));
-	const char *db_checktxt  = db_decode(SQL_V(1));
-	textlist_add2(&tl, db_filename, db_checktxt, 0);
+	const char *db_filename = db_decode(SQL_V(0));
+	const char *db_checktxt = db_decode(SQL_V(1));
+	const char *db_digest   = db_decode(SQL_V(2));
+	
+	if (!digest || !db_digest || !strcmp(digest, db_digest)) {
+	    textlist_add2(&tl, db_filename, db_checktxt, 0);
+	}
+	else {
+	    csync_debug(1, "Different digest for %s %s ", digest, db_digest);
+	}
     } SQL_FIN {
 	csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n", SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
     } SQL_END; 
@@ -546,7 +553,7 @@ struct textlist *csync_check_link_move(const char *peername, const char *filenam
 	    db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
 	    int i; 
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-		csync_debug(1, "OPERATION: MHARDLINK %s to %s\n", db_filename, filename);
+		csync_debug(1, "csync_check_link_move: OPERATION MHARDLINK %s to %s\n", db_filename, filename);
 		textlist_add(&tl, db_filename, OP_HARDLINK);
 	    } else { // LINK not verified
 		csync_debug(1, "check_link: other file with same dev/inode, but different checktxt.");
