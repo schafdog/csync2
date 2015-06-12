@@ -1244,7 +1244,6 @@ nofork:
     csync_config_destroy();
     if (active_peers) {
 	free(active_peers);
-	csync_debug(1, "Freed active_peers %p\n", active_peers);
     }
     if (csync_server_child_pid ) {
 	csync_debug(1, "Connection closed.\n");
