@@ -773,22 +773,23 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 
 int csync_update_file_move(const char* myname, const char *peername, const char *key, const char *filename, const char *other)
 {
-  int rc = csync_update_file_mv(peername, key, other, filename);
-  if (rc >= OK) {
+    /* filename exist here and other does not. The situation should be opposite remote. */
+    int rc = csync_update_file_mv(peername, key, other, filename);
+    if (rc >= OK) {
 
     // (actually it should be correct */
     /* csync_skip_action_do_time(peername, key_enc, filename, filename_enc,
        &file_stat);*/
 
-    csync_debug(1, "Succes: MV %s %s\n", other, filename);
-    //TODO VERIFY
-    SQL("Delete moved file from dirty",
-	"DELETE FROM dirty WHERE (filename = '%s' OR filename = '%s') AND peername = '%s'",
-	db_encode(filename), db_encode(other), db_encode(peername));
-    return rc;
-  }
-  csync_debug(0, "Failed to MV %s %s \n", other, filename);
-  return DIFF;
+	csync_debug(1, "Succes: MV %s %s\n", other, filename);
+	//TODO VERIFY
+	SQL("Delete moved file from dirty",
+	    "DELETE FROM dirty WHERE (filename = '%s' OR filename = '%s') AND peername = '%s'",
+	    db_encode(filename), db_encode(other), db_encode(peername));
+	return rc;
+    }
+    csync_debug(0, "Failed to MV %s %s \n", other, filename);
+    return DIFF;
 }
 
 int csync_update_directory(const char *myname, const char *peername,
@@ -924,36 +925,44 @@ int csync_update_file_mod(const char *myname, const char *peername,
 
     struct textlist *link_move_list = csync_check_link_move(peername, filename, checktxt, digest, &st, NULL);
     struct textlist *list_ptr = link_move_list;
+    /* Need to do the moves first, otherwise hardlink could be between two non-existing files */
     while (list_ptr) {
 	other = list_ptr->value;
-	switch (list_ptr->intvalue) {
-	case OP_MOVE: {
+	if (list_ptr->intvalue == OP_MOVE) {
 	    csync_debug(0, "check move: %s %s \n ", filename, other);
 	    rc = csync_update_file_move(myname, peername, key, filename, other);
-	    if (rc == CONN_CLOSE)
-	       return rc;
-	    if (rc == OK)
+	    if (rc == CONN_CLOSE || rc == OK) {
+		if (rc == OK) {  
+		    csync_clear_dirty(peername, filename, auto_resolve_run);
+		    csync_clear_dirty(peername, other, auto_resolve_run);
+		}
+		textlist_free(link_move_list);
 		return rc;
+	    }
 	    break;
 	}
-	case OP_HARDLINK: {
+	if (list_ptr)
+	   list_ptr = list_ptr->next;
+    }
+    list_ptr = link_move_list;
+    while (list_ptr) {
+	other = list_ptr->value;
+	if (list_ptr->intvalue == OP_HARDLINK) {
 	    csync_debug(0, "check hardlink: %s %s \n ", filename, other);
 	    const char *other_enc = url_encode(prefixencode(other));
 	    rc = csync_update_hardlink(peername, key_enc, other, other_enc, filename, filename_enc,
 				       &last_conn_status);
-	    if (rc == CONN_CLOSE)
-	       return rc;
-	    if (rc == OK) {
-		csync_clear_dirty(peername, filename, auto_resolve_run);
+	    if (rc == CONN_CLOSE || rc == OK) {
+		if (rc == OK) {
+		    csync_clear_dirty(peername, filename, auto_resolve_run);
+		    csync_clear_dirty(peername, other, auto_resolve_run);
+		}
+		textlist_free(link_move_list);
 		return OK;
 	    }
 	    break;
 	}
-	default:
-	    csync_debug(0, "Unknown duplicate: %s \n", other);
-	}
-	if (list_ptr)
-	   list_ptr = list_ptr->next;
+	list_ptr = list_ptr->next;
     }
     textlist_free(link_move_list);
 
