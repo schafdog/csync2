@@ -8,15 +8,15 @@ mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tes
 mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new '-'.
 mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new' '(null)' mark operation MKDIR -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new deleted before syncing. Removing from dirty.
-mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,ST '-'.
-mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,ST '-'.
-mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,ST' '(null)' mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,ST deleted before syncing. Removing from dirty.
+mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST '-'.
+mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST '-'.
+mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST' '(null)' mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST deleted before syncing. Removing from dirty.
 mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur '-'.
 mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur' '(null)' mark operation MKDIR -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur deleted before syncing. Removing from dirty.
-mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,S '-'.
-mark other: Old operation: RM '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,ST' '(null)' mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,S '-'.
-mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,S' '(null)' mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,S deleted before syncing. Removing from dirty.
+mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S '-'.
+mark other: Old operation: RM '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST' '(null)' mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S '-'.
+mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S' '(null)' mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S deleted before syncing. Removing from dirty.
 mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur '-'.
 mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur' '(null)' mark operation MKDIR -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur deleted before syncing. Removing from dirty.
@@ -44,15 +44,15 @@ CONN peer < DEL %25test%25/Maildir/tmp
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new
 CONN peer < SIG %25test%25/Maildir/new 
 CONN peer < DEL %25test%25/Maildir/new 
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,ST
-CONN peer < SIG %25test%25/Maildir/cur/123,ST 
-CONN peer < DEL %25test%25/Maildir/cur/123,ST 
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST
+CONN peer < SIG %25test%25/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,ST 
+CONN peer < DEL %25test%25/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,ST 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur
 CONN peer < SIG %25test%25/Maildir/cur 
 CONN peer < DEL %25test%25/Maildir/cur 
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,S
-CONN peer < SIG %25test%25/Maildir/.Trash/cur/123,S 
-CONN peer < DEL %25test%25/Maildir/.Trash/cur/123,S 
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S
+CONN peer < SIG %25test%25/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,S 
+CONN peer < DEL %25test%25/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,S 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur
 CONN peer < SIG %25test%25/Maildir/.Trash/cur 
 CONN peer < DEL %25test%25/Maildir/.Trash/cur 
@@ -65,5 +65,4 @@ CONN peer < DEL %25test%25/Maildir
 CONN peer < SETTIME %25test%25 
 CONN peer < BYE
 
-Freed active_peers 0x1d0f470
 Finished succesfully.

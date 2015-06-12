@@ -10,8 +10,8 @@ mark other operation: MKDIR peer:/export/home/dennis/Projects/csync2/csync2/test
 mark other operation: MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp '-'.
 mark other operation: MKDIR peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new '-'.
 mark other operation: MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new '-'.
-mark other operation: NEW peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/123 '-'.
-mark other operation: NEW other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/123 '-'.
+mark other operation: NEW peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764 '-'.
+mark other operation: NEW other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764 '-'.
 mark other operation: MKDIR peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur '-'.
 mark other operation: MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur '-'.
 mark other operation: MKDIR peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash '-'.
@@ -49,10 +49,10 @@ Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maild
 CONN peer < SIG %25test%25/Maildir/new user/group 1000 1000 dennis schafroth 16877 
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new
 CONN peer < MKDIR %25test%25/Maildir/new - 1000 1000 dennis schafroth 16877 
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/123' NEW ''
-CONN peer < SIG %25test%25/Maildir/new/123 user/group 1000 1000 dennis schafroth 33188 
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/123
-CONN peer < PATCH %25test%25/Maildir/new/123 - 1000 1000 dennis schafroth 33188 
+Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764' NEW ''
+CONN peer < SIG %25test%25/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764 user/group 1000 1000 dennis schafroth 33188 
+?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764
+CONN peer < PATCH %25test%25/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764 - 1000 1000 dennis schafroth 33188 
 CONN peer < octet-stream 15
 
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' MKDIR ''
@@ -65,5 +65,4 @@ CONN peer < SETTIME %25test%25/Maildir
 CONN peer < SETTIME %25test%25 
 CONN peer < BYE
 
-Freed active_peers 0x2432470
 Finished with 1 errors.

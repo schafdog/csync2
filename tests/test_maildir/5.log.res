@@ -1,4 +1,3 @@
-cmd u "move Maildir/cur/123 Maildir/.Trash/cur/123 (2 sec delay)" local
+cmd u "move Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S (2 sec delay)" local
 Reading symbols from shared library libmysqlclient.so
-Freed active_peers 0x7ad470
 Finished succesfully.
