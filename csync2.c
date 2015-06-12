@@ -497,10 +497,13 @@ char ** parse_peerlist(char *peerlist) {
     peers = calloc(sizeof(peers), 100);
     int i = 0;
     char *saveptr = NULL;
-    while ((peers[++i] = strtok_r(peerlist, ",", &saveptr))) {
+    csync_debug(2, "parse_peerlist %s\n", peerlist);
+    while ((peers[i] = strtok_r(peerlist, ",", &saveptr))) {
 	csync_debug(2, "New peer: %s\n", peers[i]);
 	peerlist = NULL;
+	++i;
     };
+    peers[i] = NULL;
     return peers;
 }
 
