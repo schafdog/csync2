@@ -72,13 +72,13 @@ void csync_file_flush(const char *filename)
 int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
 {
     int rc = 0;
-    const char *operation;
-    
+    const char *operation = NULL;
+    csync_debug(1, "check_dirty_daemon: %s ", filename);
     int inDirty = csync_check_single(filename, 0, version);
+    csync_debug(1, "check_dirty_daemon: indirty %s %d ", filename, inDirty);
     
-    if (isflush || !inDirty) 
+    if (isflush || !inDirty)
 	return 0;
-
     SQL_BEGIN("Check if file is dirty",
 	      "SELECT operation FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
 	      db_encode(filename), db_encode(peername))
@@ -89,6 +89,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 
     // Found dirty
     if (rc == 1) {
+	csync_debug(1, "check_dirty_daemon: peer operation  %s %s %s ", peername, filename, operation);    
 	
 	int isModDir = 0;
 	if (operation)
