@@ -614,6 +614,7 @@ int csync_check_dir(const char* file, int recursive, int init_run, int version, 
 	    written += rc;
 	}
     }
+    return count_dirty;
 }
 
 static int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
