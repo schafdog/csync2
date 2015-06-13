@@ -73,9 +73,9 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 {
     int rc = 0;
     const char *operation = NULL;
-    csync_debug(1, "check_dirty_daemon: %s ", filename);
+    csync_debug(1, "check_dirty_daemon: %s\n", filename);
     int inDirty = csync_check_single(filename, 0, version);
-    csync_debug(1, "check_dirty_daemon: indirty %s %d ", filename, inDirty);
+    csync_debug(1, "check_dirty_daemon: indirty %s %d\n", filename, inDirty);
     
     if (isflush || !inDirty)
 	return 0;
@@ -89,7 +89,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 
     // Found dirty
     if (rc == 1) {
-	csync_debug(1, "check_dirty_daemon: peer operation  %s %s %s ", peername, filename, operation);    
+	csync_debug(1, "check_dirty_daemon: peer operation  %s %s %s\n", peername, filename, operation);    
 	
 	int isModDir = 0;
 	if (operation)
@@ -99,7 +99,6 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	    rc = 0;
 	    csync_debug(0, "Ignoring dirty directory %s\n", filename);
 	    csync_file_flush(filename);
-	    cmd_error;
 	    return 0;
 	}
 	else {
