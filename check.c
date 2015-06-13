@@ -384,50 +384,52 @@ void csync_generate_recursive_sql(const char *file_encoded, int recursive, char 
   }
 }
 
-void csync_check_del(const char *file, int recursive, int init_run)
+int csync_check_del(const char *file, int recursive, int init_run)
 {
-  char *where_rec = "";
-  struct textlist *tl = 0, *t;
-  struct stat st;
-  const char *SELECT_SQL = "SELECT filename, checktxt, device, inode from file ";
-  csync_debug(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
-  const char *file_encoded = db_encode(file);
-  csync_debug(3,"file %s encoded %s \n", file, file_encoded);
-  
-  csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
+    char *where_rec = "";
+    struct textlist *tl = 0, *t;
+    struct stat st;
+    const char *SELECT_SQL = "SELECT filename, checktxt, device, inode from file ";
+    csync_debug(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
+    const char *file_encoded = db_encode(file);
+    csync_debug(3,"file %s encoded %s \n", file, file_encoded);
 
-  SQL_BEGIN("Checking for removed files",
-	    "%s where (filename = '%s' %s) ORDER BY filename", 
-	    SELECT_SQL, db_encode(file), where_rec)
+    csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
+
+    SQL_BEGIN("Checking for removed files",
+	      "%s where (filename = '%s' %s) ORDER BY filename", 
+	      SELECT_SQL, db_encode(file), where_rec)
     {
-      const char *filename = db_decode(SQL_V(0));
-      const char *checktxt = db_decode(SQL_V(1));
-      const char *device   = db_decode(SQL_V(2));
-      const char *inode    = db_decode(SQL_V(3));
+	const char *filename = db_decode(SQL_V(0));
+	const char *checktxt = db_decode(SQL_V(1));
+	const char *device   = db_decode(SQL_V(2));
+	const char *inode    = db_decode(SQL_V(3));
       
-      if (!csync_match_file(filename))
-	continue;
+	if (!csync_match_file(filename))
+	    continue;
 
-      // Not found
-      if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
-	textlist_add4(&tl, filename, checktxt, device, inode, 0);
+	// Not found
+	if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
+	    textlist_add4(&tl, filename, checktxt, device, inode, 0);
     } SQL_END;
-
-  for (t = tl; t != 0; t = t->next) {
-    if (!init_run) {
-      //csync_debug(0, "check_dirty (rm): before mark (all) \n");
-      struct stat stat;
-      csync_mark(t->value, 0, 0, "RM", t->value2, t->value3, t->value4);
+    int count_deletes = 0;
+    for (t = tl; t != 0; t = t->next) {
+	if (!init_run) {
+	    //csync_debug(0, "check_dirty (rm): before mark (all) \n");
+	    struct stat stat;
+	    csync_mark(t->value, 0, 0, "RM", t->value2, t->value3, t->value4);
+	    count_deletes++;
+	}
+	SQL("Delete file from DB. It isn't with us anymore.",
+	    "delete from file WHERE filename = '%s'",
+	    db_encode(t->value));
     }
-    SQL("Delete file from DB. It isn't with us anymore.",
-	"delete from file WHERE filename = '%s'",
-	db_encode(t->value));
-  }
+
+    textlist_free(tl);
   
-  textlist_free(tl);
-  
-  if ( recursive )
-    free(where_rec);
+    if ( recursive )
+	free(where_rec);
+    return count_deletes;
 }
 
 struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st, struct textlist *tl)
@@ -574,10 +576,11 @@ struct textlist *csync_check_link_move(const char *peername, const char *filenam
     return tl; 
 }
 
-void csync_check_dir(const char* file, int recursive, int init_run, int version, int dirdump_this, int flags)
+int csync_check_dir(const char* file, int recursive, int init_run, int version, int dirdump_this, int flags)
 {
     struct dirent **namelist;
     int n = 0;
+    int count_dirty = 0;
     csync_debug(2, "Checking %s%s* ..\n", file, !strcmp(file, "/") ? "" : "/");
     n = scandir(file, &namelist, 0, alphasort);
     if (n < 0) {
@@ -594,7 +597,7 @@ void csync_check_dir(const char* file, int recursive, int init_run, int version,
 			!strcmp(file, "/") ? "" : file,
 			namelist[n]->d_name);
 		char *operation;
-		if (csync_check_mod(fn, recursive, 0, init_run, version, &operation, flags))
+		if (csync_check_mod(fn, recursive, 0, init_run, version, flags, &count_dirty))
 		    dirdump_this = 1;
 	    }
 	    free(namelist[n]);
@@ -631,11 +634,13 @@ static int update_dev_inode(struct stat *file_stat, const char *dev, const char 
     return 0;
 }
 
-void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run, int version, char **operation)
+int csync_file_check_mod(const char *file, struct stat *file_stat, int init_run, int version)
 {
     BUF_P buffer = buffer_init();
     int this_is_dirty = 0;
     int calc_digest = 0;
+    int count = 0;
+
     if (csync_compare_mode)
 	printf("%s\n", file);
     char *checktxt = buffer_strdup(buffer, csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
@@ -643,7 +648,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
     int is_upgrade = 0;
     int db_version = version;
     const char *encoded = db_encode(file);
-    //char *operation = 0;
+    char *operation = 0;
     char *other = 0; 
     SQL_BEGIN("Checking File",
 	      "SELECT checktxt, inode, device, digest FROM file WHERE "
@@ -683,9 +688,9 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	}
 	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	    if (strstr(checktxt, "type=dir"))
-		*operation = buffer_strdup(buffer, "MOD_DIR");
+		operation = buffer_strdup(buffer, "MOD_DIR");
 	    else
-		*operation = buffer_strdup(buffer, "MOD");
+		operation = buffer_strdup(buffer, "MOD");
 	    csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n", file, checktxt_same_version, checktxt_db, *operation);
 	    this_is_dirty = 1;
 	}
@@ -693,17 +698,17 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	if ( SQL_COUNT == 0 ) {
 	    csync_debug(2, "New file: %s\n", file);
 	    if (S_ISREG(file_stat->st_mode)) {
-		*operation = buffer_strdup(buffer, "NEW");
+		operation = buffer_strdup(buffer, "NEW");
 		calc_digest = 1; 
 	    }
 	    else if (S_ISDIR(file_stat->st_mode)) 
-		*operation = buffer_strdup(buffer, "MKDIR");
+		operation = buffer_strdup(buffer, "MKDIR");
 	    else if (S_ISCHR(file_stat->st_mode))
-		*operation = buffer_strdup(buffer, "MKCHR");
+		operation = buffer_strdup(buffer, "MKCHR");
 	    else if (S_ISBLK(file_stat->st_mode))
-		*operation = buffer_strdup(buffer, "MKBLK");
+		operation = buffer_strdup(buffer, "MKBLK");
 	    else if (S_ISFIFO(file_stat->st_mode))
-		*operation = buffer_strdup(buffer, "MKFIFO");
+		operation = buffer_strdup(buffer, "MKFIFO");
 	    else if ( S_ISLNK(file_stat->st_mode) ) {
 		// TODO get max path
 		int max = 1024;
@@ -711,7 +716,7 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 		int len = readlink(file, target, max-1);
 		if (len > 0) {
 		    target[len] = 0;
-		    *operation = buffer_strdup(buffer, "MKLINK"); 
+		    operation = buffer_strdup(buffer, "MKLINK"); 
 		    other = buffer_strdup(buffer, target);
 		}
 		else
@@ -729,7 +734,6 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	if (rc)
 	    csync_debug(0, "Error generating digest: %s %d", digest, rc);
     }
-    
     if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
 	int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
 	if (has_links) {
@@ -766,13 +770,15 @@ void csync_file_check_mod(const char *file, struct stat *file_stat, int init_run
 	    char ino_str[100];
 	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-	    csync_mark_other(file, 0, 0, *operation,  checktxt_encoded, dev_str, ino_str, other);
+	    csync_mark_other(file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other);
+	    count = 1;
 	}
     }
     buffer_destroy(buffer);
+    return count; 
 }
 
-int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, char **operation, int flags)
+int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, int flags, int *count)
 {
     int check_type = csync_match_file(file);
     int dirdump_this = 0, dirdump_parent = MATCH_NONE;
@@ -791,7 +797,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
     switch ( check_type ) 
     {
     case MATCH_NEXT:
-	csync_file_check_mod(file, &st, init_run, version, operation);
+	*count += csync_file_check_mod(file, &st, init_run, version);
 	dirdump_this = 1;
 	dirdump_parent = 1;
 	/* fall thru */
@@ -800,7 +806,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 	    break;
 	if ( !S_ISDIR(st.st_mode) ) 
 	    break;
-	csync_check_dir(file, recursive, init_run, version, dirdump_this, flags);
+	*count += csync_check_dir(file, recursive, init_run, version, dirdump_this, flags);
 	break;
     default:
 	csync_debug(2, "Don't check at all: %s\n", file);
@@ -809,35 +815,28 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
     return dirdump_parent;
 }
 
-char *csync_check_recursive(const char *filename, int recursive, int init_run, int version, int flags)
+/* 
+   check for dirty files, updates the DB and returns number of dirty found in this check (or total?) NOT IMPLEMENTED
+ */
+int csync_check_recursive(const char *filename, int recursive, int init_run, int version, int flags)
 {
 #if __CYGWIN__
-	if (!strcmp(filename, "/")) {
-		filename = "/cygdrive";
-	}
+    if (!strcmp(filename, "/")) {
+	filename = "/cygdrive";
+    }
 #endif
-	csync_debug(1, "Running%s check for %s ...\n", recursive ? " recursive" : "", filename);
-
-	// TODO How about swapping deletes and updates? 
-	if (!csync_compare_mode)
-	   csync_check_del(filename, recursive, init_run);
+    csync_debug(1, "Running%s check for %s ...\n", recursive ? " recursive" : "", filename);
 	
-	char *operation = 0; 
-	csync_check_mod(filename, recursive, 1, init_run, version, &operation, flags);
+    // TODO How about swapping deletes and updates?
+    int count_dirty = 0;
+    if (!csync_compare_mode)
+	count_dirty += csync_check_del(filename, recursive, init_run);
+	
+    csync_check_mod(filename, recursive, 1, init_run, version, flags, &count_dirty);
 
-	const char *file_encoded = db_encode(filename); 
-	/*
-	char *where_rec = "";
-	csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
-	SQL("Delete NOPs from dirty.",
-	    "delete from dirty WHERE (filename like '%s' %s) and operation = 'NOP' ",
-	    file_encoded, where_rec);
-	*/
-	if (recursive) {
-	  //free(where_rec);
-	  return 0;
-	}
-	return operation;
+    const char *file_encoded = db_encode(filename); 
+
+    return count_dirty; 
 }
 
 
@@ -845,20 +844,20 @@ void csync_combined_operation(const char *peername, const char *dev, const char 
 
 }
 
-void csync_check(const char *filename, int recursive, int init_run, int version, int flags) {
-  csync_check_recursive(filename, recursive, init_run, version, flags);
-  // TODO combined operations?
-  struct textlist *dub_entries = csync_check_all_same_dev_inode(); 
-  struct textlist *ptr = dub_entries;
-  while (ptr != NULL) {
-      csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4); 
-      ptr = ptr->next;
-  }
-  textlist_free(dub_entries);
+void csync_check(const char *filename, int recursive, int init_run, int version, int flags)
+{
+    int hasDirty = csync_check_recursive(filename, recursive, init_run, version, flags);
+    struct textlist *dub_entries = csync_check_all_same_dev_inode(); 
+    struct textlist *ptr = dub_entries;
+    while (ptr != NULL) {
+	csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4); 
+	ptr = ptr->next;
+    }
+    textlist_free(dub_entries);
 }
 
 
-char *csync_check_single(const char *filename, int init_run, int version)
+int csync_check_single(const char *filename, int init_run, int version)
 {
   return csync_check_recursive(filename, 0, init_run, version, 0);
 }

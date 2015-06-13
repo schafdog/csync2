@@ -71,33 +71,48 @@ void csync_file_flush(const char *filename)
 
 int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
 {
-	int rc = 0;
-	char *operation = csync_check_single(filename, 0, version);
+    int rc = 0;
+    const char *operation;
+    
+    int inDirty = csync_check_single(filename, 0, version);
+    
+    if (isflush || !inDirty) 
+	return 0;
+
+    SQL_BEGIN("Check if file is dirty",
+	      "SELECT operation FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
+	      db_encode(filename), db_encode(peername))
+    {
+	rc = 1;
+	operation = SQL_V(0);
+    } SQL_END;
+
+    // Found dirty
+    if (rc == 1) {
+	
 	int isModDir = 0;
 	if (operation)
-	    isModDir = !strcmp(operation, "MOD_DIR");	
-	if (isflush) 
-	    return 0;
+	    isModDir = !strcmp(operation, "MOD_DIR");
+
 	if (isModDir) {
 	    rc = 0;
 	    csync_debug(0, "Ignoring dirty directory %s\n", filename);
 	    csync_file_flush(filename);
+	    cmd_error;
 	    return 0;
 	}
-	SQL_BEGIN("Check if file is dirty",
-		"SELECT 1 FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
-		  db_encode(filename), db_encode(peername))
-	{
-		rc = 1;
-		*cmd_error = "File is also marked dirty here!";
-	} SQL_END;
-	
-	if (!rc && operation && peername) {
-	  //csync_debug(0, "check dirty: peername %s \n", peername);
-	  csync_mark(filename, myhostname, peername, operation,
-		     NULL, NULL, NULL);
+	else {
+	    csync_debug(1, "File %s is dirty here: %s\n", filename, operation);
 	}
-	return rc;
+	*cmd_error = "File is also marked dirty here!";
+	// Already checked in single_file
+	if (0 && !rc && operation && peername) {
+	    //csync_debug(0, "check dirty: peername %s \n", peername);
+	    csync_mark(filename, myhostname, peername, operation,
+		       NULL, NULL, NULL);
+	}
+    }
+    return rc;
 }
 
 void csync_file_update(const char *filename, const char *peername, int db_version)
