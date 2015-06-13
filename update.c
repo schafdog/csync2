@@ -589,8 +589,10 @@ int csync_update_file_sig(const char *peername, const char *filename,
   flag |=  (has_user != NULL ? SET_USER : 0);
   char *has_group = strstr(chk_peer_decoded, ":group=");
   flag |= (has_group != NULL ? SET_GROUP : 0);
+/*
   if (!S_ISDIR(st->st_mode))
       flag |= IGNORE_MTIME;
+*/
   csync_debug(3, "Flags for gencheck: %d \n", flag);
   if (!chk_local)
     chk_local = csync_genchecktxt_version(st, filename, flag,
