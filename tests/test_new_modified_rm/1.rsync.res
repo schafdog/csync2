@@ -1,6 +1,4 @@
-deleting usr/local/sbin/
-deleting usr/local/
-deleting usr/
+created directory /export/home/dennis/Projects/csync2/csync2/tests/test/peer
 ./
 A
 

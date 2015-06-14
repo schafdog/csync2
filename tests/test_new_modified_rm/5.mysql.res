@@ -6,6 +6,6 @@
 +----------+-------------------------------------------------------------+-----------+-------+
 | peername | filename                                                    | operation | other |
 +----------+-------------------------------------------------------------+-----------+-------+
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local | MKDIR     | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local | MKDIR     | NULL  |
+| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local | MKDIR     | NULL  |
 +----------+-------------------------------------------------------------+-----------+-------+
