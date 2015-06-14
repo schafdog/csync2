@@ -18,6 +18,9 @@ cmd u "New dir timestamp (update)"
 #
 echo hej > test/$NAME/usr/local/sbin/hej
 cmd x "New file" 
+sleep 1
 rm test/$NAME/usr/local/sbin/hej
-cmd x "New file deleted" 
+cmd x "New file deleted"
+rm -rf test/$NAME
+cmd x "clean up other"
 killdaemon d PEER
