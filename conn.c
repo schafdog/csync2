@@ -47,7 +47,10 @@ static gnutls_session_t conn_tls_session;
 static gnutls_certificate_credentials_t conn_x509_cred;
 #endif
 
-
+int conn_get()
+{
+    return conn_fd_in;
+}
 /* getaddrinfo stuff mostly copied from its manpage */
 int conn_connect(const char *peername, int ip_version)
 {
