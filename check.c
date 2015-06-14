@@ -692,7 +692,7 @@ int csync_file_check_mod(const char *file, struct stat *file_stat, int init_run,
 		operation = buffer_strdup(buffer, "MOD_DIR");
 	    else
 		operation = buffer_strdup(buffer, "MOD");
-	    csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n", file, checktxt_same_version, checktxt_db, *operation);
+	    csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n", file, checktxt_same_version, checktxt_db, operation);
 	    this_is_dirty = 1;
 	}
     } SQL_FIN {
