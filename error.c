@@ -40,18 +40,18 @@ void csync_printtime()
   if (csync_timestamps || csync_timestamp_out) {
       time_t now = time(0);
       char ftbuffer[128];
-      
+
       if (!csync_startup_time)
 	csync_startup_time = now;
-      
+
       if (csync_last_printtime+300 < now) {
 	csync_last_printtime = now;
-	
+
 	strftime(ftbuffer, 128, "%Y-%m-%d %H:%M:%S %Z (GMT%z)", localtime(&now));
-	
+
 	if (csync_timestamp_out)
 	  fprintf(csync_timestamp_out, "<%d> TIMESTAMP: %s\n", (int)getpid(), ftbuffer);
-	
+
 	if (csync_timestamps) {
 	  if (csync_server_child_pid)
 	    fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
@@ -101,17 +101,18 @@ void csync_fatal2(const char *fmt, ...)
   va_list ap;
   
   if (!csync_syslog) {
-    csync_printtime();
-    
-    if (csync_timestamps)
-      csync_printtime_prefix();
-    
-    if ( csync_server_child_pid )
-      fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
+      if (! csync_quiet) {
+	  csync_printtime();
 
-    va_start(ap, fmt);
-    vfprintf(csync_debug_out, fmt, ap);
-    va_end(ap);
+	  if (csync_timestamps)
+	      csync_printtime_prefix();
+
+	  if ( csync_server_child_pid )
+	      fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
+      }
+      va_start(ap, fmt);
+      vfprintf(csync_debug_out, fmt, ap);
+      va_end(ap);
   }
   else {
     va_start(ap,fmt);
