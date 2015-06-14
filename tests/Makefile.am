@@ -1,9 +1,6 @@
-check_SCRIPTS = local.sh peer.sh
+check_SCRIPTS = local.sh peer.sh ../csync2
 
-EXTRA_DIST = \
-	test_different.test  test_dir_time.test  test_maildir.test \
-	test_move_local.test  test_simple.test
-	$(check_SCRIPTS)
+EXTRA_DIST = $(wildcard *.test) $(check_SCRIPTS)
 
 TESTS = $(check_SCRIPTS)
 
@@ -30,7 +27,10 @@ maildir:
 move_local: 
 	./local.sh test_move_local.test  
 
-test_simple:
+simple:
+	./local.sh test_simple.test
+
+new_modified_rm:
 	./local.sh test_simple.test
 
 dist-hook:
