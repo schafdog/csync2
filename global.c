@@ -9,6 +9,7 @@ int csync_syslog = 0;
 int csync_server_child_pid = 0;
 int csync_timestamps = 0;
 int csync_new_force = 0;
+int csync_quiet = 0;
 
 int csync_dump_dir_fd = -1;
 
