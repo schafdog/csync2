@@ -37,8 +37,8 @@ main(int argc, char *argv[])
    ssize_t nread;
    char buf[BUF_SIZE];
 
-   if (argc < 3) {
-      fprintf(stderr, "Usage: %s host port msg...\n", argv[0]);
+   if (argc < 1) {
+      fprintf(stderr, "Usage: %s host ...\n", argv[0]);
       exit(EXIT_FAILURE);
    }
 
