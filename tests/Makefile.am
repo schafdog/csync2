@@ -1,8 +1,11 @@
-check_SCRIPTS = local.sh peer.sh ../csync2
 
-EXTRA_DIST = $(wildcard *.test) $(check_SCRIPTS)
+MYTESTS:=$(patsubst %.test,%.sh,$(wildcard *.test))
+EXTRA_DIST = $(MYTESTS) $(check_SCRIPTS)
 
-TESTS = $(check_SCRIPTS)
+check_SCRIPTS = $(MYTESTS)
+
+TESTS = auto_resolve.sh move_hardlink.sh test_diff.sh test_maildir.sh test_new_modified_rm.sh \
+	new_hardlinks.sh peer.sh test_different.sh test_dir_time.sh test_move_local.sh test_simple.sh
 
 MAINTAINERCLEANFILES = Makefile.in
 
@@ -12,8 +15,10 @@ clean-local:
 	rm -f *.log *.dif
 
 all: tests ../csync2
+	echo $(MYTESTS)
 
-tests: different dir_time maildir move_local simple
+%.test:
+	./local.sh $@ || (echo "Test $@ failed" && exit 1)
 
 different:
 	./local.sh test_different.test
