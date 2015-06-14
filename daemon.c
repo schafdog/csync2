@@ -1247,7 +1247,7 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
     // END CMD, in error if cmd_error (but finish it with a reply)
     csync_end_command(filename, tag, cmd_error, rc);
   } 
-  csync_debug(1, "CONN %s closed without BYE\n", active_peer);
+  csync_debug(0, "CONN %s closed without BYE\n", active_peer);
   if (active_peer)
       free(active_peer);
   active_peer = 0;
