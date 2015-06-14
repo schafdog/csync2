@@ -7,19 +7,19 @@ mark other operation: MKDIR other:/export/home/dennis/Projects/csync2/csync2/tes
 mark other operation: NEW peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/new_file '-'.
 mark other operation: NEW other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/new_file '-'.
 Connecting to host peer (PLAIN) ...
-CONN local> CONFIG 
+CONN peer < CONFIG 
 
-CONN local> HELLO local
+CONN peer < HELLO local
 
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local' MKDIR ''
-CONN local> SIG %25test%25 user/group 1000 1000 dennis schafroth 16877 
+CONN peer < SIG %25test%25 user/group 1000 1000 dennis schafroth 16877 
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/new_file' NEW ''
-CONN local> SIG %25test%25/new_file user/group 1000 1000 dennis schafroth 33188 
+CONN peer < SIG %25test%25/new_file user/group 1000 1000 dennis schafroth 33188 
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/new_file
-CONN local> PATCH %25test%25/new_file - 1000 1000 dennis schafroth 33188 
-CONN local> octet-stream 11
+CONN peer < PATCH %25test%25/new_file - 1000 1000 dennis schafroth 33188 
+CONN peer < octet-stream 11
 
-CONN local> SETTIME %25test%25 
-CONN local> BYE
+CONN peer < SETTIME %25test%25 
+CONN peer < BYE
 
 Finished succesfully.
