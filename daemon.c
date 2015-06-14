@@ -1193,7 +1193,8 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
       active_peer = strdup(tag[1]);
     }
     else
-      csync_debug(1, "CONN %s> %s %s %s %s %s %s %s %s %s \n", active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
+	csync_debug(2, "CONN %s> %s %s %s %s %s %s %s %s %s \n",
+		    active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
 
     cmd_error = 0;
 
