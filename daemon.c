@@ -872,26 +872,26 @@ void csync_daemon_check_update(const char *filename, const char *otherfile, stru
 }
 
 
-void csync_daemon_stdin_check(address_t *peeraddr, socklen_t *peerlen) {
-  struct stat sb;
-  if (fstat(0, &sb))
-    csync_fatal("Can't run fstat on fd 0: %s", strerror(errno));
+void csync_daemon_stdin_check(int fd, address_t *peeraddr, socklen_t *peerlen) {
+    struct stat sb;
 
-  switch (sb.st_mode & S_IFMT) {
-  case S_IFSOCK:
-    if ( getpeername(0, &peeraddr->sa, peerlen) == -1 )
-      csync_fatal("Can't run getpeername on fd 0: %s", strerror(errno));
-		break;
-  case S_IFIFO:
-    set_peername_from_env(peeraddr, "SSH_CLIENT");
-    break;
-    /* fall through */
-  default:
-    csync_fatal("I'm only talking to sockets or pipes! %x\n", 
-		sb.st_mode & S_IFMT);
-    break;
-	}
+    if (fstat(fd, &sb))
+	csync_fatal("Can't run fstat on fd %d: %s\n", fd, strerror(errno));
 
+    switch (sb.st_mode & S_IFMT) {
+    case S_IFSOCK:
+	if ( getpeername(fd, &peeraddr->sa, peerlen) == -1 )
+	    csync_fatal("Can't run getpeername on fd %d: %s\n", fd, strerror(errno));
+	break;
+    case S_IFIFO:
+	set_peername_from_env(peeraddr, "SSH_CLIENT");
+	break;
+	/* fall through */
+    default:
+	csync_fatal("I'm only talking to sockets or pipes! %x\n", 
+		    sb.st_mode & S_IFMT);
+	break;
+    }
 }
 
 int csync_daemon_setmod(char *filename, char *mod, const char **cmd_error) {
@@ -1167,7 +1167,10 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
   const char *cmd_error  = NULL;
   //TODO only valid for INETD mode since we do not set fd 0 otherwise.
   if (MODE_INETD == mode)  
-    csync_daemon_stdin_check(&peeraddr, &peerlen);
+      csync_daemon_stdin_check(0, &peeraddr, &peerlen);
+  else
+      csync_daemon_stdin_check(conn_get(), &peeraddr, &peerlen);
+  
   while ( conn_gets(line, 4096) ) {
     //csync_debug(1, "Command: %s", line);
     if (setup_tag(tag, line))
