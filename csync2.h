@@ -561,6 +561,7 @@ extern FILE *csync_debug_out;
 extern long csync_last_printtime;
 extern FILE *csync_timestamp_out;
 
+extern int csync_quiet;
 extern int csync_messages_printed;
 extern int csync_server_child_pid;
 extern int csync_timestamps;
