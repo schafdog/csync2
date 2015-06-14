@@ -1,6 +1,9 @@
+clean local
+clean peer
 FILENAME="different"
 echo "far" >"test/$NAME/$FILENAME"
 echo "vel" > "test/$PEER/$FILENAME"
-check "Updated both"
-./csync2 -K csync2_local.cfg -N local -f$DEBUG test/local/$FILENAME
-check "forced update peer"
+cmd x "Updated both"
+cmd fu "forced update peer"
+rm -rf test/$NAME
+cmd c "clean up"
