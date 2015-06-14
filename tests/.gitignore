@@ -1,5 +1,7 @@
 *.diff
 *.log
 *.pid
+*.trs
+*.log
 csync2_local.cfg
 csync2_peer.cfg
