@@ -1,3 +1,4 @@
+daemon d PEER
 clean local
 clean peer
 FILENAME="different"
@@ -7,3 +8,4 @@ cmd x "Updated both"
 cmd fu "forced update peer"
 rm -rf test/$NAME
 cmd c "clean up"
+killdaemon d PEER
