@@ -1,11 +1,13 @@
-clean 
+clean
 echo A > test/$NAME/A
 cmd c "new A"
 sleep 1
 mv  test/$NAME/A test/$NAME/Z
+sleep 1
 cmd c "move A Z => new Z " 
 sleep 1
 mv test/$NAME/Z test/$NAME/B
+sleep 1
 cmd c "move Z B => new B "
 sleep 1
 mkdir test/$NAME/newdir
