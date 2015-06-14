@@ -60,7 +60,7 @@ function cmd {
     testing ${TESTNAME}/${COUNT}.log
     echo "select filename from file order by filename; select peername,filename,operation,other from dirty order by filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
-    if [ -d "test/local" ] ; then 
+    if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
 	rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
 	testing ${TESTNAME}/${COUNT}.rsync
     fi
