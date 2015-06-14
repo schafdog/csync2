@@ -6,4 +6,6 @@ clean peer
 FILENAME="new_file"
 echo "far" >"test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
+rm -rf test/$NAME
+cmd x "clean up"
 killdaemon d PEER
