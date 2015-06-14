@@ -1,3 +1,4 @@
+daemon d PEER
 clean local
 clean peer
 mkdir -p test/local/auto/younger
@@ -13,3 +14,4 @@ echo addasdaasda > test/local/auto/younger/update_both
 check "3 Check local" local
 check "4 Check peer" peer 
 cmd u "5 Update auto (younger)"
+killdaemon d PEER
