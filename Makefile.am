@@ -60,7 +60,7 @@ if PRIVATE_LIBRSYNC
 endif
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
-AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)"'
+AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)

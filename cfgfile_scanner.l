@@ -90,11 +90,19 @@ int include_stack_ptr = 0;
 				exit(1);
 			}
 			include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
-			yyin = fopen(yytext, "r");
-			if ( !yyin ) {
-				fprintf(stderr, "Can't open included config file '%s'.\n", yytext);
+                        char *conffile = malloc(strlen(ETCDIR) + 3 + strlen(yytext));
+                        conffile[0] = 0;
+                        if (yytext[0] != '/') {
+                            strcpy(conffile, ETCDIR);
+                            strcat(conffile, "/");
+                        };
+                        strcat(conffile, yytext);
+                        yyin = fopen(conffile, "r");
+                        if ( !yyin ) {
+				fprintf(stderr, "Can't open included config file '%s'.\n", conffile);
 				exit(1);
 			}
+                        free(conffile);
 			yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
 			BEGIN(0);
 		}
