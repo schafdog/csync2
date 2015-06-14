@@ -1,0 +1,429 @@
+Csync2 daemon running. Waiting for connections.
+New connection from 127.0.0.1:37204.
+Reading symbols from shared library libmysqlclient.so
+CONN (null) < OK (cmd_finished).
+
+Command: HELLO local
+HELLO from local. Response: OK
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer user/group 1000 1000 dennis schafroth 16877 1434264871 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264871%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr user/group 1000 1000 dennis schafroth 16877 1434264871 
+CONN local < OK 
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> MKDIR /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr - 1000 1000 dennis schafroth 16877 1434264871 
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr 0
+mkdir /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr rc = 0 errno = 2 err = 
+setown /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr rc = 0 uid: 1000 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr rc = 0 time: 1434264871 errno = 0 err = 
+DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr  
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local user/group 1000 1000 dennis schafroth 16877 1434264871 
+CONN local < OK 
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> MKDIR /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local - 1000 1000 dennis schafroth 16877 1434264871 
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local 0
+mkdir /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 errno = 2 err = 
+setown /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 uid: 1000 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 time: 1434264871 errno = 0 err = 
+DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local  
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin user/group 1000 1000 dennis schafroth 16877 1434264871 
+CONN local < OK 
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> MKDIR /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin - 1000 1000 dennis schafroth 16877 1434264871 
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin 0
+mkdir /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 errno = 2 err = 
+setown /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 uid: 1000 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 time: 1434264871 errno = 0 err = 
+DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin  
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local 1434264871       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr 1434264871       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer 1434264871       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> BYE         
+CONN local < OK (cu_later).
+
+Connection closed.
+Csync2 daemon running. Waiting for connections.
+New connection from 127.0.0.1:37209.
+Reading symbols from shared library libmysqlclient.so
+CONN (null) < OK (cmd_finished).
+
+Command: HELLO local
+HELLO from local. Response: OK
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin user/group 1000 1000 dennis schafroth 16877 1434264873 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264871%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> MKDIR /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin - 1000 1000 dennis schafroth 16877 1434264873 
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin 0
+mkdir /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 errno = 0 err = 
+setown /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 uid: 1000 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 time: 1434264873 errno = 0 err = 
+DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin  
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local 1434264871       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> BYE         
+CONN local < OK (cu_later).
+
+Connection closed.
+Csync2 daemon running. Waiting for connections.
+New connection from 127.0.0.1:37215.
+Reading symbols from shared library libmysqlclient.so
+CONN (null) < OK (cmd_finished).
+
+Command: HELLO local
+HELLO from local. Response: OK
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer user/group 1000 1000 dennis schafroth 16877 1434264871 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264871%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr user/group 1000 1000 dennis schafroth 16877 1434264871 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264871%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local user/group 1000 1000 dennis schafroth 16877 1434264874 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264871%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> MKDIR /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local - 1000 1000 dennis schafroth 16877 1434264874 
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local 0
+mkdir /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 errno = 17 err = 
+setown /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 uid: 1000 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local rc = 0 time: 1434264874 errno = 0 err = 
+DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local  
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin user/group 1000 1000 dennis schafroth 16877 1434264873 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264873%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local 1434264874       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr 1434264871       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer 1434264871       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> BYE         
+CONN local < OK (cu_later).
+
+Connection closed.
+Csync2 daemon running. Waiting for connections.
+New connection from 127.0.0.1:37218.
+Reading symbols from shared library libmysqlclient.so
+CONN (null) < OK (cmd_finished).
+
+Command: HELLO local
+HELLO from local. Response: OK
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local user/group 1000 1000 dennis schafroth 16877 1434264874 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264874%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin user/group 1000 1000 dennis schafroth 16877 1434264874 
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264873%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> MKDIR /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin - 1000 1000 dennis schafroth 16877 1434264874 
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin 0
+mkdir /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 errno = 0 err = 
+setown /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 uid: 1000 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin rc = 0 time: 1434264874 errno = 0 err = 
+DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin  
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej user/group 1000 1000 dennis schafroth 33188 1434264874 
+CONN local < OK 
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> PATCH /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej - 1000 1000 dennis schafroth 33188 1434264874 
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej 0
+CONN local < OK (send_data).
+
+CONN local < octet-stream 12
+
+DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej' '-' 
+Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej  
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin 1434264874       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local 1434264874       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr 1434264871       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> BYE         
+CONN local < OK (cu_later).
+
+Connection closed.
+Csync2 daemon running. Waiting for connections.
+New connection from 127.0.0.1:37221.
+Reading symbols from shared library libmysqlclient.so
+CONN (null) < OK (cmd_finished).
+
+Command: HELLO local
+HELLO from local. Response: OK
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej user/group       
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264874%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+
+CONN local < octet-stream 32
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> DEL /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej        
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej 0
+Changing owner of /tmp/export to user 0 and group 0, rc= -1 
+Changing owner of /tmp/export/home to user 0 and group 0, rc= -1 
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej' '-' 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin/hej  
+CONN local < OK (cmd_finished).
+
+CONN local> SETTIME /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin 1434264874       
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> BYE         
+CONN local < OK (cu_later).
+
+Connection closed.
+Csync2 daemon running. Waiting for connections.
+New connection from 127.0.0.1:37226.
+Reading symbols from shared library libmysqlclient.so
+CONN (null) < OK (cmd_finished).
+
+Command: HELLO local
+HELLO from local. Response: OK
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin user/group       
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264874%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> DEL /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin        
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin 0
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin' '-' 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local/sbin  
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local user/group       
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264875%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> DEL /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local        
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local.
+mark other operation: MOD_DIR local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local '-'.
+mark other operation: MOD_DIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local '-'.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local 1
+check_dirty_daemon: peer operation  local /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local MOD_DIR
+Ignoring dirty directory /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local' '-' 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr/local  
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr user/group       
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264875%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> DEL /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr        
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr.
+mark other operation: MOD_DIR local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr '-'.
+mark other operation: MOD_DIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr '-'.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr 1
+check_dirty_daemon: peer operation  local /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr MOD_DIR
+Ignoring dirty directory /export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr' '-' 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer/usr  
+CONN local < OK (cmd_finished).
+
+CONN local> SIG /export/home/dennis/Projects/csync2/csync2/tests/test/peer user/group       
+CONN local < OK (data_follows).
+
+CONN local < v2%3Amtime=1434264875%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+
+CONN local < octet-stream 0
+
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer' '-' 
+CONN local < OK (cmd_finished).
+
+CONN local> DEL /export/home/dennis/Projects/csync2/csync2/tests/test/peer        
+check_dirty_daemon: /export/home/dennis/Projects/csync2/csync2/tests/test/peer
+Running check for /export/home/dennis/Projects/csync2/csync2/tests/test/peer ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test/peer.
+mark other operation: MOD_DIR local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer '-'.
+mark other operation: MOD_DIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/peer '-'.
+check_dirty_daemon: indirty /export/home/dennis/Projects/csync2/csync2/tests/test/peer 1
+check_dirty_daemon: peer operation  local /export/home/dennis/Projects/csync2/csync2/tests/test/peer MOD_DIR
+Ignoring dirty directory /export/home/dennis/Projects/csync2/csync2/tests/test/peer
+DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/tests/test/peer' '-' 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/tests/test/peer  
+CONN local < OK (cmd_finished).
+
+CONN local> BYE         
+CONN local < OK (cu_later).
+
+Connection closed.
