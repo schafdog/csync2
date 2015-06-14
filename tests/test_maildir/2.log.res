@@ -25,10 +25,6 @@ CONN peer < HELLO local
 
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local' MKDIR ''
 CONN peer < SIG %25test%25 user/group 1000 1000 dennis schafroth 16877 
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local
-CONN peer < MKDIR %25test%25 - 1000 1000 dennis schafroth 16877 
-While syncing file: /export/home/dennis/Projects/csync2/csync2/tests/test/local
-ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/tests/test/peer)
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir' MKDIR ''
 CONN peer < SIG %25test%25/Maildir user/group 1000 1000 dennis schafroth 16877 
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir
@@ -65,4 +61,4 @@ CONN peer < SETTIME %25test%25/Maildir
 CONN peer < SETTIME %25test%25 
 CONN peer < BYE
 
-Finished with 1 errors.
+Finished succesfully.
