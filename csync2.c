@@ -591,7 +591,7 @@ int main(int argc, char ** argv)
 
     int cmd_db_version = 0;
     int cmd_ip_version = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:V")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:Vq")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -767,6 +767,9 @@ int main(int argc, char ** argv)
 	    break;
 	case 'z':
 	    allow_peer = optarg;
+	    break;
+	case 'q':
+	    csync_quiet = 1;
 	    break;
 	default:
 	    help(argv[0]);
