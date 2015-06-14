@@ -18,19 +18,19 @@ CURPATH=
 echo NewMail > test/$NAME/Maildir/tmp/${FILE}
 mv test/$NAME/Maildir/tmp/${FILE} test/$NAME/Maildir/new/${FILE}
 cmd x "New Maildir/new/123 with transit in tmp "
-#
+sleep 1
 mv test/$NAME/Maildir/new/${FILE} test/$NAME/Maildir/cur/${CURFILE}
 cmd x "move Maildir/new/${FILE} Maildir/cur/${CURFILE}"
-#
+sleep 1
 mv test/$NAME/Maildir/cur/${CURFILE} test/$NAME/Maildir/cur/${CURFILE}S
 cmd x "move Maildir/cur/${CURFILE} Maildir/cur/${CURFILE}S (mark read)"
-sleep 2
+sleep 1
 cmd u "move Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S (2 sec delay)"
+sleep 1
 # Delete email: hardlink in Trash and rename
 ln test/$NAME/Maildir/cur/${CURFILE}S test/$NAME/Maildir/.Trash/cur/${CURFILE}S 
 mv test/$NAME/Maildir/cur/${CURFILE}S test/$NAME/Maildir/cur/${CURFILE}ST
 cmd x "Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S. mv ${CURFILE}S ${CURFILE}ST"
-rm -rf test/$NAME/Maildir
-sleep 2
+rm -rf test/$NAME
 cmd x "clean up"
 killdaemon d PEER
