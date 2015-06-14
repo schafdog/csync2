@@ -1,6 +1,5 @@
+deleting new_file
 ./
-deleting Maildir/cur/
-deleting Maildir/.Trash/
-deleting Maildir/
-C
+newdir/
+newdir/C
 
