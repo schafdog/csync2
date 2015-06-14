@@ -1,4 +1,3 @@
-./
 auto/
 auto/larger/
 auto/older/
