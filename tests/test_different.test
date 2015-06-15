@@ -2,6 +2,9 @@ daemon d PEER
 clean local
 clean peer
 FILENAME="different"
+mkdir -p test/$NAME
+cmd x "Sync directory"
+sleep 1
 echo "far" >"test/$NAME/$FILENAME"
 echo "vel" > "test/$PEER/$FILENAME"
 cmd x "Both updated (peer dirty)"
