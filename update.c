@@ -51,7 +51,7 @@
 #define SETOWN  -6
 #define SETMOD  -7
 #define SETTIME -8
-#define CLEAR_DIRTY   -9
+// #define CLEAR_DIRTY
 #define ERROR_DIRTY        -11
 #define ERROR_OTHER        -12
 #define ERROR_PATH_MISSING -13
@@ -395,7 +395,7 @@ int csync_next_step(int rc, int auto_run, const char *myname, const char *peerna
   case SETTIME:
     rc = csync_update_file_settime(peername, key_enc,
 				   filename, filename_enc, st);
-  case CLEAR_DIRTY:
+  case IDENTICAL:
   case OK:
     csync_clear_dirty(peername, filename, auto_run);
     break;
@@ -444,7 +444,7 @@ int csync_update_file_del(const char *myname, const char *peername,
       if (status == ERROR_PATH_MISSING) {
 	csync_debug(1, "%s:%s is already up to date on peer.\n", peername, filename);
 	csync_clear_dirty(peername, filename, auto_resolve_run);
-	return CLEAR_DIRTY;
+	return IDENTICAL;
       }
       else
 	return status;
@@ -472,7 +472,7 @@ int csync_update_file_del(const char *myname, const char *peername,
     if ( !found_diff ) {
       csync_debug(1, "%s:%s is already up to date on peer. \n", peername, filename);
       csync_clear_dirty(peername, filename, auto_resolve_run);
-      return CLEAR_DIRTY;
+      return IDENTICAL;
     }
     if ( dry_run ) {
       csync_debug(1, "?D: %-15s %s\n", peername, filename);
@@ -486,7 +486,7 @@ int csync_update_file_del(const char *myname, const char *peername,
       auto_resolve_run = csync_check_auto_resolve2(peername, filename,
 						   rc, auto_resolve_run, 1);
     if (!auto_resolve_run) {
-      if (rc == OK || rc == CLEAR_DIRTY)
+      if (rc == OK || rc == IDENTICAL)
 	csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc;
     }
@@ -667,7 +667,7 @@ int csync_update_file_all_hardlink(const char *peername,
 					 st, uid, gid,
 					 NULL, last_conn_status, 2);
       if (!is_identical) {
-	if (rc == CLEAR_DIRTY) {
+	if (rc == IDENTICAL) {
 	  // We have a remote file that we can use to "reverse" hardlink with
 	  path = other_enc;
 	  other_enc = filename_enc;
@@ -757,7 +757,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
   if ( !found_diff && !found_diff_meta) {
     csync_debug(2, "?S: %-15s %s\n", peername, filename);
     // DS also remove from dirty on dry_run
-    return CLEAR_DIRTY;
+    return IDENTICAL;
   }
   else {
     if (found_diff_meta) {
@@ -892,7 +892,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
     }
 
     if (dry_run) {
-      if (rc == CLEAR_DIRTY)
+      if (rc == IDENTICAL)
 	csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc;
     }
@@ -982,7 +982,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	break;
       case DIFF_META:
 	rc = SETOWN;
-	//	rc = CLEAR_DIRTY;
+	//	rc = IDENTICAL;
       }
     }
     switch (rc)
@@ -999,7 +999,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	return rc;
       case ERROR:
 	return rc;
-      case CLEAR_DIRTY:
+      case IDENTICAL:
 	csync_clear_dirty(peername, filename, auto_resolve_run);
 	return rc;
       case OK_DRY:
@@ -1111,7 +1111,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
     //csync_debug(1, "before setown/settime/setmod rc %d.\n", rc);
     if (rc < OK)
       return rc;
-    if (rc != CLEAR_DIRTY && rc != IDENTICAL) {
+    if (rc != IDENTICAL && rc != IDENTICAL) {
       if (rc == OK)
 	 rc = csync_update_file_setown(peername, key_enc, filename, filename_enc,
 				       &st, uid, gid);
@@ -1130,7 +1130,6 @@ int csync_update_file_mod(const char *myname, const char *peername,
     switch (rc) {
     case OK:
     case IDENTICAL:
-    case CLEAR_DIRTY:
       csync_clear_dirty(peername, filename, auto_resolve_run);
       return rc;
     }
@@ -1386,10 +1385,27 @@ int csync_diff(const char *myname, const char *peername,
 					 filename, filename_enc,
 					 &st, uid, gid,
 					 NULL, &last_conn_status, 0);
+  if (rc < 0) {
+      csync_debug(0, "Error while TYPE: %d \n", rc);
+      return finish_close();
+  }
+
+  if (rc == IDENTICAL) {
+      csync_debug(1, "Identical files. Skipping diff\n");
+      return finish_close();
+
+  }
+
+  if (!stat(filename, &st) && !S_ISREG(st.st_mode))
+  {
+      csync_debug(1, "Skipping diff on non-regular file (%s)", filename) ;
+      return finish_close(); 
+  }
 
   conn_printf("TYPE %s %s\n", key_enc, filename);
+
   if ( read_conn_status(0, peername) )
-    return finish_close();
+      return finish_close();
 
   /* FIXME
    * verify type of file first!
@@ -1413,14 +1429,14 @@ int csync_diff(const char *myname, const char *peername,
 
   int length = 0;
   while ( (rc=conn_read(buffer, 512)) > 0 ) {
-    fwrite(buffer, rc, 1, p);
-    length += rc;
+      fwrite(buffer, rc, 1, p);
+      length += rc;
   }
   csync_debug(2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d " , myname, filename, peername, filename, length);
   fclose(p);
   signal(SIGPIPE, old_sigpipe_handler);
   return finish_close();
-  }
+}
 
 int csync_insynctest_readline(char **file, char **checktxt)
 {
@@ -1614,55 +1630,72 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
   return ret;
 }
 
-int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version)
+int peer_in(char *active_peers[], const char* peer)
 {
-  struct textlist *myname_list = 0, *myname;
-  struct csync_group *g;
-  int ret = 1;
+    if (!active_peers)
+	return 1;
+    int index = 0;
+    while (active_peers[index]) {
+	if (!strcmp(active_peers[index], peer))
+	    return 1;
+	index++;
+    }
+    return 0;
+}
 
-  if (auto_diff && filename) {
-    struct peer *pl = csync_find_peers(filename, 0);
-    int pl_idx;
+int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version, char *active_peers[])
+{
+    struct textlist *myname_list = 0, *myname;
+    struct csync_group *g;
+    int ret = 1;
+    if (auto_diff && filename) {
+	int pl_idx;
+	struct peer *pl = csync_find_peers(filename, 0);
+	for (pl_idx=0; pl && pl[pl_idx].peername; pl_idx++)
+	    if (peer_in(active_peers, pl[pl_idx].peername)) {
+		csync_diff(pl[pl_idx].myname, pl[pl_idx].peername, filename, ip_version);
+	    }
+	free(pl);
+	return ret;
+    }
 
-    for (pl_idx=0; pl && pl[pl_idx].peername; pl_idx++)
-      csync_diff(pl[pl_idx].myname, pl[pl_idx].peername, filename, ip_version);
+    for (g = csync_group; g; g = g->next)
+    {
+	if (g->myname)
+	    for (myname=myname_list; myname; myname=myname->next)
+		if (strcmp(g->myname, myname->value) )
+		    textlist_add(&myname_list, g->myname, 0);
+    }
 
-    free(pl);
-    return ret;
-  }
+    for (myname=myname_list; myname; myname=myname->next) {
+	struct textlist *peername_list = 0, *peername;
+	struct csync_group_host *h;
 
-  for (g = csync_group; g; g = g->next) {
-    if (g->myname)
-      for (myname=myname_list; myname; myname=myname->next)
-	if (strcmp(g->myname, myname->value) )
-	  textlist_add(&myname_list, g->myname, 0);
-  }
-
-  for (myname=myname_list; myname; myname=myname->next) {
-     struct textlist *peername_list = 0, *peername;
-     struct csync_group_host *h;
-
-     for (g = csync_group; g; g = g->next) {
-	if ( !g->myname || strcmp(myname->value, g->myname) )
-	   continue;
-	for (h=g->host; h; h=h->next) {
-	   for (peername=peername_list; peername; peername=peername->next)
-	      if (strcmp(h->hostname, peername->value))
-		 textlist_add(&peername_list, h->hostname, 0);
+	for (g = csync_group; g; g = g->next) {
+	    if ( !g->myname || strcmp(myname->value, g->myname) )
+		continue;
+	    for (h=g->host; h; h=h->next) {
+		for (peername=peername_list; peername; peername=peername->next)
+		    if (strcmp(h->hostname, peername->value))
+			textlist_add(&peername_list, h->hostname, 0);
+	    }
 	}
-     }
 
-     for (peername=peername_list; peername; peername=peername->next) {
-	csync_debug(1, "Running in-sync check for %s <-> %s.\n",
-		    myname->value, peername->value);
-	if ( !csync_insynctest(myname->value, peername->value, init_run,
-			       auto_diff, filename, ip_version) ) ret=0;
-     }
-     textlist_free(peername_list);
-  }
-  textlist_free(myname_list);
+	for (peername=peername_list; peername; peername=peername->next)
+	{
+	    if (peer_in(active_peers, peername->value))
+	    {
+		csync_debug(1, "Running in-sync check for %s <-> %s.\n",
+			    myname->value, peername->value);
+		if ( !csync_insynctest(myname->value, peername->value, init_run,
+				       auto_diff, filename, ip_version) ) ret=0;
+	    }
+	}
+	textlist_free(peername_list);
+    }
+    textlist_free(myname_list);
 
-  return ret;
+    return ret;
 }
 
 void csync_remove_old()
