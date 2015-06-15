@@ -706,14 +706,15 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
   }
   // Found a file that we ca do a check text on 
   conn_printf("OK (data_follows).\n");
-  int flags; 
+  int flags = 0;
   // Prob. all non-regular files, but testing with directories
   /* TODO Why ignore mtime?
   if (!S_ISDIR(st.st_mode))
       flags |= IGNORE_MTIME;
   */
   if (strcmp("user/group",tag[3]) == 0)
-    flags |= SET_USER|SET_GROUP;
+      flags |= SET_USER|SET_GROUP;
+  csync_debug(2, "Flags for gencheck: %d \n", flags);
   const char *checktxt = csync_genchecktxt_version(&st, filename, 
 						   flags, db_version);
   if (db_version == 1)
