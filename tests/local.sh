@@ -37,25 +37,31 @@ function testing {
 
 function cmd {
     CMD=$1
+    TESTPATH=test
+    if [ "$CMD" == "TT" ] ; then
+	TESTPATH=$2
+	echo "TT ${TESTPATH}"
+	shift
+    fi
     DESC=$2
-    echo "${COUNT}. CMD $CMD $DESC" 
+    echo "${COUNT}. CMD $CMD $DESC"
     if [ "$3" == "" ] ; then
 	HOST=$NAME
 	# TODO Fix peername somehow
     fi
-    if [ "$CMD" == "daemon" ] ; then 
+    if [ "$CMD" == "daemon" ] && [ "$DAEMON" != "NO" ] ; then
 	daemon d
 	return 
     fi
-    if [ "$CMD" == "killdaemon" ] ; then 
+    if [ "$CMD" == "killdaemon" ] && [ "$DAEMON" != "NO" ] ; then
 	killdaemon
 	return 
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
     if [ "$GDB" != "" ] ; then 
-	$GDB $PROG -q -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test
+	$GDB $PROG -q -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH}
     else
-	$PROG -q -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG test >> ${TESTNAME}/${COUNT}.log 2>&1
+	$PROG -q -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH} >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
     echo "select filename from file order by filename; select peername,filename,operation,other from dirty order by filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
@@ -77,8 +83,7 @@ function clean {
     fi
     echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     rm -f csync_$CNAME.log mysql_$CNAME.log
-    rm -rf test/$CNAME/*
-    mkdir -p test/$CNAME
+    rm -rf test/$CNAME
     let COUNT=$COUNT+1
     ${PAUSE}
 }
