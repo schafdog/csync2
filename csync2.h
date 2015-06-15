@@ -570,6 +570,7 @@ extern int csync_new_force;
 
 extern char myhostname[];
 extern char *csync_port;
+extern char *csync_confdir;
 extern char *active_grouplist;
 extern char *active_peerlist;
 
