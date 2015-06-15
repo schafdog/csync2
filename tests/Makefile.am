@@ -17,6 +17,9 @@ clean-local:
 all: ../csync2
 	echo $(MYTESTS)
 
+../csync2:
+	pushd .. ; make csync2 ; popd
+
 %.test:
 	./local.sh $@ || (echo "Test $@ failed" && exit 1)
 

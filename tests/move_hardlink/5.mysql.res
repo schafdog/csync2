@@ -17,14 +17,8 @@
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir                    | MKDIR     | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash             | MKDIR     | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur         | MKDIR     | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur         | MOD_DIR   | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab | NEW       | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab | NEW       | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur                | MKDIR     | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur                | MOD_DIR   | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab        | NEW       | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab        | NEW       | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp                | MKDIR     | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp                | MOD_DIR   | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123            | RM        | NULL  |
 +----------+----------------------------------------------------------------------------------------+-----------+-------+
