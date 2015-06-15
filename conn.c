@@ -495,8 +495,8 @@ int conn_read(void *buf, size_t count)
 
 int conn_write(const void *buf, size_t count)
 {
-  //	conn_debug("Local", buf, count);
-	return WRITE(buf, count);
+    // conn_debug("Local", buf, count);
+    return WRITE(buf, count);
 }
 
 void  conn_remove_key(char *buf) {
@@ -588,6 +588,7 @@ size_t conn_gets_newline(char *s, size_t size, int remove_newline)
 	s[i] = 0;
 
 	//	conn_debug(active_peer, s, i);
+	csync_debug(2, "CONN %s > %s\n", active_peer, s);
 	return i;
 }
 
