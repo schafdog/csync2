@@ -18,7 +18,6 @@
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/older               | MKDIR     | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/smaller             | MKDIR     | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger             | MKDIR     | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger             | MOD_DIR   | NULL  |
 | other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger/update_both | NEW       | NULL  |
 | peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger/update_both | NEW       | NULL  |
 +----------+--------------------------------------------------------------------------------------+-----------+-------+

@@ -1,0 +1,145 @@
+Jun 12 08:51:29 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:29 wheezy csync2(8057): CONN us1.schafroth.dk> SIG /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S user/group 1000 1000 dennis schafroth 33152 1434089523
+Jun 12 08:51:29 wheezy csync2(8057): CONN us1.schafroth.dk < OK
+Jun 12 08:51:29 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:29 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:29 wheezy csync2(8057): CONN us1.schafroth.dk> MKHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:29 wheezy csync2(8057): Running check for /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S ...
+Jun 12 08:51:29 wheezy csync2(8057): Checking for deleted files /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S.
+Jun 12 08:51:29 wheezy csync2(8057): Error: PATCH (/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S)
+Jun 12 08:51:29 wheezy csync2(8057): CONN us1.schafroth.dk < PATCH (/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S)
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk> MKHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:30 wheezy csync2(8057): Running check for /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S ...
+Jun 12 08:51:30 wheezy csync2(8057): Checking for deleted files /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S.
+Jun 12 08:51:30 wheezy csync2(8057): Error: PATCH (/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S)
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk < PATCH (/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S)
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk> SIG /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S user/group 1000 1000 dennis schafroth 33152 1434089523
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk < OK
+Jun 12 08:51:30 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk> SIG /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S user/group 1000 1000 dennis schafroth 33152 1434089523
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk < OK
+Jun 12 08:51:30 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk> PATCH /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S - 1000 1000 dennis schafroth 33152 1434089523
+Jun 12 08:51:30 wheezy csync2(8057): Running check for /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S ...
+Jun 12 08:51:30 wheezy csync2(8057): Checking for deleted files /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S.
+Jun 12 08:51:30 wheezy csync2(8057): CONN us1.schafroth.dk < OK (send_data).
+--
+Jun 12 08:51:31 wheezy csync2(8057): Content length in buffer: 'octet-stream 8341' size: 8341 rc: 0
+Jun 12 08:51:31 wheezy csync2(8057): DEBUG daemon: check update rc=1 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:31 wheezy csync2(8057): Updated(patch) us1.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:31 wheezy csync2(8057): IDENT (cmd_finished).
+Jun 12 08:51:31 wheezy csync2(8057): CONN us1.schafroth.dk < IDENT (cmd_finished).
+Jun 12 08:51:31 wheezy csync2(8057): CONN us1.schafroth.dk> SIG /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S user/group 1000 1000 dennis schafroth 33152 1434089523
+Jun 12 08:51:31 wheezy csync2(8057): CONN us1.schafroth.dk < OK
+Jun 12 08:51:31 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:31 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:31 wheezy csync2(8057): CONN us1.schafroth.dk> MKHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:31 wheezy csync2(8057): Running check for /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S ...
+Jun 12 08:51:31 wheezy csync2(8057): Checking for deleted files /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S.
+Jun 12 08:51:31 wheezy csync2(8057): HARDLINK: /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S -> /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:31 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S'
+Jun 12 08:51:31 wheezy csync2(8057): Updated(mkhardlink) us1.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:31 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk> SIG /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S user/group 1000 1000 dennis schafroth 33152 1434089523
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk < OK (data_follows).
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk < v2%3Amtime=0%3Amode=33152%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8333
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk < octet-stream 112
+Jun 12 08:51:32 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk> MKHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:32 wheezy csync2(8057): Running check for /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S ...
+Jun 12 08:51:32 wheezy csync2(8057): Checking for deleted files /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S.
+Jun 12 08:51:32 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S'
+Jun 12 08:51:32 wheezy csync2(8057): Updated(mkhardlink) us1.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:32 wheezy csync2(8057): CONN us1.schafroth.dk> SETOWN /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S - 1000 1000 dennis schafroth
+Jun 12 08:51:32 wheezy csync2(8057): Running check for /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S ...
+Jun 12 08:51:32 wheezy csync2(8057): Checking for deleted files /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S.
+Jun 12 08:51:32 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+--
+Jun 12 08:51:33 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk> SETTIME /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S 1434089523
+Jun 12 08:51:33 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk> SIG /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S user/group 1000 1000 dennis schafroth 33152 1434089523
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk < OK (data_follows).
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk < v2%3Amtime=0%3Amode=33152%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8333
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk < octet-stream 112
+Jun 12 08:51:33 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S' '-'
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk> MKHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:33 wheezy csync2(8057): Running check for /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S ...
+Jun 12 08:51:33 wheezy csync2(8057): Checking for deleted files /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S.
+Jun 12 08:51:33 wheezy csync2(8057): DEBUG daemon: check update rc=0 'us1.schafroth.dk' '/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S'
+Jun 12 08:51:33 wheezy csync2(8057): Updated(mkhardlink) us1.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 08:51:33 wheezy csync2(8057): CONN us1.schafroth.dk < OK (cmd_finished).
+Jun 12 08:51:34 wheezy csync2(8057): CONN us1.schafroth.dk> SIG /export/home/dennis/Maildir/.Trash/tmp user/group 1000 1000 dennis schafroth 16880 1434091684
+Jun 12 08:51:34 wheezy csync2(8057): CONN us1.schafroth.dk < OK (data_follows).
+Jun 12 08:51:34 wheezy csync2(8057): CONN us1.schafroth.dk < v2%3Amtime=1434085795%3Amode=16880%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+Jun 12 08:51:34 wheezy csync2(8057): CONN us1.schafroth.dk < octet-stream 0
+--
+Jun 12 09:22:31 wheezy csync2(2185): mark other: Old operation: RM '/export/home/klaus/Maildir/cur/1433918377.6218_0.us1.schafroth.dk:2,S' '(null)'
+Jun 12 09:23:47 wheezy csync2(2185): File /export/home/dennis/Maildir/.Trash/tmp has changed device:inode 2065:3015018 -> 2065:3014900
+Jun 12 09:23:47 wheezy csync2(2185): mark other operation: MOD_DIR debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/tmp '-'.
+Jun 12 09:23:47 wheezy csync2(2185): File /export/home/dennis/Maildir/.Trash/cur has changed device:inode 2065:3015003 -> 2065:3014843
+Jun 12 09:23:47 wheezy csync2(2185): mark other operation: MOD_DIR debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur '-'.
+Jun 12 09:23:47 wheezy csync2(2185): mark other operation: NEW debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S '-'.
+Jun 12 09:23:47 wheezy csync2(2185): mark other operation: NEW debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S '-'.
+Jun 12 09:23:47 wheezy csync2(2185): mark other: Old operation: NEW '/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S' '(null)'
+Jun 12 09:23:47 wheezy csync2(2185): mark other operation: NEW debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1430462014.M296504P9020.us1.schafroth.dk,S=8342,W=8595:2,S '-'.
+Jun 12 09:23:47 wheezy csync2(2185): mark other: Old operation: RM '/export/home/dennis/Maildir/.Arbejde.S&APg-gning/cur/1430462014.M296504P9020.us1.schafroth.dk,S=8342,W=8595:2,S' '(null)'
+Jun 12 09:23:47 wheezy csync2(2185): mark other operation: NEW debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1429250645.M590723P22772.us1.schafroth.dk,S=8374,W=8630:2,S '-'.
+Jun 12 09:23:47 wheezy csync2(2185): mark other: Old operation: RM '/export/home/dennis/Maildir/.Arbejde.S&APg-gning/cur/1429250645.M590723P22772.us1.schafroth.dk,S=8374,W=8630:2,S' '(null)'
+Jun 12 09:23:47 wheezy csync2(2185): mark other operation: NEW debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1428040427.M957483P18782.us1.schafroth.dk,S=8374,W=8630:2,S '-'.
+--
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < MV %25home%25/dennis/Maildir/.Arbejde.S&APg-gning/cur/1430462014.M296504P9020.us1.schafroth.dk,S=8342,W=8595%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): Succes: MV /export/home/dennis/Maildir/.Arbejde.S&APg-gning/cur/1430462014.M296504P9020.us1.schafroth.dk,S=8342,W=8595:2,S /export/home/dennis/Maildir/.Trash/cur/1430462014.M296504P9020.us1.schafroth.dk,S=8342,W=8595:2,S
+Jun 12 09:25:01 wheezy csync2(2185): Updating 'debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S' NEW ''
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SIG %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S user/group 1000 1000 dennis schafroth 33152
+Jun 12 09:25:01 wheezy csync2(2185): ?M: debian.schafroth.dk /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): OPERATION: MHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S to /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): OPERATION: MHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S to /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): Hardlinking %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S -> %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < MKHARDLINK %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): While syncing file: /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): ERROR from debian.schafroth.dk: PATCH (/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S)
+Jun 12 09:25:01 wheezy csync2(2185): Failed to hard link %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): Hardlinking %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S -> %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < MKHARDLINK %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): While syncing file: /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): ERROR from debian.schafroth.dk: PATCH (/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S)
+Jun 12 09:25:01 wheezy csync2(2185): Failed to hard link %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): HARDLINK failed. Continuing with PATCH
+Jun 12 09:25:01 wheezy csync2(2185): OPERATION: MHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S to /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): OPERATION: MHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S to /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SIG %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S user/group 1000 1000 dennis schafroth 33152
+Jun 12 09:25:01 wheezy csync2(2185): ?M: debian.schafroth.dk /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SIG %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S user/group 1000 1000 dennis schafroth 33152
+Jun 12 09:25:01 wheezy csync2(2185): ?M: debian.schafroth.dk /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < PATCH %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S - 1000 1000 dennis schafroth 33152
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < octet-stream 8341
+Jun 12 09:25:01 wheezy csync2(2185): OPERATION: MHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S to /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): OPERATION: MHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S to /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SIG %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S user/group 1000 1000 dennis schafroth 33152
+Jun 12 09:25:01 wheezy csync2(2185): ?M: debian.schafroth.dk /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): Hardlinking %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S -> %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < MKHARDLINK %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SIG %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S user/group 1000 1000 dennis schafroth 33152
+Jun 12 09:25:01 wheezy csync2(2185): Hardlinking %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S -> %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < MKHARDLINK %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SETOWN %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S - 1000 1000 dennis
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SETMOD %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SETTIME %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): Updating 'debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S' NEW ''
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SIG %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S user/group 1000 1000 dennis schafroth 33152
+Jun 12 09:25:01 wheezy csync2(2185): OPERATION: MHARDLINK /export/home/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587:2,S to /export/home/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587:2,S
+Jun 12 09:25:01 wheezy csync2(2185): Hardlinking %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S -> %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < MKHARDLINK %25home%25/dennis/Maildir/.Trash/cur/1434089522.M966037P26891.us1.schafroth.dk,S=8333,W=8587%3A2,S %25home%25/dennis/Maildir/.Trash/cur/1434091684.M522619P23811.us1.schafroth.dk,S=8333,W=8587%3A2,S
+Jun 12 09:25:01 wheezy csync2(2185): Updating 'debian.schafroth.dk:/export/home/dennis/Maildir/.Trash/tmp' MOD_DIR ''
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < SIG %25home%25/dennis/Maildir/.Trash/tmp user/group 1000 1000 dennis schafroth 16880
+Jun 12 09:25:01 wheezy csync2(2185): ?M: debian.schafroth.dk /export/home/dennis/Maildir/.Trash/tmp
+Jun 12 09:25:01 wheezy csync2(2185): CONN debian.schafroth.dk < MKDIR %25home%25/dennis/Maildir/.Trash/tmp - 1000 1000 dennis schafroth 16880
+Jun 12 09:25:01 wheezy csync2(2185): Updating 'debian.schafroth.dk:/export/home/klaus/Maildir/.Deleted Messages/cur' MOD_DIR ''

@@ -10,7 +10,7 @@ mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new' '(null)' mark operation MKDIR -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new deleted before syncing. Removing from dirty.
 mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST '-'.
 mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST '-'.
-mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S' '(null)' mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST deleted before syncing. Removing from dirty.
+mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST' '(null)' mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST deleted before syncing. Removing from dirty.
 mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur '-'.
 mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur' '(null)' mark operation MKDIR -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur deleted before syncing. Removing from dirty.
@@ -30,37 +30,13 @@ mark other operation: RM peer:/export/home/dennis/Projects/csync2/csync2/tests/t
 mark other operation: RM other:/export/home/dennis/Projects/csync2/csync2/tests/test/local '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local' '(null)' mark operation MKDIR -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local deleted before syncing. Removing from dirty.
 Connecting to host peer (PLAIN) ...
-CONN peer < CONFIG 
-
-CONN peer < HELLO local
-
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp
-CONN peer < SIG %25test%25/Maildir/tmp 
-CONN peer < DEL %25test%25/Maildir/tmp 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new
-CONN peer < SIG %25test%25/Maildir/new 
-CONN peer < DEL %25test%25/Maildir/new 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST
-CONN peer < SIG %25test%25/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,ST 
-CONN peer < DEL %25test%25/Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,ST 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur
-CONN peer < SIG %25test%25/Maildir/cur 
-CONN peer < DEL %25test%25/Maildir/cur 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S
-CONN peer < SIG %25test%25/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,S 
-CONN peer < DEL %25test%25/Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764%3A2,S 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur
-CONN peer < SIG %25test%25/Maildir/.Trash/cur 
-CONN peer < DEL %25test%25/Maildir/.Trash/cur 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash
-CONN peer < SIG %25test%25/Maildir/.Trash 
-CONN peer < DEL %25test%25/Maildir/.Trash 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir
-CONN peer < SIG %25test%25/Maildir 
-CONN peer < DEL %25test%25/Maildir 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local
-CONN peer < SIG %25test%25 
-CONN peer < DEL %25test%25 
-CONN peer < BYE
-
 Finished succesfully.

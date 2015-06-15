@@ -1,22 +1,10 @@
-cmd u "5 Update auto (younger)" local
+cmd c "3 Check local" local
 Reading symbols from shared library libmysqlclient.so
-Connecting to host peer (PLAIN) ...
-CONN peer < CONFIG 
-
-CONN peer < HELLO local
-
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger' MOD_DIR ''
-CONN peer < SIG %25test%25/auto/younger user/group 1000 1000 dennis schafroth 16877 
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger
-CONN peer < MKDIR %25test%25/auto/younger - 1000 1000 dennis schafroth 16877 
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger/update_both' NEW ''
-CONN peer < SIG %25test%25/auto/younger/update_both user/group 1000 1000 dennis schafroth 33188 
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger/update_both
-CONN peer < PATCH %25test%25/auto/younger/update_both - 1000 1000 dennis schafroth 33188 
-While syncing file: /export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger/update_both
-ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/tests/test/peer/auto/younger/update_both)
-CONN peer < SETTIME %25test%25/auto/younger 
-CONN peer < SETTIME %25test%25/auto 
-CONN peer < BYE
-
-Finished with 1 errors.
+Running recursive check for /export/home/dennis/Projects/csync2/csync2/tests/test ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test recursive.
+mark other operation: MOD_DIR peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger '-'.
+mark other operation: MOD_DIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger '-'.
+mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger' '(null)' mark operation MOD_DIR -> MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger (not synced) .
+mark other operation: NEW peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger/update_both '-'.
+mark other operation: NEW other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/auto/younger/update_both '-'.
+Finished succesfully.

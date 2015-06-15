@@ -1,6 +1,8 @@
 daemon d PEER
 clean local
 clean peer
+rm -rf test/local
+cmd x "clean"
 mkdir -p test/local/auto/younger
 mkdir -p test/local/auto/older
 mkdir -p test/local/auto/larger
