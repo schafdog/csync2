@@ -1,16 +1,20 @@
 clean
 mkdir -p test/$NAME
 echo A > test/$NAME/A
-cmd c "new A" 
+cmd c "new A"
+sleep 1
 echo B > test/$NAME/A
-cmd c "modified A (but not synced) => new A" 
+cmd c "modified A (but not synced) => new A"
+sleep 1
 rm test/$NAME/A
 mkdir test/$NAME/newdir
 cmd c "newdir newdir" 
-sleep 2 
+sleep 1
 touch test/$NAME/newdir
 cmd c "modified newdir, but still new"
+sleep 1
 rmdir test/$NAME/newdir
 cmd c "rm newdir (removed from dirty)"
+sleep 1
 rm -rf test/$NAME
 cmd c "rm test/$NAME (removed from dirty)"
