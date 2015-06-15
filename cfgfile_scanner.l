@@ -24,6 +24,7 @@
 #include <stdio.h>
 int fileno(FILE *);
 char *strdup(const char *);
+extern char *csync_confdir;
 
 #define MAX_INCLUDE_DEPTH 10
 YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
@@ -90,10 +91,10 @@ int include_stack_ptr = 0;
 				exit(1);
 			}
 			include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
-                        char *conffile = malloc(strlen(ETCDIR) + 3 + strlen(yytext));
+                        char *conffile = malloc(strlen(csync_confdir) + 3 + strlen(yytext));
                         conffile[0] = 0;
                         if (yytext[0] != '/') {
-                            strcpy(conffile, ETCDIR);
+                            strcpy(conffile, csync_confdir);
                             strcat(conffile, "/");
                         };
                         strcat(conffile, yytext);
