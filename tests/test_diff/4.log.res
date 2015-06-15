@@ -1,0 +1,1 @@
+cmd TT "compare" local

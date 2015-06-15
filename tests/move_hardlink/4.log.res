@@ -1,24 +1,28 @@
-cmd u "5 Read and deleted (update)" local
+cmd c "4 Read and deleted (check)" local
 Reading symbols from shared library libmysqlclient.so
-Connecting to host peer (PLAIN) ...
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur' MOD_DIR ''
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab' NEW ''
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
-csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab to /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
-csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab to /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
-check_link_move: Other file not found. Posible MOVE operation: /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123
-OPERATION: MOVE /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 to /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
-check move: /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 
- Succes: MV /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur' MOD_DIR ''
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab' NEW ''
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab
-csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab to /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab
-check hardlink: /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab 
- Hardlinking peer /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab -> /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' MOD_DIR ''
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123
-peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 is already up to date on peer. 
+Running recursive check for /export/home/dennis/Projects/csync2/csync2/tests/test ...
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test recursive.
+mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123' '-'.
+mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123' '-'.
+mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123' '(null)' 
+mark operation NEW -> NOP other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 deleted before syncing. Removing from dirty.
+mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' '-'.
+mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' '-'.
+mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' '(null)' 
+mark operation MOD_DIR -> MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp (not synced) .
+mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur' '-'.
+mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur' '-'.
+mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur' '(null)' 
+mark operation MOD_DIR -> MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur (not synced) .
+mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab' '-'.
+mark other: Old operation: RM '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123' '(null)' 
+mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab' '-'.
+mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur' '-'.
+mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur' '-'.
+mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur' '(null)' 
+mark operation MOD_DIR -> MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur (not synced) .
+mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab' '-'.
+mark other: Old operation: RM '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123' '(null)' 
+mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab' '-'.
+mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab' '(null)' 
 Finished succesfully.

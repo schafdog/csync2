@@ -12,6 +12,7 @@ mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/t
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/usr/local/sbin' '-'.
 Connecting to host peer (PLAIN) ...
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local' MKDIR ''
+?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/usr' MKDIR ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/usr
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/usr/local' MKDIR ''
