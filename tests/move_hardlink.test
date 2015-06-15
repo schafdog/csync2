@@ -1,12 +1,16 @@
+daemon d PEER
 clean local
 clean peer
+cmd x "clean"
 mkdir -p test/$NAME/Maildir/tmp
 mkdir -p test/$NAME/Maildir/cur
 mkdir -p test/$NAME/Maildir/.Trash/cur
 echo hej >  test/$NAME/Maildir/tmp/123
 cmd x "3 Maildir tmp file"
+sleep 1
 mv test/$NAME/Maildir/tmp/123 test/$NAME/Maildir/cur/123,Sab
 ln test/$NAME/Maildir/cur/123,Sab test/$NAME/Maildir/.Trash/cur/
 #VALGRIND='gdb --args' 
 cmd c "4 Read and deleted (check)"
 cmd u "5 Read and deleted (update)"
+killdaemon d peer
