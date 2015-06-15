@@ -1,4 +1,5 @@
-clean 
+clean
+mkdir -p test/$NAME
 echo A > test/$NAME/A
 cmd c "new A" 
 echo B > test/$NAME/A
@@ -11,3 +12,5 @@ touch test/$NAME/newdir
 cmd c "modified newdir, but still new"
 rmdir test/$NAME/newdir
 cmd c "rm newdir (removed from dirty)"
+rm -rf test/$NAME
+cmd c "rm test/$NAME (removed from dirty)"
