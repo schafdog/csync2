@@ -273,7 +273,7 @@ extern void csync_update(const char *myname, char **peers, const char **patlist,
 			 int dry_run, int ip_version, int db_version);
 extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
-extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version);
+extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version, char *active_peers[]);
 extern void csync_remove_old();
 int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const char *filename, const char *filename_enc,
