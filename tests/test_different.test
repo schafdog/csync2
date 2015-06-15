@@ -4,8 +4,9 @@ clean peer
 FILENAME="different"
 echo "far" >"test/$NAME/$FILENAME"
 echo "vel" > "test/$PEER/$FILENAME"
-cmd x "Updated both"
+cmd x "Both updated (peer dirty)"
+cmd u "Both updated (peer still dirty)"
 cmd fu "forced update peer"
 rm -rf test/$NAME
-cmd c "clean up"
+cmd x "clean up"
 killdaemon d PEER

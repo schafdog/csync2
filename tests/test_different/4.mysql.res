@@ -1,6 +1,12 @@
++-----------------------------------------------------------------------+
+| filename                                                              |
++-----------------------------------------------------------------------+
+| /export/home/dennis/Projects/csync2/csync2/tests/test/local           |
+| /export/home/dennis/Projects/csync2/csync2/tests/test/local/different |
++-----------------------------------------------------------------------+
 +----------+-----------------------------------------------------------------------+-----------+-------+
 | peername | filename                                                              | operation | other |
 +----------+-----------------------------------------------------------------------+-----------+-------+
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local           | RM        | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/tests/test/local/different | RM        | NULL  |
+| other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local           | MKDIR     | NULL  |
+| other    | /export/home/dennis/Projects/csync2/csync2/tests/test/local/different | NEW       | NULL  |
 +----------+-----------------------------------------------------------------------+-----------+-------+
