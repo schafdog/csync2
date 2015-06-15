@@ -2,8 +2,8 @@
 MYTESTS:=$(patsubst %.test,%.sh,$(wildcard *.test))
 EXTRA_DIST = $(MYTESTS) $(check_SCRIPTS)
 
-check_SCRIPTS = auto_resolve.sh move_hardlink.sh test_diff.sh test_maildir.sh test_new_modified_rm.sh \
-	new_hardlinks.sh peer.sh test_different.sh test_dir_time.sh test_move_local.sh test_simple.sh
+check_SCRIPTS = auto_resolve.sh move_hardlink.sh test_maildir.sh test_new_modified_rm.sh \
+	new_hardlinks.sh test_different.sh test_dir_time.sh test_move_local.sh test_simple.sh
 
 TESTS = $(check_SCRIPTS)
 
