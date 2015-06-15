@@ -589,6 +589,7 @@ int main(int argc, char ** argv)
 	return 1;
     }
 
+    csync_confdir = ETCDIR;
     int cmd_db_version = 0;
     int cmd_ip_version = 0;
     while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:Vq")) != -1 ) {
@@ -670,6 +671,7 @@ int main(int argc, char ** argv)
 	    break;
 	case 'K':
 	    cfgfile = optarg;
+	    csync_confdir = strdup(".");
 	    break;
 	case 'D':
 	    dbdir = optarg;
