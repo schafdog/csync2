@@ -121,6 +121,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 		      const char *operation_org, const char *checktxt, 
 		      const char *dev, const char *ino, const char *other)
 {
+  BUF_P buffer = buffer_init();
   struct peer *pl = csync_find_peers(file, thispeer);
   int pl_idx;
   const char *operation;
@@ -137,7 +138,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
   for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
     operation = operation_org;
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "mark other operation: %s %s:%s '%s'.\n", operation, pl[pl_idx].peername, file, (other ? other : "-"));
+      csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n", operation, pl[pl_idx].peername, file, (other ? other : "-"));
       if (operation && strcmp("MV", operation) == 0 && other == NULL) {
 	csync_debug(1, "mark other MV operation missing other %s %s \n", pl[pl_idx].peername, file);
 	operation = "-";
@@ -145,7 +146,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       short dirty = 1;
       short clean_other = 1;
       char *result_other = 0;
-      char *file_new = strdup(file);
+      char *file_new = buffer_strdup(buffer, file);
       /* We dont currently have a checktxt when marking files. */ 
       /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run, 
 	 and thus leaking other side */
@@ -168,11 +169,11 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    filename = db_decode(SQL_V(1));
 	    other    = db_decode(SQL_V(2));
 	    
-	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' ", old_operation, filename, other);	    
+	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' \n", old_operation, filename, other);
 	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
 	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);	 
 	      operation = "MKH";
-	      result_other = strdup(filename);
+	      result_other = buffer_strdup(buffer,filename);
 	      clean_other = 0; 
 	    }
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
@@ -184,20 +185,20 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
 	    else if (CHECK_NEW_MOD && !strncmp("MOD",operation, 3) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
 	      csync_debug(1, "mark operation %s -> %s %s:%s (not synced) .\n", operation, old_operation, pl[pl_idx].peername, file);
-	      operation = old_operation;
+	      operation = buffer_strdup(buffer, old_operation);
 	      dirty = 1;
 	    }
 	    else if (CHECK_RM_MV && (!strcmp("RM",old_operation) || !strcmp("MV", old_operation)|| !strcmp("NOP", old_operation)) 
 		     && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2)) && strstr(checktxt, "type=dir") == 0) {
-	      // Do not do this for directories
-	      result_other = strdup(filename);
-	      csync_debug(1, "mark operation %s->%s => MOVE %s '%s' '%s'.\n", old_operation, operation, pl[pl_idx].peername, file, result_other);
-	      operation = "MV";
+		// Do not do this for directories
+		result_other = buffer_strdup(buffer, filename);
+		csync_debug(1, "mark operation %s->%s => MOVE %s '%s' '%s'.\n", old_operation, operation, pl[pl_idx].peername, file, result_other);
+		operation = "MV";
 	    }
 	    else if (CHECK_MV_RM && !strcmp("MV",old_operation) && !strcmp("RM", operation)) {
 	      operation = "RM";
-	      file_new = strdup(other);
-	      result_other = strdup(filename);
+	      file_new = buffer_strdup(buffer, other);
+	      result_other = buffer_strdup(buffer, filename);
 	      clean_other = 1;
 	      csync_debug(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n", pl[pl_idx].peername, file, filename, other);
 	      other = 0;
@@ -233,15 +234,10 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	  (ino ? ino : "NULL"),
 	  csync_db_escape_quote((result_other ? result_other : other))
 	  );
-      free(file_new);
-      file_new = 0;
-      if (result_other) {
-	free(result_other);
-	result_other = 0;
-      }
     };
   };
   free(pl);
+  buffer_destroy(buffer);
 }
 
 void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
