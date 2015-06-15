@@ -1,1 +1,1 @@
-./local.sh test_maildir.test 
+./local.sh maildir.test 
