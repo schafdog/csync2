@@ -74,10 +74,12 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
     int rc = 0;
     const char *operation = NULL;
     csync_debug(1, "check_dirty_daemon: %s\n", filename);
-    int inDirty = csync_check_single(filename, 0, version);
-    csync_debug(1, "check_dirty_daemon: indirty %s %d\n", filename, inDirty);
+
+    // Returns newly marked dirty, so we cannot use it bail out.
+    int markedDirty = csync_check_single(filename, 0, version);
+    csync_debug(1, "check_dirty_daemon: just marked dirty %s %d\n", filename, markedDirty);
     
-    if (isflush || !inDirty)
+    if (isflush)
 	return 0;
     SQL_BEGIN("Check if file is dirty",
 	      "SELECT operation FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
