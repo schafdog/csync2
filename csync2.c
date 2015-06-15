@@ -491,7 +491,8 @@ const char* (*db_encode) (const char *value);
 
 
 char **peers = NULL;
-char ** parse_peerlist(char *peerlist) {
+char ** parse_peerlist(char *peerlist)
+{
     if (peerlist == NULL)
 	return peers;
     peers = calloc(sizeof(peers), 100);
@@ -1194,11 +1195,11 @@ nofork:
 
 	    if ( mode_test_auto_diff )
 		csync_compare_mode = 1;
-	    if ( csync_insynctest_all(init_run, mode_test_auto_diff, realname, ip_version))
+	    if ( csync_insynctest_all(init_run, mode_test_auto_diff, realname, ip_version, active_peers))
 		retval = 2;
 	    break;
 	case 0:
-	    if ( csync_insynctest_all(init_run, mode_test_auto_diff, 0, ip_version) )
+	    if ( csync_insynctest_all(init_run, mode_test_auto_diff, 0, ip_version, active_peers) )
 		retval = 2;
 	    break;
 	}
