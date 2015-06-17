@@ -435,8 +435,9 @@ int db_postgres_upgrade_to_schema(int version)
 		     "  device    bigint        DEFAULT NULL,"
 		     "  inode     bigint        DEFAULT NULL,"
 		     "  operation varchar(100)  DEFAULT NULL,"
-			"  	op 	   	  int	  	 	DEFAULT NULL,"
+		     "  op 	  int	  	DEFAULT NULL,"
 		     "  other     varchar(%u)   DEFAULT NULL,"
+		     "  mode   int             DEFAULT NULL,"
 		     "  file_id   bigint        DEFAULT NULL,"
 		     "  UNIQUE (filename,peername)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
