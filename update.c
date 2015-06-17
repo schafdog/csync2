@@ -67,7 +67,7 @@ int csync_update_file_settime(const char *peername, const char *key_enc,
 
 static int connection_closed_error = 1;
 
-int csync_operation(const char *operation)
+operation_t csync_operation(const char *operation)
 {
 	if (!operation)
 		return OP_UNDEF;
@@ -90,6 +90,22 @@ int csync_operation(const char *operation)
 	if (!strncmp(operation, "MOD",3))
 		return OP_MOD;
 	return OP_UNDEF;
+}
+
+const char *csync_operation_str(operation_t op) {
+
+	switch (op) {
+	case OP_NEW:
+		return "NEW";
+	case OP_MOD:
+		return "MOD";
+	case OP_RM:
+		return "RM";
+	case OP_HARDLINK:
+		return "HARDLINK";
+	}
+	// UNDEF
+	return "-";
 }
 
 
@@ -406,7 +422,7 @@ int csync_next_step(int rc, int auto_run, const char *myname, const char *peerna
 		    const char *key_enc,
 		    const char *filename, const char *filename_enc,
 		    const struct stat *st, const char *uid, const char *gid,
-		    const char *operation, int force, int dry_run)
+		    operation_t op, int force, int dry_run)
 {
   if (dry_run)
     return 1;
@@ -433,9 +449,8 @@ int csync_next_step(int rc, int auto_run, const char *myname, const char *peerna
 }
 
 
-int csync_update_file_del(const char *myname, const char *peername,
-			  const char *filename,
-			  const char *operation, const char *digest, int force, int dry_run)
+int csync_update_file_del(const char *myname, const char *peername, const char *filename,
+		const char *digest, int force, int dry_run)
 {
   int last_conn_status = 0, auto_resolve_run = 0;
   const char *key = csync_key(peername, filename);
@@ -667,7 +682,7 @@ int csync_update_file_all_hardlink(const char *peername,
 			       struct stat  *st,
 			       const char *uid,
 			       const char *gid,
-				   int operation,
+				   operation_t operation,
 			       const char *checktxt,
 			       const char *digest,
 			       int is_identical,
@@ -848,7 +863,7 @@ int csync_update_directory(const char *myname, const char *peername,
 }
 
 int csync_update_file_mod(const char *myname, const char *peername,
-		const char *filename, const char *operation_str, const char *other,
+		const char *filename, operation_t operation, const char *other,
 		const char *checktxt, const char *digest, int force, int dry_run,
 		int db_version) {
 	struct stat st;
@@ -856,7 +871,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	int last_conn_status = 0, auto_resolve_run = 0, found_diff = 0,
 			found_diff_meta = 0;
 
-	int operation = csync_operation(operation_str);
+	const char *operation_str = csync_operation_str(operation);
 	const char *key = csync_key(peername, filename);
 	if (!key) {
 		csync_debug(2, "Skipping file update %s on %s - not in my groups.\n",
@@ -1230,23 +1245,24 @@ void csync_update_host(const char *myname, const char *peername,
   struct stat st;
   /* order DESC since building the list reverse the order */
   SQL_BEGIN("Get files for host from dirty table",
-	    "SELECT filename, operation, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	    "SELECT filename, operation, op, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
 	    "ORDER by filename DESC",
 	    db_encode(peername), db_encode(myname));
     {
       const char *filename  = db_decode(SQL_V(0));
-      const char *operation = db_decode(SQL_V(1));
-      const char *other     = db_decode(SQL_V(2));
-      const char *checktxt  = db_decode(SQL_V(3));
-      const char *digest    = db_decode(SQL_V(4));
-      const char *forced_str= db_decode(SQL_V(5));
+      const char *op_str    = db_decode(SQL_V(1));
+      operation_t operation = (SQL_V(2) ? atoi(SQL_V(2)) : 0);
+      const char *other     = db_decode(SQL_V(3));
+      const char *checktxt  = db_decode(SQL_V(4));
+      const char *digest    = db_decode(SQL_V(5));
+      const char *forced_str= db_decode(SQL_V(6));
       int forced = forced_str ? atoi(forced_str) : 0;
       int i, use_this = patnum == 0;
       for (i=0; i<patnum && !use_this; i++)
 	if ( compare_files(filename, patlist[i], recursive) )
 	  use_this = 1;
       if (use_this) {
-	  textlist_add5(&tl, filename, operation, other, checktxt, digest, forced);
+	  textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
       }
     } SQL_END;
 
@@ -1276,7 +1292,7 @@ void csync_update_host(const char *myname, const char *peername,
     if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
 	if (!connection_closed_error)
 	    rc = csync_update_file_mod(myname, peername,
-				       t->value, t->value2, t->value3, t->value4, t->value5, t->intvalue, dry_run, db_version);
+				       t->value, t->operation, t->value3, t->value4, t->value5, t->intvalue, dry_run, db_version);
 	if (rc == CONN_CLOSE || connection_closed_error) {
 	   csync_debug(0, "Connection closed on updating %s\n", t->value);
 	   break;
@@ -1299,8 +1315,7 @@ void csync_update_host(const char *myname, const char *peername,
   textlist_free(tl);
   for (t = tl_del; t != 0; t = t->next) {
       rc = csync_update_file_del(myname, peername,
-				 t->value, t->value2, t->value5,
-				 t->intvalue, dry_run);
+				 t->value, t->value5, t->intvalue, dry_run);
       if (rc == CONN_CLOSE || connection_closed_error) {
 	 csync_debug(0, "Connection closed on deleting  %s\n", t->value);
 	 break;
@@ -1568,7 +1583,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	    csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file);
 	  ret=0;
 	  if (init_run & 1)
-	    csync_mark(l_file, 0, (init_run & 4) ? peername : 0, "updated (local)",
+	    csync_mark(l_file, 0, (init_run & 4) ? peername : 0, OP_MOD /* | LOCAL */,
 		       NULL, "NULL", "NULL");
 	} else {
 	  if ( !remote_reuse )
@@ -1584,7 +1599,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	    else
 	      csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
 	    if (init_run & 2)
-	      csync_mark(r_file, 0, (init_run & 4) ? peername : 0, "updated (peer)",
+	      csync_mark(r_file, 0, (init_run & 4) ? peername : 0, OP_MOD /* | PEER */,
 			 NULL, "NULL", "NULL");
 	    if ( csync_insynctest_readline(&r_file, &r_checktxt) ) {
 	      remote_eof = 1;
@@ -1600,7 +1615,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	      csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
 	    if (init_run & 1)
 	      csync_mark(l_file, 0, (init_run & 4) ? peername : 0,
-			 "autoupdate with local", NULL, "NULL", "NULL");
+			 OP_MOD /* | LOCAL | AUTOUPDATE */ , NULL, "NULL", "NULL");
 	    remote_reuse = 1;
 	  } else {
 	    remote_reuse = 0;
@@ -1620,7 +1635,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 		}
 		if (init_run & 1)
 		  csync_mark(l_file, 0, (init_run & 4) ? peername : 0,
-			     "updated both", NULL, "NULL", "NULL");
+			     OP_MOD /* LOCAL | PEER */, NULL, "NULL", "NULL");
 	      }
 	    }
 	  }
@@ -1638,7 +1653,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
       if (init_run & 2)
 	csync_mark(r_file, 0, (init_run & 4) ? peername : 0,
-		   "updated (peer)", NULL, "NULL", "NULL");
+		   OP_MOD /* | PEER */, NULL, "NULL", "NULL");
     }
 
   if (r_file) free(r_file);
