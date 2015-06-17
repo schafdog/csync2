@@ -119,6 +119,7 @@ struct peer {
 };
 
 typedef struct  peer *peer_t; 
+typedef int operation_t;
 
 struct file_info {
   const char *filename;
@@ -249,18 +250,20 @@ struct textlist;
 #define OP_MOD		128
 #define OP_UNDEF	256
 
-extern int csync_operation(const char *operation);
+extern operation_t csync_operation(const char *operation);
+extern const char *csync_operation_str(operation_t op);
+
 extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version, int flags);
 /* Single file checking but returns possible operation */ 
 extern int  csync_check_single(const char *filename, int init_run, int version); 
-extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, const char *operation, const char *checktxt, const char *dev, const char *ino);
+extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino);
 extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
 struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st);
-struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, int operation, const char *digest,
+struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, operation_t op, const char *digest,
 				  struct stat *st, textlist_loop_t loop);
 
 
@@ -323,6 +326,7 @@ const char *prefixencode(const char *filename);
 
 struct textlist {
     struct textlist *next;
+    int operation;
     int intvalue;
     char *value;
     char *value2;
@@ -368,7 +372,7 @@ static inline void textlist_add_var(struct textlist **listhandle, int intitem, i
 }
 
 static inline void textlist_add5(struct textlist **listhandle, const char *item, const char *item2, 
-				 const char *item3, const char *item4, const char *item5, int intitem)
+				 const char *item3, const char *item4, const char *item5, int intitem, int operation)
 {
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
@@ -384,7 +388,7 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, 
 				 const char *item4, int intitem)
 {
-    textlist_add5(listhandle, item, item2, item3, item4, 0, intitem);
+    textlist_add5(listhandle, item, item2, item3, item4, 0, intitem, 0);
 }
 
 static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
