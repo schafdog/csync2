@@ -15,6 +15,12 @@ if [ "$PORT" != "" ] ; then
     PORT=":${PORT}"
 fi
 read -r -d '' VAR <<EOF
+# Csync2 Example Configuration File
+# ---------------------------------
+#
+# Please read the documentation:
+# http://oss.linbit.com/csync2/paper.pdf
+
 nossl * *;
 
 database "${DB}://${USER_PW}localhost${PORT}/csync2_$1" ;
@@ -30,52 +36,12 @@ prefix test {
        on other: `pwd`/test/other;
 }
 
-group test {
-      host local peer other;
-      key csync2.key;
-      include %test%;
-      exclude *~; 
+hosts {
+     peer: localhost:30860;
+     local: localhost:30860;
 }
 
-group auto_younger {
-      host local peer;
-      key csync2.key;
-      include %test%/auto/younger;
-      exclude *~; 
-      auto younger;
-      backup-directory /tmp;
-      backup-generations 3;
-}
-
-group auto_older {
-      host local peer;
-      key csync2.key;
-      include %test%/auto/older;
-      exclude *~; 
-      auto older;
-      backup-directory /tmp;
-      backup-generations 3;
-}
-
-group auto_bigger {
-      host local peer;
-      key csync2.key;
-      include %test%/auto/bigger;
-      exclude *~; 
-      auto bigger;
-      backup-directory /tmp;
-      backup-generations 3;
-}
-
-group auto_smaller {
-      host local peer;
-      key csync2.key;
-      include %test%/auto/smaller;
-      exclude *~; 
-      auto smaller;
-      backup-directory /tmp;
-      backup-generations 3;
-}
+config common.cfg;
 
 EOF
 echo "${VAR}"
