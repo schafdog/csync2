@@ -153,7 +153,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       if (1 && checktxt) {
 	
 	SQL_BEGIN("Checking old opertion(s) on dirty",
-		  "SELECT operation, filename, other from dirty where "
+		  "SELECT operation, filename, other, op from dirty where "
 		  "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' ",
 		  db_encode(checktxt),
 		  db_encode(file),
@@ -168,8 +168,10 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    old_operation = db_decode(SQL_V(0));
 	    filename = db_decode(SQL_V(1));
 	    other    = db_decode(SQL_V(2));
+	    old_op_str = SQL_V(3);
+	    old_op   = (old_op_str ? atoi(old_op_str) : 0);
 	    
-	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' \n", old_operation, filename, other);
+	    csync_debug(1, "mark other: Old operation: %s (%d) '%s' '%s' \n", old_operation, old_op, filename, other);
 	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
 	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);	 
 	      operation = "MKH";
@@ -222,8 +224,8 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       }
       if (dirty)
       SQL("Marking File Dirty",
-	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other) "
-	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s)",
+	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op) "
+	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d)",
 	  db_encode(file_new),
 	  csync_new_force ? "1" : "0",
 	  db_encode(pl[pl_idx].myname),
@@ -232,7 +234,8 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	  db_encode(checktxt),
 	  (dev ? dev : "NULL"),
 	  (ino ? ino : "NULL"),
-	  csync_db_escape_quote((result_other ? result_other : other))
+	  csync_db_escape_quote((result_other ? result_other : other)),
+	  csync_operation(operation)
 	  );
     };
   };
@@ -480,19 +483,20 @@ struct textlist *csync_check_same_dev_inode(const char *peername, const char *fi
     char *peername_enc = strdup(db_encode(peername));
     char *filename_enc = strdup(db_encode(filename));
     SQL_BEGIN("Check for same inode", 
-	      " SELECT filename, checktxt, digest FROM dirty "
+	      " SELECT filename, checktxt, digest, operation FROM dirty "
 	      " WHERE device = %lu and inode = %llu and peername = '%s' and filename != '%s' "
 	      " UNION "
-	      " SELECT filename, checktxt, digest FROM file " 
+	      " SELECT filename, checktxt, digest, NULL FROM file " 
 	      " WHERE device = %lu and inode = %llu and filename != '%s' ",
 	      dev, st->st_ino, peername_enc, filename_enc,
 	      dev, st->st_ino, filename_enc) {
 	const char *db_filename = db_decode(SQL_V(0));
 	const char *db_checktxt = db_decode(SQL_V(1));
 	const char *db_digest   = db_decode(SQL_V(2));
+	const char *db_operation   = db_decode(SQL_V(3));
 	
 	if (!digest || !db_digest || !strcmp(digest, db_digest)) {
-	    textlist_add2(&tl, db_filename, db_checktxt, 0);
+	    textlist_add3(&tl, db_filename, db_checktxt, db_operation, 0);
 	}
 	else {
 	    csync_debug(1, "Different digest for %s %s ", digest, db_digest);
@@ -529,44 +533,52 @@ struct textlist *csync_check_move(const char *peername, const char *filename, co
 }
 
 
-struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, const char *digest,
+struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, int operation, const char *digest,
 				  struct stat *st, textlist_loop_t loop)
 {
     struct textlist *t, *tl = NULL;
     struct textlist *db_tl = csync_check_same_dev_inode(peername, filename, digest, st);
     struct stat file_stat;
+    int operation_new = operation == OP_NEW;
     int count = 0;
     for (t = db_tl; t != NULL; t = t->next) {
-	const char *db_filename = t->value;
-	const char *db_checktxt = t->value2;
-	int rc = stat(db_filename, &file_stat);
-	int db_version = csync_get_checktxt_version(db_checktxt);
-	int i = 0; 
-	if (rc) {
-	    csync_debug(1, "check_link_move: Other file not found. Posible MOVE operation: %s\n", db_filename);
-	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-		csync_debug(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
-		textlist_add(&tl, db_filename, OP_MOVE);
-	    }
-	} else { // LINK, not MV
-	    db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
-	    int i; 
-	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-		csync_debug(1, "csync_check_link_move: OPERATION MHARDLINK %s to %s\n", db_filename, filename);
-		textlist_add(&tl, db_filename, OP_HARDLINK);
-	    } else { // LINK not verified
-		csync_debug(1, "check_link: other file with same dev/inode, but different checktxt.");
-		csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
-		csync_debug(1, ">>> %s: %s\n", db_checktxt, db_filename);
-		csync_debug(1, ">>> %s: %s\n", checktxt, filename);
-		
-		if (count > 1) {
-		    csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
-		    csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
+    	const char *db_filename = t->value;
+    	const char *db_checktxt = t->value2;
+    	const char *db_operation = t->value3;
+    	int rc = stat(db_filename, &file_stat);
+    	int db_version = csync_get_checktxt_version(db_checktxt);
+    	int i = 0;
+		if (operation_new && db_operation && !strcmp(db_operation, "NEW")) {
+			csync_debug(1, "Unable to MOVE/LINK: both NEW\n");
+			continue;
 		}
-		count++; 
-	    }
-	}
+    	if (rc) {
+    		csync_debug(1, "check_link_move: Other file not found. Possible MOVE operation: %s\n", db_filename);
+    		if (!(i = csync_cmpchecktxt(db_checktxt, checktxt)))
+    		{
+    			csync_debug(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
+    			textlist_add(&tl, db_filename, OP_MOVE);
+    		}
+    	} else { // LINK, not MV
+    		db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
+    		int i;
+    		if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
+    			csync_debug(1, "csync_check_link_move: OPERATION MHARDLINK %s to %s\n", db_filename, filename);
+    			textlist_add(&tl, db_filename, OP_HARDLINK);
+    		} else
+    		{ // LINK not verified
+    			csync_debug(1, "check_link: other file with same dev/inode, but different checktxt.");
+    			csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
+    			csync_debug(1, ">>> %s: %s\n", db_checktxt, db_filename);
+    			csync_debug(1, ">>> %s: %s\n", checktxt, filename);
+		
+    			if (count > 1) {
+    				csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
+    				csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
+    			}
+    			count++;
+    		}
+    	}
     }
     textlist_free(db_tl);
     return tl; 
