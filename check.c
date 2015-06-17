@@ -173,12 +173,12 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    
 	    csync_debug(1, "mark other: Old operation: %s (%d) '%s' '%s' \n",
 	    		csync_operation_str(old_op), old_op, filename, other);
-						if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
-							csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);
-							operation = OP_HARDLINK;
-							result_other = buffer_strdup(buffer,filename);
-							clean_other = 0;
-						}
+	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
+	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);
+	      operation = OP_HARDLINK;
+	      result_other = buffer_strdup(buffer,filename);
+	      clean_other = 0;
+	    }
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
 	    else if (CHECK_NEW_RM && operation == OP_RM && old_operation == OP_NEW) {
 	      csync_debug(1, "mark operation NEW -> RM %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
