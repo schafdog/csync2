@@ -118,13 +118,13 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
 }
 
 void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter, 
-		      const char *operation_org, const char *checktxt, 
+		      int operation_org, const char *checktxt,
 		      const char *dev, const char *ino, const char *other)
 {
   BUF_P buffer = buffer_init();
   struct peer *pl = csync_find_peers(file, thispeer);
   int pl_idx;
-  const char *operation;
+  int operation;
   csync_schedule_commands(file, thispeer == 0);
 
   if ( ! pl ) {
@@ -138,10 +138,10 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
   for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
     operation = operation_org;
     if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n", operation, pl[pl_idx].peername, file, (other ? other : "-"));
-      if (operation && strcmp("MV", operation) == 0 && other == NULL) {
-	csync_debug(1, "mark other MV operation missing other %s %s \n", pl[pl_idx].peername, file);
-	operation = "-";
+      csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n", csync_operation_str(operation), pl[pl_idx].peername, file, (other ? other : "-"));
+      if (operation && operation == OP_MOVE && other == NULL) {
+    	  csync_debug(1, "mark other MV operation missing other %s %s \n", pl[pl_idx].peername, file);
+    	  operation = OP_UNDEF;
       }
       short dirty = 1;
       short clean_other = 1;
@@ -162,43 +162,44 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 		  db_encode(pl[pl_idx].peername)
 		  )
 	  {
-	    const char *old_operation;
+	    operation_t old_operation;
 	    const char *filename;
 	    const char *other;
-	    old_operation = db_decode(SQL_V(0));
+	    old_operation = csync_operation(SQL_V(0));
 	    filename = db_decode(SQL_V(1));
 	    other    = db_decode(SQL_V(2));
 	    const char *old_op_str = SQL_V(3);
 	    int old_op   = (old_op_str ? atoi(old_op_str) : 0);
 	    
-	    csync_debug(1, "mark other: Old operation: %s (%d) '%s' '%s' \n", old_operation, old_op, filename, other);
-	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
-	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);	 
-	      operation = "MKH";
-	      result_other = buffer_strdup(buffer,filename);
-	      clean_other = 0; 
-	    }
+	    csync_debug(1, "mark other: Old operation: %s (%d) '%s' '%s' \n",
+	    		csync_operation_str(old_op), old_op, filename, other);
+						if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
+							csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);
+							operation = OP_HARDLINK;
+							result_other = buffer_strdup(buffer,filename);
+							clean_other = 0;
+						}
 	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
-	    else if (CHECK_NEW_RM && !strcmp("RM",operation) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
-	      csync_debug(1, "mark operation %s -> NOP %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
+	    else if (CHECK_NEW_RM && operation == OP_RM && old_operation == OP_NEW) {
+	      csync_debug(1, "mark operation NEW -> RM %s:%s deleted before syncing. Removing from dirty.\n", old_operation, pl[pl_idx].peername, file);
 	      dirty = 0;
-	      operation = "NOP";
+	      operation = OP_UNDEF;
 	    }
-	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
-	    else if (CHECK_NEW_MOD && !strncmp("MOD",operation, 3) && (!strcmp("NEW",old_operation) || !strncmp("MK",old_operation, 2))) {
-	      csync_debug(1, "mark operation %s -> %s %s:%s (not synced) .\n", operation, old_operation, pl[pl_idx].peername, file);
-	      operation = buffer_strdup(buffer, old_operation);
+	    // NEW/MK A -> MOD (still NEW)
+	    else if (CHECK_NEW_MOD && operation == OP_MOD && old_op == OP_NEW) {
+	      csync_debug(1, "mark operation NEW -> MOD %s:%s (not synced) .\n", pl[pl_idx].peername, file);
+	      operation = old_op;
 	      dirty = 1;
 	    }
-	    else if (CHECK_RM_MV && (!strcmp("RM",old_operation) || !strcmp("MV", old_operation)|| !strcmp("NOP", old_operation)) 
-		     && (!strcmp("NEW",operation) || !strncmp("MK",operation, 2)) && strstr(checktxt, "type=dir") == 0) {
-		// Do not do this for directories
-		result_other = buffer_strdup(buffer, filename);
-		csync_debug(1, "mark operation %s->%s => MOVE %s '%s' '%s'.\n", old_operation, operation, pl[pl_idx].peername, file, result_other);
-		operation = "MV";
+	    else if (CHECK_RM_MV && ((OP_RM == old_operation || OP_MOVE == old_operation || OP_UNDEF == old_operation)
+		     && OP_NEW == operation) && strstr(checktxt, "type=dir") == 0) {
+	    	// Do not do this for directories
+	    	result_other = buffer_strdup(buffer, filename);
+	    	csync_debug(1, "mark operation RM -> NEW => MOVE %s '%s' '%s'.\n", pl[pl_idx].peername, file, result_other);
+	    	operation = OP_MOVE;
 	    }
-	    else if (CHECK_MV_RM && !strcmp("MV",old_operation) && !strcmp("RM", operation)) {
-	      operation = "RM";
+	    else if (CHECK_MV_RM && OP_MOVE == old_operation && OP_RM == operation) {
+	      operation = OP_RM;
 	      file_new = buffer_strdup(buffer, other);
 	      result_other = buffer_strdup(buffer, filename);
 	      clean_other = 1;
@@ -230,12 +231,12 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	  csync_new_force ? "1" : "0",
 	  db_encode(pl[pl_idx].myname),
 	  db_encode(pl[pl_idx].peername),
-	  (operation ? db_encode(operation): ""), 
+	  csync_operation_str(operation),
 	  db_encode(checktxt),
 	  (dev ? dev : "NULL"),
 	  (ino ? ino : "NULL"),
 	  csync_db_escape_quote((result_other ? result_other : other)),
-	  csync_operation(operation)
+	  operation
 	  );
     };
   };
@@ -244,7 +245,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 }
 
 void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
-		const char *operation, const char *checktxt, 
+		int operation, const char *checktxt,
 		const char *dev, const char *ino) 
 {
   csync_mark_other(file, thispeer, peerfilter, operation, checktxt, dev, ino, 0);
@@ -416,7 +417,7 @@ int csync_check_del(const char *file, int recursive, int init_run)
 	if (!init_run) {
 	    //csync_debug(0, "check_dirty (rm): before mark (all) \n");
 	    struct stat stat;
-	    csync_mark(t->value, 0, 0, "RM", t->value2, t->value3, t->value4);
+	    csync_mark(t->value, 0, 0, OP_RM, t->value2, t->value3, t->value4);
 	    count_deletes++;
 	}
 	SQL("Delete file from DB. It isn't with us anymore.",
@@ -440,8 +441,8 @@ struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st,
     case OP_HARDLINK: {
       char *operation = "MKH";
       SQL("Update operation to move/hardlink",
-	"INSERT into dirty (filename, operation, other) values ('%s', '%s', '%s')", 
-	  db_encode(src), operation, filename_enc);
+    	  "INSERT into dirty (filename, operation, op, other) values ('%s', '%s', %d, '%s')",
+		  db_encode(src), operation, OP_HARDLINK, filename_enc);
       break;
     }
     /*
@@ -657,91 +658,90 @@ int csync_file_check_mod(const char *file, struct stat *file_stat, int init_run,
     int is_upgrade = 0;
     int db_version = version;
     const char *encoded = db_encode(file);
-    char *operation = 0;
+    operation_t operation = 0;
     char *other = 0; 
     SQL_BEGIN("Checking File",
 	      "SELECT checktxt, inode, device, digest FROM file WHERE "
 	      "filename = '%s' ", encoded)
     {
-	db_version = csync_get_checktxt_version(SQL_V(0));
+    	db_version = csync_get_checktxt_version(SQL_V(0));
 
-	if (db_version < 1 || db_version > 2) {
-	    csync_debug(0, "Error extracting version from checktxt: %s", SQL_V(0));
-	}
-	const char *checktxt_db = db_decode(SQL_V(0));
-	const char *checktxt_same_version = checktxt;
-	const char *inode    = SQL_V(1);
-	const char *device   = SQL_V(2);
-	const char *digest_p = SQL_V(3);
-	// const char *mtime  = SQL_V(3);
-	// const char *type   = SQL_V(4);
-	int flag = 0;
-	if (strstr(checktxt_db, ":user=") != NULL)
-	    flag |= SET_USER; 
-	if (strstr(checktxt_db, ":group=") != NULL)
-	    flag |= SET_GROUP; 
+    	if (db_version < 1 || db_version > 2) {
+    		csync_debug(0, "Error extracting version from checktxt: %s", SQL_V(0));
+    	}
+    	const char *checktxt_db = db_decode(SQL_V(0));
+    	const char *checktxt_same_version = checktxt;
+    	const char *inode    = SQL_V(1);
+    	const char *device   = SQL_V(2);
+    	const char *digest_p = SQL_V(3);
+    	// const char *mtime  = SQL_V(3);
+    	// const char *type   = SQL_V(4);
+    	int flag = 0;
+    	if (strstr(checktxt_db, ":user=") != NULL)
+    		flag |= SET_USER;
+    	if (strstr(checktxt_db, ":group=") != NULL)
+    		flag |= SET_GROUP;
 
-	if (update_dev_inode(file_stat, device, inode) ) {
-	    csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu\n",
-			file, device, inode, file_stat->st_dev, file_stat->st_ino);
-	    is_upgrade = 1;
-	}
-	if (!digest_p && strstr(checktxt, "type=reg")) {
-	    calc_digest = 1;
-	    is_upgrade = 1;
-	}
-	if (db_version != version || flag != (SET_USER|SET_GROUP)) {
-	    checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
-	    if (csync_cmpchecktxt(checktxt, checktxt_same_version))
-		is_upgrade = 1;
-	}
-	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
-	    if (strstr(checktxt, "type=dir"))
-		operation = buffer_strdup(buffer, "MOD_DIR");
-	    else
-		operation = buffer_strdup(buffer, "MOD");
-	    csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n", file, checktxt_same_version, checktxt_db, operation);
-	    this_is_dirty = 1;
-	}
+    	if (update_dev_inode(file_stat, device, inode) ) {
+    		csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu\n",
+    				file, device, inode, file_stat->st_dev, file_stat->st_ino);
+    		is_upgrade = 1;
+    	}
+    	if (!digest_p && strstr(checktxt, "type=reg")) {
+    		calc_digest = 1;
+    		is_upgrade = 1;
+    	}
+    	if (db_version != version || flag != (SET_USER|SET_GROUP)) {
+    		checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
+    		if (csync_cmpchecktxt(checktxt, checktxt_same_version))
+    			is_upgrade = 1;
+    	}
+    	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
+    		operation = OP_MOD;
+    		csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n",
+    					file, checktxt_same_version, checktxt_db, operation);
+    		this_is_dirty = 1;
+    	}
     } SQL_FIN {
-	if ( SQL_COUNT == 0 ) {
-	    csync_debug(2, "New file: %s\n", file);
-	    if (S_ISREG(file_stat->st_mode)) {
-		operation = buffer_strdup(buffer, "NEW");
-		calc_digest = 1; 
-	    }
-	    else if (S_ISDIR(file_stat->st_mode)) 
-		operation = buffer_strdup(buffer, "MKDIR");
-	    else if (S_ISCHR(file_stat->st_mode))
-		operation = buffer_strdup(buffer, "MKCHR");
-	    else if (S_ISBLK(file_stat->st_mode))
-		operation = buffer_strdup(buffer, "MKBLK");
-	    else if (S_ISFIFO(file_stat->st_mode))
-		operation = buffer_strdup(buffer, "MKFIFO");
-	    else if ( S_ISLNK(file_stat->st_mode) ) {
-		// TODO get max path
-		int max = 1024;
-		char target[max];
-		int len = readlink(file, target, max-1);
-		if (len > 0) {
-		    target[len] = 0;
-		    operation = buffer_strdup(buffer, "MKLINK"); 
-		    other = buffer_strdup(buffer, target);
+		if ( SQL_COUNT == 0 ) {
+			csync_debug(2, "New file: %s\n", file);
+			if (S_ISREG(file_stat->st_mode)) {
+				operation = OP_NEW;
+				calc_digest = 1;
+			}
+			else if (S_ISDIR(file_stat->st_mode))
+				operation = OP_MOD /* | TYPE_DIR */;
+			else if (S_ISCHR(file_stat->st_mode))
+				operation = OP_MOD /* | TYPE_CHR */;
+			else if (S_ISBLK(file_stat->st_mode))
+				operation = OP_MOD /* | TYPE_BLK */;
+			else if (S_ISFIFO(file_stat->st_mode))
+				operation = OP_MOD /* | TYPE_FIFO */;
+			else if ( S_ISLNK(file_stat->st_mode) )
+			{
+				// TODO get max path
+				int max = 1024;
+				char target[max];
+				int len = readlink(file, target, max-1);
+				if (len > 0) {
+					target[len] = 0;
+					operation = OP_MOD;
+					other = buffer_strdup(buffer, target);
+				}
+				else
+					csync_debug(0, "Failed to read link on %s\n", file);
+			}
 		}
-		else
-		    csync_debug(0, "Failed to read link on %s\n", file);
-	    }
-	    this_is_dirty = 1;
-	}
+		this_is_dirty = 1;
     } SQL_END;
 
     char *digest = NULL; 
     if (calc_digest) {
-	int size = 2*DIGEST_MAX_SIZE+1;
-	digest = buffer_malloc(buffer, size);
-	int rc = dsync_digest_path_hex(file, "sha1", digest, size);
-	if (rc)
-	    csync_debug(0, "Error generating digest: %s %d", digest, rc);
+    	int size = 2*DIGEST_MAX_SIZE+1;
+    	digest = buffer_malloc(buffer, size);
+    	int rc = dsync_digest_path_hex(file, "sha1", digest, size);
+    	if (rc)
+    		csync_debug(0, "Error generating digest: %s %d", digest, rc);
     }
     if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
 	int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
