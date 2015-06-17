@@ -72,7 +72,9 @@ void csync_file_flush(const char *filename)
 int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
 {
     int rc = 0;
-    const char *operation = NULL;
+    const char *operation_str = NULL;
+    int operation = 0;
+    int mode = 0;
     csync_debug(1, "check_dirty_daemon: %s\n", filename);
 
     // Returns newly marked dirty, so we cannot use it bail out.
@@ -80,31 +82,30 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
     csync_debug(1, "check_dirty_daemon: just marked dirty %s %d\n", filename, markedDirty);
     
     if (isflush)
-	return 0;
+    	return 0;
     SQL_BEGIN("Check if file is dirty",
-	      "SELECT operation FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
+	      "SELECT operation, op, mode FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
 	      db_encode(filename), db_encode(peername))
     {
-	rc = 1;
-	operation = SQL_V(0);
+    	rc = 1;
+    	operation_str = SQL_V(0);
+    	operation = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
+    	mode = (SQL_V(2) ? atoi(SQL_V(2)) : 0);
     } SQL_END;
 
     // Found dirty
     if (rc == 1) {
-	csync_debug(1, "check_dirty_daemon: peer operation  %s %s %s\n", peername, filename, operation);    
+	csync_debug(1, "check_dirty_daemon: peer operation  %s %s %s\n",
+				peername, filename, csync_operation_str(operation));
 	
-	int isModDir = 0;
-	if (operation)
-	    isModDir = !strcmp(operation, "MOD_DIR");
-
-	if (isModDir) {
+	if (operation == OP_MOD && S_ISDIR(mode)) {
 	    rc = 0;
 	    csync_debug(0, "Ignoring dirty directory %s\n", filename);
 	    csync_file_flush(filename);
 	    return 0;
 	}
 	else {
-	    csync_debug(1, "File %s is dirty here: %s\n", filename, operation);
+	    csync_debug(1, "File %s is dirty here: %s %d\n", filename, operation_str, operation);
 	}
 	*cmd_error = "File is also marked dirty here!";
 	// Already checked in single_file
@@ -569,7 +570,6 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
     if (!new_rc) {
       if (st.st_nlink > 1) {
 	const char *checktxt = csync_genchecktxt_version(&st_patched, filename, SET_USER|SET_GROUP, db_version);
-	char *operation;
 
 	// TODO scan file for hardlinks to old file. 
 	// check_link now works on dirty
@@ -650,7 +650,7 @@ const char *csync_daemon_check_perm(struct csync_command *cmd,
       csync_compare_mode = 0;
     if ( perm ) {
       if ( perm == 2 ) {
-	csync_mark(filename, peername, 0, "perm (slave)", NULL,NULL,NULL);
+	csync_mark(filename, peername, 0, OP_MOD, NULL,NULL,NULL);
 	cmd_error = "Permission denied for slave!";
       } else
 	cmd_error = "Permission denied!";
@@ -1006,7 +1006,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   }
   case A_MARK:
-    csync_mark(filename, *peername, 0, "mark", NULL, NULL, NULL);
+    csync_mark(filename, *peername, 0, OP_MOD, NULL, NULL, NULL);
     break;
   case A_TYPE:
      csync_daemon_type(filename, cmd_error);
