@@ -168,8 +168,8 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    old_operation = db_decode(SQL_V(0));
 	    filename = db_decode(SQL_V(1));
 	    other    = db_decode(SQL_V(2));
-	    old_op_str = SQL_V(3);
-	    old_op   = (old_op_str ? atoi(old_op_str) : 0);
+	    const char *old_op_str = SQL_V(3);
+	    int old_op   = (old_op_str ? atoi(old_op_str) : 0);
 	    
 	    csync_debug(1, "mark other: Old operation: %s (%d) '%s' '%s' \n", old_operation, old_op, filename, other);
 	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
