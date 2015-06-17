@@ -417,7 +417,6 @@ int db_mysql_upgrade_to_schema(int version)
 		"  mode     int    		 DEFAULT NULL,"
 		"  time     int    		 DEFAULT NULL,"
 		"  type     int    		 DEFAULT NULL,"
-		"  mode     int          DEFAULT NULL,"
 		"  digest   varchar(130) DEFAULT NULL,"
 		"  UNIQUE KEY `filename` (`filename`(%u))"
 		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
