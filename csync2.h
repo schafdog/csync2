@@ -239,15 +239,17 @@ int csync_get_checktxt_version(const char *value);
 /* check.c */
 struct textlist;
 /* check.c */
-#define OP_CREATE   1
+#define OP_NEW   	1
 #define OP_MKDIR    2
 #define OP_MKFIFO   4
 #define OP_MKCHR    8
-#define OP_MKBLK    16
 #define OP_MOVE     16
 #define OP_HARDLINK 32
 #define OP_RM       64
+#define OP_MOD		128
+#define OP_UNDEF	256
 
+extern int csync_operation(const char *operation);
 extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version, int flags);
 /* Single file checking but returns possible operation */ 
@@ -258,7 +260,7 @@ extern char *csync_check_path(char *filename);
 extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
 struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st);
-struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, const char *digest,
+struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, int operation, const char *digest,
 				  struct stat *st, textlist_loop_t loop);
 
 
