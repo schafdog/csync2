@@ -392,6 +392,7 @@ int db_mysql_upgrade_to_schema(int version)
 		"  `myname`    varchar(50)   DEFAULT NULL,"
 		"  `peername`  varchar(50)   DEFAULT NULL,"
 		"  `operation` varchar(100)  DEFAULT NULL,"
+		"  `op` 	   int(11)  	 DEFAULT NULL,"
 	        "  `checktxt`  varchar(200)  DEFAULT NULL,"
 	        "  `device`    bigint        DEFAULT NULL,"
 	        "  `inode`     bigint        DEFAULT NULL,"
