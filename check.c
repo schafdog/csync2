@@ -88,6 +88,21 @@ check_failed:
 #define CHECK_RM_MV  0
 #define CHECK_HARDLINK 0
 
+const char *csync_mode_str(int st_mode) {
+	const char* operation;
+	if (S_ISREG(st_mode))
+		operation = "NEW";
+	else if (S_ISDIR(st_mode))
+		operation = "MKDIR";
+	else if (S_ISCHR(st_mode))
+		operation = "MKCHR";
+	else if (S_ISBLK(st_mode))
+		operation = "MKBLK";
+	else if (S_ISFIFO(st_mode))
+		operation = "MKFIFO";
+	return operation;
+}
+
 void csync_hint(const char *file, int recursive)
 {
 	SQL("Adding Hint",
@@ -119,7 +134,7 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
 
 void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter, 
 		      int operation_org, const char *checktxt,
-		      const char *dev, const char *ino, const char *other)
+		      const char *dev, const char *ino, const char *other, int mode)
 {
   BUF_P buffer = buffer_init();
   struct peer *pl = csync_find_peers(file, thispeer);
@@ -225,18 +240,19 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
       }
       if (dirty)
       SQL("Marking File Dirty",
-	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op) "
-	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d)",
+	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode) "
+	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d)",
 	  db_encode(file_new),
 	  csync_new_force ? "1" : "0",
 	  db_encode(pl[pl_idx].myname),
 	  db_encode(pl[pl_idx].peername),
-	  csync_operation_str(operation),
+	  csync_mode_str(mode),
 	  db_encode(checktxt),
 	  (dev ? dev : "NULL"),
 	  (ino ? ino : "NULL"),
 	  csync_db_escape_quote((result_other ? result_other : other)),
-	  operation
+	  operation,
+	  mode
 	  );
     };
   };
@@ -246,9 +262,9 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 
 void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
 		int operation, const char *checktxt,
-		const char *dev, const char *ino) 
+		const char *dev, const char *ino, int mode)
 {
-  csync_mark_other(file, thispeer, peerfilter, operation, checktxt, dev, ino, 0);
+  csync_mark_other(file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode);
 }
 
 
@@ -389,7 +405,7 @@ int csync_check_del(const char *file, int recursive, int init_run)
     char *where_rec = "";
     struct textlist *tl = 0, *t;
     struct stat st;
-    const char *SELECT_SQL = "SELECT filename, checktxt, device, inode from file ";
+    const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode from file ";
     csync_debug(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
     const char *file_encoded = db_encode(file);
     csync_debug(3,"file %s encoded %s \n", file, file_encoded);
@@ -404,20 +420,21 @@ int csync_check_del(const char *file, int recursive, int init_run)
 	const char *checktxt = db_decode(SQL_V(1));
 	const char *device   = db_decode(SQL_V(2));
 	const char *inode    = db_decode(SQL_V(3));
+	int mode    = (SQL_V(4) ? atoi(SQL_V(4)) : 0);
       
 	if (!csync_match_file(filename))
 	    continue;
 
 	// Not found
 	if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
-	    textlist_add4(&tl, filename, checktxt, device, inode, 0);
+	    textlist_add4(&tl, filename, checktxt, device, inode, mode);
     } SQL_END;
     int count_deletes = 0;
     for (t = tl; t != 0; t = t->next) {
 	if (!init_run) {
 	    //csync_debug(0, "check_dirty (rm): before mark (all) \n");
 	    struct stat stat;
-	    csync_mark(t->value, 0, 0, OP_RM, t->value2, t->value3, t->value4);
+	    csync_mark(t->value, 0, 0, OP_RM, t->value2, t->value3, t->value4, t->intvalue);
 	    count_deletes++;
 	}
 	SQL("Delete file from DB. It isn't with us anymore.",
@@ -705,18 +722,11 @@ int csync_file_check_mod(const char *file, struct stat *file_stat, int init_run,
     } SQL_FIN {
 		if ( SQL_COUNT == 0 ) {
 			csync_debug(2, "New file: %s\n", file);
+			operation = OP_NEW;
 			if (S_ISREG(file_stat->st_mode)) {
 				operation = OP_NEW;
 				calc_digest = 1;
 			}
-			else if (S_ISDIR(file_stat->st_mode))
-				operation = OP_MOD /* | TYPE_DIR */;
-			else if (S_ISCHR(file_stat->st_mode))
-				operation = OP_MOD /* | TYPE_CHR */;
-			else if (S_ISBLK(file_stat->st_mode))
-				operation = OP_MOD /* | TYPE_BLK */;
-			else if (S_ISFIFO(file_stat->st_mode))
-				operation = OP_MOD /* | TYPE_FIFO */;
 			else if ( S_ISLNK(file_stat->st_mode) )
 			{
 				// TODO get max path
@@ -763,7 +773,8 @@ int csync_file_check_mod(const char *file, struct stat *file_stat, int init_run,
 	else {
 	    SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
 	    SQL("Adding or updating file entry",
-		"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size) VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu)",
+		"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size) "
+	    "VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu)",
 		encoded, 
 		checktxt_encoded,
 		dev,
@@ -779,7 +790,7 @@ int csync_file_check_mod(const char *file, struct stat *file_stat, int init_run,
 	    char ino_str[100];
 	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-	    csync_mark_other(file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other);
+	    csync_mark_other(file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode);
 	    count = 1;
 	}
     }
