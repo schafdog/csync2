@@ -3,10 +3,10 @@
 daemon d PEER
 clean local
 clean peer
-mkdir -p test/$NAME
 cmd x "clean"
 sleep 1
 FILENAME="new_file"
+mkdir -p test/$NAME
 echo "far" >"test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
 cmd TT test/$NAME/$FILENAME "compare"
