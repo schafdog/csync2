@@ -871,7 +871,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	int last_conn_status = 0, auto_resolve_run = 0, found_diff = 0,
 			found_diff_meta = 0;
 
-	const char *operation_str = csync_operation_str(operation);
+	const char *operation_str = "?";
 	const char *key = csync_key(peername, filename);
 	if (!key) {
 		csync_debug(2, "Skipping file update %s on %s - not in my groups.\n",
@@ -902,6 +902,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 		return ERROR;
 	}
 
+	operation_str = csync_mode_op_str(st.st_mode, operation);
 	int not_done = 1;
 	const char *key_enc = url_encode(key);
 	const char *enc_tmp = url_encode(prefixencode(filename));
