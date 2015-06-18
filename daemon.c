@@ -112,7 +112,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	if (0 && !rc && operation && peername) {
 	    //csync_debug(0, "check dirty: peername %s \n", peername);
 	    csync_mark(filename, myhostname, peername, operation,
-		       NULL, NULL, NULL);
+		       NULL, NULL, NULL, 0);
 	}
     }
     return rc;
@@ -650,7 +650,7 @@ const char *csync_daemon_check_perm(struct csync_command *cmd,
       csync_compare_mode = 0;
     if ( perm ) {
       if ( perm == 2 ) {
-	csync_mark(filename, peername, 0, OP_MOD, NULL,NULL,NULL);
+    	  csync_mark(filename, peername, 0, OP_MOD, NULL,NULL,NULL, 0);
 	cmd_error = "Permission denied for slave!";
       } else
 	cmd_error = "Permission denied!";
@@ -1006,7 +1006,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   }
   case A_MARK:
-    csync_mark(filename, *peername, 0, OP_MOD, NULL, NULL, NULL);
+    csync_mark(filename, *peername, 0, OP_MOD, NULL, NULL, NULL, 0);
     break;
   case A_TYPE:
      csync_daemon_type(filename, cmd_error);
@@ -1213,7 +1213,7 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
       rc = ABORT_CMD;
 
       if (rc == OK && cmd->check_dirty && 
-	csync_check_dirty(filename, peername, 
+    		  csync_check_dirty(filename, peername,
 			  cmd->action == A_FLUSH, 
 			  db_version, &cmd_error)) {
 	  rc  = ABORT_CMD;
