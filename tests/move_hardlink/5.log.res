@@ -6,8 +6,8 @@ Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maild
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab' NEW ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
 csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab to /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
-csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/cur/123,Sab to /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
-check_link_move: Other file not found. Posible MOVE operation: /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123
+Unable to MOVE/LINK: both NEW
+check_link_move: Other file not found. Possible MOVE operation: /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123
 OPERATION: MOVE /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 to /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab
 check move: /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 
  Succes: MV /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/.Trash/cur/123,Sab

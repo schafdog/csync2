@@ -8,7 +8,7 @@ Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/new' 
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked' NEW ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
 csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file to /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
-csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file to /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
+Unable to MOVE/LINK: both NEW
 check hardlink: /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file 
  Hardlinking peer /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file -> /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
 While syncing file: /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file
@@ -16,8 +16,7 @@ ERROR from peer: PATCH (/export/home/dennis/Projects/csync2/csync2/tests/test/pe
 Failed to hard link /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
 HARDLINK failed. Continuing with PATCH
 csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file to /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
-csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file to /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
-?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file
+Unable to MOVE/LINK: both NEW
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file
 csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file to /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
 csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/new_file to /export/home/dennis/Projects/csync2/csync2/tests/test/local/new/hardlinked
