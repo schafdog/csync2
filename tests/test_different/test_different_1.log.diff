@@ -1,4 +1,0 @@
-1c1
-< cmd c "both-change" localhost
----
-> cmd x "" localhost

@@ -19,6 +19,9 @@
 
 sbin_PROGRAMS = csync2
 sbin_SCRIPTS = csync2-compare
+
+SUBDIRS = src test
+
 man_MANS = csync2.1
 CC = clang
 csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\

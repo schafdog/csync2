@@ -1,4 +1,0 @@
-1c1
-< cmd c "force-update" localhost
----
-> cmd f "" localhost
