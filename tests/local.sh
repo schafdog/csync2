@@ -49,7 +49,7 @@ function cmd {
 	HOST=$NAME
 	# TODO Fix peername somehow
     fi
-    if [ "$CMD" == "daemon" ] && [ "$DAEMON" != "NO" ] ; then
+    if [ "$CMD" == "daemon" ] ; then
 	daemon d
 	return 
     fi
@@ -89,13 +89,17 @@ function clean {
 }
 
 function daemon {
+    if [ "$DAEMON" == "NO" ] ; then
+	echo "daemon start disabled";
+	return 
+    fi
     CMD="$1"
     echo $NAME $PEER
     if [ "$CMD" == "d" ] ; then 
 	${PROG} -q -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1 &
 	echo "$!" > daemon.pid
     elif [ "$CMD" == "i" ] ; then 
-	$GDB ${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1
+	$GDB ${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
 	echo "$!" > daemon.pid
 	sleep 1
     elif [ "$CMD" == "once" ] ; then 
@@ -107,6 +111,10 @@ function daemon {
 }
 
 function killdaemon {
+    if [ "$DAEMON" == "NO" ] ; then
+	echo "daemon stop disabled";
+	return 
+    fi
     kill `cat daemon.pid`
     rm daemon.pid
 }
