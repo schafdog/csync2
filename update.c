@@ -1584,7 +1584,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	  ret=0;
 	  if (init_run & 1)
 	    csync_mark(l_file, 0, (init_run & 4) ? peername : 0, OP_MOD /* | LOCAL */,
-		       NULL, "NULL", "NULL");
+		       NULL, "NULL", "NULL", 0);
 	} else {
 	  if ( !remote_reuse )
 	    if ( csync_insynctest_readline(&r_file, &r_checktxt) ) {
@@ -1600,7 +1600,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	      csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
 	    if (init_run & 2)
 	      csync_mark(r_file, 0, (init_run & 4) ? peername : 0, OP_MOD /* | PEER */,
-			 NULL, "NULL", "NULL");
+			 NULL, "NULL", "NULL", 0);
 	    if ( csync_insynctest_readline(&r_file, &r_checktxt) ) {
 	      remote_eof = 1;
 	      goto got_remote_eof;
@@ -1615,7 +1615,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	      csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
 	    if (init_run & 1)
 	      csync_mark(l_file, 0, (init_run & 4) ? peername : 0,
-			 OP_MOD /* | LOCAL | AUTOUPDATE */ , NULL, "NULL", "NULL");
+			 OP_MOD /* | LOCAL | AUTOUPDATE */ , NULL, "NULL", "NULL", 0);
 	    remote_reuse = 1;
 	  } else {
 	    remote_reuse = 0;
@@ -1635,7 +1635,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 		}
 		if (init_run & 1)
 		  csync_mark(l_file, 0, (init_run & 4) ? peername : 0,
-			     OP_MOD /* LOCAL | PEER */, NULL, "NULL", "NULL");
+			     OP_MOD /* LOCAL | PEER */, NULL, "NULL", "NULL", 0);
 	      }
 	    }
 	  }
@@ -1653,7 +1653,7 @@ int csync_insynctest(const char *myname, const char *peername, int init_run,
 	csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
       if (init_run & 2)
 	csync_mark(r_file, 0, (init_run & 4) ? peername : 0,
-		   OP_MOD /* | PEER */, NULL, "NULL", "NULL");
+		   OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0);
     }
 
   if (r_file) free(r_file);
