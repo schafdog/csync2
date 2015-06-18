@@ -1259,12 +1259,11 @@ void csync_update_host(const char *myname, const char *peername,
       const char *forced_str= db_decode(SQL_V(6));
       int forced = forced_str ? atoi(forced_str) : 0;
       int i, use_this = patnum == 0;
-      for (i=0; i<patnum && !use_this; i++)
-	if ( compare_files(filename, patlist[i], recursive) )
-	  use_this = 1;
-      if (use_this) {
-	  textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
-      }
+      for (i=0; i< patnum && !use_this; i++)
+    	  if ( compare_files(filename, patlist[i], recursive) ) {
+    		  use_this = 1;
+      		  textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
+      	  }
     } SQL_END;
 
   /* just return if there are no files to update */
