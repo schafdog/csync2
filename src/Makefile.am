@@ -20,8 +20,6 @@
 sbin_PROGRAMS = csync2
 sbin_SCRIPTS = csync2-compare
 
-SUBDIRS = src test
-
 man_MANS = csync2.1
 CC = clang
 csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
@@ -44,10 +42,10 @@ LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
              private_librsync private_libsqlite config.log		
 
-DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in configure
+# csync2_LDADD =
 
 check_version: FORCE
-	@./version.sh $(objects)
+	@../version.sh $(objects)
 
 dist-clean-local:
 	rm -rf autom4te.cache

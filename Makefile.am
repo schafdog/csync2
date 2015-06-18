@@ -17,53 +17,14 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-sbin_PROGRAMS = csync2
-sbin_SCRIPTS = csync2-compare
-
 SUBDIRS = src test
-
-man_MANS = csync2.1
-CC = clang
-csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
-                 checktxt.c csync2.c global.c daemon.c db.c error.c getrealfn.c	\
-                 groups.c rsync.c update.c urlencode.c conn.c prefixsubst.c \
-		 db_api.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c \
-		 ringbuffer.c buffer.c uidgid.c uidgid.h \
-		 csync2.h db_api.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
-		 csync2-compare \
-		 digest.c digest.h version.h \
-		 csync2.1
-
-EXTRA_DIST = csync2.cfg csync2.xinetd
-
-GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
-
-AM_YFLAGS = -d
-BUILT_SOURCES = cfgfile_parser.h check_version
-LIBS += -ldl -lssl -lcrypto
-CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
-             private_librsync private_libsqlite config.log		
 
 DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in configure
 
-check_version: FORCE
-	@./version.sh $(objects)
+BUILT_SOURCES = 
 
 dist-clean-local:
 	rm -rf autom4te.cache
-
-AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) -std=c99 -O0 -Wno-deprecated-declarations
-AM_LDFLAGS=$(LIBGNUTLS_LIBS)
-
-if PRIVATE_LIBRSYNC
-  BUILT_SOURCES += private_librsync
-  AM_CFLAGS += -I$(shell test -f librsync.dir && cat librsync.dir || echo ==librsync==)
-  AM_LDFLAGS += -L$(shell test -f librsync.dir && cat librsync.dir || echo ==librsync==)
-  LIBS += -lprivatersync
-endif
-
-AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
-AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
@@ -82,7 +43,6 @@ cert:
 	rm $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr
 
 
-tests:
-	make -C tests
-
-FORCE:
+.PHONY:debian
+debian:
+	dpkg-buildpackage -rfakeroot
