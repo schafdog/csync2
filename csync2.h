@@ -257,7 +257,7 @@ extern void csync_hint(const char *file, int recursive);
 extern void csync_check(const char *filename, int recursive, int init_run, int version, int flags);
 /* Single file checking but returns possible operation */ 
 extern int  csync_check_single(const char *filename, int init_run, int version); 
-extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino);
+extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino, int mode);
 extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(const char *filename);
