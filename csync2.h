@@ -250,6 +250,7 @@ struct textlist;
 #define OP_MOD		128
 #define OP_UNDEF	256
 
+extern const char *csync_mode_op_str(int st_mode, int op);
 extern operation_t csync_operation(const char *operation);
 extern const char *csync_operation_str(operation_t op);
 
