@@ -378,6 +378,7 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
+	(*listhandle)->operation = operation;
 	(*listhandle)->value  = (item  ? strdup(item)  : 0);
 	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
 	(*listhandle)->value3 = (item3 ? strdup(item3) : 0);
