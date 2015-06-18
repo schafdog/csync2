@@ -5,11 +5,11 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/tests/test
 mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' '-'.
 mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp' '(null)' 
-mark operation MOD_DIR -> MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp (not synced) .
+mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/tmp (not synced) .
 mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new' '-'.
 mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new' '(null)' 
-mark operation MOD_DIR -> MKDIR other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new (not synced) .
+mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new (not synced) .
 mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764' '-'.
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/tests/test/local/Maildir/new/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764' '-'.
 Connecting to host peer (PLAIN) ...
