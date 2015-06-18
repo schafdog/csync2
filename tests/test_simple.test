@@ -4,6 +4,7 @@ daemon d PEER
 clean local
 clean peer
 FILENAME="new_file"
+mkdir "test/$NAME"
 echo "far" >"test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
 rm -rf test/$NAME
