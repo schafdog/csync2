@@ -26,7 +26,7 @@ function testing {
     RESULT=$1
     OLD_RESULT=${RESULT}.res
     if [ -f ${OLD_RESULT} ] ; then
-	diff $RESULT $OLD_RESULT > ${RESULT}.diff
+	diff -w $RESULT $OLD_RESULT > ${RESULT}.diff
 	rc=$?
 	RES=$((RES+rc))
 	cat ${RESULT}.diff
