@@ -197,8 +197,8 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	    const char *old_op_str = SQL_V(3);
 	    int old_op   = (old_op_str ? atoi(old_op_str) : 0);
 	    
-	    csync_debug(1, "mark other: Old operation: %s (%d) '%s' '%s' \n",
-	    		csync_operation_str(old_op), old_op, filename, other);
+	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' \n",
+	    		csync_mode_op_str(mode, old_op), filename, other);
 	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
 	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);
 	      operation = OP_HARDLINK;
@@ -461,7 +461,6 @@ int csync_check_del(const char *file, int recursive, int init_run)
   
     if ( recursive )
     	free(where_rec);
-    csync_debug(1, "END Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
     return count_deletes;
 }
 
