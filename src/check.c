@@ -731,7 +731,7 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
     		operation = OP_MOD;
     		csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n",
-    					file, checktxt_same_version, checktxt_db, operation);
+			    file, checktxt_same_version, checktxt_db, csync_operation_str(operation));
     		this_is_dirty = 1;
     	}
     } SQL_FIN {
