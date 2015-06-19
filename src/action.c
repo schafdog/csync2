@@ -52,11 +52,16 @@ void csync_schedule_commands(const char *filename, int islocal)
 			}
 			continue;
 found_matching_pattern:
-			for (c=a->command; c; c=c->next)
-				SQL("Add action to database",
-					"INSERT INTO action (filename, command, logfile) "
-					"VALUES ('%s', '%s', '%s')", db_encode(filename),
-					db_encode(c->command), db_encode(a->logfile));
+			for (c=a->command; c; c=c->next) {
+			    SQL("Del action before insert",
+				"DELETE FROM action WHERE filename='%s' AND command='%s' ",
+				db_encode(filename), db_encode(c->command));
+			      
+			    SQL("Add action to database",
+				"INSERT INTO action (filename, command, logfile) "
+				"VALUES ('%s', '%s', '%s')", db_encode(filename),
+				db_encode(c->command), db_encode(a->logfile));
+			}
 		}
 	}
 }
