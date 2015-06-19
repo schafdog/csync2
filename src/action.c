@@ -31,39 +31,42 @@
 
 void csync_schedule_commands(const char *filename, int islocal)
 {
-	const struct csync_group *g = NULL;
-	const struct csync_group_action *a = NULL;
-	const struct csync_group_action_pattern *p = NULL;
-	const struct csync_group_action_command *c = NULL;
+    const struct csync_group *g = NULL;
+    const struct csync_group_action *a = NULL;
+    const struct csync_group_action_pattern *p = NULL;
+    const struct csync_group_action_command *c = NULL;
 
-	while ( (g=csync_find_next(g, filename)) ) {
-		for (a=g->action; a; a=a->next) {
-			if ( !islocal && a->do_local_only )
-				continue;
-			if ( islocal && !a->do_local )
-				continue;
-			if (!a->pattern)
-				goto found_matching_pattern;
-			for (p=a->pattern; p; p=p->next) {
-				int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
-				if ( !fnmatch(p->pattern, filename,
-						FNM_LEADING_DIR|fnm_pathname) )
-					goto found_matching_pattern;
-			}
-			continue;
-found_matching_pattern:
-			for (c=a->command; c; c=c->next) {
-			    SQL("Del action before insert",
-				"DELETE FROM action WHERE filename='%s' AND command='%s' ",
-				db_encode(filename), db_encode(c->command));
+    while ( (g=csync_find_next(g, filename)) ) {
+	for (a=g->action; a; a=a->next) {
+	    if ( !islocal && a->do_local_only )
+		continue;
+	    if ( islocal && !a->do_local )
+		continue;
+	    if (!a->pattern)
+		goto found_matching_pattern;
+	    for (p=a->pattern; p; p=p->next) {
+		const char *prefix = prefixsubst(p->pattern);
+		csync_debug(1, "File pattern: %s => %s ", p->pattern, prefix);
+		int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
+		if ( !fnmatch(prefix, filename,
+			      FNM_LEADING_DIR|fnm_pathname) )
+		    goto found_matching_pattern;
+	    }
+	    continue;
+	found_matching_pattern:
+	    for (c=a->command; c; c=c->next) {
+		const char *prefix_cmd = prefixsubst(c->command);
+		SQL("Del action before insert",
+		    "DELETE FROM action WHERE filename='%s' AND command='%s' ",
+		    db_encode(filename), db_encode(prefix_cmd));
 			      
-			    SQL("Add action to database",
-				"INSERT INTO action (filename, command, logfile) "
-				"VALUES ('%s', '%s', '%s')", db_encode(filename),
-				db_encode(c->command), db_encode(a->logfile));
-			}
-		}
+		SQL("Add action to database",
+		    "INSERT INTO action (filename, command, logfile) "
+		    "VALUES ('%s', '%s', '%s')", db_encode(filename),
+		    db_encode(prefix_cmd), db_encode(prefixsubst(a->logfile)));
+	    }
 	}
+    }
 }
 
 void csync_run_single_command(const char *command, const char *logfile)
