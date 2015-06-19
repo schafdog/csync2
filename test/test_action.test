@@ -1,0 +1,18 @@
+#
+#
+daemon d PEER
+clean local
+clean peer
+FILENAME="action"
+mkdir -p "test/$NAME"
+echo hej  >"test/$NAME/$FILENAME"
+cmd x "New $NAME/$FILENAME"
+echo second  >"test/$NAME/$FILENAME"
+cmd x "Updated $NAME/$FILENAME"
+touch "test/$NAME/$FILENAME"
+cmd x "META $NAME/$FILENAME"
+#rm  "test/$NAME/$FILENAME"
+#cmd x "RM $NAME/$FILENAME"
+#rm -rf test/$NAME
+#cmd x "clean up"
+killdaemon d PEER
