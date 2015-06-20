@@ -10,7 +10,7 @@ cmd x "3 Maildir tmp file"
 sleep 1
 mv test/$NAME/Maildir/tmp/123 test/$NAME/Maildir/cur/123,Sab
 ln test/$NAME/Maildir/cur/123,Sab test/$NAME/Maildir/.Trash/cur/
-#VALGRIND='gdb --args' 
 cmd c "4 Read and deleted (check)"
+sleep 1
 cmd u "5 Read and deleted (update)"
 killdaemon d peer
