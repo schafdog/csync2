@@ -32,7 +32,7 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 		 digest.c digest.h version.h \
 		 csync2.1
 
-EXTRA_DIST = csync2.cfg csync2.xinetd
+#EXTRA_DIST = csync2.cfg csync2.xinetd
 
 GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
 
@@ -63,11 +63,11 @@ endif
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
 
-install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
-	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/csync2
-	test -e $(DESTDIR)$(sysconfdir)/csync2.cfg || \
-		$(INSTALL_DATA) $(srcdir)/csync2.cfg $(DESTDIR)$(sysconfdir)/csync2.cfg
+#install-data-local:
+#	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
+#	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/csync2
+#	test -e $(DESTDIR)$(sysconfdir)/csync2.cfg || \
+#		$(INSTALL_DATA) $(srcdir)/csync2.cfg $(DESTDIR)$(sysconfdir)/csync2.cfg
 
 cert:
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)

@@ -23,24 +23,26 @@ DISTCLEANFILES = config.status config.h .deps/*.Po stamp-h1 Makefile Makefile.in
 
 BUILT_SOURCES = 
 
+CONFDIR = $(DESTDIR)$(sysconfdir)/csync2
+
 dist-clean-local:
 	rm -rf autom4te.cache
 
 install-data-local:
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
+	$(mkinstalldirs) $(CONFDIR)
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/csync2
-	test -e $(DESTDIR)$(sysconfdir)/csync2.cfg || \
-		$(INSTALL_DATA) $(srcdir)/csync2.cfg $(DESTDIR)$(sysconfdir)/csync2.cfg
+	test -e $(CONFDIR)/csync2.cfg || \
+		$(INSTALL_DATA) csync2.cfg $(CONFDIR)/csync2.cfg
 
 cert:
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
-	openssl genrsa -out $(DESTDIR)$(sysconfdir)/csync2_ssl_key.pem 1024
-	yes '' | openssl req -new -key $(DESTDIR)$(sysconfdir)/csync2_ssl_key.pem \
-		-out $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr
-	openssl x509 -req -days 600 -in $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr \
-		-signkey $(DESTDIR)$(sysconfdir)/csync2_ssl_key.pem \
-		-out $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.pem
-	rm $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr
+	$(mkinstalldirs) $(CONFDIR)
+	openssl genrsa -out $(CONFDIR)/csync2_ssl_key.pem 2048
+	yes '' | openssl req -new -key $(CONFDIR)/csync2_ssl_key.pem \
+		-out $(CONFDIR)/csync2_ssl_cert.csr
+	openssl x509 -req -days 600 -in $(CONFDIR)/csync2_ssl_cert.csr \
+		-signkey $(CONFDIR)/csync2_ssl_key.pem \
+		-out $(CONFDIR)/csync2_ssl_cert.pem
+	rm $(CONFDIR)/csync2_ssl_cert.csr
 
 
 .PHONY:debian
