@@ -14,12 +14,6 @@ CONFIG_CLEAN_FILES=*.log *.dif
 clean-local:
 	rm -f *.log *.dif
 
-all: ../csync2
-	echo $(MYTESTS)
-
-../csync2:
-	pushd .. ; make csync2 ; popd
-
 %.test:
 	./local.sh $@ || (echo "Test $@ failed" && exit 1)
 
