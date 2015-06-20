@@ -37,7 +37,7 @@
 
 #define DIFF_META 16
 #define DIFF 8
-#define DIFF_BOTH (DIFF & DIFF_META)
+#define DIFF_BOTH (DIFF | DIFF_META)
 #define IDENTICAL 4
 #define LINK_LATER 3
 #define OK_DRY 2
@@ -932,15 +932,16 @@ int csync_update_file_mod(const char *myname, const char *peername,
 				filename_enc, &st, uid, gid,
 				NULL, &last_conn_status, 2);
 		if (rc >= 0) {
-			found_diff = rc & DIFF;
-			found_diff_meta = rc & DIFF_META;
-			rc &= !DIFF_BOTH;
+		    found_diff = rc & DIFF;
+		    found_diff_meta = rc & DIFF_META;
+		    rc &=  ~DIFF_BOTH;
 		}
-
 		if (dry_run) {
-			if (rc == IDENTICAL)
-				csync_clear_dirty(peername, filename, auto_resolve_run);
-			return rc;
+		    if (rc == IDENTICAL) {
+			csync_debug(1, "clear %s:%s on dry run\n", peername, filename);
+			csync_clear_dirty(peername, filename, auto_resolve_run);
+		    }
+		    return rc;
 		}
 
 		if (operation == OP_HARDLINK) {
