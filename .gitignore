@@ -14,7 +14,7 @@ config.log
 config.status
 configure
 configure.lineno
-csync2
+src/csync2
 #csync2.sql
 depcomp
 compile
