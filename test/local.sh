@@ -124,8 +124,8 @@ function check {
 }
 
 if [ ! -f csync2_${NAME}.cfg ] ; then
-    echo "Missing config file:  csync2_${NAME}.cfg" 
-    exit
+    echo "Missing config file:  csync2_${NAME}.cfg"
+    exit 1;
 fi 
 
 TESTNAME=.
