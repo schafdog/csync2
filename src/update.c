@@ -854,7 +854,7 @@ int csync_update_directory(const char *myname, const char *peername,
   }
   if (get_file_type(dir_st.st_mode) == DIR_TYPE) {
     const char *dirname_enc = url_encode(prefixencode(dirname));
-    csync_debug(3, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
+    csync_debug(2, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
     rc = csync_update_file_settime(peername, key_enc, dirname, dirname_enc, &dir_st);
     return rc;
   }
