@@ -88,30 +88,30 @@ check_failed:
 #define CHECK_RM_MV  0
 #define CHECK_HARDLINK 0
 
-const char *csync_mode_op_str(int st_mode, int op) {
-	const char* operation = "???";
-	if (op == OP_RM)
-		return "RM";
-	if (S_ISREG(st_mode))
-		if (op == OP_NEW)
-			operation = "NEW";
-		else
-			operation = "MOD";
-	else if (S_ISDIR(st_mode))
-		if (op == OP_NEW)
-			operation = "MKDIR";
-		else
-			operation = "MOD_DIR";
-	else if (S_ISCHR(st_mode))
-			operation = "MKCHR";
-	else if (S_ISBLK(st_mode))
-			operation = "MKBLK";
-	else if (S_ISFIFO(st_mode))
-		operation = "MKFIFO";
+const char *csync_mode_op_str(int st_mode, int op)
+{
+    const char* operation = "???";
+    if (op == OP_RM)
+	return "RM";
+    if (S_ISREG(st_mode))
+	if (op == OP_NEW)
+	    operation = "NEW";
 	else
-		csync_debug(0, "Unknown mode op: %d %d", st_mode, op);
-
-	return operation;
+	    operation = "MOD";
+    else if (S_ISDIR(st_mode))
+	if (op == OP_NEW)
+	    operation = "MKDIR";
+	else
+	    operation = "MOD_DIR";
+    else if (S_ISCHR(st_mode))
+	operation = "MKCHR";
+    else if (S_ISBLK(st_mode))
+	operation = "MKBLK";
+    else if (S_ISFIFO(st_mode))
+	operation = "MKFIFO";
+    else
+	csync_debug(0, "Unknown mode op: %d %d\n", st_mode, op);
+    return operation;
 }
 
 void csync_hint(const char *file, int recursive)
