@@ -30,6 +30,9 @@ function testing {
 	rc=$?
 	RES=$((RES+rc))
 	cat ${RESULT}.diff
+	if [ ! -s ${RESULT}.diff ] ; then 
+	    rm ${RESULT}.diff
+	fi
     else
 	cp $RESULT $OLD_RESULT
     fi
@@ -58,7 +61,9 @@ function cmd {
 	return 
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
-    if [ "$GDB" != "" ] ; then 
+    if [ "$LLDB" != "" ] ; then 
+	$LLDB -f $PROG -- -q -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH}
+    elif [ "$GDB" != "" ] ; then 
 	$GDB $PROG -q -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH}
     else
 	$PROG -q -P peer -p 30860 -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH} >> ${TESTNAME}/${COUNT}.log 2>&1
@@ -99,8 +104,12 @@ function daemon {
 	${PROG} -q -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG -p 30860 > $TESTNAME/daemon.log  2>&1 &
 	echo "$!" > daemon.pid
     elif [ "$CMD" == "i" ] ; then 
-	$GDB ${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
-	echo "$!" > daemon.pid
+	if [ "LLDB" != "" ]; then
+	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
+	else
+	    $GDB ${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p 30860
+	fi
+#	echo "$!" > daemon.pid
 	sleep 1
     elif [ "$CMD" == "once" ] ; then 
 	${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p 30860 >> daemon_${NAME}.log 2>&1 & 
