@@ -835,7 +835,7 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 	*count += csync_check_file_mod(file, &st, init_run, version);
 	dirdump_this = 1;
 	dirdump_parent = 1;
-	/* fall thru */
+	//no break
     case MATCH_INTO:
 	if ( !recursive ) 
 	    break;
