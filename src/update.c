@@ -1013,7 +1013,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 						csync_clear_dirty(peername, other, auto_resolve_run);
 					}
 					textlist_free(link_move_list);
-					return OK;
+					return rc;
 				}
 				break;
 			}
