@@ -33,7 +33,8 @@ cmd u "move Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S (2 sec delay)
 ln test/$NAME/Maildir/cur/${CURFILE}S test/$NAME/Maildir/.Trash/cur/${CURFILE}S 
 mv test/$NAME/Maildir/cur/${CURFILE}S test/$NAME/Maildir/cur/${CURFILE}ST
 sleep 1
-cmd x "Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S. mv ${CURFILE}S ${CURFILE}ST"
+cmd c "check:  Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S. mv ${CURFILE}S ${CURFILE}ST"
+cmd u "update: Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S. mv ${CURFILE}S ${CURFILE}ST"
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon d PEER
