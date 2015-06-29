@@ -670,10 +670,10 @@ int csync_update_hardlink(const char *peername, const char *key_encoded,
     csync_debug(1, "Hardlinking %s %s -> %s\n", peername, filename, newpath);
     conn_printf("%s %s %s %s \n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
     if ((*last_conn_status = read_conn_status(filename, peername))) {
-	csync_debug(0, "Failed to hard link %s %s\n", filename, newpath);
-	if (*last_conn_status == CONN_CLOSE) 
-	   return *last_conn_status; 
-	return ERROR_HARDLINK;
+    	csync_debug(0, "Failed to hard link %s %s\n", filename, newpath);
+    	if (*last_conn_status == CONN_CLOSE)
+    		return *last_conn_status;
+    	return ERROR_HARDLINK;
     }
     return OK;
 }
