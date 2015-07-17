@@ -205,8 +205,8 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 	      result_other = buffer_strdup(buffer,filename);
 	      clean_other = 0;
 	    }
-	    // NEW/MK A -> RM A => remove from dirty, as it newer happened
-	    else if (CHECK_NEW_RM && operation == OP_RM && old_operation == OP_NEW) {
+	    // NEW/MK A -> RM A => remove from dirty, as it newer happened if it is same filename
+	    else if (CHECK_NEW_RM && operation == OP_RM && old_operation == OP_NEW && !strcmp(file,filename)) {
 	      csync_debug(1, "mark operation NEW -> RM %s:%s deleted before syncing. Removing from dirty.\n",
 	    		  	  	  	  pl[pl_idx].peername, file);
 	      dirty = 0;
