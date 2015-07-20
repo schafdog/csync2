@@ -1,3 +1,4 @@
+
 /*
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
@@ -50,6 +51,9 @@ const char *csync_genchecktxt_version(const struct stat *st, const char *filenam
 	char *elements[64];
 	int elidx=0, len=1;
 	int i, j, k;
+
+	if (!st)
+	    return "---";
 
 	xxprintf("v%d", version);
 
