@@ -6,18 +6,20 @@ clean local
 clean peer
 mkdir -p test/$NAME/usr/local/sbin
 cmd x "New directory" 
-sleep 2
+sleep 1
 echo hej > test/$NAME/usr/local/sbin/hej
 rm test/$NAME/usr/local/sbin/hej
 cmd c "New dir timestamp due to file (check)"
 cmd u "New dir timestamp due to file (update)"
 #
+sleep 1
 touch test/$NAME/usr/local
 cmd m "New dir timestamp (mark)"
 cmd u "New dir timestamp (update)"
 #
+sleep 1
 echo hej > test/$NAME/usr/local/sbin/hej
-cmd x "New file" 
+cmd x "New file"
 sleep 1
 rm test/$NAME/usr/local/sbin/hej
 cmd x "New file deleted"
