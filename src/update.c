@@ -652,8 +652,8 @@ int csync_update_file_sig(const char *peername, const char *filename,
 					      peer_version);
     if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 	csync_debug(log_level, "File is different on peer (cktxt char #%d).\n", i);
-	csync_debug(log_level, ">>> PEER:  %s\n>>> LOCAL: %s\n",
-		    chk_peer_decoded, chk_local);
+	csync_debug(log_level, ">>> %s:  %s\n>>> %s: %s\n",
+		    peername, chk_peer_decoded, "LOCAL", chk_local);
 	return DIFF_META;
     }
     return OK;
@@ -802,7 +802,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
   if (rc != OK && rc != DIFF_META)
     return rc;
 
-  int rs_check_result = csync_rs_check(filename, S_ISREG(st->st_mode));
+  int rs_check_result = csync_rs_check(filename, (st ? S_ISREG(st->st_mode): 0) );
   if ( rs_check_result < 0 )
     rc = ERROR;
   if ( rs_check_result > 0) {
@@ -970,7 +970,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 			struct stat st_other;
 			int rc = stat(other, &st_other);
 			if (rc == 0) {
-				int rc = csync_update_file_sig_rs_diff(peername, key_enc, other,
+			    int rc = csync_update_file_sig_rs_diff(peername, key_enc, other,
 						other_enc, &st, uid, gid,
 						NULL, &last_conn_status, 2);
 				if (rc == CONN_CLOSE)
