@@ -565,15 +565,23 @@ int get_file_type(int st_mode) {
   return -1;
 }
 
-/* PRE: all values must have been encoded */
+/* PRE: all values must have been encoded 
+   Only send file stat if present 
+ */
 void cmd_printf(const char *cmd, const char *key,
 		const char *filename, const char *secondname,
 		const struct stat *st, const char *uid, const char* gid) {
-  conn_printf("%s %s %s %s %d %d %s %s %d %Ld\n",
-	      cmd, key, filename, secondname,
-	      st->st_uid, st->st_gid,
-	      uid, gid,
-	      st->st_mode, (long long) st->st_mtime);
+    if (st) {
+	conn_printf("%s %s %s %s %d %d %s %s %d %Ld\n",
+		    cmd, key, filename, secondname,
+		    st->st_uid, st->st_gid,
+		    uid, gid,
+		    st->st_mode, (long long) st->st_mtime);
+    }
+    else {
+	conn_printf("%s %s %s %s\n",
+		    cmd, key, filename, secondname);
+    }
 }
 
 
@@ -610,44 +618,45 @@ int csync_update_file_dir(const char *peername, const char *filename,
 }
 
 
-/* PRE: command SIG have been sent */
+/* PRE: command SIG have been sent 
+   st can be null */
 int csync_update_file_sig(const char *peername, const char *filename,
 			  const struct stat *st, const char *chk_local, int log_level)
 {
-  int i = 0;
-  char chk_peer[4096];
+    int i = 0;
+    char chk_peer[4096];
 
-  if ( read_conn_status(filename, peername) )
-    return ERROR;
+    if ( read_conn_status(filename, peername) )
+	return ERROR;
 
-  if ( !conn_gets_newline(chk_peer, 4096,1) )
-    return ERROR;
+    if ( !conn_gets_newline(chk_peer, 4096,1) )
+	return ERROR;
 
-  int peer_version = csync_get_checktxt_version(chk_peer);
+    int peer_version = csync_get_checktxt_version(chk_peer);
 
-  int flag = IGNORE_LINK;
-  // DS We should prob. only ignore MTIME for regular files if at all.
-  const char *chk_peer_decoded = url_decode(chk_peer);
-  //TODO generate chk text that matches remote usage of uid/user and gid/gid
-  char *has_user = strstr(chk_peer_decoded, ":user=");
-  flag |=  (has_user != NULL ? SET_USER : 0);
-  char *has_group = strstr(chk_peer_decoded, ":group=");
-  flag |= (has_group != NULL ? SET_GROUP : 0);
+    int flag = IGNORE_LINK;
+    // DS We should prob. only ignore MTIME for regular files if at all.
+    const char *chk_peer_decoded = url_decode(chk_peer);
+    // TODO generate chk text that matches remote usage of uid/user and gid/gid
+    char *has_user = strstr(chk_peer_decoded, ":user=");
+    flag |=  (has_user != NULL ? SET_USER : 0);
+    char *has_group = strstr(chk_peer_decoded, ":group=");
+    flag |= (has_group != NULL ? SET_GROUP : 0);
 /*
-  if (!S_ISDIR(st->st_mode))
+  if (st && !S_ISDIR(st->st_mode))
       flag |= IGNORE_MTIME;
 */
-  csync_debug(3, "Flags for gencheck: %d \n", flag);
-  if (!chk_local)
-    chk_local = csync_genchecktxt_version(st, filename, flag,
-					  peer_version);
-  if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
-     csync_debug(log_level, "File is different on peer (cktxt char #%d).\n", i);
-     csync_debug(log_level, ">>> PEER:  %s\n>>> LOCAL: %s\n",
-		 chk_peer_decoded, chk_local);
-     return DIFF_META;
-  }
-  return OK;
+    csync_debug(3, "Flags for gencheck: %d \n", flag);
+    if (!chk_local)
+	chk_local = csync_genchecktxt_version(st, filename, flag,
+					      peer_version);
+    if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
+	csync_debug(log_level, "File is different on peer (cktxt char #%d).\n", i);
+	csync_debug(log_level, ">>> PEER:  %s\n>>> LOCAL: %s\n",
+		    chk_peer_decoded, chk_local);
+	return DIFF_META;
+    }
+    return OK;
 }
 
 #define HARDLINK_CMD "MKHARDLINK"
@@ -757,18 +766,24 @@ int csync_update_file_patch(const char *key_enc,
 
 int csync_stat(const char *filename, struct stat *st, char uid[MAX_UID_SIZE], char gid[MAX_GID_SIZE])
 {
-   int rc = lstat_strict(filename, st);
-   if (rc != 0)
-      return rc;
+    st->st_uid = -1;
+    st->st_gid = -1;
+    st->st_size = 0;
+    st->st_mode = 0;
+    st->st_size = 0;
+    st->st_mtime = 0;
+    int rc = lstat_strict(filename, st);
+    if (rc != 0)
+	return rc;
 
-   if (uid_to_name(st->st_uid, uid, MAX_UID_SIZE, "-")) {
-      csync_debug(0, "Failed to lookup uid %d\n", st->st_uid);
-   }
-   if (gid_to_name(st->st_gid, gid, MAX_GID_SIZE, "-")) {
-      csync_debug(0, "Failed to lookup gid %d\n", st->st_gid);
-   }
-   csync_debug(3, "uid %s gid %s\n", uid, gid);
-   return rc;
+    if (uid_to_name(st->st_uid, uid, MAX_UID_SIZE, "-")) {
+	csync_debug(0, "Failed to lookup uid %d\n", st->st_uid);
+    }
+    if (gid_to_name(st->st_gid, gid, MAX_GID_SIZE, "-")) {
+	csync_debug(0, "Failed to lookup gid %d\n", st->st_gid);
+    }
+    csync_debug(3, "uid %s gid %s\n", uid, gid);
+    return rc;
 }
 
 int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
@@ -1423,11 +1438,11 @@ int csync_diff(const char *myname, const char *peername,
   const char *filename_enc = url_encode(prefixencode(filename));
   struct stat st;
   char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
-  csync_stat(filename, &st, uid, gid);
+  int rc_exist = csync_stat(filename, &st, uid, gid);
   int last_conn_status;
   int rc = csync_update_file_sig_rs_diff(peername, key_enc,
 					 filename, filename_enc,
-					 &st, uid, gid,
+					 (!rc_exist  ? &st : NULL), uid, gid,
 					 NULL, &last_conn_status, 0);
   if (rc < 0) {
       csync_debug(0, "Error while TYPE: %d \n", rc);
@@ -1440,7 +1455,7 @@ int csync_diff(const char *myname, const char *peername,
 
   }
 
-  if (!stat(filename, &st) && !S_ISREG(st.st_mode))
+  if (!rc_exist && !S_ISREG(st.st_mode))
   {
       csync_debug(1, "Skipping diff on non-regular file (%s)", filename) ;
       return finish_close(); 
