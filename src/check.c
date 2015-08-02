@@ -708,10 +708,12 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     	const char *inode    = SQL_V(1);
     	const char *device   = SQL_V(2);
     	const char *digest_p = SQL_V(3);
+	long mode;
 	long size;
 	long mtime;
-	is_upgrade = !SQL_V_long(4, &size);
-	is_upgrade = !SQL_V_long(4, &mtime) || is_upgrade;
+	is_upgrade = SQL_V_long(4, &mode);
+	is_upgrade = SQL_V_long(5, &size) || is_upgrade;
+	is_upgrade = SQL_V_long(6, &mtime)|| is_upgrade;
     	int flag = 0;
     	if (strstr(checktxt_db, ":user=") != NULL)
     		flag |= SET_USER;
@@ -786,8 +788,8 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 	const char *checktxt_encoded = db_encode(checktxt);
 	if (is_upgrade) {
 	    SQL("Update file entry",
-		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s where filename = '%s'",
-		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest), encoded);
+		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s, mode=%lu, mtime=%lu, size=%lu where filename = '%s'",
+		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest), file_stat->st_mode, file_stat->st_mtim.tv_sec, file_stat->st_size, encoded);
 	}
 	else {
 	    SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
