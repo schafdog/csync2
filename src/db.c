@@ -275,11 +275,11 @@ long csync_db_long(void *stmtx, int col, long *result) {
     const char *ptr =  (const char *) csync_db_colblob(stmtx, col);
     char *rest;
     if (!ptr) {
-	result = NULL;
 	return -1;
     }
+    errno = 0;
     *result = strtol(ptr, &rest, 10);
-    return *result;
+    return errno;
 }
 
 void csync_db_fin(void *vmx, const char *err)
