@@ -710,8 +710,8 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     	const char *digest_p = SQL_V(3);
 	long size;
 	long mtime;
-	SQL_V_long(4, &size);
-	SQL_V_long(5, &mtime);
+	is_upgrade = !SQL_V_long(4, &size);
+	is_upgrade = !SQL_V_long(4, &mtime) || is_upgrade;
     	int flag = 0;
     	if (strstr(checktxt_db, ":user=") != NULL)
     		flag |= SET_USER;
