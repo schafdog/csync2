@@ -147,132 +147,134 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 		      int operation_org, const char *checktxt,
 		      const char *dev, const char *ino, const char *other, int mode)
 {
-  BUF_P buffer = buffer_init();
-  struct peer *pl = csync_find_peers(file, thispeer);
-  int pl_idx;
-  int operation;
-  csync_schedule_commands(file, thispeer == 0);
+    BUF_P buffer = buffer_init();
+    struct peer *pl = csync_find_peers(file, thispeer);
+    int pl_idx;
+    int operation;
+    csync_schedule_commands(file, thispeer == 0);
 
-  if ( ! pl ) {
-    csync_debug(2, "Not in one of my groups: %s (%s)\n",
-		file, thispeer ? thispeer : "NULL");
-    return;
-  }
+    if ( ! pl ) {
+	csync_debug(2, "Not in one of my groups: %s (%s)\n",
+		    file, thispeer ? thispeer : "NULL");
+	return;
+    }
 
-  struct stat st_file;
-  int rc_file = stat(file, &st_file);
-  for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
-    operation = operation_org;
-    if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
-      csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n", csync_mode_op_str(st_file.st_mode, operation), pl[pl_idx].peername, file, (other ? other : "-"));
-      if (operation && operation == OP_MOVE && other == NULL) {
-    	  csync_debug(1, "mark other MV operation missing other %s %s \n", pl[pl_idx].peername, file);
-    	  operation = OP_UNDEF;
-      }
-      short dirty = 1;
-      short clean_other = 1;
-      char *result_other = 0;
-      char *file_new = buffer_strdup(buffer, file);
-      /* We dont currently have a checktxt when marking files. */ 
-      /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run, 
-	 and thus leaking other side */
-      if (1 && checktxt) {
+    struct stat st_file;
+    int rc_file = stat(file, &st_file);
+    for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
+	operation = operation_org;
+	if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
+	    csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n",
+			csync_mode_op_str(st_file.st_mode, operation),
+			pl[pl_idx].peername, file, (other ? other : "-"));
+	    if (operation && operation == OP_MOVE && other == NULL) {
+		csync_debug(1, "mark other MV operation missing other %s %s \n", pl[pl_idx].peername, file);
+		operation = OP_UNDEF;
+	    }
+	    short dirty = 1;
+	    short clean_other = 1;
+	    char *result_other = 0;
+	    char *file_new = buffer_strdup(buffer, file);
+	    /* We dont currently have a checktxt when marking files. */ 
+	    /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run, 
+	       and thus leaking other side */
+	    if (1 && checktxt) {
 	
-	SQL_BEGIN("Checking old opertion(s) on dirty",
-		  "SELECT operation, filename, other, op from dirty where "
-		  "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' ",
-		  db_encode(checktxt),
-		  db_encode(file),
-		  db_encode(dev),
-		  db_encode(ino),
-		  db_encode(pl[pl_idx].peername)
-		  )
-	  {
-	    operation_t old_operation;
-	    const char *filename;
-	    const char *other;
-	    old_operation = csync_operation(SQL_V(0));
-	    filename = db_decode(SQL_V(1));
-	    other    = db_decode(SQL_V(2));
-	    const char *old_op_str = SQL_V(3);
-	    int old_op   = (old_op_str ? atoi(old_op_str) : 0);
+		SQL_BEGIN("Checking old opertion(s) on dirty",
+			  "SELECT operation, filename, other, op from dirty where "
+			  "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' ",
+			  db_encode(checktxt),
+			  db_encode(file),
+			  db_encode(dev),
+			  db_encode(ino),
+			  db_encode(pl[pl_idx].peername)
+		    )
+		{
+		    operation_t old_operation;
+		    const char *filename;
+		    const char *other;
+		    old_operation = csync_operation(SQL_V(0));
+		    filename = db_decode(SQL_V(1));
+		    other    = db_decode(SQL_V(2));
+		    const char *old_op_str = SQL_V(3);
+		    int old_op   = (old_op_str ? atoi(old_op_str) : 0);
 	    
-	    csync_debug(1, "mark other: Old operation: %s '%s' '%s' \n",
-	    		csync_mode_op_str(mode, old_op), filename, other);
-	    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
-	      csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);
-	      operation = OP_HARDLINK;
-	      result_other = buffer_strdup(buffer,filename);
-	      clean_other = 0;
+		    csync_debug(1, "mark other: Old operation: %s '%s' '%s' \n",
+				csync_mode_op_str(mode, old_op), filename, other);
+		    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
+			csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);
+			operation = OP_HARDLINK;
+			result_other = buffer_strdup(buffer,filename);
+			clean_other = 0;
+		    }
+		    // NEW/MK A -> RM A => remove from dirty, as it newer happened if it is same filename
+		    else if (CHECK_NEW_RM && operation == OP_RM && old_operation == OP_NEW && !strcmp(file,filename)) {
+			csync_debug(1, "mark operation NEW -> RM %s:%s deleted before syncing. Removing from dirty.\n",
+				    pl[pl_idx].peername, file);
+			dirty = 0;
+			operation = OP_UNDEF;
+		    }
+		    // NEW/MK A -> MOD (still NEW)
+		    else if (CHECK_NEW_MOD && operation == OP_MOD && old_op == OP_NEW) {
+			csync_debug(1, "mark operation NEW -> MOD => NEW %s:%s (not synced) .\n",
+				    pl[pl_idx].peername, file);
+			operation = old_op;
+			dirty = 1;
+		    }
+		    else if (CHECK_RM_MV && ((OP_RM == old_operation || OP_MOVE == old_operation || OP_UNDEF == old_operation)
+					     && OP_NEW == operation) && strstr(checktxt, "type=dir") == 0) {
+			// TODO verify logic
+			result_other = buffer_strdup(buffer, filename);
+			csync_debug(1, "mark operation RM -> NEW => MOVE %s '%s' '%s'.\n",
+				    pl[pl_idx].peername, file, result_other);
+			operation = OP_MOVE;
+		    }
+		    else if (CHECK_MV_RM && OP_MOVE == old_operation && OP_RM == operation) {
+			operation = OP_RM;
+			file_new = buffer_strdup(buffer, other);
+			result_other = buffer_strdup(buffer, filename);
+			clean_other = 1;
+			csync_debug(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n",
+				    pl[pl_idx].peername, file, filename, other);
+			other = 0;
+		    }
+		    // Run only once? 
+		    break; 
+		} SQL_FIN {
+		} SQL_END;
 	    }
-	    // NEW/MK A -> RM A => remove from dirty, as it newer happened if it is same filename
-	    else if (CHECK_NEW_RM && operation == OP_RM && old_operation == OP_NEW && !strcmp(file,filename)) {
-	      csync_debug(1, "mark operation NEW -> RM %s:%s deleted before syncing. Removing from dirty.\n",
-	    		  	  	  	  pl[pl_idx].peername, file);
-	      dirty = 0;
-	      operation = OP_UNDEF;
-	    }
-	    // NEW/MK A -> MOD (still NEW)
-	    else if (CHECK_NEW_MOD && operation == OP_MOD && old_op == OP_NEW) {
-	      csync_debug(1, "mark operation NEW -> MOD => NEW %s:%s (not synced) .\n",
-	    		  	  	  pl[pl_idx].peername, file);
-	      operation = old_op;
-	      dirty = 1;
-	    }
-	    else if (CHECK_RM_MV && ((OP_RM == old_operation || OP_MOVE == old_operation || OP_UNDEF == old_operation)
-		     && OP_NEW == operation) && strstr(checktxt, "type=dir") == 0) {
-	    	// TODO verify logic
-	    	result_other = buffer_strdup(buffer, filename);
-	    	csync_debug(1, "mark operation RM -> NEW => MOVE %s '%s' '%s'.\n",
-	    				pl[pl_idx].peername, file, result_other);
-	    	operation = OP_MOVE;
-	    }
-	    else if (CHECK_MV_RM && OP_MOVE == old_operation && OP_RM == operation) {
-	      operation = OP_RM;
-	      file_new = buffer_strdup(buffer, other);
-	      result_other = buffer_strdup(buffer, filename);
-	      clean_other = 1;
-	      csync_debug(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n",
-	    		  	  	  pl[pl_idx].peername, file, filename, other);
-	      other = 0;
-	    }
-	    // Run only once? 
-	    break; 
-	  } SQL_FIN {
-	} SQL_END;
-      }
-      SQL("Deleting old dirty file entries",
-	  "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
-	  db_encode(file_new),
-	  db_encode(pl[pl_idx].peername));
+	    SQL("Deleting old dirty file entries",
+		"DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
+		db_encode(file_new),
+		db_encode(pl[pl_idx].peername));
       
-      /* Delete other file dirty status if differs from file_new */
-      if (clean_other && result_other && strcmp(file_new, result_other)) {
-	SQL("Deleting old dirty file entries",
-	    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
-	    db_encode(result_other),
-	    db_encode(pl[pl_idx].peername));
-      }
-      if (dirty)
-      SQL("Marking File Dirty",
-	  "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode) "
-	  "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d)",
-	  db_encode(file_new),
-	  csync_new_force ? "1" : "0",
-	  db_encode(pl[pl_idx].myname),
-	  db_encode(pl[pl_idx].peername),
-	  csync_mode_op_str(mode, operation),
-	  db_encode(checktxt),
-	  (dev ? dev : "NULL"),
-	  (ino ? ino : "NULL"),
-	  csync_db_escape_quote((result_other ? result_other : other)),
-	  operation,
-	  mode
-	  );
+	    /* Delete other file dirty status if differs from file_new */
+	    if (clean_other && result_other && strcmp(file_new, result_other)) {
+		SQL("Deleting old dirty file entries",
+		    "DELETE FROM dirty WHERE filename = '%s' AND peername = '%s'",
+		    db_encode(result_other),
+		    db_encode(pl[pl_idx].peername));
+	    }
+	    if (dirty)
+		SQL("Marking File Dirty",
+		    "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode) "
+		    "VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d)",
+		    db_encode(file_new),
+		    csync_new_force ? "1" : "0",
+		    db_encode(pl[pl_idx].myname),
+		    db_encode(pl[pl_idx].peername),
+		    csync_mode_op_str(mode, operation),
+		    db_encode(checktxt),
+		    (dev ? dev : "NULL"),
+		    (ino ? ino : "NULL"),
+		    csync_db_escape_quote((result_other ? result_other : other)),
+		    operation,
+		    mode
+		    );
+	};
     };
-  };
-  free(pl);
-  buffer_destroy(buffer);
+    free(pl);
+    buffer_destroy(buffer);
 }
 
 void csync_mark(const char *file, const char *thispeer, const char *peerfilter, 
@@ -693,7 +695,7 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     operation_t operation = 0;
     char *other = 0; 
     SQL_BEGIN("Checking File",
-	      "SELECT checktxt, inode, device, digest FROM file WHERE "
+	      "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE "
 	      "filename = '%s' ", encoded)
     {
     	db_version = csync_get_checktxt_version(SQL_V(0));
@@ -706,8 +708,10 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     	const char *inode    = SQL_V(1);
     	const char *device   = SQL_V(2);
     	const char *digest_p = SQL_V(3);
-    	// const char *mtime  = SQL_V(3);
-    	// const char *type   = SQL_V(4);
+	long size;
+	long mtime;
+	SQL_V_long(4, &size);
+	SQL_V_long(5, &mtime);
     	int flag = 0;
     	if (strstr(checktxt_db, ":user=") != NULL)
     		flag |= SET_USER;
@@ -788,15 +792,16 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 	else {
 	    SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
 	    SQL("Adding or updating file entry",
-		"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size) "
-	    "VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu)",
+		"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
+		"VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu)",
 		encoded, 
 		checktxt_encoded,
 		dev,
 		file_stat->st_ino,
 		csync_db_quote(digest),
 		file_stat->st_mode, 
-		file_stat->st_size 
+		file_stat->st_size,
+		file_stat->st_mtim.tv_sec
 		);
 	}
 	if (!init_run && this_is_dirty) {
