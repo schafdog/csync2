@@ -96,13 +96,13 @@ static size_t strlcpy(char *d, const char *s, size_t bufsize)
  * make it easier to figure out what purpose a temp file is serving when a
  * transfer is in progress. */
 
-static int get_tmpname(char *fnametmp, const char *fname)
+static int get_tmpname(char *fnametmp, const char *fname, int make_unique)
 {
    int maxname, added, length = 0;
    const char *f;
    char *suf;
 
-   static unsigned counter_limit;
+   static unsigned counter_limit = 0; 
    unsigned counter;
 
    if ((f = strrchr(fname, '/')) != NULL) {
@@ -130,29 +130,30 @@ static int get_tmpname(char *fnametmp, const char *fname)
       added = maxname - 1;
    suf = fnametmp + length + added;
 
-   if (!counter_limit) {
-      counter_limit = (unsigned)getpid() + MAX_UNIQUE_LOOP;
-      if (counter_limit > MAX_UNIQUE_NUMBER || counter_limit < MAX_UNIQUE_LOOP)
-	 counter_limit = MAX_UNIQUE_LOOP;
-      
-      counter = counter_limit - MAX_UNIQUE_LOOP;
+   if (make_unique) {
+       if (!counter_limit) {
+	   counter_limit = (unsigned)getpid() + MAX_UNIQUE_LOOP;
+	   if (counter_limit > MAX_UNIQUE_NUMBER || counter_limit < MAX_UNIQUE_LOOP)
+	       counter_limit = MAX_UNIQUE_LOOP;
+       }
+       counter = counter_limit - MAX_UNIQUE_LOOP;
 
-      /* This doesn't have to be very good because we don't need
-       * to worry about someone trying to guess the values:  all
-       * a conflict will do is cause a device, special file, hard
-       * link, or symlink to fail to be created.  Also: avoid
-       * using mktemp() due to gcc's annoying warning. */
-      while (1) {
-	 snprintf(suf, TMPNAME_SUFFIX_LEN+1, ".%d", counter);
-	 if (access(fnametmp, 0) < 0)
-	    break;
-	 if (++counter >= counter_limit)
-	    return 0;
-      }
+       /* This doesn't have to be very good because we don't need
+	* to worry about someone trying to guess the values:  all
+	* a conflict will do is cause a device, special file, hard
+	* link, or symlink to fail to be created.  Also: avoid
+	* using mktemp() due to gcc's annoying warning. */
+       while (1) {
+	   snprintf(suf, TMPNAME_SUFFIX_LEN+1, ".%d", counter);
+	   if (access(fnametmp, 0) < 0)
+	       break;
+	   if (++counter >= counter_limit)
+	       return 0;
+       }
    } else
-      memcpy(suf, TMPNAME_SUFFIX, TMPNAME_SUFFIX_LEN+1);
+       memcpy(suf, TMPNAME_SUFFIX, TMPNAME_SUFFIX_LEN+1);
    
-  return 1;
+   return 1;
 }
 
 
@@ -166,7 +167,7 @@ static FILE *open_temp_file(char *fnametmp, const char *fname)
   FILE *f;
   int fd;
 
-  if (get_tmpname(fnametmp, fname) == 0) {
+  if (get_tmpname(fnametmp, fname, 1) == 0) {
     csync_debug(1, "ERROR: Couldn't find tempname for file %s\n", fname);
     return NULL;
   }
