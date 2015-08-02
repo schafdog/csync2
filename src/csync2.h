@@ -181,6 +181,7 @@ extern int csync_db_next(void *vmx, const char *err,
 		int *pN, const char ***pazValue, const char ***pazColName);
 extern void csync_db_fin(void *vmx, const char *err);
 extern const void * csync_db_colblob(void *stmtx,int col);
+extern long  csync_db_long(void *stmtx,int col, long *result);
 extern char *db_default_database(char *dbdir, char *myhostname, char *cfg_name);
 extern const char *csync_db_escape(const char *);
 extern const char *csync_db_quote(const char *filename); 
@@ -209,6 +210,10 @@ extern const char* (*db_encode) (const char *value);
 
 #define SQL_V(col) \
 	(csync_db_colblob(SQL_VM,(col)))
+
+#define SQL_V_long(col, result)			\
+    (csync_db_long(SQL_VM,(col), (result)))
+
 #define SQL_FIN }{
 
 #define SQL_END \
