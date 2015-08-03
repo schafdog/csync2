@@ -34,3 +34,5 @@ tests/test
 mkstemp
 version.h
 version.h.new
+digest
+Debug/
