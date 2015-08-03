@@ -789,7 +789,7 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 	if (is_upgrade) {
 	    SQL("Update file entry",
 		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s, mode=%lu, mtime=%lu, size=%lu where filename = '%s'",
-		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest), file_stat->st_mode, file_stat->st_mtim.tv_sec, file_stat->st_size, encoded);
+		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest), file_stat->st_mode, file_stat->st_mtime, file_stat->st_size, encoded);
 	}
 	else {
 	    SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
@@ -803,7 +803,7 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 		csync_db_quote(digest),
 		file_stat->st_mode, 
 		file_stat->st_size,
-		file_stat->st_mtim.tv_sec
+		file_stat->st_mtime
 		);
 	}
 	if (!init_run && this_is_dirty) {
