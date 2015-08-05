@@ -167,12 +167,13 @@ static FILE *open_temp_file(char *fnametmp, const char *fname)
   FILE *f;
   int fd;
 
-  if (get_tmpname(fnametmp, fname, 1) == 0) {
+  if (get_tmpname(fnametmp, fname, 0) == 0) {
     csync_debug(1, "ERROR: Couldn't find tempname for file %s\n", fname);
     return NULL;
   }
 
   f = NULL;
+  //fd = mkstemp(fnametmp); 
   fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
   if (fd >= 0) {
     f = fdopen(fd, "wb+");
@@ -197,7 +198,7 @@ static FILE *paranoid_tmpfile()
   char *template = "csync2.XXXXXX";
   char *name =  strdup(template);
   fd = mkstemp(name);
-
+  
   //fd = open(name, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR); */
   if (fd >= 0) {
     f = fdopen(fd, "wb+");
