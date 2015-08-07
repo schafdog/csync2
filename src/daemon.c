@@ -107,7 +107,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	else {
 	    csync_debug(1, "File %s is dirty here: %s %d\n", filename, operation_str, operation);
 	}
-	*cmd_error = "File is also marked dirty here!";
+	*cmd_error = ERROR_DIRTY_STR;
 	// Already checked in single_file
 	if (0 && !rc && operation && peername) {
 	    //csync_debug(0, "check dirty: peername %s \n", peername);
@@ -374,7 +374,7 @@ struct csync_command cmdtab[] = {
 	{ "settime",	1, 0, 0, 2, 1, A_SETTIME},
 	{ "list",	0, 0, 0, 0, 1, A_LIST	},
 #if 1
-	{ "debug",	0, 0, 0, 0, 1, A_DEBUG	},
+	{ "debug",	0, 0, 0, 0, 0, A_DEBUG	},
 #endif
 	{ "group",	0, 0, 0, 0, 0, A_GROUP	},
 	{ "hello",	0, 0, 0, 0, 0, A_HELLO	},
@@ -1116,10 +1116,15 @@ int csync_daemon_dispatch(char *filename,
     csync_daemon_list(filename, tag, *peername);
     break;
   case A_DEBUG:
-    csync_debug(0, "DEBUG from %s \n", *peername); 
-    csync_debug_out = stdout;
-    if ( tag[1][0] )
-      csync_debug_level = atoi(tag[1]);
+      csync_debug(1, "DEBUG from %s %s\n", *peername, tag[1]);
+    // csync_debug_out = stdout;
+    int client_debug_level = 0;
+    if (tag[1][0])
+	client_debug_level = atoi(tag[1]);
+    if (client_debug_level > csync_debug_level) {
+	csync_debug(1, "Increasing %s DEBUG level to %s\n", *peername, tag[1]);
+	csync_debug_level = client_debug_level;
+    }
     break;
   case A_HELLO:
     *cmd_error = csync_daemon_hello(peername, peeraddr, tag[1]);
