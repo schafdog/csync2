@@ -336,10 +336,9 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
 	if (conn < 0) 
 	    goto error;
 
-
 	struct timeval tv;
 
-	tv.tv_sec = 60;
+	tv.tv_sec = 10;
 	tv.tv_usec = 0 ;
 	/* Not working for inet, but conn now uses select to detect data */
 	if (setsockopt(*conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof tv))
@@ -858,8 +857,9 @@ nofork:
 	else {
 	    conn_set(conn,dup(conn));
 	}
-	if ( !conn_gets(line, 4096) ) 
-	    return 0;
+	if ( !conn_gets(line, 4096) ) {
+	    goto handle_error;
+	}
 	cmd = strtok(line, "\t \r\n");
 	para = cmd ? strtok(0, "\t \r\n") : 0;
 	  
@@ -868,18 +868,20 @@ nofork:
 	    conn_printf("OK (activating_ssl).\n");
 	    conn_activate_ssl(1);
 	    
-	    if ( !conn_gets(line, 4096) ) return 0;
+	    if ( !conn_gets(line, 4096) ) {
+		goto handle_error;
+	    }
 	    cmd = strtok(line, "\t \r\n");
 	    para = cmd ? strtok(0, "\t \r\n") : 0;
 #else
 	    conn_printf("This csync2 server is built without SSL support.\n");
-	    return 0;
+	    goto handle_error;
 #endif
 	}
 
 	if (!cmd || strcasecmp(cmd, "config")) {
 	    conn_printf("Expecting SSL (optional) and CONFIG as first commands.\n");
-	    return 0;
+	    goto handle_error;
 	}
 	  
 	if (para)
@@ -901,7 +903,7 @@ nofork:
 		    conn_printf(error);
 		else
 		    csync_fatal(error);
-		return !(mode & MODE_INETD);
+		goto handle_error;
 	    }
 
 	ASPRINTF(&file_config, ETCDIR "/csync2_%s.cfg", cfgname);
@@ -1251,10 +1253,13 @@ nofork:
 	free(active_peers);
     }
     if (csync_server_child_pid ) {
-	csync_debug(1, "Connection closed.\n");
+	csync_debug(1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
-	if (mode == MODE_NOFORK)
+	if (mode & MODE_NOFORK) {
+	    csync_debug(0, "goto nofork");
 	    goto nofork;
+	}
+	
     }
 
     if ( csync_error_count != 0 || (csync_messages_printed && csync_debug_level) ) {
@@ -1268,5 +1273,10 @@ nofork:
     if ( retval >= 0 && csync_error_count == 0 ) 
 	return retval;
     return csync_error_count != 0;
+
+handle_error:
+    if (mode == MODE_NOFORK)
+	goto nofork;
+    return 0;
 }
 
