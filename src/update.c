@@ -436,7 +436,7 @@ int csync_update_file_del(const char *myname, const char *peername, const char *
 
     // Run max twice.
     while (1) {
-	csync_debug(1, "Deleting %s:%s %s\n", peername, filename, auto_resolve_run ? "(autoresolve)" : "");
+	csync_debug(1, "Deleting %s:%s%s\n", peername, filename, auto_resolve_run ? " (autoresolve)" : "");
 	if ( force || auto_resolve_run) {
 	    if ( dry_run ) {
 		csync_debug(1, "!D: %-15s %s\n", peername, filename);
