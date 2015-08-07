@@ -1,0 +1,21 @@
+daemon d PEER
+clean local
+clean peer
+rm -rf test/local
+cmd x "clean"
+mkdir -p test/local/auto/younger
+cmd c "3 create directories (check)"
+cmd u "4 create directories (update)"
+sleep 1
+echo "local new" > test/local/auto/younger/update_both
+sleep 1
+echo "peer younger" > test/peer/auto/younger/update_both
+cmd c "5 Check local (autoresolve failed)"
+cmd u "6 Fail to autoresolve (not yonger)"
+sleep 1
+echo "Now younger" > test/local/auto/younger/update_both
+cmd c "7 Check local (autoresolve)"
+cmd u "8 Update auto (younger)"
+rm -rf test/local/younger
+cmd x "9 clean (younger)"
+killdaemon d PEER
