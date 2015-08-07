@@ -86,6 +86,8 @@ enum {
 };
 
 #define DEFAULT_PORT "30865" 
+#define ERROR_DIRTY_STR "File is also marked dirty here!"
+#define ERROR_DIRTY_LEN ((int)sizeof ERROR_DIRTY_STR - 1)
 
 #define csync_fatal(fmt, ...) {\
   csync_debug(0,fmt, ##__VA_ARGS__);\
@@ -417,7 +419,7 @@ static inline int textlist_in_list(struct textlist *listhandle, const char *item
 static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
 {
     if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem)) {
-	textlist_add4(listhandle, item, 0, 0, 0, intitem);
+	textlist_add(listhandle, item, intitem);
 	csync_debug(3, "Adding textlist_add_new: %s\n", item);
     }
     else {
@@ -433,6 +435,17 @@ static inline void textlist_add2(struct textlist **listhandle, const char *item,
 static inline void textlist_add3(struct textlist **listhandle, const char *item, const char *item2, const char *item3, int intitem)
 {
   textlist_add4(listhandle, item, item2, item3, 0, intitem);
+}
+
+static inline void textlist_add_new3(struct textlist **listhandle, const char *filename, const char *checktxt, const char *operation)
+{
+    if (!(*listhandle) || !textlist_in_list(*listhandle, filename, 0)) {
+	textlist_add3(listhandle, filename, checktxt, operation, 0);
+	csync_debug(3, "Adding textlist_add_new3: %s\n", filename);
+    }
+    else {
+      csync_debug(3, "Skipping textlist_add_new3: %s\n", filename);
+  }
 }
 
 static inline void textlist_free(struct textlist *listhandle)
@@ -553,7 +566,6 @@ enum CSYNC_AUTO_METHOD {
 
 	CSYNC_AUTO_METHOD_LEFT_RIGHT_LOST
 };
-
 
 /* global variables */
 
