@@ -413,32 +413,32 @@ static inline int WRITE(const void *buf, size_t count)
 
 int conn_raw_read(void *buf, size_t count)
 {
-	static char buffer[512];
-	static int buf_start=0, buf_end=0;
+    static char buffer[512];
+    static int buf_start=0, buf_end=0;
 
-	if ( buf_start == buf_end ) {
-		if (count > 128)
-			return READ(buf, count);
-		else {
-			buf_start = 0;
-			buf_end = READ(buffer, 512);
-			if (buf_end < 0) { 
-			  buf_end=0; 
-			  return -1; 
-			}
-		}
+    if ( buf_start == buf_end ) {
+	if (count > 128)
+	    return READ(buf, count);
+	else {
+	    buf_start = 0;
+	    buf_end = READ(buffer, 512);
+	    if (buf_end < 0) { 
+		buf_end=0; 
+		return -1; 
+	    }
 	}
+    }
 
-	if ( buf_start < buf_end ) {
-		size_t real_count = buf_end - buf_start;
-		if ( real_count > count ) real_count = count;
+    if ( buf_start < buf_end ) {
+	size_t real_count = buf_end - buf_start;
+	if ( real_count > count ) real_count = count;
 
-		memcpy(buf, buffer+buf_start, real_count);
-		buf_start += real_count;
+	memcpy(buf, buffer+buf_start, real_count);
+	buf_start += real_count;
 
-		return real_count;
-	}
-	return 0;
+	return real_count;
+    }
+    return 0;
 }
 
 void conn_debug(const char *name, const char*buf, size_t count)
@@ -480,17 +480,21 @@ int conn_read_get_content_length(long *size)
    return rc;
 }
 
+/* Rewritten not to mask errors */ 
 int conn_read(void *buf, size_t count)
 {
-	int pos, rc;
+    int pos, rc;
 
-	for (pos=0; pos < count; pos+=rc) {
-		rc = conn_raw_read(buf+pos, count-pos);
-		if (rc <= 0) return pos;
-	}
-
-	//	conn_debug(active_peer, buf, pos);
-	return pos;
+    for (pos=0; pos < count ; pos+=rc) {
+	rc = conn_raw_read(buf+pos, count-pos);
+	if (rc < 0)
+	    return rc;
+	/* End of file */
+	if (rc == 0)
+	    break;
+    }
+    //	conn_debug(active_peer, buf, pos);
+    return pos;
 }
 
 int conn_write(const void *buf, size_t count)
@@ -573,23 +577,25 @@ void conn_printf_cmd_filepath(const char *cmd, const char *file, const char *key
 
 size_t conn_gets_newline(char *s, size_t size, int remove_newline)
 {
-	size_t i=0;
-
-	while (i<size-1) {
-		int rc = conn_raw_read(s+i, 1);
-		if (rc != 1) 
-		  break;
-		if (s[i++] == '\n') {
-		  if (remove_newline)
-		    i--;
-		  break;
-		}
+    size_t i=0;
+    int rc = 0;
+    while (i<size-1) {
+	rc = conn_raw_read(s+i, 1);
+	if (rc != 1) 
+	    break;
+	if (s[i++] == '\n') {
+	    if (remove_newline)
+		i--;
+	    break;
 	}
-	s[i] = 0;
-
-	//	conn_debug(active_peer, s, i);
-	csync_debug(2, "CONN %s > %s\n", active_peer, s);
-	return i;
+    }
+    s[i] = 0;
+    if (rc == -1) {
+	csync_debug(0, "CONN %s > %s failed with error %s \n", active_peer, s, strerror(errno));
+    }
+    //	conn_debug(active_peer, s, i);
+    csync_debug(2, "CONN %s > %s\n", active_peer, s);
+    return i;
 }
 
 
