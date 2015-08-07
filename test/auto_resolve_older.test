@@ -3,19 +3,22 @@ clean local
 clean peer
 rm -rf test/local
 cmd x "clean"
-mkdir -p test/local/auto/older
+TEST=older
+DIR=test/local/auto/${TEST}
+PDIR=test/peer/auto/${TEST}
+mkdir -p ${DIR}
 cmd c "3 create directories (check)"
 cmd u "4 create directories (update)"
 sleep 1
-echo "peer older" > test/peer/auto/older/update_both
+echo "peer older" > ${PDIR}/update_both
 sleep 1
-echo "local younger" > test/local/auto/older/update_both
+echo "local younger" > ${DIR}/update_both
 cmd c "5 Check local (autoresolve failed)"
 cmd u "6 Fail to autoresolve (not older)"
 sleep 1
-echo "Now older" > test/peer/auto/older/update_both
-cmd c "7 Check local (older)"
+echo "peer younger" > ${PDIR}/update_both
+cmd c "7 Check local (${TEST})"
 cmd u "9 Update auto (older success)"
-rm -rf test/local/older
-cmd x "9 clean (older)"
+rm -rf test/local
+cmd x "9 clean (${TEST})"
 killdaemon d PEER
