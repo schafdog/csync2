@@ -199,7 +199,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 		    const char *old_op_str = SQL_V(3);
 		    int old_op   = (old_op_str ? atoi(old_op_str) : 0);
 	    
-		    csync_debug(1, "mark other: Old operation: %s '%s' '%s' \n",
+		    csync_debug(1, "mark other: Old operation: %s '%s' '%s'\n",
 				csync_mode_op_str(mode, old_op), filename, other);
 		    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(&st_file, filename)) {
 			csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", pl[pl_idx].peername, file, filename);
@@ -583,7 +583,7 @@ struct textlist *csync_check_link_move(const char *peername, const char *filenam
     	const char *db_filename = t->value;
     	const char *db_checktxt = t->value2;
     	const char *db_operation = t->value3;
-	csync_debug(1, "check_link_move:  DB file: %s %s: %d\n", db_filename, db_operation, operation);
+	csync_debug(2, "check_link_move:  DB file: %s %s: %d\n", db_filename, db_operation, operation);
     	int rc = stat(db_filename, &file_stat);
     	int db_version = csync_get_checktxt_version(db_checktxt);
     	int i = 0;
