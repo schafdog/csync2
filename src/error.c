@@ -93,7 +93,16 @@ void csync_printtime_prefix()
 }
 
 int csync_syslog_priority(int level) {
-  return level + 3;
+    switch (level) {
+    case -1:
+	return LOG_CRIT;
+    case 0:
+	return LOG_ERR;
+    case 1:
+	return LOG_INFO;
+    default:
+	return LOG_DEBUG;
+    }
 }
 
 void csync_fatal2(const char *fmt, ...)
