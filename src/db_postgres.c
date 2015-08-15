@@ -60,25 +60,25 @@ static void *dl_handle;
 
 static void db_postgres_dlopen(void)
 {
-        csync_debug(1, "Opening shared library %s\n", SO_FILE);
+    csync_debug(3, "Opening shared library %s\n", SO_FILE);
 
-        dl_handle = dlopen(SO_FILE, RTLD_LAZY);
-        if (dl_handle == NULL) {
-                csync_fatal("Could not open libpq.so: %s\nPlease install postgres client library (libpg) or use other database (sqlite, mysql)\n", dlerror());
-        }
-	csync_debug(1, "Reading symbols from shared library libpq.so\n");
+    dl_handle = dlopen(SO_FILE, RTLD_LAZY);
+    if (dl_handle == NULL) {
+	csync_fatal("Could not open libpq.so: %s\nPlease install postgres client library (libpg) or use other database (sqlite, mysql)\n", dlerror());
+    }
+    csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
 
-        LOOKUP_SYMBOL(dl_handle, PQconnectdb);
-        LOOKUP_SYMBOL(dl_handle, PQstatus);
-        LOOKUP_SYMBOL(dl_handle, PQerrorMessage);
-        LOOKUP_SYMBOL(dl_handle, PQfinish);
-        LOOKUP_SYMBOL(dl_handle, PQexec);
-        LOOKUP_SYMBOL(dl_handle, PQresultStatus);
-        LOOKUP_SYMBOL(dl_handle, PQresultErrorMessage);
-        LOOKUP_SYMBOL(dl_handle, PQclear);
-        LOOKUP_SYMBOL(dl_handle, PQntuples);
-        LOOKUP_SYMBOL(dl_handle, PQgetvalue);
-        LOOKUP_SYMBOL(dl_handle, PQescapeStringConn);
+    LOOKUP_SYMBOL(dl_handle, PQconnectdb);
+    LOOKUP_SYMBOL(dl_handle, PQstatus);
+    LOOKUP_SYMBOL(dl_handle, PQerrorMessage);
+    LOOKUP_SYMBOL(dl_handle, PQfinish);
+    LOOKUP_SYMBOL(dl_handle, PQexec);
+    LOOKUP_SYMBOL(dl_handle, PQresultStatus);
+    LOOKUP_SYMBOL(dl_handle, PQresultErrorMessage);
+    LOOKUP_SYMBOL(dl_handle, PQclear);
+    LOOKUP_SYMBOL(dl_handle, PQntuples);
+    LOOKUP_SYMBOL(dl_handle, PQgetvalue);
+    LOOKUP_SYMBOL(dl_handle, PQescapeStringConn);
 }
 
 

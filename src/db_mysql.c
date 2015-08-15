@@ -61,27 +61,28 @@ static void *dl_handle;
 
 static void db_mysql_dlopen(void)
 {
-  csync_debug(2, "Opening shared library %s\n", SO_FILE);
-        dl_handle = dlopen(SO_FILE, RTLD_LAZY);
-        if (dl_handle == NULL) {
-                csync_fatal("Could not open libmysqlclient.so: %s\nPlease install Mysql client library (libmysqlclient) or use other database (sqlite, postgres)\n", dlerror());
-        }
+    csync_debug(3, "Opening shared library %s\n", SO_FILE);
+    dl_handle = dlopen(SO_FILE, RTLD_LAZY);
+    if (dl_handle == NULL) {
+	csync_fatal("Could not open libmysqlclient.so: %s\nPlease install Mysql client library (libmysqlclient) or use other database (sqlite, postgres)\n",
+		    dlerror());
+    }
 
-	csync_debug(1, "Reading symbols from shared library libmysqlclient.so\n");
+    csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
 
-        LOOKUP_SYMBOL(dl_handle, mysql_init);
-        LOOKUP_SYMBOL(dl_handle, mysql_real_connect);
-        LOOKUP_SYMBOL(dl_handle, mysql_errno);
-        LOOKUP_SYMBOL(dl_handle, mysql_query);
-        LOOKUP_SYMBOL(dl_handle, mysql_close);
-        LOOKUP_SYMBOL(dl_handle, mysql_error);
-        LOOKUP_SYMBOL(dl_handle, mysql_store_result);
-        LOOKUP_SYMBOL(dl_handle, mysql_num_fields);
-        LOOKUP_SYMBOL(dl_handle, mysql_fetch_row);
-        LOOKUP_SYMBOL(dl_handle, mysql_free_result);
-        LOOKUP_SYMBOL(dl_handle, mysql_warning_count);
-	LOOKUP_SYMBOL(dl_handle, mysql_real_escape_string);
-	//LOOKUP_SYMBOL(dl_handle, mysql_library_end);
+    LOOKUP_SYMBOL(dl_handle, mysql_init);
+    LOOKUP_SYMBOL(dl_handle, mysql_real_connect);
+    LOOKUP_SYMBOL(dl_handle, mysql_errno);
+    LOOKUP_SYMBOL(dl_handle, mysql_query);
+    LOOKUP_SYMBOL(dl_handle, mysql_close);
+    LOOKUP_SYMBOL(dl_handle, mysql_error);
+    LOOKUP_SYMBOL(dl_handle, mysql_store_result);
+    LOOKUP_SYMBOL(dl_handle, mysql_num_fields);
+    LOOKUP_SYMBOL(dl_handle, mysql_fetch_row);
+    LOOKUP_SYMBOL(dl_handle, mysql_free_result);
+    LOOKUP_SYMBOL(dl_handle, mysql_warning_count);
+    LOOKUP_SYMBOL(dl_handle, mysql_real_escape_string);
+    //LOOKUP_SYMBOL(dl_handle, mysql_library_end);
 }
 
 

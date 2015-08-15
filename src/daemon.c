@@ -75,11 +75,11 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
     const char *operation_str = NULL;
     int operation = 0;
     int mode = 0;
-    csync_debug(1, "check_dirty_daemon: %s\n", filename);
+    csync_debug(2, "check_dirty_daemon: %s\n", filename);
 
     // Returns newly marked dirty, so we cannot use it bail out.
     int markedDirty = csync_check_single(filename, 0, version);
-    csync_debug(1, "check_dirty_daemon: just marked dirty %s %d\n", filename, markedDirty);
+    csync_debug(2, "check_dirty_daemon: just marked dirty %s %d\n", filename, markedDirty);
     
     if (isflush)
     	return 0;
@@ -95,7 +95,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 
     // Found dirty
     if (rc == 1) {
-	csync_debug(1, "check_dirty_daemon: peer operation  %s %s %s\n",
+	csync_debug(2, "check_dirty_daemon: peer operation  %s %s %s\n",
 				peername, filename, csync_operation_str(operation));
 	
 	if (operation == OP_MOD && S_ISDIR(mode)) {
@@ -174,7 +174,7 @@ int csync_file_backup(const char *filename, const char **cmd_error)
       rc =  stat(filename, &buf);
       csync_debug(4, "backup %s %d \n", filename, rc);
       if (rc != 0) {
-	csync_debug(1, "Nothing to backup: %s. New file?\n", filename);
+	csync_debug(0, "Nothing to backup: %s. New file?\n", filename);
 	return 0;
       }
 	    
@@ -1046,22 +1046,22 @@ int csync_daemon_dispatch(char *filename,
   }
   case A_MKDIR: {
     int rc = csync_daemon_mkdir(filename, cmd_error);
-    csync_debug(1, "mkdir %s rc = %d errno = %d err = %s\n", filename, rc, errno, (*cmd_error ? *cmd_error : ""));
+    csync_debug(2, "mkdir %s rc = %d errno = %d err = %s\n", filename, rc, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
     // fall through on OK
   } 
   case A_MOD: {
     int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
-    csync_debug(1, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n", filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
+    csync_debug(2, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n", filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
     rc = csync_daemon_setmod(filename, mod, cmd_error);
-    csync_debug(1, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, mod, errno, (*cmd_error ? *cmd_error : ""));
+    csync_debug(2, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, mod, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
       return rc;
     rc = csync_daemon_settime(filename, time, cmd_error);
-    csync_debug(1, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
+    csync_debug(2, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
     if (rc  != OK)
       return rc;
     return IDENTICAL;
@@ -1116,7 +1116,7 @@ int csync_daemon_dispatch(char *filename,
     csync_daemon_list(filename, tag, *peername);
     break;
   case A_DEBUG:
-      csync_debug(1, "DEBUG from %s %s\n", *peername, tag[1]);
+      csync_debug(2, "DEBUG from %s %s\n", *peername, tag[1]);
     // csync_debug_out = stdout;
     int client_debug_level = 0;
     if (tag[1][0])
@@ -1237,7 +1237,7 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
 	  
       if (rc == OK || rc ==  IDENTICAL) {
 	 // check updates done
-	 csync_debug(1, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" )); 
+	 csync_debug(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" )); 
 	 csync_daemon_check_update(filename, otherfile, cmd, peername, db_version);
       }
       else if (rc == NEXT_CMD){
