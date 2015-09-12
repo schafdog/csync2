@@ -258,13 +258,13 @@ int db_sqlite_upgrade_to_schema(int version)
 
 	csync_db_sql("Creating file table",
 		"CREATE TABLE file ("
-		"	filename, checktxt, device, inode, status, digest, "
+		"	filename, checktxt, device, inode, size, digest, mode, mtime, type"
 		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
 		")");
 
 	csync_db_sql("Creating dirty table",
 		"CREATE TABLE dirty ("
-		"	filename, forced, myname, peername, operation, device, inode, other"
+		"	filename, forced, myname, peername, operation, device, inode, other, digest, mode, mtime, type"
 		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
 		")");
 
