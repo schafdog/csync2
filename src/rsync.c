@@ -319,19 +319,16 @@ int csync_rs_check(const char *filename, int isreg)
   rs_stats_t stats;
   rs_result result;
   long size;
-  char tmpfname[MAXPATHLEN];
 
   csync_debug(3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n",
 	      filename, isreg, isreg ? "regular file" : "non-regular file");
 
   csync_debug(3, "Opening basis_file and sig_file..\n");
 
-  /* sig_file = open_temp_file(tmpfname, prefixsubst(filename)); */
   sig_file = paranoid_tmpfile();
   /* if ( !sig_file ) 
         return rsync_check_io_error(...);
   */
-  // unlink(tmpfname);
 
   if ( isreg ) {
     basis_file = fopen(filename, "rb");
@@ -415,21 +412,17 @@ void csync_rs_sig(const char *filename)
   FILE *basis_file = 0, *sig_file = 0;
   rs_stats_t stats;
   rs_result result;
-  char tmpfname[MAXPATHLEN];
   
   csync_debug(3, "Csync2 / Librsync: csync_rs_sig('%s')\n", filename);
 
   csync_debug(3, "Opening basis_file and sig_file..\n");
 	
-  sig_file = open_temp_file(tmpfname, filename);
+  sig_file = paranoid_tmpfile();
   if ( !sig_file ) {
     rsync_check_io_error(errno, filename, basis_file, sig_file, 0);
     return ; 
   }
-  if (unlink(tmpfname) < 0) {
-    rsync_check_io_error(errno, filename, basis_file, sig_file, 0);
-    return ;
-  }
+
   basis_file = fopen(filename, "rb");
   if ( !basis_file ) 
     basis_file = fopen("/dev/null", "rb");
@@ -474,17 +467,14 @@ int csync_rs_delta(const char *filename)
   rs_result result;
   rs_signature_t *sumset;
   rs_stats_t stats;
-  char tmpfname[MAXPATHLEN];
 
   csync_debug(3, "Csync2 / Librsync: csync_rs_delta('%s')\n", filename);
 
   csync_debug(3, "Receiving sig_file from peer..\n");
-  sig_file = open_temp_file(tmpfname, filename);
+  sig_file = paranoid_tmpfile();
   if ( !sig_file ) 
     return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
-  if (unlink(tmpfname) < 0) 
-    return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
-  
+
   if ( csync_recv_file(sig_file) ) {
     fclose(sig_file);
     return -1;
@@ -505,10 +495,8 @@ int csync_rs_delta(const char *filename)
     return -1;
   }
 
-  delta_file = open_temp_file(tmpfname, filename);
+  delta_file = paranoid_tmpfile();
   if ( !delta_file )
-    return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
-  if (unlink(tmpfname) < 0) 
     return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
 
   csync_debug(3, "Running rs_build_hash_table() from librsync..\n");
@@ -546,18 +534,14 @@ int csync_rs_patch(const char *filename)
   rs_stats_t stats;
   rs_result result;
   char *errstr = "?";
-  char tmpfname[MAXPATHLEN], newfname[MAXPATHLEN];
+  char newfname[MAXPATHLEN];
 
   csync_debug(3, "Csync2 / Librsync: csync_rs_patch('%s')\n", filename);
 
   csync_debug(3, "Receiving delta_file from peer..\n");
-  delta_file = open_temp_file(tmpfname, filename);
+  delta_file = paranoid_tmpfile();
   if ( !delta_file ) { 
     errstr="creating delta temp file"; 
-    return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
-  }
-  if (unlink(tmpfname) < 0) { 
-    errstr="removing delta temp file"; 
     return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
   }
   if ( csync_recv_file(delta_file) ) 
@@ -566,13 +550,9 @@ int csync_rs_patch(const char *filename)
   csync_debug(3, "Opening to be patched file on local host..\n");
   basis_file = fopen(filename, "rb");
   if ( !basis_file ) {
-    basis_file = open_temp_file(tmpfname, filename);
+    basis_file = paranoid_tmpfile();
     if ( !basis_file ) { 
       errstr="opening data file for reading"; 
-      return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
-    }
-    if (unlink(tmpfname) < 0) { 
-      errstr="removing data temp file"; 
       return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
     }
   }
