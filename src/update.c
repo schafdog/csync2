@@ -1304,13 +1304,17 @@ void csync_update_host(const char *myname, const char *peername,
 	    csync_debug(1, "File %s has disappeared since check. (%s) \n", t->value, csync_operation_str(t->operation));
 	    SQL("Remove disappeared file from file db",
 		"DELETE FROM file WHERE filename = '%s'", db_encode(t->value));
-	    
 	}
-	/* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
-	csync_debug(3, "Dirty (deleted) item %s %s %d\n", t->value, t->value2, t->intvalue);
-	*last_tn = next_t;
-	t->next = tl_del;
-	tl_del = t;
+	if (t->operation != OP_NEW) {
+	    /* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
+	    csync_debug(3, "Dirty (deleted) item %s %s %d\n", t->value, t->value2, t->intvalue);
+	    *last_tn = next_t;
+	    t->next = tl_del;
+	    tl_del = t;
+	}
+	else {
+	    csync_debug(1, "Skipping delete on %s:%s (%s) \n", peername, t->value, csync_operation_str(t->operation));
+	}
     }
   }
   textlist_free(tl);
