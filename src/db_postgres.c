@@ -437,14 +437,16 @@ int db_postgres_upgrade_to_schema(int version)
 		     "  operation varchar(100)  DEFAULT NULL,"
 		     "  op 	  int	  	DEFAULT NULL,"
 		     "  other     varchar(%u)   DEFAULT NULL,"
-		     "  mode   int             DEFAULT NULL,"
+		     "  mode   int              DEFAULT NULL,"
+		     "  mtime  int    	        DEFAULT NULL,"
+		     "  type   int    	        DEFAULT NULL,"
 		     "  file_id   bigint        DEFAULT NULL,"
 		     "  UNIQUE (filename,peername)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql("Creating file table",
 		     "CREATE TABLE file ("
-		     //		     "  id     serial                      ,"
+//		     "  id     serial                      ,"
 		     "  parent bigint          DEFAULT NULL,"
 		     "  filename varchar(%u)   DEFAULT NULL,"
 		     "  basename varchar(%u)   DEFAULT NULL,"
@@ -454,6 +456,8 @@ int db_postgres_upgrade_to_schema(int version)
 		     "  inode  bigint          DEFAULT NULL,"
 		     "  size   bigint          DEFAULT NULL,"
 		     "  mode   int             DEFAULT NULL,"
+		     "  mtime  int    	       DEFAULT NULL,"
+		     "  type   int    	       DEFAULT NULL,"
 		     "  digest varchar(130)    DEFAULT NULL,"
 		     //		     "  UNIQUE (id),"
 		     "  UNIQUE (filename)"
