@@ -1,5 +1,4 @@
 cmd u "update: Delete email: ln Maildir/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S Maildir/.Trash/cur/1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S. mv 1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,S 1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764:2,ST" local
-Reading symbols from shared library libmysqlclient.so
 Connecting to host peer (PLAIN) ...
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' MOD_DIR ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur

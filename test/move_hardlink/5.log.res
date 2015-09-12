@@ -1,5 +1,4 @@
 cmd u "5 Read and deleted (update)" local
-Reading symbols from shared library libmysqlclient.so
 Connecting to host peer (PLAIN) ...
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' MOD_DIR ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur

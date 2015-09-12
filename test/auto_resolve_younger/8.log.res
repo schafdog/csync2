@@ -1,5 +1,4 @@
 cmd u "8 Update auto (younger)" local
-Reading symbols from shared library libmysqlclient.so
 Connecting to host peer (PLAIN) ...
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' NEW ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both

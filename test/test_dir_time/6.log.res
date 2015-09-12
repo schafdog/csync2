@@ -1,5 +1,4 @@
 cmd u "New dir timestamp (update)" local
-Reading symbols from shared library libmysqlclient.so
 Connecting to host peer (PLAIN) ...
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' MOD_DIR ''
 Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr' MOD_DIR ''
