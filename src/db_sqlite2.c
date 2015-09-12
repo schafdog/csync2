@@ -213,45 +213,8 @@ int db_sqlite2_stmt_close(db_stmt_p stmt)
 
 int db_sqlite2_upgrade_to_schema(int version)
 {
-	if (version < 0)
-		return DB_OK;
-
-	if (version > 0)
-		return DB_ERROR;
-
-	csync_debug(2, "Upgrading database schema to version %d.\n", version);
-
-	csync_db_sql("Creating file table",
-		"CREATE TABLE file ("
-		"	filename, checktxt,"
-		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
-		")");
-
-	csync_db_sql("Creating dirty table",
-		"CREATE TABLE dirty ("
-		"	filename, forced, myname, peername,"
-		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
-		")");
-
-	csync_db_sql("Creating hint table",
-		"CREATE TABLE hint ("
-		"	filename, recursive,"
-		"	UNIQUE ( filename, recursive ) ON CONFLICT IGNORE"
-		")");
-
-	csync_db_sql("Creating action table",
-		"CREATE TABLE action ("
-		"	filename, command, logfile,"
-		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
-		")");
-
-	csync_db_sql("Creating x509_cert table",
-		"CREATE TABLE x509_cert ("
-		"	peername, certdata,"
-		"	UNIQUE ( peername ) ON CONFLICT IGNORE"
-		")");
-
-	return DB_OK;
+    /* Works a long as we don't use sqlite3 features */
+    return db_sqlite_upgrade_to_schema(version);
 }
 
 
