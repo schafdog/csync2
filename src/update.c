@@ -1300,7 +1300,13 @@ void csync_update_host(const char *myname, const char *peername,
 	    textlist_add_new(&directory_list, t->value, 0);
 	last_tn=&(t->next);
     } else {
-	/* Reverse order (deepest first when deleting. otherwise we need recursive deleting */
+	if (t->operation != OP_RM) {
+	    csync_debug(1, "File %s has disappeared since check. (%s) \n", t->value, csync_operation_str(t->operation));
+	    SQL("Remove disappeared file from file db",
+		"DELETE FROM file WHERE filename = '%s'", db_encode(t->value));
+	    
+	}
+	/* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
 	csync_debug(3, "Dirty (deleted) item %s %s %d\n", t->value, t->value2, t->intvalue);
 	*last_tn = next_t;
 	t->next = tl_del;
