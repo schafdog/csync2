@@ -72,7 +72,6 @@ void csync_file_flush(const char *filename)
 int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
 {
     int rc = 0;
-    const char *operation_str = NULL;
     int operation = 0;
     int mode = 0;
     csync_debug(2, "check_dirty_daemon: %s\n", filename);
@@ -84,13 +83,12 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
     if (isflush)
     	return 0;
     SQL_BEGIN("Check if file is dirty",
-	      "SELECT operation, op, mode FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
+	      "SELECT op, mode FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
 	      db_encode(filename), db_encode(peername))
     {
     	rc = 1;
-    	operation_str = SQL_V(0);
-    	operation = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
-    	mode = (SQL_V(2) ? atoi(SQL_V(2)) : 0);
+    	operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
+    	mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
     } SQL_END;
 
     // Found dirty
@@ -105,7 +103,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 	    return 0;
 	}
 	else {
-	    csync_debug(1, "File %s is dirty here: %s %d\n", filename, operation_str, operation);
+	    csync_debug(1, "File %s is dirty here: %s %d\n", filename, csync_operation_str(operation), operation);
 	}
 	*cmd_error = ERROR_DIRTY_STR;
 	// Already checked in single_file
