@@ -1314,6 +1314,8 @@ void csync_update_host(const char *myname, const char *peername,
 	}
 	else {
 	    csync_debug(1, "Skipping delete on %s:%s (%s) \n", peername, t->value, csync_operation_str(t->operation));
+	    int auto_resolve_run = 0;
+	    csync_clear_dirty(peername, t->value, auto_resolve_run);
 	}
     }
   }
