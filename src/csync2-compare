@@ -14,14 +14,19 @@ fi
 
 left1="${1%@*}"
 left2="${1#*@}"
-
+if [ "$left2" != "-" ] ; then
+    LEFT_HOST="-P $left2"
+fi
 right1="${2%@*}"
 right2="${2#*@}"
+if [ "$right2" != "-" ] ; then
+    RIGHT_HOST="-P $right2"
+fi
 
 basedir="$3"
 
-left_cmd="ssh $left1 'csync2 -or $basedir -P $right2 | sort | xargs md5sum'"
-right_cmd="ssh $right1 'csync2 -or $basedir -P $left2 | sort | xargs md5sum'"
+left_cmd="ssh  $left1  'csync2 -or $basedir $RIGHT_HOST '"
+right_cmd="ssh $right1 'csync2 -or $basedir $LEFT_HOST  '"
 
 if [ $verbose -eq 1 ]; then
 	echo
