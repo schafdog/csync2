@@ -112,45 +112,31 @@ then
 	mysql=0
 	# Check for mysql.
 	# This is a bloody hack for fedora core
-	CFLAGS="$CFLAGS `mysql_config --cflags`"	
+	# CFLAGS="$CFLAGS `mysql_config --cflags`"
 
 	# Check MySQL development header
-	AC_CHECK_HEADERS([mysql/mysql.h, mysql.h], , [mysql=$((mysql+1))], 
-[[
-#ifdef HAVE_MYSQL_MYSQL_H
-#include <mysql/mysql.h>
-#endif
-#ifdef HAVE_MYSQL_H
-#include <mysql.h>
-#define HAVE_MYSQL_PERCONA 1
-#endif
-]])
+	AC_CHECK_HEADERS([mysql.h mysql/mysql.h], , [mysql=$((mysql+1))], )
 
 	if test "$mysql" -ne 2 
 	then 
 	     AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
 	else
-	     AC_MSG_WARN([[No MySQL (oracle/percona) headers found. Install mysql-devel and dependencies for MySQL Support]])
+	     AC_MSG_WARN([[No MySQL (maria/oracle/percona) headers found. Install mysql-devel and dependencies for MySQL Support]])
 	fi
 fi
 
 if test "$enable_postgres" == yes
 then
 	postgres=0
-        AC_CHECK_HEADERS([postgresql/libpq-fe.h], , [postgres=$((postgres+1))], 
-[[
-#ifdef HAVE_POSTGRESQL_LIBPQ-FE_H
-#include <postgresql/libpq-fe.h>
-#endif
-]])
-
-	if test "$postgres" -eq 0 
+        AC_CHECK_HEADERS([libpq-fe.h postgresql/libpq-fe.h], , [postgres=$((postgres+1))], )
+	if test "$postgres" -ne 2 
 	then
 		AC_DEFINE([HAVE_POSTGRES], 1, [Define if postgres support is wanted])
 	else
 		AC_MSG_WARN([[postgres header not found; install libpq-dev and dependencies for Postgres support]])
 	fi
 fi
+
 
 # at least one db backend must be found. TODO add check on found as well
 
