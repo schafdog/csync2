@@ -65,9 +65,11 @@ char *buffer_malloc(BUF_P handle, size_t length)
 
 char *buffer_strdup(BUF_P handle, const char *cpy)
 {
-  char *out;
-  out = strdup(cpy);
-  buffer_add(handle, out);
+  char *out = NULL;
+  if (cpy) {
+      out = strdup(cpy);
+      buffer_add(handle, out);
+  }
   return out;
 };
 
