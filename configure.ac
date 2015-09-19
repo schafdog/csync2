@@ -115,7 +115,17 @@ then
 	# CFLAGS="$CFLAGS `mysql_config --cflags`"
 
 	# Check MySQL development header
-	AC_CHECK_HEADERS([mysql.h mysql/mysql.h], , [mysql=$((mysql+1))], )
+	AC_CHECK_HEADERS([mysql.h mysql/mysql.h], , [mysql=$((mysql+1))], [[
+#ifdef HAVE_MYSQL
+#ifdef HAVE_MYSQL_H
+#include <mysql.h>
+#include <mysqld_error.h>
+#elif HAVE_MYSQL_MYSQL_H
+#include <mysql/mysql.h>
+#include <mysql/mysqld_error.h>
+#endif
+#endif
+	]])
 
 	if test "$mysql" -ne 2 
 	then 
@@ -128,7 +138,15 @@ fi
 if test "$enable_postgres" == yes
 then
 	postgres=0
-        AC_CHECK_HEADERS([libpq-fe.h postgresql/libpq-fe.h], , [postgres=$((postgres+1))], )
+        AC_CHECK_HEADERS([libpq-fe.h postgresql/libpq-fe.h], , [postgres=$((postgres+1))], [[
+#ifdef HAVE_POSTGRESQL_LIBPQ_FE_H
+#include <postgresql/libpq-fe.h>
+#endif
+
+#ifdef HAVE_LIBPQ_FE_H
+#include <libpq-fe.h>
+#endif
+]])
 	if test "$postgres" -ne 2 
 	then
 		AC_DEFINE([HAVE_POSTGRES], 1, [Define if postgres support is wanted])
