@@ -23,6 +23,9 @@ autoheader
 automake --add-missing --copy
 autoconf
 
+ln -s /usr/share/automake-1.1*/ylwrap ylwrap
+
+
 if [ "$1" = clean ]; then
 	./configure && make distclean
 	rm -rf librsync[.-]* libsqlite.* sqlite-*
