@@ -29,8 +29,12 @@
 #include "db_postgres.h"
 #include "dl.h"
 
-#ifdef HAVE_POSTGRES
+#ifdef HAVE_POSTGRESSQL_LIBPQ_FE_H
 #include <postgresql/libpq-fe.h>
+#endif
+
+#ifdef HAVE_LIBPQ_FE_H
+#include <libpq-fe.h>
 #endif
 
 #if (!defined HAVE_POSTGRES)
