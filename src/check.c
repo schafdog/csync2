@@ -689,8 +689,6 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     int calc_digest = 0;
     int count = 0;
 
-    if (csync_compare_mode)
-	printf("%s\n", file);
     char *checktxt = buffer_strdup(buffer, csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
     // Assume that this isn't a upgrade and thus same version
     int is_upgrade = 0;
@@ -698,6 +696,7 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     const char *encoded = db_encode(file);
     operation_t operation = 0;
     char *other = 0; 
+    char *digest = NULL;
     SQL_BEGIN("Checking File",
 	      "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE "
 	      "filename = '%s' ", encoded)
@@ -712,6 +711,7 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     	const char *inode    = SQL_V(1);
     	const char *device   = SQL_V(2);
     	const char *digest_p = SQL_V(3);
+	digest = digest_p ? buffer_strdup(buffer, digest_p) : NULL;
 	long mode;
 	long size;
 	long mtime;
@@ -770,13 +770,15 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 		}
     } SQL_END;
 
-    char *digest = NULL; 
     if (calc_digest) {
     	int size = 2*DIGEST_MAX_SIZE+1;
     	digest = buffer_malloc(buffer, size);
     	int rc = dsync_digest_path_hex(file, "sha1", digest, size);
     	if (rc)
-    		csync_debug(0, "Error generating digest: %s %d", digest, rc);
+	    csync_debug(0, "Error generating digest: %s %d", digest, rc);
+    }
+    if (csync_compare_mode) {
+	printf("%40s %s\n", digest ? digest : "-", file);
     }
     if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
 	int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
@@ -793,7 +795,8 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 	if (is_upgrade) {
 	    SQL("Update file entry",
 		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s, mode=%lu, mtime=%lu, size=%lu where filename = '%s'",
-		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest), file_stat->st_mode, file_stat->st_mtime, file_stat->st_size, encoded);
+		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest),
+		file_stat->st_mode, file_stat->st_mtime, file_stat->st_size, encoded);
 	}
 	else {
 	    SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
