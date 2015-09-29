@@ -110,7 +110,7 @@ const char *csync_mode_op_str(int st_mode, int op)
     else if (S_ISFIFO(st_mode))
 	operation = "MKFIFO";
     else
-	csync_debug(0, "Unknown mode op: %d %d\n", st_mode, op);
+	csync_debug(1, "Unknown mode op: %d %d\n", st_mode, op);
     return operation;
 }
 
@@ -671,8 +671,11 @@ static int update_dev_inode(struct stat *file_stat, const char *dev, const char 
     if (!ino)
 	return 1;
 
-    unsigned long long dev_no = atoll(dev);
-    unsigned long long ino_no = atoll(ino);
+    unsigned long long dev_no;
+    unsigned long long ino_no;
+    sscanf(dev, "%llu", &dev_no);
+    sscanf(ino, "%llu", &ino_no);
+
     if (file_stat->st_dev != dev_no) {
 	return 1;
     }
@@ -725,8 +728,8 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     		flag |= SET_GROUP;
 
     	if (update_dev_inode(file_stat, device, inode) ) {
-    		csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu\n",
-    				file, device, inode, file_stat->st_dev, file_stat->st_ino);
+    		csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
+			    file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
     		is_upgrade = 1;
     	}
     	if (!digest_p && strstr(checktxt, "type=reg")) {
