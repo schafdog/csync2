@@ -71,13 +71,13 @@ AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
 
 cert:
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
-	openssl genrsa -out $(DESTDIR)$(sysconfdir)/csync2_ssl_key.pem 1024
-	yes '' | openssl req -new -key $(DESTDIR)$(sysconfdir)/csync2_ssl_key.pem \
+	openssl genrsa -out $(DESTDIR)$(sysconfdir)/csync2/csync2_ssl_key.pem 1024
+	yes '' | openssl req -new -key $(DESTDIR)$(sysconfdir)/csync2/csync2_ssl_key.pem \
 		-out $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr
-	openssl x509 -req -days 600 -in $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr \
-		-signkey $(DESTDIR)$(sysconfdir)/csync2_ssl_key.pem \
-		-out $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.pem
-	rm $(DESTDIR)$(sysconfdir)/csync2_ssl_cert.csr
+	openssl x509 -req -days 600 -in $(DESTDIR)$(sysconfdir)/csync2/csync2_ssl_cert.csr \
+		-signkey $(DESTDIR)$(sysconfdir)/csync2/csync2_ssl_key.pem \
+		-out $(DESTDIR)$(sysconfdir)/csync2/csync2_ssl_cert.pem
+	rm $(DESTDIR)$(sysconfdir)/csync2/csync2_ssl_cert.csr
 
 
 tests:
