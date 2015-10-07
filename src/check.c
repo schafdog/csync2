@@ -150,7 +150,7 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
     BUF_P buffer = buffer_init();
     struct peer *pl = csync_find_peers(file, thispeer);
     int pl_idx;
-    int operation;
+    int operation = operation_org;
     csync_schedule_commands(file, thispeer == 0);
 
     if ( ! pl ) {
