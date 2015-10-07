@@ -14,7 +14,7 @@ mkdir -p test/$NAME/Maildir/.Trash/cur
 #
 cmd x "Setup Maildir"
 sleep 1
-FILE=1434095335.M212861P2984.us1.schafroth.dk,S=6631,W=6764
+FILE=1434.M21,S=6631,W=6764
 CURFILE=${FILE}:2,
 CURPATH=
 echo NewMail > test/$NAME/Maildir/tmp/${FILE}
