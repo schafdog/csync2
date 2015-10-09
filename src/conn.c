@@ -484,9 +484,8 @@ int conn_read_get_content_length(long *size)
 int conn_read(void *buf, size_t count)
 {
     int pos, rc;
-
     for (pos=0; pos < count ; pos+=rc) {
-	rc = conn_raw_read(buf+pos, count-pos);
+	rc = conn_raw_read((char *)buf+pos, count-pos);
 	if (rc < 0)
 	    return rc;
 	/* End of file */
