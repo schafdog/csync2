@@ -36,12 +36,12 @@ if [ "$1" = clean ]; then
 	rm -rf cygwin/librsync-0.9.7.tar.gz
 	rm -rf cygwin/sqlite-2.8.16.tar.gz
 else
-	./configure  --prefix=/usr --localstatedir=/var --sysconfdir=/etc
+	./configure  $* # --prefix=/usr --localstatedir=/var --sysconfdir=/etc
 
-	echo ""
-	echo "Configured as"
-	echo "./configure  --prefix=/usr --localstatedir=/var --sysconfdir=/etc"
-	echo ""
-	echo "reconfigure, if you want it different"
+#	echo ""
+#	echo "Configured as"
+#	echo "./configure  --prefix=/usr --localstatedir=/var --sysconfdir=/etc"
+#	echo ""
+#	echo "reconfigure, if you want it different"
 fi
 
