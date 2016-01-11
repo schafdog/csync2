@@ -1284,7 +1284,7 @@ void csync_update_host(const char *myname, const char *peername,
   struct textlist *directory_list = 0;
   for (t = tl; t != 0; t = next_t) {
     next_t = t->next;
-    if ( !lstat_strict(t->value, &st) != 0 && !csync_check_pure(t->value)) {
+    if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	if (!connection_closed_error)
 	    rc = csync_update_file_mod(myname, peername,
 				       t->value, t->operation, t->value3, t->value4, t->value5, t->intvalue, dry_run, db_version);

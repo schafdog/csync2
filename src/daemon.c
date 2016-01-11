@@ -1,5 +1,5 @@
 /*
- *  csync2 - cluster synchronization tool, 2nd generation
+ *  Csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005, 2006  Clifford Wolf <clifford@clifford.at>
  *
@@ -877,7 +877,8 @@ void csync_daemon_stdin_check(int fd, address_t *peeraddr, socklen_t *peerlen) {
     struct stat sb;
 
     if (fstat(fd, &sb))
-	csync_fatal("Can't run fstat on fd %d: %s\n", fd, strerror(errno));
+	csync_fatal("Can't run fstat on fd %d: %s\n", fd, strerror(errno))
+	    ;
 
     switch (sb.st_mode & S_IFMT) {
     case S_IFSOCK:
