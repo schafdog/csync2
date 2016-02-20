@@ -742,35 +742,33 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     			is_upgrade = 1;
     	}
     	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
-    		operation = OP_MOD;
-    		csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n",
-			    file, checktxt_same_version, checktxt_db, csync_operation_str(operation));
-    		this_is_dirty = 1;
+	    operation = OP_MOD;
+	    csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n",
+			file, checktxt_same_version, checktxt_db, csync_operation_str(operation));
+	    this_is_dirty = 1;
     	}
     } SQL_FIN {
-		if ( SQL_COUNT == 0 ) {
-			csync_debug(2, "New file: %s\n", file);
-			operation = OP_NEW;
-			if (S_ISREG(file_stat->st_mode)) {
-				operation = OP_NEW;
-				calc_digest = 1;
-			}
-			else if ( S_ISLNK(file_stat->st_mode) )
-			{
-				// TODO get max path
-				int max = 1024;
-				char target[max];
-				int len = readlink(file, target, max-1);
-				if (len > 0) {
-					target[len] = 0;
-					operation = OP_MOD;
-					other = buffer_strdup(buffer, target);
-				}
-				else
-					csync_debug(0, "Failed to read link on %s\n", file);
-			}
-			this_is_dirty = 1;
+	if ( SQL_COUNT == 0 ) {
+	    csync_debug(2, "New file: %s\n", file);
+	    operation = OP_NEW;
+	    if (S_ISREG(file_stat->st_mode)) {
+		calc_digest = 1;
+	    }
+	    else if ( S_ISLNK(file_stat->st_mode) )
+	    {
+		// TODO get max path
+		int max = 1024;
+		char target[max];
+		int len = readlink(file, target, max-1);
+		if (len > 0) {
+		    target[len] = 0;
+		    other = buffer_strdup(buffer, target);
 		}
+		else
+		    csync_debug(0, "Failed to read link on %s\n", file);
+	    }
+	    this_is_dirty = 1;
+	}
     } SQL_END;
 
     if (calc_digest) {
@@ -795,15 +793,16 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 
 	unsigned long long dev = (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
 	const char *checktxt_encoded = db_encode(checktxt);
-	if (is_upgrade) {
+	if (is_upgrade|| operation == OP_MOD) {
 	    SQL("Update file entry",
 		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s, mode=%lu, mtime=%lu, size=%lu where filename = '%s'",
 		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest),
 		file_stat->st_mode, file_stat->st_mtime, file_stat->st_size, encoded);
 	}
 	else {
-	    SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
-	    SQL("Adding or updating file entry",
+	    /* RACE condition if file is added between the above check */
+	    // SQL("Deleting old file entry", "DELETE FROM file WHERE filename = '%s'", encoded);
+	    SQL("Adding new file entry",
 		"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
 		"VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu)",
 		encoded, 
@@ -883,7 +882,8 @@ int csync_check_recursive(const char *filename, int recursive, int init_run, int
     int count_dirty = 0;
     if (!csync_compare_mode)
 	count_dirty += csync_check_del(filename, recursive, init_run);
-	
+
+    csync_debug(1, "Checking%s for modified files ", recursive ? " recursive" : "", filename);
     csync_check_mod(filename, recursive, 1, init_run, version, flags, &count_dirty);
 
     const char *file_encoded = db_encode(filename); 
