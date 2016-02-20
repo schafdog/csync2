@@ -883,7 +883,7 @@ int csync_check_recursive(const char *filename, int recursive, int init_run, int
     if (!csync_compare_mode)
 	count_dirty += csync_check_del(filename, recursive, init_run);
 
-    csync_debug(1, "Checking%s for modified files%s %s \n", recursive ? " recursive" : "", filename);
+    csync_debug(1, "Checking%s for modified files %s \n", (recursive ? " recursive" : ""), filename);
     csync_check_mod(filename, recursive, 1, init_run, version, flags, &count_dirty);
 
     const char *file_encoded = db_encode(filename); 
