@@ -190,7 +190,7 @@ void csync_db_sql(const char *err, const char *fmt, ...)
 	}
 
 	if ( rc != DB_OK && err )
-		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
+	    csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
 	free(sql);
 
 	csync_db_maycommit();
