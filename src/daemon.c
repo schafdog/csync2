@@ -76,12 +76,13 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
     int mode = 0;
     csync_debug(2, "check_dirty_daemon: %s\n", filename);
 
-    // Returns newly marked dirty, so we cannot use it bail out.
+    // Returns newly marked dirty, so we cannot use it bail out. FIX comment: What do I mean???
     int markedDirty = csync_check_single(filename, 0, version);
-    csync_debug(2, "check_dirty_daemon: just marked dirty %s %d\n", filename, markedDirty);
+    csync_debug(2, "check_dirty_daemon: %d %s \n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
     
     if (isflush)
     	return 0;
+
     SQL_BEGIN("Check if file is dirty",
 	      "SELECT op, mode FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
 	      db_encode(filename), db_encode(peername))
@@ -717,8 +718,10 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
 						   flags, db_version);
   if (db_version == 1)
     conn_printf("%s\n", checktxt);
+  else if (db_version == 2)
+      conn_printf("%s\n", url_encode(checktxt));
   else
-    conn_printf("%s\n", url_encode(checktxt));
+      conn_printf("%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
   
   if ( S_ISREG(st.st_mode) )
     csync_rs_sig(filename);
@@ -1216,17 +1219,17 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
     if ((cmd_error = csync_daemon_check_perm(cmd, filename, peername,tag[1])))
       rc = ABORT_CMD;
 
-      if (rc == OK && cmd->check_dirty && 
-    		  csync_check_dirty(filename, peername,
+    if (rc == OK && cmd->check_dirty && 
+	csync_check_dirty(filename, peername,
 			  cmd->action == A_FLUSH, 
 			  db_version, &cmd_error)) {
-	  rc  = ABORT_CMD;
-	  //	  csync_debug(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
-	  isDirty  = 1;
+	rc  = ABORT_CMD;
+	//	  csync_debug(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
+	isDirty  = 1;
     }
     else {
       if (rc == OK && cmd->unlink )
-      csync_unlink(filename, cmd->unlink, &cmd_error);
+	  csync_unlink(filename, cmd->unlink, &cmd_error);
 
       const char *otherfile = NULL;
       rc = csync_daemon_dispatch(filename, cmd, tag, 
