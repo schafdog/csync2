@@ -292,7 +292,8 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const char *filename, const char *filename_enc,
 				  const struct stat *st, 
 				  const char *uidptr, const char *gidptr,
-				  const char *chk_local, 
+				  const char *chk_local,
+				  const char *digest,
 				  int *last_conn_status, 
 				  int log_level);
 
