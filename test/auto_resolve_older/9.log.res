@@ -17,6 +17,7 @@ mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/test/test/local' '(null)'
 mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
+Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 Connecting to host peer (PLAIN) ...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
