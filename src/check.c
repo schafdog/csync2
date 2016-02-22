@@ -93,6 +93,8 @@ const char *csync_mode_op_str(int st_mode, int op)
     const char* operation = "???";
     if (op == OP_RM)
 	return "RM";
+    if (op == OP_MARK)
+	return "MARK";
     if (S_ISREG(st_mode))
 	if (op == OP_NEW)
 	    operation = "NEW";
