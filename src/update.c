@@ -90,6 +90,8 @@ operation_t csync_operation(const char *operation)
 		return OP_RM;
 	if (!strncmp(operation, "MOD",3))
 		return OP_MOD;
+	if (!strncmp(operation, "MARK",3))
+		return OP_MARK;
 	return OP_UNDEF;
 }
 
@@ -104,6 +106,8 @@ const char *csync_operation_str(operation_t op) {
 		return "RM";
 	case OP_HARDLINK:
 		return "HARDLINK";
+	case OP_MARK:
+		return "MARK";
 	}
 	// UNDEF
 	return "-";
@@ -1302,17 +1306,13 @@ void csync_update_host(const char *myname, const char *peername,
 	last_tn=&(t->next);
     } else {
 	/* File not found */
-	switch (t->operation) {
-	case OP_RM:
-	    /* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
-	    csync_debug(3, "Dirty (deleted) item %s %s %d\n", t->value, t->value2, t->intvalue);
-	    *last_tn = next_t;
-	    t->next = tl_del;
-	    tl_del = t;
-	    break;
-	default:
+	/* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
+	csync_debug(3, "Dirty (deleted) item %s %s %d\n", t->value, t->value2, t->intvalue);
+	*last_tn = next_t;
+	t->next = tl_del;
+	tl_del = t;
+	if (t->operation != OP_RM && t->operation != OP_MARK) 
 	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
-	}
     }
   }
   textlist_free(tl);
