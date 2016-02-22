@@ -247,15 +247,16 @@ int csync_get_checktxt_version(const char *value);
 /* check.c */
 struct textlist;
 /* check.c */
-#define OP_NEW   	1
+#define OP_NEW      1
 #define OP_MKDIR    2
 #define OP_MKFIFO   4
 #define OP_MKCHR    8
 #define OP_MOVE     16
 #define OP_HARDLINK 32
 #define OP_RM       64
-#define OP_MOD		128
-#define OP_UNDEF	256
+#define OP_MOD	    128
+#define OP_MARK	    256
+#define OP_UNDEF    512
 
 extern const char *csync_mode_op_str(int st_mode, int op);
 extern operation_t csync_operation(const char *operation);
