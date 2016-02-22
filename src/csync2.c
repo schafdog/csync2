@@ -1103,7 +1103,7 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    csync_check_usefullness(realname, recursive);
-	    csync_mark(realname, 0, active_peerlist, OP_MOD, NULL, NULL, NULL, 0);
+	    csync_mark(realname, 0, active_peerlist, OP_MARK, NULL, NULL, NULL, 0);
 	    char *db_encoded = strdup(csync_db_escape(realname));
 		    
 	    if ( recursive ) {
