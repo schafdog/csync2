@@ -1311,7 +1311,7 @@ void csync_update_host(const char *myname, const char *peername,
 	    tl_del = t;
 	    break;
 	default:
-	    csync_debug(1, "File %s has disappeared since check. (%s) \n", t->value, csync_operation_str(t->operation));
+	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
 	}
     }
   }
