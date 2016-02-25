@@ -78,7 +78,7 @@ int csync_check_dirty(const char *filename, const char *peername, int isflush, i
 
     // Returns newly marked dirty, so we cannot use it bail out. FIX comment: What do I mean???
     int markedDirty = csync_check_single(filename, 0, version);
-    csync_debug(2, "check_dirty_daemon: %d %s \n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
+    csync_debug(2, "check_dirty_daemon: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
     
     if (isflush)
     	return 0;
@@ -139,7 +139,7 @@ void csync_file_update(const char *filename, const char *peername, int db_versio
       if (rc)
 	csync_debug(0, "Error generating digest: %s %d", digest, rc);
     }
-
+    csync_debug(2, "daemon_check_update: INSERT into file filename: %s", filename);
     SQL("Delete old record (if exist) ",
 	"DELETE FROM file WHERE filename = '%s'",
 	filename_encoded);	  
