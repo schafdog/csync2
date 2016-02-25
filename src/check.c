@@ -797,9 +797,9 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 	const char *checktxt_encoded = db_encode(checktxt);
 	if (is_upgrade|| operation == OP_MOD) {
 	    SQL("Update file entry",
-		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s, mode=%lu, mtime=%lu, size=%lu where filename = '%s'",
+		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, digest=%s, mode=%u, mtime=%lu, size=%lu where filename = '%s'",
 		checktxt_encoded, dev, file_stat->st_ino, csync_db_quote(digest),
-		file_stat->st_mode, file_stat->st_mtime, file_stat->st_size, encoded);
+		(07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, encoded);
 	}
 	else {
 	    /* RACE condition if file is added between the above check */
