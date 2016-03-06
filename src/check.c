@@ -152,7 +152,7 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
 
 void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter,
 		      int operation_org, const char *checktxt,
-		      const char *dev, const char *ino, const char *other, int mode)
+		      const char *dev, const char *ino, const char *org_other, int mode)
 {
     BUF_P buffer = buffer_init();
     struct peer *pl = csync_find_peers(file, thispeer);
@@ -168,8 +168,10 @@ void csync_mark_other(const char *file, const char *thispeer, const char *peerfi
 
     struct stat st_file;
     int rc_file = stat(file, &st_file);
+    const char *other;
     for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
 	operation = operation_org;
+	other = org_other;
 	if (!peerfilter || !strcmp(peerfilter, pl[pl_idx].peername)) {
 	    csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n",
 			csync_mode_op_str(st_file.st_mode, operation),
