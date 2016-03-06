@@ -382,7 +382,8 @@ static inline void textlist_add_var(struct textlist **listhandle, int intitem, i
 }
 
 static inline void textlist_add5(struct textlist **listhandle, const char *item, const char *item2, 
-				 const char *item3, const char *item4, const char *item5, int intitem, int operation)
+				 const char *item3, const char *item4, const char *item5,
+				 int intitem, int operation)
 {
 	struct textlist *tmp = *listhandle;
 	*listhandle = malloc(sizeof(struct textlist));
@@ -418,15 +419,22 @@ static inline int textlist_in_list(struct textlist *listhandle, const char *item
   return 0;
 }
 
-static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
+static inline void textlist_add_new2(struct textlist **listhandle,
+				     const char *item, const char *item2, int intitem)
 {
     if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem)) {
 	textlist_add(listhandle, item, intitem);
+	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
 	csync_debug(3, "Adding textlist_add_new: %s\n", item);
     }
     else {
       csync_debug(3, "Skipping textlist_add_new: %s\n", item);
   }
+}
+
+static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
+{
+    textlist_add_new2(listhandle, item, 0, intitem);
 }
 
 static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
