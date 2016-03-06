@@ -1,6 +1,5 @@
 cmd c "7 Check local (autoresolve)" local
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MOD' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' '-'.
 mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' '(null)'
@@ -8,4 +7,5 @@ mark operation NEW -> MOD => NEW peer:/export/home/dennis/Projects/csync2/csync2
 mark other operation: 'MOD' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' '-'.
 mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' '(null)'
 mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both (not synced) .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Finished succesfully.
