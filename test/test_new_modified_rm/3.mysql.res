@@ -4,11 +4,11 @@
 | /export/home/dennis/Projects/csync2/csync2/test/test/local        |
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir |
 +-------------------------------------------------------------------+
-+----------+-------------------------------------------------------------------+-----------+-------+
-| peername | filename                                                          | operation | other |
-+----------+-------------------------------------------------------------------+-----------+-------+
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local        | MKDIR     | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local        | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir | MKDIR     | NULL  |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir | MKDIR     | NULL  |
-+----------+-------------------------------------------------------------------+-----------+-------+
++----------+-------------------------------------------------------------------+-----------+-------+------+
+| peername | filename                                                          | operation | other | op   |
++----------+-------------------------------------------------------------------+-----------+-------+------+
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local        | MKDIR     | NULL  |    1 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local        | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir | MKDIR     | NULL  |    1 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir | MKDIR     | NULL  |    1 |
++----------+-------------------------------------------------------------------+-----------+-------+------+

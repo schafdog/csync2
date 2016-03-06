@@ -7,12 +7,12 @@
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin     |
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej |
 +-------------------------------------------------------------------------------+
-+----------+-------------------------------------------------------------------------------+-----------+-------+
-| peername | filename                                                                      | operation | other |
-+----------+-------------------------------------------------------------------------------+-----------+-------+
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                    | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr                | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local          | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin     | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej | NEW       | NULL  |
-+----------+-------------------------------------------------------------------------------+-----------+-------+
++----------+-------------------------------------------------------------------------------+-----------+-------+------+
+| peername | filename                                                                      | operation | other | op   |
++----------+-------------------------------------------------------------------------------+-----------+-------+------+
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                    | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr                | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local          | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin     | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej | NEW       | NULL  |    1 |
++----------+-------------------------------------------------------------------------------+-----------+-------+------+

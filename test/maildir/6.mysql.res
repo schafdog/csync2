@@ -10,15 +10,15 @@
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new                            |
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                            |
 +---------------------------------------------------------------------------------------------------+
-+----------+---------------------------------------------------------------------------------------------------+-----------+-------+
-| peername | filename                                                                                          | operation | other |
-+----------+---------------------------------------------------------------------------------------------------+-----------+-------+
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                                        | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir                                | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash                         | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur                     | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur                            | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S | NEW       | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new                            | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                            | MKDIR     | NULL  |
-+----------+---------------------------------------------------------------------------------------------------+-----------+-------+
++----------+---------------------------------------------------------------------------------------------------+-----------+-------+------+
+| peername | filename                                                                                          | operation | other | op   |
++----------+---------------------------------------------------------------------------------------------------+-----------+-------+------+
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                                        | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir                                | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash                         | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur                     | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur                            | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S | NEW       | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new                            | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                            | MKDIR     | NULL  |    1 |
++----------+---------------------------------------------------------------------------------------------------+-----------+-------+------+

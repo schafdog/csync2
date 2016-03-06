@@ -9,14 +9,14 @@
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp        |
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123    |
 +-------------------------------------------------------------------------------+
-+----------+-------------------------------------------------------------------------------+-----------+-------+
-| peername | filename                                                                      | operation | other |
-+----------+-------------------------------------------------------------------------------+-----------+-------+
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                    | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir            | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash     | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur        | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp        | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123    | NEW       | NULL  |
-+----------+-------------------------------------------------------------------------------+-----------+-------+
++----------+-------------------------------------------------------------------------------+-----------+-------+------+
+| peername | filename                                                                      | operation | other | op   |
++----------+-------------------------------------------------------------------------------+-----------+-------+------+
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                    | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir            | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash     | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur        | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp        | MKDIR     | NULL  |    1 |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123    | NEW       | NULL  |    1 |
++----------+-------------------------------------------------------------------------------+-----------+-------+------+
