@@ -21,6 +21,7 @@ fi
 : ${PORT:=30860}
 : ${SERVER_PORT:=$PORT}
 
+RECURSIVE=r
 echo ${PORT} ${SERVER_PORT}
 
 COUNT=0
@@ -45,7 +46,7 @@ function testing {
 
 function cmd {
     CMD=$1
-    TESTPATH=test
+    : ${TESTPATH:=test}
     if [ "$CMD" == "TT" ] ; then
 	TESTPATH=$2
 	echo "TT ${TESTPATH}"
@@ -67,14 +68,15 @@ function cmd {
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
     if [ "$LLDB" != "" ] ; then 
-	$LLDB -f $PROG -- -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH}
+	$LLDB -f $PROG -- -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG ${TESTPATH}
     elif [ "$GDB" != "" ] ; then 
-	$GDB $PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH}
+	$GDB $PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG ${TESTPATH}
     else
-	$PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}r$DEBUG ${TESTPATH} >> ${TESTNAME}/${COUNT}.log 2>&1
+	$PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG ${TESTPATH} >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
     echo "select filename from file order by filename; select peername,filename,operation,other from dirty order by filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+#    echo "select filename from file; select peername,filename,operation,other from dirty order by peername, timestamp;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
 	rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
