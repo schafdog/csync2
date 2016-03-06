@@ -1,3 +1,5 @@
 #
 #
-daemon i PEER
+daemon d PEER
+clean local
+clean peer
