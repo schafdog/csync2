@@ -905,7 +905,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
     strcpy(filename_enc, enc_tmp);
     int rc;
     while (not_done) {
-	csync_debug(1, "Updating '%s:%s' %s '%s'\n", peername, filename, operation_str, (other ? other : ""));
+	csync_debug(1, "Updating (%s) '%s:%s' '%s'\n", operation_str, peername, filename, (other ? other : ""));
 
 	if (lstat_strict(filename, &st) != 0) {
 	    csync_debug(0, "ERROR: Cant stat %s.\n", filename);
@@ -921,6 +921,17 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	    int rc = read_conn_status(filename, peername);
 	    if (rc < 0)
 		return rc;
+	}
+	if (operation == OP_MOVE) {
+	    rc = csync_update_file_move(myname, peername, key, filename,
+					other);
+	    if (rc == CONN_CLOSE || rc == OK) {
+		if (rc == OK) {
+		    csync_clear_dirty(peername, filename, auto_resolve_run);
+		    csync_clear_dirty(peername, other, auto_resolve_run);
+		    // return? 
+		}
+	    }
 	}
 	rc = csync_update_file_sig_rs_diff(peername, key_enc, filename,
 					   filename_enc, &st, uid, gid,
@@ -951,13 +962,15 @@ int csync_update_file_mod(const char *myname, const char *peername,
 						       NULL, digest, &last_conn_status, 2);
 		if (rc == CONN_CLOSE)
 		    return rc;
-		if (rc == OK) // swap
+		if (rc == IDENTICAL)
 		    rc = csync_update_hardlink(peername, key_enc, other,
 					       other_enc, filename, filename_enc,
 					       &last_conn_status);
-		else
-		    rc = csync_update_hardlink(peername, key_enc, filename,
-					       filename_enc, other, other_enc, &last_conn_status);
+		else {
+		    csync_debug(0, "Remote HARDLINK file (%s) not identical. Need patching.", other);
+		    rc = ERROR_HARDLINK;
+		}
+
 		if (rc == CONN_CLOSE)
 		    return rc;
 		if (rc == OK) {
@@ -967,10 +980,13 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	    }
 	}
 
+	/*
 	struct textlist *link_move_list = csync_check_link_move(peername,
 								filename, checktxt, operation, digest, &st, NULL);
 	struct textlist *list_ptr = link_move_list;
+	*/
 	/* Need to do the moves first, otherwise hard link could be between two non-existing files */
+	/*
 	while (list_ptr) {
 	    other = list_ptr->value;
 	    if (list_ptr->intvalue == OP_MOVE) {
@@ -1011,7 +1027,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	    list_ptr = list_ptr->next;
 	}
 	textlist_free(link_move_list);
-
+	*/
 	if (operation == OP_MOVE) {
 	    switch (rc) {
 	    case DIFF_BOTH:
@@ -1069,6 +1085,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	    // So we dont need to copy/patch
 	    // If this doenst work we need to patch
 	    rc = OK;
+/*
 	    if (st.st_nlink > 1 && found_diff) {
 		// TODO this should not be ness. if the first hardlinked file was patched.
 		// Try to find another file that has been updated and link with it (instead of patching again)
@@ -1086,11 +1103,14 @@ int csync_update_file_mod(const char *myname, const char *peername,
 		if (rc == OK)
 		    return OK;
 	    }
+*/
 	    if (found_diff)
 		rc = csync_update_file_patch(key_enc, peername, filename,
 					     filename_enc, &st, uid, gid, &last_conn_status);
 	    if (rc == CONN_CLOSE)
 		return rc;
+/*
+
 	    if (rc >= OK && st.st_nlink > 1) {
 		char *chk_local = strdup(
 		    csync_genchecktxt_version(&st, filename,
@@ -1102,6 +1122,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 		if (rc == CONN_CLOSE)
 		    return rc;
 	    }
+*/
 	    break;
 	case DIR_TYPE:
 	    cmd_printf("MKDIR", key_enc, filename_enc, "-", &st, uid, gid);
@@ -1247,7 +1268,8 @@ void csync_update_host(const char *myname, const char *peername,
   /* order DESC since building the list reverse the order */
   SQL_BEGIN("Get files for host from dirty table",
 	    "SELECT filename, operation, op, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
-	    "ORDER by filename DESC",
+//	    "ORDER by timestamp DESC",
+	    "ORDER by op DESC, filename DESC",
 	    db_encode(peername), db_encode(myname));
     {
       const char *filename  = db_decode(SQL_V(0));
