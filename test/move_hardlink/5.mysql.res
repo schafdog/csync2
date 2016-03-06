@@ -10,15 +10,15 @@
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab        |
 | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                |
 +---------------------------------------------------------------------------------------+
-+----------+---------------------------------------------------------------------------------------+-----------+-------+
-| peername | filename                                                                              | operation | other |
-+----------+---------------------------------------------------------------------------------------+-----------+-------+
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                            | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir                    | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash             | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur         | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab | NEW       | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur                | MKDIR     | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab        | NEW       | NULL  |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                | MKDIR     | NULL  |
-+----------+---------------------------------------------------------------------------------------+-----------+-------+
++----------+---------------------------------------------------------------------------------------+-----------+--------------------------------------------------------------------------------+
+| peername | filename                                                                              | operation | other                                                                          |
++----------+---------------------------------------------------------------------------------------+-----------+--------------------------------------------------------------------------------+
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                            | MKDIR     | NULL                                                                           |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir                    | MKDIR     | NULL                                                                           |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash             | MKDIR     | NULL                                                                           |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur         | MKDIR     | NULL                                                                           |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur                | MKDIR     | NULL                                                                           |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab        | NEW       | NULL                                                                           |
+| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                | MKDIR     | NULL                                                                           |
++----------+---------------------------------------------------------------------------------------+-----------+--------------------------------------------------------------------------------+

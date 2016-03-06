@@ -1,23 +1,15 @@
 cmd u "5 Read and deleted (update)" local
 Connecting to host peer (PLAIN) ...
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' MOD_DIR ''
-?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab' NEW ''
+Updating (MV) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab' '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123'
+Succes: MV /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab
+Updating (HARDLINK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab' '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab
-Unable to MOVE/LINK: both NEW
-check_link_move: Other file not found. Possible MOVE operation: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123
-OPERATION: MOVE /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123 to /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab
-check move: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123 
- Succes: MV /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' MOD_DIR ''
+check hardlink OP HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab 
+Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab -> /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab
+Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' ''
+?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
+Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab' NEW ''
-?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab
-csync_check_link_move: OPERATION MHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab to /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab
-check hardlink: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab 
- Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab -> /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' MOD_DIR ''
+Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123
-peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123 is already up to date on peer. 
 Finished succesfully.
