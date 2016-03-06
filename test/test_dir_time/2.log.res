@@ -1,6 +1,5 @@
 cmd x "New directory" local
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
@@ -10,13 +9,14 @@ mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/t
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' '-'.
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' '-'.
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Connecting to host peer (PLAIN) ...
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' MKDIR ''
+Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr' MKDIR ''
+Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' MKDIR ''
+Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local
-Updating 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' MKDIR ''
+Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
 Finished succesfully.
