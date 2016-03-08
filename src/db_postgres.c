@@ -33,6 +33,10 @@
 #include <postgresql/libpq-fe.h>
 #endif
 
+#ifdef HAVE_PGSQL_LIBPQ_FE_H
+#include <pgsql/libpq-fe.h>
+#endif
+
 #ifdef HAVE_LIBPQ_FE_H
 #include <libpq-fe.h>
 #endif
