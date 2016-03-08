@@ -138,7 +138,7 @@ fi
 if test "$enable_postgres" == yes
 then
 	postgres=0
-        AC_CHECK_HEADERS([libpq-fe.h postgresql/libpq-fe.h], , [postgres=$((postgres+1))], [[
+        AC_CHECK_HEADERS([libpq-fe.h postgresql/libpq-fe.h pgsql/libpq-fe.h], , [postgres=$((postgres+1))], [[
 #ifdef HAVE_POSTGRESQL_LIBPQ_FE_H
 #include <postgresql/libpq-fe.h>
 #endif
@@ -146,8 +146,12 @@ then
 #ifdef HAVE_LIBPQ_FE_H
 #include <libpq-fe.h>
 #endif
+
+#ifdef HAVE_PGSQL_LIBPQ_FE_H
+#include <pgsql/libpq-fe.h>
+#endif
 ]])
-	if test "$postgres" -ne 2 
+	if test "$postgres" -ne 3
 	then
 		AC_DEFINE([HAVE_POSTGRES], 1, [Define if postgres support is wanted])
 	else
