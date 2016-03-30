@@ -25,7 +25,7 @@
 #define MD4_LENGTH RS_MD4_LENGTH
 #elif defined(RS_MAX_STRONG_SUM_LENGTH) 
 /* Version 1.x */
-#define MD4_LENGTH RS_MAX_STRONG_SUM_LENGTH
+//#define MD4_LENGTH RS_MD4_SUM_LENGTH
 #endif
 
 #include <unistd.h>
@@ -345,7 +345,7 @@ int csync_rs_check(const char *filename, int isreg)
     csync_debug(3, "Running rs_sig_file() from librsync....\n");
     if (basis_file)
       result = rs_sig_file(basis_file, sig_file,
-			   RS_DEFAULT_BLOCK_LEN, MD4_LENGTH,
+			   RS_DEFAULT_BLOCK_LEN, 0,
 #ifdef RS_MAX_STRONG_SUM_LENGTH
 			   RS_MD4_SIG_MAGIC,
 #endif
@@ -441,7 +441,7 @@ void csync_rs_sig(const char *filename)
 
   csync_debug(3, "Running rs_sig_file() from librsync..\n");
   result = rs_sig_file(basis_file, sig_file,
-		       RS_DEFAULT_BLOCK_LEN, MD4_LENGTH,
+		       RS_DEFAULT_BLOCK_LEN, 0,
 #ifdef RS_MAX_STRONG_SUM_LENGTH
 			   RS_MD4_SIG_MAGIC,
 #endif
