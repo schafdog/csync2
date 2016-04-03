@@ -41,6 +41,7 @@
 #include "db_api.h"
 
 #include <netdb.h>
+#include <db_api.h>
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -380,85 +381,6 @@ error:
     return 1;
 }
 
-int upgrade_db() 
-{
-    struct csync_prefix *p;
-    csync_debug(1, "Upgrade database.. ");
-
-    for (p = csync_prefix; p; p = p->next) {
-	if (p->name && p->path) {
-	    int length = strlen(p->name) + 3;
-	    char *prefix = malloc(length);
-	    prefix[0] = '%';
-	    strcpy(prefix+1, p->name);
-	    strcpy(prefix+length-2, "%");
-	    char *prefix_encoded = strdup(url_encode(prefix));
-	    const char *path_encoded = url_encode(p->path);
-
-	    csync_debug(1, "Replace prefix %s with path %s (%s)", prefix_encoded, p->path, path_encoded);
-	    SQL("upgrade database",
-		"UPDATE file set filename=replace(filename,'%s', '%s') WHERE filename like '%s%%' ",
-		prefix_encoded, path_encoded, prefix_encoded);
-	    free(prefix);
-	    free(prefix_encoded);
-	}
-    }
-    exit(0);
-    return 0;
-}
-
-int update_format_v1_v2(const char *file, int recursive, int do_it)
-{
-    char *where_rec = "";
-    struct textlist *tl = 0, *t;
-    struct stat st;
-
-    if ( recursive ) {
-	if ( !strcmp(file, "/") )
-	    ASPRINTF(&where_rec, "OR 1=1");
-	else
-	    ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where filename > '%s/' "
-		     "and filename < '%s0'",
-		     url_encode(file), url_encode(file));
-    }
-    int total = 0, found = 0;
-    SQL_BEGIN("Checking for removed files",
-	      "SELECT filename, checktxt from file where "
-	      "filename = '%s' %s ORDER BY filename", url_encode(file), where_rec)
-    {
-	const char *filename = url_decode(SQL_V(0));
-	const char *checktxt = url_decode(SQL_V(1));
-	const char *db_filename = csync_db_escape(filename);
-	// Differ then add
-	if (strcmp(db_filename,SQL_V(0))) {
-	    csync_debug(1, "URL encode %s => DB encode %s ", SQL_V(0),db_filename); 
-	    textlist_add2(&tl, filename, checktxt, 0);
-	    found++;
-	}
-	total++;
-
-    } SQL_END;
-    printf("Found %d files out of %d to upgrade.\n", found, total);
-    if (do_it)
-	for (t = tl; t != 0; t = t->next) {
-	    SQL("Updating url encoding to db encoding in file",
-		"UPDATE file set filename='%s' WHERE filename = '%s'",
-		csync_db_escape(t->value), url_encode(t->value));
-
-	    SQL("Updating url encoding to db encoding in dirty",
-		"UPDATE dirty set filename='%s' WHERE filename = '%s'",
-		csync_db_escape(t->value), url_encode(t->value));
-
-	    total--;
-	}
-
-    textlist_free(tl);
-
-    if ( recursive )
-	free(where_rec);
-    return 0;
-}
-
 int csync_get_checktxt_version(const char *value) {
     if (value && strlen(value) > 2) {
 	if (value[1] == '1')
@@ -530,7 +452,7 @@ int match_peer(char **active_peers, const char *peer) {
 
 void csync_config_destroy();
 
-int check_file_args(char *files[], int file_count, char *realnames[], int recursive, int do_check, int init_run) {
+int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int recursive, int do_check, int init_run) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
 	const char *real_name = getrealfn(files[i]);
@@ -541,7 +463,7 @@ int check_file_args(char *files[], int file_count, char *realnames[], int recurs
 	    realnames[count] = strdup(real_name);
 	    csync_check_usefullness(realnames[count], recursive);
 	    if (do_check)
-		csync_check(realnames[count], recursive, init_run, db_version, 0);
+		csync_check(db, realnames[count], recursive, init_run, db_version, 0);
 	    count++;
 	}
     }
@@ -966,16 +888,16 @@ nofork:
 	    csync_fatal("This host (%s) is not a member of any configured group.\n", myhostname);
     }
 
-    csync_db_open(csync_database);
+    db_conn_p db = csync_db_open(csync_database);
 
     if (mode == MODE_UPGRADE_DB) {
-	int rc = upgrade_db();
+	int rc = db->upgrade_db(db);
 	exit(rc);
     }
 
     if (update_format) {
 	if (!strcmp(update_format, "v1-v2")) {
-	    int rc = update_format_v1_v2("/", 1, 1);
+	    int rc = db->update_format_v1_v2(db, "/", 1, 1);
 	    exit(rc);
 	}
 	else {
@@ -990,14 +912,14 @@ nofork:
     if (mode == MODE_SIMPLE) {
 	if ( argc == optind )
 	{
-	    csync_check("/", 1, init_run, db_version, 0);
-	    csync_update(myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version);
+	    csync_check(db, "/", 1, init_run, db_version, 0);
+	    csync_update(db, myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version);
 	}
 	else
 	{
 	    char *realnames[argc-optind];
-	    int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 1, init_run);
-	    csync_update(myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version);
+	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 1, init_run);
+	    csync_update(db, myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version);
 	    csync_realnames_free(realnames, count);
 	}
     }
@@ -1006,7 +928,7 @@ nofork:
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) { 
 		csync_check_usefullness(realname, recursive);
-		csync_hint(realname, recursive);
+		db->add_hint(db, realname, recursive);
 	    }
 	    else {
 		csync_debug(0, "%s did not match a real path. Skipping.", argv[i]); 
@@ -1017,27 +939,17 @@ nofork:
     if (mode & MODE_CHECK) {
 	if ( argc == optind )
 	{
-	    SQL_BEGIN("Check all hints",
-		      "SELECT filename, recursive FROM hint")
-	    {
-		textlist_add(&tl, db_decode(SQL_V(0)),
-			     atoi(SQL_V(1)));
-	    } SQL_END;
-
+	    tl = db->list_hint(db);
 	    for (t = tl; t != 0; t = t->next) {
-		csync_check(t->value, t->intvalue, init_run, db_version, 0);
-		SQL("Remove processed hint.",
-		    "DELETE FROM hint WHERE filename = '%s' "
-		    "and recursive = %d",
-		    db_encode(t->value), t->intvalue);
+		csync_check(db, t->value, t->intvalue, init_run, db_version, 0);
+		db->remove_hint(db, t->value, t->intvalue);
 	    }
-
 	    textlist_free(tl);
 	}
 	else
 	{
 	    char *realnames[argc-optind];
-	    int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 1, init_run);
+	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 1, init_run);
 	    csync_realnames_free(realnames, count);
 	}
     };
@@ -1045,37 +957,18 @@ nofork:
     if (mode & MODE_FORCE) {
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
-	    char *pfname = strdup(prefixencode(realname));
-	    char *where_rec = "";
-
-	    if ( recursive ) {
-		if ( !strcmp(realname, "/") )
-		    ASPRINTF(&where_rec, "or 1=1");
-		else
-		    ASPRINTF(&where_rec, "or (filename > '%s/' "
-			     "and filename < '%s0')",
-			     db_encode(realname), db_encode(realname));
-	    };
-	    SQL("Mark file as to be forced",
-		"UPDATE dirty SET forced = 1 WHERE filename = '%s' %s",
-		db_encode(realname), where_rec);
-
-	    if ( recursive )
-		free(where_rec);
-	    free(pfname);
-	}
+	    db->force(db, realname, recursive);
+	};
     };
-
+    
     if (mode & MODE_UPDATE) {
-	if ( argc == optind )
-	{
-	    csync_update(myhostname, active_peers, 0, 0, 0, dry_run, ip_version,db_version);
+	if ( argc == optind ) {
+	    csync_update(db, myhostname, active_peers, 0, 0, 0, dry_run, ip_version,db_version);
 	}
-	else
-	{
+	else {
 	    char *realnames[argc-optind];
-	    int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 0, 0);
-	    csync_update(myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
+	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 0, 0);
+	    csync_update(db, myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
 	    csync_realnames_free(realnames, count);
 	}
     };
@@ -1086,7 +979,7 @@ nofork:
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
 		csync_check_usefullness(realname, recursive);
-		csync_check(realname, recursive, init_run,db_version, 0);
+		csync_check(db, realname, recursive, init_run,db_version, 0);
 	    }
 	    else {
 		csync_debug(0, "%s is not a real path", argv[i]);
@@ -1096,75 +989,29 @@ nofork:
 
     if (server) {
 	conn_printf("OK (cmd_finished).\n");
-	csync_daemon_session(db_version, protocol_version, mode);
+	csync_daemon_session(db, db_version, protocol_version, mode);
     };
 
     if (mode ==  MODE_MARK) {
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
-	    csync_check_usefullness(realname, recursive);
-	    csync_mark(realname, 0, active_peerlist, OP_MARK, NULL, NULL, NULL, 0);
-	    char *db_encoded = strdup(csync_db_escape(realname));
-		    
-	    if ( recursive ) {
-		char *where_rec = "";
-		      
-		if ( !strcmp(realname, "/") )
-		    ASPRINTF(&where_rec, "or 1=1");
-		else
-		    ASPRINTF(&where_rec, 
-			     "UNION ALL SELECT filename from file"
-			     " where filename > '%s/' "
-			     " and filename < '%s0'",
-			     db_encoded, db_encoded);
-		      
-		SQL_BEGIN("Adding dirty entries recursively",
-			  "SELECT filename FROM file WHERE filename = '%s' %s",
-			  db_encoded, where_rec)
-		{
-		    char *filename = strdup(db_decode(SQL_V(0)));
-		    csync_mark(filename, 0, active_peerlist, OP_MOD,
-			       NULL, NULL, NULL, 0);
-		    free(filename);
-		} SQL_END;
-		free(where_rec);
-	    }
-	    free(db_encoded);
+	    db->mark(db, active_peers, realname, recursive);
 	}
     };
 
     if (mode == MODE_LIST_HINT) {
 	retval = 2;
-	SQL_BEGIN("DB Dump - Hint",
-		  "SELECT recursive, filename FROM hint ORDER BY filename")
-	{
-	    printf("%s\t%s\n", (char*)SQL_V(0), db_decode(SQL_V(1)));
-	    retval = -1;
-	} SQL_END;
+	db->list_hint(db); 
     };
 
     if (mode == MODE_LIST_FILE) {
 	retval = 2;
-	SQL_BEGIN("DB Dump - File",
-		  "SELECT checktxt, filename FROM file ORDER BY filename")
-	{
-	    if (csync_find_next(0, db_decode(SQL_V(1)))) {
-		printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
-		retval = -1;
-	    }
-	} SQL_END;
+	db->list_file(db);
     };
 
     if (mode == MODE_LIST_SYNC) {
 	retval = 2;
-	SQL_BEGIN("DB Dump - File",
-		  "SELECT checktxt, filename FROM file ORDER BY filename")
-	{
-	    if ( csync_match_file_host(db_decode(SQL_V(1)), argv[optind], argv[optind+1], 0) ) {
-		printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
-		retval = -1;
-	    }
-	} SQL_END;
+	db->list_sync(db);
     };
 
     if (mode == MODE_TEST_SYNC) {
@@ -1181,13 +1028,13 @@ nofork:
 
 	    if ( mode_test_auto_diff ) {
 		csync_compare_mode = 1;
-		retval = csync_diff(argv[optind], argv[optind+1], realname, ip_version);
+		retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
 	    } else
-		if ( csync_insynctest(argv[optind], argv[optind+1], init_run, 0, realname, ip_version))
+		if ( csync_insynctest(db, argv[optind], argv[optind+1], init_run, 0, realname, ip_version))
 		    retval = 2;
 	    break;
 	case 2:
-	    if ( csync_insynctest(argv[optind], argv[optind+1], init_run, mode_test_auto_diff, 0, ip_version) )
+	    if ( csync_insynctest(db, argv[optind], argv[optind+1], init_run, mode_test_auto_diff, 0, ip_version) )
 		retval = 2;
 	    break;
 	case 1:
@@ -1196,11 +1043,11 @@ nofork:
 
 	    if ( mode_test_auto_diff )
 		csync_compare_mode = 1;
-	    if ( csync_insynctest_all(init_run, mode_test_auto_diff, realname, ip_version, active_peers))
+	    if ( csync_insynctest_all(db, init_run, mode_test_auto_diff, realname, ip_version, active_peers))
 		retval = 2;
 	    break;
 	case 0:
-	    if ( csync_insynctest_all(init_run, mode_test_auto_diff, 0, ip_version, active_peers) )
+	    if ( csync_insynctest_all(db, init_run, mode_test_auto_diff, 0, ip_version, active_peers) )
 		retval = 2;
 	    break;
 	}
@@ -1208,46 +1055,20 @@ nofork:
 
     if (mode == MODE_LIST_DIRTY) {
 	retval = 0;
-	char *where = "";
+	char *realname = ""; 
 	if (optind < argc) {
 	    char *realname = getrealfn(argv[optind]);
-	    const char *db_encoded = db_encode(realname);
-	    ASPRINTF(&where,
-		     "where filename = '%s' or "
-		     "      filename > '%s/' and " 
-		     "      filename < '%s0'",
-		     db_encoded, db_encoded, db_encoded);
 	}
-	SQL_BEGIN("DB Dump - Dirty",
-		  "SELECT forced, myname, peername, filename, operation FROM dirty %s ORDER BY filename", 
-		  where)
-	{
-	    const char *peername = db_decode(SQL_V(2));
-	    const char *filename = db_decode(SQL_V(3));
-	    if (csync_find_next(0, filename)) {
-		const char *force_str = SQL_V(0);
-		if (match_peer(active_peers, peername)) {
-		    int force = 0;
-		    if (force_str) 
-			force = atoi(SQL_V(0));
-		    printf("%s%s\t%s\t%s\t%s\n", (force ? "F " : "  "), SQL_V(4),
-			   db_decode(SQL_V(1)), peername, filename);
-		    retval++;
-		}
-	    }
-	} SQL_END;
-	if (where[0] != 0)
-	    free(where);
-    };
-
+	db->list_dirty(db, active_peers, realname, recursive);
+    }
     if (mode == MODE_REMOVE_OLD) {
 	if ( active_grouplist )
 	    csync_fatal("Never run -R with -G!\n");
 	csync_remove_old();
     }
 
-    csync_run_commands();
-    csync_db_close();
+    csync_run_commands(db);
+    csync_db_close(db);
     csync_config_destroy();
     if (active_peers) {
 	free(active_peers);
@@ -1259,7 +1080,6 @@ nofork:
 	    csync_debug(0, "goto nofork");
 	    goto nofork;
 	}
-	
     }
 
     if ( csync_error_count != 0 || (csync_messages_printed && csync_debug_level) ) {
@@ -1278,5 +1098,5 @@ handle_error:
     if (mode == MODE_NOFORK)
 	goto nofork;
     return 0;
-}
+    }
 
