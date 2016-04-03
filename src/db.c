@@ -34,7 +34,7 @@ int db_blocking_mode = 1;
 int db_sync_mode = 1;
 
 extern int db_type; 
-static db_conn_p db = 0;
+static db_conn_p global_db = 0;
 // TODO make configurable
 static int wait_length = 0;
 
@@ -60,7 +60,7 @@ void csync_db_alarmhandler(int signum)
 	begin_commit_recursion++;
 
 	// csync_debug(3, "Database idle in transaction. Forcing COMMIT.\n");
-	SQL("COMMIT (alarmhandler)", "COMMIT ");
+	SQL(global_db, "COMMIT (alarmhandler)", "COMMIT ");
 	tqueries_counter = -10;
 
 	begin_commit_recursion--;
@@ -68,105 +68,109 @@ void csync_db_alarmhandler(int signum)
 
 void csync_db_maybegin()
 {
-	if ( !db_blocking_mode || begin_commit_recursion ) return;
-	begin_commit_recursion++;
+    if ( !db_blocking_mode || begin_commit_recursion ) return;
+    begin_commit_recursion++;
 
-	signal(SIGALRM, SIG_IGN);
-	alarm(0);
+    signal(SIGALRM, SIG_IGN);
+    alarm(0);
 
-	tqueries_counter++;
-	if (tqueries_counter <= 0) {
-		begin_commit_recursion--;
-		return;
-	}
-
-	if (tqueries_counter == 1) {
-		transaction_begin = time(0);
-		if (!last_wait_cycle)
-			last_wait_cycle = transaction_begin;
-		SQL("BEGIN ", "BEGIN ");
-	}
-
+    tqueries_counter++;
+    if (tqueries_counter <= 0) {
 	begin_commit_recursion--;
+	return;
+    }
+
+    if (tqueries_counter == 1) {
+	transaction_begin = time(0);
+	if (!last_wait_cycle)
+	    last_wait_cycle = transaction_begin;
+	SQL(global_db, "BEGIN ", "BEGIN ");
+    }
+
+    begin_commit_recursion--;
 }
 
 void csync_db_maycommit()
 {
-	time_t now;
+    time_t now;
 
-	if ( !db_blocking_mode || begin_commit_recursion ) return;
-	begin_commit_recursion++;
+    if ( !db_blocking_mode || begin_commit_recursion ) return;
+    begin_commit_recursion++;
 
-	if (tqueries_counter <= 0) {
-		begin_commit_recursion--;
-		return;
-	}
-
-	now = time(0);
-
-	if (wait_length && (now - last_wait_cycle) > 10) {
-		SQL("COMMIT", "COMMIT ");
-		if (wait_length) {
-		    csync_debug(3, "Waiting %d secs so others can lock the database (%d - %d)...\n",
-				wait_length, (int)now, (int)last_wait_cycle);
-		    sleep(wait_length);
-		}
-		last_wait_cycle = 0;
-		tqueries_counter = -10;
-		begin_commit_recursion--;
-		return;
-	}
-
-	if ((tqueries_counter > 1000) || ((now - transaction_begin) > 3)) {
-	        SQL("COMMIT (1000) ", "COMMIT ");
-		tqueries_counter = 0;
-		begin_commit_recursion--;
-		return;
-	}
-
-	//signal(SIGALRM, csync_db_alarmhandler);
-	//alarm(10);
-
+    if (tqueries_counter <= 0) {
 	begin_commit_recursion--;
 	return;
-}
+    }
 
-void csync_db_open(const char *file)
-{
-        int rc = db_open(file, db_type, &db);
-	if ( rc != DB_OK )
-		csync_fatal("Can't open database: %s\n", file);
+    now = time(0);
 
-	db_set_logger(db, csync_debug);
-
-	/* ignore errors on table creation */
-	in_sql_query++;
-
-	if (db_schema_version(db) < DB_SCHEMA_VERSION)
-	  if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) != DB_OK)
-	    csync_fatal("Cannot create database tables (version requested = %d): %s\n", DB_SCHEMA_VERSION, db_errmsg(db));
-
-	if (!db_sync_mode)
-		db_exec(db, "PRAGMA synchronous = OFF");
-	in_sql_query--;
-	// return db;
-}
-
-void csync_db_close()
-{
-	if (!db || begin_commit_recursion) return;
-
-	begin_commit_recursion++;
-	if (tqueries_counter > 0) {
-	        SQL("COMMIT (close)", "COMMIT ");
-		tqueries_counter = -10;
+    if (wait_length && (now - last_wait_cycle) > 10) {
+	SQL(global_db, "COMMIT", "COMMIT ");
+	if (wait_length) {
+	    csync_debug(3, "Waiting %d secs so others can lock the database (%d - %d)...\n",
+			wait_length, (int)now, (int)last_wait_cycle);
+	    sleep(wait_length);
 	}
-	db_conn_close(db);
+	last_wait_cycle = 0;
+	tqueries_counter = -10;
 	begin_commit_recursion--;
-	db = 0;
+	return;
+    }
+
+    if ((tqueries_counter > 1000) || ((now - transaction_begin) > 3)) {
+	SQL(global_db, "COMMIT (1000) ", "COMMIT ");
+	tqueries_counter = 0;
+	begin_commit_recursion--;
+	return;
+    }
+
+    //signal(SIGALRM, csync_db_alarmhandler);
+    //alarm(10);
+
+    begin_commit_recursion--;
+    return;
 }
 
-void csync_db_sql(const char *err, const char *fmt, ...)
+db_conn_p csync_db_open(const char *file)
+{
+    db_conn_p db = malloc(sizeof(struct db_conn_t));
+    global_db = db; 
+    int rc = db_open(file, db_type, &db);
+    if ( rc != DB_OK )
+	csync_fatal("Can't open database: %s\n", file)
+	    ;
+    
+    db_set_logger(db, csync_debug);
+    
+    /* ignore errors on table creation */
+    in_sql_query++;
+    
+    if (db_schema_version(global_db) < DB_SCHEMA_VERSION)
+	if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) != DB_OK)
+	    csync_fatal("Cannot create database tables (version requested = %d): %s\n", DB_SCHEMA_VERSION, db_errmsg(global_db));
+    
+    if (!db_sync_mode)
+	db_exec(db, "PRAGMA synchronous = OFF");
+    in_sql_query--;
+    return db;
+}
+
+void csync_db_close(db_conn_p db)
+{
+    if (!db || begin_commit_recursion) return;
+
+    begin_commit_recursion++;
+    if (tqueries_counter > 0) {
+	SQL(db, "COMMIT (close)", "COMMIT ");
+	tqueries_counter = -10;
+    }
+    db_conn_close(db);
+    free(db);
+    begin_commit_recursion--;
+    global_db = 0;
+}
+
+void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 {
 	char *sql;
 	va_list ap;
@@ -184,20 +188,20 @@ void csync_db_sql(const char *err, const char *fmt, ...)
 	while (1) {
 	  rc = db_exec(db, sql);
 	  if ( rc != DB_BUSY ) break;
-	  if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
+	  if (busyc++ > get_dblock_timeout()) { global_db = 0; csync_fatal(DEADLOCK_MESSAGE); }
 	  csync_debug(3, "Database is busy, sleeping a sec.\n");
 	  sleep(1);
 	}
 
 	if ( rc != DB_OK && err )
-	    csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
+	    csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(global_db), sql);
 	free(sql);
 
 	csync_db_maycommit();
 	in_sql_query--;
 }
 
-void* csync_db_begin(const char *err, const char *fmt, ...)
+void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...)
 {
 	db_stmt_p stmt = NULL;
 	char *sql;
@@ -215,13 +219,13 @@ void* csync_db_begin(const char *err, const char *fmt, ...)
 	while (1) {
 	        rc = db_prepare_stmt(db, sql, &stmt, &ppTail);
 		if ( rc != DB_BUSY ) break;
-		if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
+		if (busyc++ > get_dblock_timeout()) { global_db = 0; csync_fatal(DEADLOCK_MESSAGE); }
 		csync_debug(3, "Database is busy, sleeping a sec.\n");
 		sleep(1);
 	}
 
 	if ( rc != DB_OK && err )
-		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
+		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(global_db), sql);
 	free(sql);
 
 	return stmt;
@@ -248,7 +252,7 @@ int csync_db_next(void *vmx, const char *err,
 		if ( rc != DB_BUSY ) 
 		  break;
 		if (busyc++ > get_dblock_timeout()) { 
-		  db = 0; 
+		  global_db = 0; 
 		  csync_fatal(DEADLOCK_MESSAGE); 
 		}
 		csync_debug(3, "Database is busy, sleeping a sec.\n");
@@ -257,7 +261,7 @@ int csync_db_next(void *vmx, const char *err,
 
 	if ( rc != DB_OK && rc != DB_ROW &&
 	     rc != DB_DONE && err )
-		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(db));
+		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(global_db));
 
 	return rc == DB_ROW;
 }
@@ -296,13 +300,13 @@ void csync_db_fin(void *vmx, const char *err)
 	  rc = db_stmt_close(stmt);
 	  if ( rc != DB_BUSY ) 
 	    break;
-	  if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
+	  if (busyc++ > get_dblock_timeout()) { global_db = 0; csync_fatal(DEADLOCK_MESSAGE); }
 	  csync_debug(3, "Database is busy, sleeping a sec.\n");
 	  sleep(1);
 	}
 
 	if ( rc != DB_OK && err )
-		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(db));
+		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(global_db));
 
 	csync_db_maycommit();
 	in_sql_query--;
@@ -319,11 +323,11 @@ const char *csync_db_quote(const char *in) {
 
 
 const char* csync_db_escape(const char* string) {
-  return db_escape(db, string);
+  return db_escape(global_db, string);
 }
 
 const char* csync_db_escape_quote(const char* string) {
-  return csync_db_quote(db_escape(db, string));
+  return csync_db_quote(db_escape(global_db, string));
 }
 
 #if defined(HAVE_SQLITE)
