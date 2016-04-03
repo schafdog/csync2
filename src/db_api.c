@@ -175,7 +175,7 @@ int db_schema_version(db_conn_p db)
 {
 	int version = -1;
 
-        SQL_BEGIN(NULL,   /* ignore errors */
+        SQL_BEGIN(db, NULL,  /* ignore errors */
                 "SELECT count(*) from file")
         {
 		version = 0;
@@ -188,9 +188,15 @@ int db_schema_version(db_conn_p db)
 int db_upgrade_to_schema(db_conn_p db, int version)
 {
 	if (db && db->upgrade_to_schema)
-		return db->upgrade_to_schema(version);
+	    return db->upgrade_to_schema(db, version);
 
 	return DB_ERROR;
 }
 
-
+textlist_p db_list_dirty(db_conn_p db, char **active_peers, const char *realname, int recursive)
+{
+    if (db)
+	return db->list_dirty(db, active_peers, realname, recursive);
+    return NULL;
+}
+	
