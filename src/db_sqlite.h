@@ -15,6 +15,6 @@ int   db_sqlite_stmt_get_column_int(db_stmt_p stmt, int column);
 int   db_sqlite_stmt_close(db_stmt_p stmt);
 const char *db_sqlite_errmsg(db_conn_p conn);
 const char *db_sqlite_escape(db_conn_p conn, const char *from);
-int db_sqlite_upgrade_to_schema(int version);
+int db_sqlite_upgrade_to_schema(db_conn_p conn, int version);
 
 #endif
