@@ -314,7 +314,7 @@ textlist_p db_sql_find_file_extend(db_conn_p db, filename_p filename)
 	is_upgrade = SQL_V_long(4, &mode);
 	is_upgrade = SQL_V_long(5, &size) || is_upgrade;
 	is_upgrade = SQL_V_long(6, &mtime)|| is_upgrade;
-	csync_check_file_
+	csync_get_file_extended(filename, 
 
     
 }
