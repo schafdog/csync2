@@ -21,21 +21,80 @@
 #else
 #define SO_FILE_EXT ".so"
 #endif
+#include "buffer.h"
+#include "csync2.h"
 
 typedef struct db_conn_t *db_conn_p;
 typedef struct db_stmt_t *db_stmt_p;
 
+struct textlist;
+typedef struct textlist *textlist_p;
+
 struct db_conn_t {
-  void *private;
-  int         (*exec)   (db_conn_p conn, const char* exec);
-  int         (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
-  void        (*close)  (db_conn_p conn);
-  void        (*logger) (int lv, const char *fmt, ...);
-  const char* (*errmsg) (db_conn_p conn);
-  int         (*upgrade_to_schema) (int version);
-  const char* (*escape) (db_conn_p conn, const char *string);
-  void        (*free)   (db_conn_p conn, const char *escaped);
-  void        (*shutdown) ();
+    void *private;
+    int         (*exec)   (db_conn_p conn, const char* exec);
+    int         (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
+    void        (*close)  (db_conn_p conn);
+    void        (*logger) (int lv, const char *fmt, ...);
+    const char* (*errmsg) (db_conn_p conn);
+    int         (*upgrade_to_schema) (db_conn_p db, int version);
+    const char* (*escape) (db_conn_p conn, const char *string);
+    void        (*free)   (db_conn_p conn, const char *escaped);
+    void        (*shutdown) ();
+    void        (*mark)(db_conn_p conn, char **active_peers, const char *realname, int recursive);
+    textlist_p  (*list_dirty)(db_conn_p conn, char **active_peers, const char *realname, int recursive);
+    textlist_p  (*list_hint) (db_conn_p conn);
+    
+    void        (*list_file) (db_conn_p conn);
+    void        (*list_sync) (db_conn_p conn);
+    void        (*force) (db_conn_p conn, const char *realname, int recursive);
+    int         (*upgrade_db) (db_conn_p conn);
+    int         (*update_format_v1_v2) (db_conn_p conn, const char *filename, int recursive, int do_it);
+    void        (*add_hint)    (db_conn_p conn, const char *filename, int recursive);
+    void        (*remove_hint) (db_conn_p conn, const char *filename, int recursive);
+    void        (*remove_file) (db_conn_p conn, const char *filename, int recursive);
+    textlist_p  (*find_dirty) (db_conn_p conn, int (*filter_dirty) (textlist_p *p_tl, const char *filename,
+								    const char *localname, const char *peername));
+    textlist_p  (*find_file) (db_conn_p conn, int (*filter_dirty) (textlist_p *p_tl, const char *filename));
+    void        (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, const char *peername,
+			      const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
+			      int op, int mode);
+    void        (*remove_dirty)    (db_conn_p conn, const char *peername, const char *filename, int recursive);
+
+    textlist_p  (*get_dirty_by_peer) (db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist, 
+				      int (*check_dirty_by_peer) (textlist_p *p_tl, filename_p filename, const char *op_str, operation_t op,
+								  const char *patlist, filename_p other,
+								  const char *checktxt, const char *digest, int forced, int recursive));
+
+    
+    void        (*clear_dirty)     (db_conn_p conn, const char *peername, const char *filename, int recursive);
+    void        (*clear_operation) (db_conn_p conn, const char *myname, const char *peername, const char *filename, int recursive);
+    void        (*get_old_operation) (db_conn_p db, const char *checktxt,
+				      const char *peername, const char *filename, 
+				      const char *device, const char *ino,
+				      struct stat *st_file, int mode, BUF_P buffer,
+				      int (*check_old_operation) (textlist_p *p_tl, const char *op_str, const char *old_filename,
+								  const char *old_other, operation_t old_operation,
+								  const char *old_checktxt, const char *peername, int mode,
+								  int rc_file, struct stat *st_file, const char *file, BUF_P buffer));
+    textlist_p  (*get_commands) (db_conn_p conn);
+    textlist_p  (*get_command_filename) (db_conn_p conn, const char *filename, const char *logfile);
+    textlist_p  (*get_hosts) (db_conn_p conn); 
+
+    int         (*update_file) (db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+				const char *digest);
+    int         (*insert_file) (db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+				const char *digest);
+    int         (*check_delete) (db_conn_p conn, filename_p filename, int recursive, int init_run);
+
+    int         (*del_action)  (db_conn_p conn, filename_p filename, const char *prefix_command);
+    int         (*add_action)  (db_conn_p conn, filename_p filename, const char *prefix_command, const char *logfile);
+    int         (*remove_action_entry)  (db_conn_p conn, filename_p filename, const char *command, const char *logfile);
+
+    textlist_p (*check_file_same_dev_inode) (db_conn_p db, filename_p filename, const char *checktxt, const char *digest, struct stat *st);
+    textlist_p (*check_dirty_file_same_dev_inode) (db_conn_p db, peername_p peername, filename_p filename,
+						   const char *checktxt, const char *digest, struct stat *st);
+
 };
 
 struct db_stmt_t {
@@ -70,5 +129,4 @@ int       db_schema_version(db_conn_p db);
 int       db_upgrade_to_schema(db_conn_p db, int version);
 const char *db_errmsg(db_conn_p conn);
 const char *db_escape(db_conn_p conn, const char *string);
-
 #endif
