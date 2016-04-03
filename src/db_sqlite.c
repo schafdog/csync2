@@ -246,7 +246,7 @@ const char *db_sqlite_escape(db_conn_p conn, const char *string) {
   return escaped;
 }
 
-int db_sqlite_upgrade_to_schema(int version)
+int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 {
 	if (version < 0)
 		return DB_OK;
@@ -256,31 +256,31 @@ int db_sqlite_upgrade_to_schema(int version)
 
 	csync_debug(2, "Upgrading database schema to version %d.\n", version);
 
-	csync_db_sql("Creating file table",
+	csync_db_sql(db, "Creating file table",
 		"CREATE TABLE file ("
 		"	filename, checktxt, device, inode, size, digest, mode, mtime, type"
 		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
 		")");
 
-	csync_db_sql("Creating dirty table",
+	csync_db_sql(db, "Creating dirty table",
 		"CREATE TABLE dirty ("
 		"	filename, forced, myname, peername, operation, device, inode, other, digest, mode, mtime, type"
 		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql("Creating hint table",
+	csync_db_sql(db, "Creating hint table",
 		"CREATE TABLE hint ("
 		"	filename, recursive,"
 		"	UNIQUE ( filename, recursive ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql("Creating action table",
+	csync_db_sql(db, "Creating action table",
 		"CREATE TABLE action ("
 		"	filename, command, logfile,"
 		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql("Creating x509_cert table",
+	csync_db_sql(db, "Creating x509_cert table",
 		"CREATE TABLE x509_cert ("
 		"	peername, certdata,"
 		"	UNIQUE ( peername ) ON CONFLICT IGNORE"
