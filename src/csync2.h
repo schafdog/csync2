@@ -36,6 +36,12 @@
 #include <errno.h>
 #include <stdarg.h>
 
+typedef int operation_t;
+typedef const char * filename_p;
+typedef const char * peername_p;
+
+#include <db_api.h>
+
 #define MATCH_NEXT 2
 #define MATCH_INTO 1
 #define MATCH_NONE 0
@@ -108,10 +114,14 @@ enum {
 } while (0)
 
 
+/* csync2.c */
+
+extern int match_peer(char **active_peers, const char *peer);
+
 /* action.c */
 
-extern void  csync_schedule_commands(const char *filename, int islocal);
-extern void  csync_run_commands();
+extern void  csync_schedule_commands(db_conn_p db, const char *filename, int islocal);
+extern void  csync_run_commands(db_conn_p db);
 
 /* groups.c */
 
@@ -121,7 +131,6 @@ struct peer {
 };
 
 typedef struct  peer *peer_t; 
-typedef int operation_t;
 
 struct file_info {
   const char *filename;
@@ -159,7 +168,7 @@ extern int conn_open(const char *peername, int ip_version);
 extern int conn_get();
 extern int conn_set(int infd, int outfd);
 extern int conn_activate_ssl(int server_role);
-extern int conn_check_peer_cert(const char *peername, int callfatal);
+extern int conn_check_peer_cert(db_conn_p db, const char *peername, int callfatal);
 extern int conn_close();
 
 extern int conn_read(void *buf, size_t count);
@@ -174,11 +183,11 @@ extern size_t conn_gets(char *s, size_t size);
 
 /* db.c */
 
-extern void csync_db_open(const char *file);
+extern db_conn_p csync_db_open(const char *file);
 extern void csync_db_close();
 
-extern void csync_db_sql(const char *err, const char *fmt, ...);
-extern void* csync_db_begin(const char *err, const char *fmt, ...);
+extern void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...);
+extern void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...);
 extern int csync_db_next(void *vmx, const char *err,
 		int *pN, const char ***pazValue, const char ***pazColName);
 extern void csync_db_fin(void *vmx, const char *err);
@@ -191,27 +200,27 @@ extern const char *csync_db_escape_quote(const char *filename);
 
 
 
-#define SQL(e, s, rest...) csync_db_sql(e, s, ##rest)
+#define SQL(db, e, s, rest...) csync_db_sql(db, e, s, ##rest)
 
 extern const char* (*db_decode) (const char *value); 
 extern const char* (*db_encode) (const char *value); 
 
-#define SQL_BEGIN(e, s, ...) \
+#define SQL_BEGIN(db, e, s, ...)			\
 { \
 	char *SQL_ERR = e; \
-	void *SQL_VM = csync_db_begin(SQL_ERR, s, ##__VA_ARGS__); \
+	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
 	int SQL_COUNT = 0; \
 \
 	if (SQL_VM) { \
 		while (1) { \
 			const char **dataSQL_V, **dataSQL_N; \
 			int SQL_C; \
-			if ( !csync_db_next(SQL_VM, SQL_ERR, \
+			if ( !csync_db_next(SQL_VM, SQL_ERR,		\
 						&SQL_C, &dataSQL_V, &dataSQL_N) ) break; \
 			SQL_COUNT++;
 
-#define SQL_V(col) \
-	(csync_db_colblob(SQL_VM,(col)))
+#define SQL_V(col)				\
+    (csync_db_colblob(SQL_VM,(col)))
 
 #define SQL_V_long(col, result)			\
     (csync_db_long(SQL_VM,(col), (result)))
@@ -220,7 +229,7 @@ extern const char* (*db_encode) (const char *value);
 
 #define SQL_END \
 		} \
-		csync_db_fin(SQL_VM, SQL_ERR); \
+		    csync_db_fin(SQL_VM, SQL_ERR);	\
 	} \
 }
 
@@ -262,18 +271,19 @@ extern const char *csync_mode_op_str(int st_mode, int op);
 extern operation_t csync_operation(const char *operation);
 extern const char *csync_operation_str(operation_t op);
 
-extern void csync_hint(const char *file, int recursive);
-extern void csync_check(const char *filename, int recursive, int init_run, int version, int flags);
+extern void csync_hint(db_conn_p db, const char *file, int recursive);
+extern void csync_check(db_conn_p db, const char *filename, int recursive, int init_run, int version, int flags);
 /* Single file checking but returns possible operation */ 
-extern int  csync_check_single(const char *filename, int init_run, int version); 
-extern void csync_mark(const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino, int mode);
-extern struct textlist *csync_mark_hardlinks(const char *filename, struct stat *st, struct textlist *tl);
+extern int  csync_check_single(db_conn_p db, const char *filename, int init_run, int version); 
+extern void csync_mark(db_conn_p db, const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino, int mode);
+extern struct textlist *csync_mark_hardlinks(db_conn_p db, const char *filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
-struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st);
-struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, operation_t op, const char *digest,
-				  struct stat *st, textlist_loop_t loop);
+struct textlist *csync_check_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st);
+struct textlist *csync_check_link_move(db_conn_p db, const char *peername, const char *filename,
+				       const char* checktxt, operation_t op, const char *digest,
+				       struct stat *st, textlist_loop_t loop);
 
 
 
@@ -282,12 +292,12 @@ struct textlist *csync_check_link_move(const char *peername, const char *filenam
 void cmd_printf(const char *cmd, const char *key, 
 		const char *filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr);
-int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, int flags, int *count_dirty);
-extern void csync_update(const char *myname, char **peers, const char **patlist, int patnum, int recursive,
+int csync_check_mod(db_conn_p db, const char *file, int recursive, int ignnoent, int init_run, int version, int flags, int *count_dirty);
+extern void csync_update(db_conn_p db, const char *myname, char **peers, const char **patlist, int patnum, int recursive,
 			 int dry_run, int ip_version, int db_version);
-extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
-extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
-extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version, char *active_peers[]);
+extern int csync_diff(db_conn_p db, const char *myname, const char *peername, const char *filename, int ip_version);
+extern int csync_insynctest(db_conn_p db, const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
+extern int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, const char *filename, int ip_version, char *active_peers[]);
 extern void csync_remove_old();
 int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const char *filename, const char *filename_enc,
@@ -301,7 +311,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 
 /* daemon.c */
 
-extern void csync_daemon_session(int db_version, int protocol_version, int mode);
+extern void csync_daemon_session(db_conn_p db, int db_version, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
 
 /* ringbuffer.c */
@@ -348,6 +358,8 @@ struct textlist {
     void *data;
     void (*destroy)(void *data);
 };
+
+typedef struct text_list *text_list_p;
 
 static inline void textlist_add_struct(struct textlist **listhandle, void *data, void (*destroy) (void *))
 {
