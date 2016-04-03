@@ -416,7 +416,7 @@ int db_postgres_stmt_close(db_stmt_p stmt)
 
 
 #define FILE_LENGTH 275
-int db_postgres_upgrade_to_schema(int version)
+int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 {
 	if (version < 0)
 		return DB_OK;
@@ -426,14 +426,14 @@ int db_postgres_upgrade_to_schema(int version)
 
 	csync_debug(2, "Upgrading database schema to version %d.\n", version);
 
-	csync_db_sql("Creating action table",
+	csync_db_sql(conn, "Creating action table",
 		     "CREATE TABLE action ("
 		     "  filename varchar(%u) DEFAULT NULL,"
 		     "  command varchar(1000),"
 		     "  logfile varchar(1000),"
 		     "  UNIQUE (filename,command));", FILE_LENGTH);
 
-	csync_db_sql("Creating dirty table",
+	csync_db_sql(conn, "Creating dirty table",
 		     "CREATE TABLE dirty ("
 		     "  filename  varchar(%u)   DEFAULT NULL,"
 		     "  forced    int           DEFAULT NULL,"
@@ -452,7 +452,7 @@ int db_postgres_upgrade_to_schema(int version)
 		     "  UNIQUE (filename,peername)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql("Creating file table",
+	csync_db_sql(conn, "Creating file table",
 		     "CREATE TABLE file ("
 //		     "  id     serial                      ,"
 		     "  parent bigint          DEFAULT NULL,"
@@ -471,13 +471,13 @@ int db_postgres_upgrade_to_schema(int version)
 		     "  UNIQUE (filename)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql("Creating hint table",
+	csync_db_sql(conn, "Creating hint table",
 		     "CREATE TABLE hint ("
 		     "  filename varchar(%u)   DEFAULT NULL,"
 		     "  recursive int          DEFAULT NULL"
 		     ");", FILE_LENGTH);
 
-	csync_db_sql("Creating x509_cert table",
+	csync_db_sql(conn, "Creating x509_cert table",
 		     "CREATE TABLE x509_cert ("
 		     "  peername varchar(50) DEFAULT NULL,"
 		     "  certdata varchar(255) DEFAULT NULL,"
