@@ -261,7 +261,7 @@ int conn_activate_ssl(int server_role)
 	return 0;
 }
 
-int conn_check_peer_cert(const char *peername, int callfatal)
+int conn_check_peer_cert(db_conn_p db, const char *peername, int callfatal)
 {
 	const gnutls_datum_t *peercerts;
 	unsigned npeercerts;
@@ -285,7 +285,7 @@ int conn_check_peer_cert(const char *peername, int callfatal)
 			sprintf(&certdata[2*i], "%02X", peercerts[0].data[i]);
 		certdata[2*i] = 0;
 
-		SQL_BEGIN("Checking peer x509 certificate.",
+		SQL_BEGIN(db, "Checking peer x509 certificate.",
 			"SELECT certdata FROM x509_cert WHERE peername = '%s'",
 			url_encode(peername))
 		{
@@ -296,11 +296,11 @@ int conn_check_peer_cert(const char *peername, int callfatal)
 		} SQL_END;
 
 		if (cert_is_ok < 0) {
-			csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
-			SQL("Adding peer x509 sha1 hash to database.",
-				"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
-				url_encode(peername), url_encode(certdata));
-			return 1;
+		    csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
+		    SQL(db, "Adding peer x509 sha1 hash to database.",
+			"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
+			url_encode(peername), url_encode(certdata));
+		    return 1;
 		}
 
 		csync_debug(2, "Peer x509 certificate is: %s\n", certdata);
