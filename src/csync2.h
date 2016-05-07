@@ -244,8 +244,9 @@ extern int csync_cmpchecktxt(const char *a, const char *b);
 extern int csync_cmpchecktxt_component(const char *a, const char *b);
 int csync_get_checktxt_version(const char *value);
 
-/* check.c */
+
 struct textlist;
+
 /* check.c */
 #define OP_NEW      1
 #define OP_MKDIR    2
@@ -275,7 +276,7 @@ struct textlist *csync_check_move(const char *peername, const char *filename, co
 struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, operation_t op, const char *digest,
 				  struct stat *st, textlist_loop_t loop);
 
-
+extern int csync_check_dir(const char* file, int recursive, int init_run, int version, int dirdump_this, int flags);
 
 /* update.c */
 
