@@ -48,14 +48,29 @@ extern char *active_peer;
  
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 
-int csync_unlink(const char *filename, int ign, const char **cmd_error)
+int csync_rmdir(const char *filename, const char **cmd_error, int db_version)
+{
+    /* TODO: check if all files and sub directories are ignored,
+       delete them. We need a version of csync_check_dir */
+
+    int dirty_count = csync_check_dir(filename, 1 /* Recursive */, 0 /* init_run */, db_version, 0 /* dump */, 0 /* flags */);
+    if (dirty_count == 0) {
+	csync_debug(0, "Deleting recursive from clean directory (%s) (NOT IMPLEMENTED)", filename);
+    }
+    int rc = rmdir(filename);
+
+    return rc;
+}
+
+int csync_unlink(const char *filename, int ign, const char **cmd_error, int db_version)
 {
 	struct stat st;
 	int rc;
 
 	if ( lstat_strict(filename, &st) != 0 ) return 0;
 	if ( ign==2 && S_ISREG(st.st_mode) ) return 0;
-	rc = S_ISDIR(st.st_mode) ? rmdir(filename) : unlink(filename);
+
+	rc = S_ISDIR(st.st_mode) ? csync_rmdir(filename, cmd_error, db_version) : unlink(filename);
 
 	if ( rc && !ign ) 
 	  *cmd_error = strerror(errno);
@@ -220,7 +235,6 @@ int csync_file_backup(const char *filename, const char **cmd_error)
       memcpy(backup_otherfilename, backup_filename,
 	     bak_dir_len + filename_len);
       
-      //rc = unlink(
       for (i=g->backup_generations-1; i; i--) {
 	if (i != 1)
 	  snprintf(backup_filename+bak_dir_len+filename_len, 10, ".%d", i-1);
@@ -1026,7 +1040,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   case A_DEL:
     if (!csync_file_backup(filename, cmd_error))
-      return csync_unlink(filename, 0, cmd_error);
+	return csync_unlink(filename, 0, cmd_error, db_version);
 
     break;
   case A_PATCH:
@@ -1229,7 +1243,7 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
     }
     else {
       if (rc == OK && cmd->unlink )
-	  csync_unlink(filename, cmd->unlink, &cmd_error);
+	  csync_unlink(filename, cmd->unlink, &cmd_error, db_version);
 
       const char *otherfile = NULL;
       rc = csync_daemon_dispatch(filename, cmd, tag, 
