@@ -70,8 +70,10 @@ static int connection_closed_error = 1;
 
 operation_t csync_operation(const char *operation)
 {
-	if (!operation)
-		return OP_UNDEF;
+    if (!operation) {
+	csync_debug(0, "Called with null operation");
+	return OP_UNDEF;
+    }
 	if (!strcmp(operation, "NEW"))
 		return OP_NEW;
 	if (!strcmp(operation, "MKDIR"))
@@ -92,6 +94,7 @@ operation_t csync_operation(const char *operation)
 		return OP_MOD;
 	if (!strncmp(operation, "MARK",3))
 		return OP_MARK;
+	csync_debug(0, "Called with unknown operation: %s", operation);
 	return OP_UNDEF;
 }
 
@@ -110,7 +113,7 @@ const char *csync_operation_str(operation_t op) {
 		return "MARK";
 	}
 	// UNDEF
-	return "-";
+	return "?";
 }
 
 
@@ -1039,7 +1042,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 		if (rc == OK)
 		    return rc;
 		csync_debug(0, "ERROR: move failed: %s %s ", filename, other);
-		operation_str = "-";
+		operation_str = "WAS_MV";
 		operation = OP_UNDEF;
 		break;
 	    case DIFF_META:
@@ -1333,7 +1336,7 @@ void csync_update_host(const char *myname, const char *peername,
 	*last_tn = next_t;
 	t->next = tl_del;
 	tl_del = t;
-	if (t->operation != OP_RM && t->operation != OP_MARK) 
+	if (t->operation != OP_RM && t->operation != OP_MARK)
 	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
     }
   }
