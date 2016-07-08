@@ -48,14 +48,14 @@ extern char *active_peer;
  
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 
-int csync_rmdir(const char *filename, const char **cmd_error, int db_version)
+int csync_rmdir(const char *filename, int recursive, int db_version)
 {
     /* TODO: check if all files and sub directories are ignored,
        delete them. We need a version of csync_check_dir */
 
     int dir_count = csync_dir_count(filename);
-    int dirty_count = csync_check_dir(filename, 1 /* Recursive */, 0 /* init_run */, db_version, 0 /* dump */, 0 /* flags */);
-    if (dirty_count == 0) {
+    int dirty_count = csync_check_dir(filename, recursive, 0 /* init_run */, db_version, 0 /* dump */, 0 /* flags */);
+    if (recursive && dirty_count == 0) {
 	csync_debug(0, "Deleting recursive from clean directory (%s): %d (NOT IMPLEMENTED)", filename, dir_count);
     }
     int rc = rmdir(filename);
@@ -63,17 +63,17 @@ int csync_rmdir(const char *filename, const char **cmd_error, int db_version)
     return rc;
 }
 
-int csync_unlink(const char *filename, int ign, const char **cmd_error, int db_version)
+int csync_unlink(const char *filename, int recursive, int unlink_flag, const char **cmd_error, int db_version)
 {
 	struct stat st;
 	int rc;
 
 	if ( lstat_strict(filename, &st) != 0 ) return 0;
-	if ( ign==2 && S_ISREG(st.st_mode) ) return 0;
+	if ( unlink_flag == 2 && S_ISREG(st.st_mode) ) return 0;
 
-	rc = S_ISDIR(st.st_mode) ? csync_rmdir(filename, cmd_error, db_version) : unlink(filename);
+	rc = S_ISDIR(st.st_mode) ? csync_rmdir(filename, recursive, db_version) : unlink(filename);
 
-	if ( rc && !ign ) 
+	if ( rc && !unlink_flag ) 
 	  *cmd_error = strerror(errno);
 	return rc;
 }
@@ -387,7 +387,7 @@ struct csync_command cmdtab[] = {
 	{ "del",	1, 1, 0, 1, 1, A_DEL	},
 	{ "patch",	1, 1, 2, 1, 1, A_PATCH	},
 	{ "create",	1, 1, 2, 1, 1, A_CREATE	},
-	{ "mkdir",	1, 1, 1, 1, 1, A_MKDIR	},
+	{ "mkdir",	1, 1, 0, 1, 1, A_MKDIR	},
 	{ "mod",	1, 1, 1, 1, 1, A_MOD	},
 	{ "mkchr",	1, 1, 1, 1, 1, A_MKCHR	},
 	{ "mkblk",	1, 1, 1, 1, 1, A_MKBLK	},
@@ -616,28 +616,39 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
 
 int csync_daemon_mkdir(const char *filename, const char **cmd_error) 
 {
-  *cmd_error = 0;
-  /* ignore errors on creating directories if the
-   * directory does exist already. we don't need such
-   * a check for the other file types, because they
-   * will simply be unlinked if already present.
-   */
-#ifdef __CYGWIN__
-  // This creates the file using the native windows API, bypassing
-  // the cygwin wrappers and so making sure that we do not mess up the
-  // permissions..
-  char winfilename[MAX_PATH];
-  cygwin_conv_to_win32_path(filename, winfilename);
-  
-  if ( !CreateDirectory(TEXT(winfilename), NULL) ) {
     struct stat st;
-    if ( lstat_strict(filename), &st) != 0 || !S_ISDIR(st.st_mode)) {
-    csync_debug(1, "Win32 I/O Error %d in mkdir command: %s\n",
-		(int)GetLastError(), winfilename);
-    *cmd_error = "Win32 I/O Error on CreateDirectory()";
-  }
+    *cmd_error = 0;
+    /* ignore errors on creating directories if the
+     * directory does exist already. we don't need such
+     * a check for the other file types, because they
+     * will simply be unlinked if already present.
+     */
+#ifdef __CYGWIN__
+    // This creates the file using the native windows API, bypassing
+    // the cygwin wrappers and so making sure that we do not mess up the
+    // permissions..
+    char winfilename[MAX_PATH];
+    cygwin_conv_to_win32_path(filename, winfilename);
+
+    if ( !CreateDirectory(TEXT(winfilename), NULL) ) {
+	if ( lstat_strict(filename), &st) != 0 || !S_ISDIR(st.st_mode)) {
+	csync_debug(1, "Win32 I/O Error %d in mkdir command: %s\n",
+		    (int)GetLastError(), winfilename);
+	*cmd_error = "Win32 I/O Error on CreateDirectory()";
+    }
 #else
-  if ( mkdir(filename, 0700) ) {
+  int found = lstat_strict(filename, &st) == 0; 
+  if (found) {
+      if (!S_ISDIR(st.st_mode)) {
+	  csync_debug(1, "Entry '%s' already exists but not a directory\n", filename);
+	  unlink(filename);
+      }
+      else {
+	  csync_debug(2, "Directory '%s' already exists\n", filename);
+	  return OK;
+      }
+  }
+  if (mkdir(filename, 0700) ) {
     struct stat st;
     if ( lstat_strict(filename, &st) != 0 || !S_ISDIR(st.st_mode))
       *cmd_error = strerror(errno);
@@ -1055,7 +1066,7 @@ int csync_daemon_dispatch(char *filename,
     break;
   case A_DEL:
     if (!csync_file_backup(filename, cmd_error))
-	return csync_unlink(filename, 0, cmd_error, db_version);
+	return csync_unlink(filename, 1 /* recursive */, 0, cmd_error, db_version);
 
     break;
   case A_PATCH:
@@ -1257,8 +1268,10 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
 	isDirty  = 1;
     }
     else {
-      if (rc == OK && cmd->unlink )
-	  csync_unlink(filename, cmd->unlink, &cmd_error, db_version);
+	// TODO: Remove this unlink. Do it for each command if type difference.
+	if (rc == OK && cmd->unlink)
+	    // Not recursive
+	    csync_unlink(filename, 0, cmd->unlink, &cmd_error, db_version);
 
       const char *otherfile = NULL;
       rc = csync_daemon_dispatch(filename, cmd, tag, 
