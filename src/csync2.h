@@ -304,6 +304,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 
 extern void csync_daemon_session(int db_version, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
+extern int csync_dir_count(const char *filename);
 
 /* ringbuffer.c */
 extern void  ringbuffer_init();

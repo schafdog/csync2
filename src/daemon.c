@@ -53,9 +53,10 @@ int csync_rmdir(const char *filename, const char **cmd_error, int db_version)
     /* TODO: check if all files and sub directories are ignored,
        delete them. We need a version of csync_check_dir */
 
+    int dir_count = csync_dir_count(filename);
     int dirty_count = csync_check_dir(filename, 1 /* Recursive */, 0 /* init_run */, db_version, 0 /* dump */, 0 /* flags */);
     if (dirty_count == 0) {
-	csync_debug(0, "Deleting recursive from clean directory (%s) (NOT IMPLEMENTED)", filename);
+	csync_debug(0, "Deleting recursive from clean directory (%s): %d (NOT IMPLEMENTED)", filename, dir_count);
     }
     int rc = rmdir(filename);
 
@@ -82,6 +83,20 @@ void csync_file_flush(const char *filename)
   SQL("Removing file from dirty db",
       "delete from dirty where filename ='%s'",
       db_encode(filename));
+}
+
+int csync_dir_count(const char *filename)
+{
+    int count = 0;
+    SQL_BEGIN("Check if directory count",
+	      "SELECT count(*) FROM file WHERE filename like '%s/\%'",
+	db_encode(filename))
+    {
+	count = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
+    } SQL_FIN {
+	csync_debug(2, "%d files within directory '%s': \n", count, filename);
+    } SQL_END;
+    return count;
 }
 
 int csync_check_dirty(const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
