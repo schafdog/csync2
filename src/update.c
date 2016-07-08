@@ -407,15 +407,15 @@ int csync_next_step_UNUSED(int rc, int auto_run, const char *myname, const char 
 
   switch (rc) {
   case SETOWN:
-	rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, st, uid, gid);
-	//no break
+      rc = csync_update_file_setown(peername, key_enc, filename, filename_enc, st, uid, gid);
+      // no break
   case SETMOD:
-    rc = csync_update_file_setmod(peername, key_enc, filename, filename_enc, st);
-    //no break
+      rc = csync_update_file_setmod(peername, key_enc, filename, filename_enc, st);
+      // no break
   case SETTIME:
-    rc = csync_update_file_settime(peername, key_enc,
-				   filename, filename_enc, st);
-    //no break
+      rc = csync_update_file_settime(peername, key_enc,
+				     filename, filename_enc, st);
+      // no break
   case IDENTICAL:
   case OK:
     csync_clear_dirty(peername, filename, auto_run);
