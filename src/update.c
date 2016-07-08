@@ -99,7 +99,6 @@ operation_t csync_operation(const char *operation)
 }
 
 const char *csync_operation_str(operation_t op) {
-
 	switch (op) {
 	case OP_NEW:
 		return "NEW";
@@ -1332,12 +1331,17 @@ void csync_update_host(const char *myname, const char *peername,
     } else {
 	/* File not found */
 	/* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
-	csync_debug(3, "Dirty (deleted) item %s %s %d\n", t->value, t->value2, t->intvalue);
-	*last_tn = next_t;
-	t->next = tl_del;
-	tl_del = t;
-	if (t->operation != OP_RM && t->operation != OP_MARK)
+	csync_debug(2, "Dirty (missing) item %s %s %d\n", t->value, t->value2, t->intvalue, t->operation);
+	if (t->operation != OP_RM && t->operation != OP_MARK) {
 	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
+	    t->next = NULL;
+	    textlist_free(t);
+	}
+	else {
+	    *last_tn = next_t;
+	    t->next = tl_del;
+	    tl_del = t;
+	}
     }
   }
   textlist_free(tl);
