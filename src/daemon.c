@@ -53,10 +53,10 @@ int csync_rmdir(const char *filename, int recursive, int db_version)
     /* TODO: check if all files and sub directories are ignored,
        delete them. We need a version of csync_check_dir */
 
-    int dir_count = 0 ; // csync_dir_count(filename);
+    int dir_count = csync_dir_count(filename);
     int dirty_count = csync_check_dir(filename, recursive, 0 /* init_run */, db_version, 0 /* dump */, 0 /* flags */);
     if (recursive && dirty_count == 0) {
-	csync_debug(0, "Deleting recursive from clean directory (%s): %d (NOT IMPLEMENTED)", filename, dir_count);
+	csync_debug(0, "Deleting recursive from clean directory (%s): %d (NOT IMPLEMENTED)\n", filename, dir_count);
     }
     int rc = rmdir(filename);
 
@@ -385,16 +385,16 @@ struct csync_command cmdtab[] = {
 	{ "getsz",	1, 0, 0, 0, 1, A_GETSZ	},
 	{ "flush",	1, 1, 0, 0, 1, A_FLUSH	},
 	{ "del",	1, 1, 0, 1, 1, A_DEL	},
-	{ "patch",	1, 1, 2, 1, 1, A_PATCH	},
-	{ "create",	1, 1, 2, 1, 1, A_CREATE	},
-	{ "mkdir",	1, 1, 0, 1, 1, A_MKDIR	},
-	{ "mod",	1, 1, 1, 1, 1, A_MOD	},
-	{ "mkchr",	1, 1, 1, 1, 1, A_MKCHR	},
-	{ "mkblk",	1, 1, 1, 1, 1, A_MKBLK	},
-	{ "mkfifo",	1, 1, 1, 1, 1, A_MKFIFO	},
-	{ "mklink",	1, 1, 1, 1, 1, A_MKLINK	},
+	{ "patch",	1, 1, 0, 1, 1, A_PATCH	},
+	{ "create",	1, 1, S_IFREG, 1, 1, A_CREATE	},
+	{ "mkdir",	1, 1, S_IFDIR, 1, 1, A_MKDIR	},
+	{ "mod",	1, 1, 0,       1, 1, A_MOD	},
+	{ "mkchr",	1, 1, S_IFCHR, 1, 1, A_MKCHR	},
+	{ "mkblk",	1, 1, S_IFBLK, 1, A_MKBLK	},
+	{ "mkfifo",	1, 1, S_IFIFO, 1, 1, A_MKFIFO	},
+	{ "mklink",	1, 1, S_IFLNK, 1, 1, A_MKLINK	},
 	{ "mkhardlink",	1, 1, 0, 1, 1, A_MKHLINK},
-	{ "mksock",	1, 1, 1, 1, 1, A_MKSOCK	},
+	{ "mksock",	1, 1, S_IFSOCK, 1, 1, A_MKSOCK	},
 	{ "mv",	        1, 0, 0, 1, 1, A_MV	},
 	{ "setown",	1, 1, 0, 2, 1, A_SETOWN	},
 	{ "setmod",	1, 1, 0, 2, 1, A_SETMOD	},
@@ -1094,6 +1094,7 @@ int csync_daemon_dispatch(char *filename,
     // fall through on OK
   } 
   case A_MOD: {
+      /* No longer used? */
     int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
     csync_debug(2, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n", filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
     if (rc != OK)
@@ -1116,10 +1117,10 @@ int csync_daemon_dispatch(char *filename,
     }
     break;
   case A_MKBLK:
-    if ( mknod(filename, 0700|S_IFBLK, atoi(tag[3])) ) {
-      *cmd_error = strerror(errno);
-      return ABORT_CMD;
-    }
+      if ( mknod(filename, 0700|S_IFBLK, atoi(tag[3])) ) {
+	  *cmd_error = strerror(errno);
+	  return ABORT_CMD;
+      }
     break;
   case A_MKFIFO:
     if ( mknod(filename, 0700|S_IFIFO, 0) ) {
@@ -1268,11 +1269,14 @@ void csync_daemon_session(int db_version, int protocol_version, int mode)
 	isDirty  = 1;
     }
     else {
-	// TODO: Remove this unlink. Do it for each command if type difference.
-	if (rc == OK && cmd->unlink)
-	    // Not recursive
-	    csync_unlink(filename, 0, cmd->unlink, &cmd_error, db_version);
-
+	// TODO: Unlink only if different type
+	if (rc == OK && cmd->unlink) {
+	    struct stat st;
+	    if (lstat_strict(filename, &st) == 0 && cmd->unlink != (st.st_mode & S_IFMT)) {
+		csync_debug(0, "Unlinking entry due to different type: %d %d \n", cmd->unlink, st.st_mode & S_IFMT);
+		csync_unlink(filename, 0, cmd->unlink, &cmd_error, db_version);
+	    }
+	}
       const char *otherfile = NULL;
       rc = csync_daemon_dispatch(filename, cmd, tag, 
 			       db_version, protocol_version, 
