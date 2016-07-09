@@ -147,7 +147,7 @@ int read_conn_status_allow_missing(const char *file, const char *host)
 {
   int status = read_conn_status(file, host);
   if (status == ERROR_PATH_MISSING)
-    return 0;
+    return OK;
   return status;
 }
 
@@ -1259,6 +1259,95 @@ struct dirty_row {
     long long *inode;
 };
 
+void csync_sync_host(const char *myname, const char *peername,
+		     const char **patlist, int patnum, int recursive,
+		     int dry_run, int ip_version, int db_version)
+{
+    struct textlist *tl = 0, *t;
+    char *current_name = 0;
+    struct stat st;
+    /* order DESC since building the list reverse the order */
+    SQL_BEGIN("Get non-dirty files from file table",
+	      "SELECT filename, checktxt, digest FROM file WHERE (filename = '%s') "
+	      " and filename not in (select filename from dirty)"
+	      "ORDER by filename ASC",
+	      patlist[0]);
+    {
+	const char *filename  = db_decode(SQL_V(0));
+	const char *checktxt  = db_decode(SQL_V(1));
+	const char *digest    = db_decode(SQL_V(2));
+	int i, use_this = patnum == 0;
+	for (i=0; i< patnum && !use_this; i++)
+	    if ( compare_files(filename, patlist[i], recursive) ) {
+		use_this = 1;
+		textlist_add3(&tl, filename, checktxt, digest, 0);
+	    }
+    } SQL_END;
+
+    /* just return if there are no files to update */
+    if ( !tl)
+	return;
+
+    if ( connect_to_host(peername, ip_version) ) {
+	csync_error_count++;
+	csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
+	csync_debug(1, "Host stays in dirty state. "
+		    "Try again later...\n");
+	return;
+    }
+
+    conn_printf("HELLO %s\n", myname);
+    if (read_conn_status(0, peername) ) {
+	conn_printf("BYE\n");
+	read_conn_status(0, peername);
+	conn_close();
+	return ;
+    }
+    int rc;
+    char *status = "NOT IMPLEMENTED";
+    if (dry_run)
+	status = "DRY RUN";
+  
+    struct textlist *directory_list = 0;
+    for (t = tl; t != 0; t = t->next) {
+	const char *filename = t->value;
+	const char *key = csync_key(peername, filename);
+	if (!key) {
+	    csync_debug(2, "Skipping file sync %s on %s - not in my groups.\n",
+			filename, peername);
+	}
+	else {
+	    const char *key_enc  = url_encode(key);
+	    const char *filename_enc = url_encode(prefixencode(filename));
+	    const char *chk_local = t->value2;
+	    const char *digest = t->value3;
+	    struct stat st;
+	    char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
+	    int rc_exist = csync_stat(filename, &st, uid, gid);
+	    if (!connection_closed_error && !rc_exist) {
+		int last_conn_status;
+		int rc = csync_update_file_sig_rs_diff(peername, key_enc,
+						       filename, filename_enc,
+						       &st, uid, gid,
+						       chk_local, digest,
+						       &last_conn_status, 2);
+		if (rc == ERROR_PATH_MISSING && !rc_exist) {
+		    csync_debug(0, "Deleting local file '%s' not on peer '%s' "
+				   "(NOT IMPLEMENTED)", filename, peername, status);
+		}
+	    }
+	    if (rc == CONN_CLOSE || connection_closed_error) {
+		csync_debug(0, "Connection closed on updating %s\n", t->value);
+		break;
+	    }
+	}
+    }
+    textlist_free(tl);
+    conn_printf("BYE\n");
+    read_conn_status(0, peername);
+    conn_close();
+}
+
 void csync_update_host(const char *myname, const char *peername,
 		       const char **patlist, int patnum, int recursive,
 		       int dry_run, int ip_version, int db_version)
@@ -1269,7 +1358,7 @@ void csync_update_host(const char *myname, const char *peername,
   struct stat st;
   /* order DESC since building the list reverse the order */
   SQL_BEGIN("Get files for host from dirty table",
-	    "SELECT filename, operation, op, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	    "SELECT filename, operation, op, other, checktxt, digest, forced FROM dirty WHERE peername = '%s' AND myname = '%s' "
 //	    "ORDER by timestamp DESC",
 	    "ORDER by op DESC, filename DESC",
 	    db_encode(peername), db_encode(myname));
@@ -1369,7 +1458,8 @@ void csync_update_host(const char *myname, const char *peername,
   conn_close();
 }
 
-void csync_update(const char *myhostname, char *active_peers[], const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version)
+void csync_update(const char *myhostname, char *active_peers[],
+		  const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version, update_func func)
 {
   struct textlist *tl = 0, *t;
 
@@ -1397,7 +1487,7 @@ void csync_update(const char *myhostname, char *active_peers[], const char ** pa
       }
     }
     if (found)
-      csync_update_host(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version, db_version);
+	func(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version, db_version);
   }
 
   textlist_free(tl);
