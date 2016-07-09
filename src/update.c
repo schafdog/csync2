@@ -471,7 +471,7 @@ int csync_update_file_del(const char *myname, const char *peername, const char *
 		    key_enc,
 		    url_encode(prefixencode(filename)), "user/group");
 
-	if ((status = read_conn_status(filename, peername)) ) {
+	if ((status = read_conn_status(filename, peername)) && status != DIFF_MISSING) {
 	    if (status == ERROR_PATH_MISSING) {
 		csync_debug(1, "%s:%s is already up to date on peer.\n", peername, filename);
 		csync_clear_dirty(peername, filename, auto_resolve_run);
