@@ -1574,7 +1574,7 @@ int csync_diff(const char *myname, const char *peername,
 
   if (!rc_exist && !S_ISREG(st.st_mode))
   {
-      csync_debug(1, "Skipping diff on non-regular file (%s)", filename) ;
+      csync_debug(1, "Skipping diff on non-regular file (%s)\n", filename) ;
       return finish_close(); 
   }
 
