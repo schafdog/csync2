@@ -783,9 +783,9 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 {
     cmd_printf("SIG", key_enc, filename_enc, "user/group", st, uid, gid);
     int rc = csync_update_file_sig(peername, filename, st, chk_local, digest, log_level);
-    if (rc < OK || rc == OK_MISSING)
+    if (rc < OK || rc & OK_MISSING)
 	return rc;
-
+    csync_debug(0, "Continue to rs_check %s %d", filename, rc);
     int rs_check_result = csync_rs_check(filename, (st ? S_ISREG(st->st_mode): 0) );
     if ( rs_check_result < 0 )
 	rc = ERROR;
