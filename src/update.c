@@ -37,7 +37,7 @@
 #define MAX_UID_SIZE  100
 #define MAX_GID_SIZE  100
 
-#define DIFF_MISSING 32
+#define OK_MISSING 32
 #define DIFF_META 16
 #define DIFF_FILE 8
 #define DIFF_BOTH (DIFF_FILE | DIFF_META)
@@ -118,8 +118,8 @@ const char *csync_operation_str(operation_t op) {
 int read_conn_status_raw(const char *file, const char *host, char *line, int maxlength)
 {
     if ( conn_gets(line, maxlength) ) {
-	if ( !strncmp(line, "OK (not_found", 12) )
-	    return DIFF_MISSING;
+	if ( !strncmp(line, "OK (not_found", 12))
+	    return OK_MISSING;
 	if ( !strncmp(line, "OK (", 4) )
 	    return OK;
 	if (!strncmp(line, "IDENT (", 7))
@@ -132,8 +132,6 @@ int read_conn_status_raw(const char *file, const char *host, char *line, int max
     }
     if (strncmp(line, "ERROR (Path not found)", 15) == 0)
 	return ERROR_PATH_MISSING;
-    if (strncmp(line, "OK (not_found)", 10) == 0)
-	return DIFF_MISSING;
     if ( file )
 	csync_debug(0, "While syncing file: %s\n", file);
     else
@@ -471,8 +469,8 @@ int csync_update_file_del(const char *myname, const char *peername, const char *
 		    key_enc,
 		    url_encode(prefixencode(filename)), "user/group");
 
-	if ((status = read_conn_status(filename, peername)) && status != DIFF_MISSING) {
-	    if (status == ERROR_PATH_MISSING) {
+	if ((status = read_conn_status(filename, peername))) {
+	    if (status == ERROR_PATH_MISSING || status == OK_MISSING) {
 		csync_debug(1, "%s:%s is already up to date on peer.\n", peername, filename);
 		csync_clear_dirty(peername, filename, auto_resolve_run);
 		return IDENTICAL;
@@ -785,7 +783,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 {
     cmd_printf("SIG", key_enc, filename_enc, "user/group", st, uid, gid);
     int rc = csync_update_file_sig(peername, filename, st, chk_local, digest, log_level);
-    if (rc < OK)
+    if (rc < OK || rc == OK_MISSING)
 	return rc;
 
     int rs_check_result = csync_rs_check(filename, (st ? S_ISREG(st->st_mode): 0) );
@@ -1039,7 +1037,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	*/
 	if (operation == OP_MOVE) {
 	    switch (rc) {
-	    case DIFF_MISSING:
+	    case OK_MISSING:
 	    case DIFF_BOTH:
 	    case DIFF_FILE:
 		rc = csync_update_file_move(myname, peername, key, filename,
@@ -1061,7 +1059,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	case OK:
 	case DIFF_FILE:
 	case ERROR_PATH_MISSING:
-	case DIFF_MISSING:
+	case OK_MISSING:
 	    break;
 	case SETOWN:
 	case SETTIME:
@@ -1341,7 +1339,7 @@ void csync_sync_host(const char *myname, const char *peername,
 						       chk_local, digest,
 						       &last_conn_status, 2);
 		csync_debug(2, "Check for deletion of local file '%s' not on peer '%s' : status %d\n", filename, peername, rc);
-		if (rc & DIFF_MISSING && !rc_exist ) {
+		if (rc & OK_MISSING && !rc_exist ) {
 		    csync_debug(0, "Deleting local file '%s' not on peer '%s' %s\n",
 				filename, peername, status);
 		    if (!dry_run) {
