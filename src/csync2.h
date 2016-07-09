@@ -82,7 +82,7 @@ enum {
 	MODE_SIMPLE =  65536,
 	MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
 	MODE_MARK = 2*MODE_UPGRADE_DB,
-
+	MODE_EQUAL = 2*MODE_MARK
 };
 
 #define DEFAULT_PORT "30865" 
@@ -284,8 +284,23 @@ void cmd_printf(const char *cmd, const char *key,
 		const char *filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr);
 int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run, int version, int flags, int *count_dirty);
-extern void csync_update(const char *myname, char **peers, const char **patlist, int patnum, int recursive,
-			 int dry_run, int ip_version, int db_version);
+
+typedef void (*update_func)(const char *myname, const char *peer,
+			    const char **patlist, int patnum, int recursive,
+			    int dry_run, int ip_version, int db_version);
+
+extern void csync_update(const char *myname, char **peers,
+			 const char **patlist, int patnum, int recursive,
+			 int dry_run, int ip_version, int db_version, update_func func);
+
+void csync_update_host(const char *myname, const char *peername,
+		       const char **patlist, int patnum, int recursive,
+		       int dry_run, int ip_version, int db_version);
+
+extern void csync_sync_host(const char *myname, const char *peers,
+			    const char **patlist, int patnum, int recursive,
+			    int dry_run, int ip_version, int db_version);
+
 extern int csync_diff(const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
 extern int csync_insynctest_all(int init_run, int auto_diff, const char *filename, int ip_version, char *active_peers[]);
