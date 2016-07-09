@@ -868,6 +868,16 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 
 	unsigned long long dev = (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
 	const char *checktxt_encoded = db_encode(checktxt);
+	// Insert into dirty first due to new clean up method. With this there could be a race condition
+	if (!init_run && this_is_dirty) {
+	    //      csync_debug(0, "check_dirty (mod): before mark (all) \n");
+	    char dev_str[100];
+	    char ino_str[100];
+	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
+	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
+	    csync_mark_other(file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode);
+	    count = 1;
+	}
 	if (is_upgrade|| operation == OP_MOD) {
 	    SQL("Update file entry",
 		"UPDATE file set checktxt='%s', device=%lu, inode=%llu, "
@@ -888,15 +898,6 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
 		file_stat->st_size,
 		file_stat->st_mtime
 		);
-	}
-	if (!init_run && this_is_dirty) {
-	    //      csync_debug(0, "check_dirty (mod): before mark (all) \n");
-	    char dev_str[100];
-	    char ino_str[100];
-	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
-	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-	    csync_mark_other(file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode);
-	    count = 1;
 	}
     }
     buffer_destroy(buffer);
