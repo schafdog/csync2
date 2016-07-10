@@ -9,4 +9,4 @@ git pull
 make clean all
 EOF
 make install
-/usr/local/sbin/csync -V
+/usr/local/sbin/csync2 -V
