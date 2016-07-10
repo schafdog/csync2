@@ -732,7 +732,7 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
     }
     if ( errno == ENOENT ){
       conn_printf("OK (not_found).\n");
-      return OK;
+      return NEXT_CMD;
     }
     else {
       *cmd_error = strerror(errno);

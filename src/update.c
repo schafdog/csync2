@@ -610,13 +610,13 @@ int csync_update_file_sig(const char *peername, const char *filename,
 			  const struct stat *st, const char *chk_local, const char *digest, int log_level)
 {
     int i = 0;
-    char chk_peer[4096];
+    char chk_peer[4096] = "---";
 
     int rc = read_conn_status(filename, peername);
-    if (rc < 0)
+    if (rc < 0 || rc == OK_MISSING)
 	return rc;
 
-    if ( !conn_gets_newline(chk_peer, 4096,1) )
+    if (rc == OK_MISSING || !conn_gets_newline(chk_peer, 4096,1) )
 	return ERROR;
 
     int peer_version = csync_get_checktxt_version(chk_peer);
@@ -781,11 +781,12 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 				  const char *chk_local, const char *digest,
 				  int *last_conn_status, int log_level)
 {
+    csync_debug(3, "csync_update_file_sig_rs_diff %s:%s\n", peername, filename);
     cmd_printf("SIG", key_enc, filename_enc, "user/group", st, uid, gid);
     int rc = csync_update_file_sig(peername, filename, st, chk_local, digest, log_level);
     if (rc < OK || rc & OK_MISSING)
 	return rc;
-    csync_debug(0, "Continue to rs_check %s %d", filename, rc);
+    csync_debug(3, "Continue to rs_check %s %d\n", filename, rc);
     int rs_check_result = csync_rs_check(filename, (st ? S_ISREG(st->st_mode): 0) );
     if ( rs_check_result < 0 )
 	rc = ERROR;
@@ -803,15 +804,15 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 	return IDENTICAL;
     }
     else {
-	if (rc & DIFF_META) {
-	    if (csync_debug_level >= 10) {
-		//csync_cmpchecktxt_component(l_checktxt, r_checktxt);
-		//csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file);
-	    }
-	    else
-		csync_debug(1, "?M: %-15s %s\n", peername, filename);
-	}
+	char flag = 'F';
+	if (rc == DIFF_BOTH)
+	    flag = 'B';
+	else if (rc & DIFF_META)
+	    flag = 'M';
+	csync_debug(1, "?%c: %-15s %s\n", flag, peername, filename);
     }
+    csync_debug(3, "END csync_update_file_sig_rs_diff %s:%s\n",
+		peername, filename);
     return rc;
 }
 
@@ -869,9 +870,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 			  int db_version) {
     struct stat st;
     char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
-    int last_conn_status = 0, auto_resolve_run = 0, found_diff = 0,
-	found_diff_meta = 0;
-
+    int last_conn_status = 0, auto_resolve_run = 0;
     const char *operation_str = "?";
     const char *key = csync_key(peername, filename);
     if (!key) {
@@ -940,12 +939,11 @@ int csync_update_file_mod(const char *myname, const char *peername,
 		}
 	    }
 	}
-	rc = csync_update_file_sig_rs_diff(peername, key_enc, filename,
+	int sig_rc = csync_update_file_sig_rs_diff(peername, key_enc, filename,
 					   filename_enc, &st, uid, gid,
 					   NULL, digest, &last_conn_status, 2);
+	rc = sig_rc;
 	if (rc >= 0) {
-	    found_diff = rc & DIFF_FILE;
-	    found_diff_meta = rc & DIFF_META;
 	    rc &=  ~DIFF_BOTH;
 	}
 	if (dry_run) {
@@ -1096,7 +1094,7 @@ int csync_update_file_mod(const char *myname, const char *peername,
 	    // If this doenst work we need to patch
 	    rc = OK;
 /*
-	    if (st.st_nlink > 1 && found_diff) {
+	    if (st.st_nlink > 1 && (rc &) {
 		// TODO this should not be ness. if the first hardlinked file was patched.
 		// Try to find another file that has been updated and link with it (instead of patching again)
 		char *chk_local = strdup(
@@ -1114,9 +1112,12 @@ int csync_update_file_mod(const char *myname, const char *peername,
 		    return OK;
 	    }
 */
-	    if (found_diff)
+	    if (sig_rc & (OK_MISSING|DIFF_FILE))
 		rc = csync_update_file_patch(key_enc, peername, filename,
 					     filename_enc, &st, uid, gid, &last_conn_status);
+	    else
+		csync_debug(2, "Skipping file patch '%s' (same)", filename);
+
 	    if (rc == CONN_CLOSE)
 		return rc;
 /*
