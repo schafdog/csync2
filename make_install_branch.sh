@@ -1,10 +1,13 @@
 #!/bin/bash
-
+BRANCH=master
+if [ "$1" != "" ] ; then
+    BRANCH="$1"
+fi
 cd /export/home/dennis/Projects/csync2/csync2
-su - dennis
+sudo -u dennis /bin/bash <<EOF
 cd /export/home/dennis/Projects/csync2/csync2
-git checkout master
+git checkout $BRANCH
 git pull
 make clean all
-exit
+EOF
 make install
