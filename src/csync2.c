@@ -592,6 +592,7 @@ int main(int argc, char ** argv)
     csync_confdir = ETCDIR;
     int cmd_db_version = 0;
     int cmd_ip_version = 0;
+    int do_all = 0;          // do all host or "only" dirty ones. Do all is required for csync_sync_host
     update_func update_func;
     
     while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:Vqe")) != -1 ) {
@@ -706,6 +707,7 @@ int main(int argc, char ** argv)
 	    mode |= MODE_FORCE;
 	    break;
 	case 'u':
+	    do_all = 0;
 	    update_func = csync_update_host;
 	    if ( mode == MODE_CHECK || mode == MODE_FORCE)
 		mode |=  MODE_UPDATE;
@@ -777,6 +779,7 @@ int main(int argc, char ** argv)
 	    csync_quiet = 1;
 	    break;
 	case 'e':
+	    do_all = 1;
 	    update_func = csync_sync_host;
 	    mode = MODE_EQUAL;
 	    break;
@@ -999,13 +1002,13 @@ nofork:
 	if ( argc == optind )
 	{
 	    csync_check("/", 1, init_run, db_version, 0);
-	    csync_update(myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version, csync_update_host);
+	    csync_update(myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version, csync_update_host, 0);
 	}
 	else
 	{
 	    char *realnames[argc-optind];
 	    int count = check_file_args(argv+optind, argc-optind, realnames, recursive, 1, init_run);
-	    csync_update(myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version, csync_update_host);
+	    csync_update(myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version, csync_update_host, 0);
 	    csync_realnames_free(realnames, count);
 	}
     }
@@ -1078,7 +1081,7 @@ nofork:
 	if ( argc == optind )
 	{
 	    csync_update(myhostname, active_peers, 0, 0, 0,
-			 dry_run, ip_version,db_version, update_func);
+			 dry_run, ip_version,db_version, update_func, do_all);
 	}
 	else
 	{
@@ -1087,7 +1090,7 @@ nofork:
 					realnames, recursive, 0, 0);
 	    csync_update(myhostname, active_peers, (const char**)realnames,
 			 argc-optind, recursive, dry_run, ip_version,
-			 db_version, update_func);
+			 db_version, update_func, do_all);
 	    csync_realnames_free(realnames, count);
 	}
     };

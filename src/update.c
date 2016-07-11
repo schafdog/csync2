@@ -111,6 +111,8 @@ const char *csync_operation_str(operation_t op) {
 		return "HARDLINK";
 	case OP_MARK:
 		return "MARK";
+	case OP_MOVE:
+		return "MV";
 	}
 	// UNDEF
 	return "?";
@@ -1276,12 +1278,13 @@ void csync_sync_host(const char *myname, const char *peername,
     char *current_name = 0;
     struct stat st;
     int i, use_this = patnum == 0;
+    csync_debug(0, "csync_sync_host");
     for (i=0; i< patnum && !use_this; i++) {
 	SQL_BEGIN("Get non-dirty files from file table",
 		  "SELECT filename, checktxt, digest FROM file WHERE filename like '%s%%' "
-		  " and filename not in (select filename from dirty)"
+		  " and filename not in (select filename from dirty where filename like '%s%%')"
 		  " ORDER by filename ASC",
-		  patlist[i])
+		  patlist[i], patlist[i])
 	{
 		const char *filename  = db_decode(SQL_V(0));
 		const char *checktxt  = db_decode(SQL_V(1));
@@ -1435,9 +1438,15 @@ void csync_update_host(const char *myname, const char *peername,
     } else {
 	/* File not found */
 	/* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
-	csync_debug(2, "Dirty (missing) item %s %s %d\n", t->value, t->value2, t->intvalue, t->operation);
+	csync_debug(2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
 	if (t->operation != OP_RM && t->operation != OP_MARK) {
 	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
+	    SQL("Clear operation",
+		"UPDATE dirty set OPERATION = '-', op = 0 WHERE filename = '%s' ", db_encode(t->value));
+	    if (t->value3) {
+		csync_mark(t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0);
+		csync_debug(0, "make other dirty %s\n", t->value3);
+	    }
 	}
 	else {
 	    *last_tn = next_t;
@@ -1474,38 +1483,49 @@ void csync_update_host(const char *myname, const char *peername,
 }
 
 void csync_update(const char *myhostname, char *active_peers[],
-		  const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version, update_func func)
+		  const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version, update_func func, int do_all)
 {
-  struct textlist *tl = 0, *t;
+    struct textlist *tl = 0, *t;
 
-  SQL_BEGIN("Get hosts from dirty table",
-	    "SELECT peername FROM dirty GROUP BY peername")
-    {
-      textlist_add(&tl, db_decode(SQL_V(0)), 0);
-    } SQL_END;
-
-  int found = 1;
-  for (t = tl; t != 0; t = t->next) {
-    if (active_peers) {
-      int i=0;
-      found = 0;
-      while (active_peers[i]) {
-	if (!strcmp(active_peers[i], t->value)) {
-	    found = 1;
+    int i = 0;
+    if (do_all) {
+	if (active_peers)
 	    while (active_peers[i]) {
-	      active_peers[i] = active_peers[i+1];
-	      ++i;
+		func(myhostname, active_peers[i], patlist, patnum, recursive, dry_run, ip_version, db_version);
+		i++;
 	    }
-	    break;
-	}
-	i++;
-      }
+	else
+	    csync_debug(0, "No active peers given. Unable to iterate without");
     }
-    if (found)
-	func(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version, db_version);
-  }
+    else {
+	SQL_BEGIN("Get hosts from dirty table",
+		  "SELECT peername FROM dirty GROUP BY peername")
+	{
+	    textlist_add(&tl, db_decode(SQL_V(0)), 0);
+	} SQL_END;
 
-  textlist_free(tl);
+	int found = 1;
+	for (t = tl; t != 0; t = t->next) {
+	    if (active_peers) {
+		int i=0;
+		found = 0;
+		while (active_peers[i]) {
+		    if (!strcmp(active_peers[i], t->value)) {
+			found = 1;
+			while (active_peers[i]) {
+			    active_peers[i] = active_peers[i+1];
+			    ++i;
+			}
+			break;
+		    }
+		    i++;
+		}
+	    }
+	    if (found)
+		func(myhostname, t->value, patlist, patnum, recursive, dry_run, ip_version, db_version);
+	}
+	textlist_free(tl);
+    }
 }
 
 /* emulate the label, should remove */
