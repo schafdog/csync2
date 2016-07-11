@@ -15,7 +15,6 @@ mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/te
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Connecting to host peer (PLAIN) ...
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' ''
-?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
 Finished succesfully.

@@ -590,7 +590,7 @@ size_t conn_gets_newline(char *s, size_t size, int remove_newline)
     }
     s[i] = 0;
     if (rc == -1) {
-	csync_debug(0, "CONN %s > %s failed with error %s \n", active_peer, s, strerror(errno));
+	csync_debug(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
 	return rc; 
     }
     //	conn_debug(active_peer, s, i);

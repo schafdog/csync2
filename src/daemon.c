@@ -731,8 +731,8 @@ int csync_daemon_sig(char *filename, char *tag[32], int db_version, const char *
       return NEXT_CMD;
     }
     if ( errno == ENOENT ){
-      conn_printf("OK (not_found).\n---\noctet-stream 0\n");
-      return OK;
+      conn_printf("OK (not_found).\n");
+      return NEXT_CMD;
     }
     else {
       *cmd_error = strerror(errno);
