@@ -291,7 +291,7 @@ typedef void (*update_func)(const char *myname, const char *peer,
 
 extern void csync_update(const char *myname, char **peers,
 			 const char **patlist, int patnum, int recursive,
-			 int dry_run, int ip_version, int db_version, update_func func);
+			 int dry_run, int ip_version, int db_version, update_func func, int do_all);
 
 void csync_update_host(const char *myname, const char *peername,
 		       const char **patlist, int patnum, int recursive,
