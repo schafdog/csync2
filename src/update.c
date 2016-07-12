@@ -1441,18 +1441,18 @@ void csync_update_host(const char *myname, const char *peername,
 	csync_debug(2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
 	if (t->operation != OP_RM && t->operation != OP_MARK) {
 	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
+/*
 	    SQL("Clear operation",
-		"UPDATE dirty set OPERATION = '-', op = 0 WHERE filename = '%s' ", db_encode(t->value));
+		"UPDATE dirty set OPERATION = '-', op = %d WHERE filename = '%s' ", OP_MARK, db_encode(t->value));
+*/
 	    if (t->value3) {
 		csync_mark(t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0);
 		csync_debug(0, "make other dirty %s\n", t->value3);
 	    }
 	}
-	else {
-	    *last_tn = next_t;
-	    t->next = tl_del;
-	    tl_del = t;
-	}
+	*last_tn = next_t;
+	t->next = tl_del;
+	tl_del = t;
     }
   }
   textlist_free(tl);
