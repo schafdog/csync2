@@ -17,7 +17,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "csync2.h"
 #if defined(HAVE_SQLITE3)
 #include <sqlite3.h>
 #endif

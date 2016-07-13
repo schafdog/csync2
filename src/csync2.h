@@ -30,11 +30,11 @@
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <inttypes.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <string.h>
 
 typedef int operation_t;
 typedef const char * filename_p;
@@ -88,7 +88,7 @@ enum {
 	MODE_SIMPLE =  65536,
 	MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
 	MODE_MARK = 2*MODE_UPGRADE_DB,
-
+	MODE_EQUAL = 2*MODE_MARK
 };
 
 #define DEFAULT_PORT "30865" 
@@ -253,8 +253,9 @@ extern int csync_cmpchecktxt(const char *a, const char *b);
 extern int csync_cmpchecktxt_component(const char *a, const char *b);
 int csync_get_checktxt_version(const char *value);
 
-/* check.c */
+
 struct textlist;
+
 /* check.c */
 #define OP_NEW      1
 #define OP_MKDIR    2
@@ -285,16 +286,32 @@ struct textlist *csync_check_link_move(db_conn_p db, const char *peername, const
 				       const char* checktxt, operation_t op, const char *digest,
 				       struct stat *st, textlist_loop_t loop);
 
-
+extern int csync_check_dir(db_conn_p db, const char* file, int recursive, int init_run, int version, int dirdump_this, int flags);
 
 /* update.c */
 
 void cmd_printf(const char *cmd, const char *key, 
 		const char *filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr);
+
 int csync_check_mod(db_conn_p db, const char *file, int recursive, int ignnoent, int init_run, int version, int flags, int *count_dirty);
-extern void csync_update(db_conn_p db, const char *myname, char **peers, const char **patlist, int patnum, int recursive,
-			 int dry_run, int ip_version, int db_version);
+
+typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
+			    const char **patlist, int patnum, int recursive,
+			    int dry_run, int ip_version, int db_version);
+
+extern void csync_update(db_conn_p db, const char *myname, char **peers,
+			 const char **patlist, int patnum, int recursive,
+			 int dry_run, int ip_version, int db_version, update_func func, int do_all);
+
+extern void csync_update_host(db_conn_p db, const char *myname, const char *peername,
+		       const char **patlist, int patnum, int recursive,
+		       int dry_run, int ip_version, int db_version);
+
+extern void csync_sync_host(db_conn_p db, const char *myname, const char *peername,
+			    const char **patlist, int patnum, int recursive,
+			    int dry_run, int ip_version, int db_version);
+
 extern int csync_diff(db_conn_p db, const char *myname, const char *peername, const char *filename, int ip_version);
 extern int csync_insynctest(db_conn_p db, const char *myname, const char *peername, int init_run, int auto_diff, const char *filename, int ip_version);
 extern int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, const char *filename, int ip_version, char *active_peers[]);
@@ -313,6 +330,7 @@ int csync_update_file_sig_rs_diff(const char *peername, const char *key_enc,
 
 extern void csync_daemon_session(db_conn_p db, int db_version, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
+extern int csync_dir_count(db_conn_p db, const char *filename);
 
 /* ringbuffer.c */
 extern void  ringbuffer_init();
@@ -386,8 +404,8 @@ static inline void textlist_add_var(struct textlist **listhandle, int intitem, i
     /* Sum all the inputs; we still rely on the function caller to tell us how
      * many there are */
     for ( int x = 0; x < num; x++ ) {
-	char *item = va_arg ( arguments, char * ); 
-	(*listhandle)->values[x] = (item  ? strdup(item)  : 0);
+	const char *item = va_arg ( arguments, char * ); 
+	(*listhandle)->values[x] = (item  ? strdup(item)  : NULL);
     }
     va_end ( arguments );                  // Cleans up the list
     (*listhandle)->next = tmp;

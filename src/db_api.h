@@ -1,4 +1,3 @@
-
 #ifndef DB_API_H
 #define DB_API_H
 
@@ -22,10 +21,11 @@
 #define SO_FILE_EXT ".so"
 #endif
 #include "buffer.h"
-#include "csync2.h"
 
 typedef struct db_conn_t *db_conn_p;
 typedef struct db_stmt_t *db_stmt_p;
+
+#include "csync2.h"
 
 struct textlist;
 typedef struct textlist *textlist_p;
@@ -91,6 +91,7 @@ struct db_conn_t {
     int         (*add_action)  (db_conn_p conn, filename_p filename, const char *prefix_command, const char *logfile);
     int         (*remove_action_entry)  (db_conn_p conn, filename_p filename, const char *command, const char *logfile);
 
+    void       (*check_file) (db_conn_p db, filename_p filename, void *check_file_info);
     textlist_p (*check_file_same_dev_inode) (db_conn_p db, filename_p filename, const char *checktxt, const char *digest, struct stat *st);
     textlist_p (*check_dirty_file_same_dev_inode) (db_conn_p db, peername_p peername, filename_p filename,
 						   const char *checktxt, const char *digest, struct stat *st);

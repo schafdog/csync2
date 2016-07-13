@@ -1,0 +1,14 @@
+daemon d PEER
+clean local
+clean peer
+FILENAME="1234,"
+mkdir -p "test/$NAME"
+echo "far" >"test/$NAME/$FILENAME"
+mv "test/$NAME/${FILENAME}" "test/$NAME/${FILENAME}S"
+mv "test/$NAME/${FILENAME}S" "test/$NAME/${FILENAME}Sae"
+mv "test/$NAME/${FILENAME}S" "test/$NAME/${FILENAME}Sae"
+cmd x "New $NAME/$FILENAME"
+#rm -rf test/$NAME
+#cmd x "clean up"
+#sleep 10
+#killdaemon d PEER

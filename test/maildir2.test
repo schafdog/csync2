@@ -1,0 +1,53 @@
+# Typical pattern of Maildir action. 
+# Files is received in tmp, but instantly moved to new. 
+# On read (by server) moved to cur.
+# When moved from new to cur add :2, to filename
+# When marked read rename to filename,S
+# When deleted hardlinked to .Trash, renamed to filename,ST
+daemon d PEER
+clean local
+clean peer
+mkdir -p test/$NAME/Maildir/cur
+mkdir -p test/$NAME/Maildir/new
+mkdir -p test/$NAME/Maildir/tmp
+mkdir -p test/$NAME/Maildir/.Trash/cur
+#
+cmd x "Setup Maildir"
+sleep 1
+FILE=1434.M21,S=6631,W=6764
+CURFILE=${FILE}:2,
+CURFILE_AF=${CURFILE}af
+CURFILE_READ=${CURFILE}Saf
+CURFILE_DEL=${CURFILE}STaf
+CURPATH=
+echo NewMail > test/$NAME/Maildir/tmp/${FILE}
+sleep 1
+mv test/$NAME/Maildir/tmp/${FILE} test/$NAME/Maildir/new/${FILE}
+RECURSIVE=
+TESTPATH=test/$NAME/Maildir/new/${FILE}
+cmd x "New Maildir/new/${FILE} with transit in tmp "
+sleep 1
+mv test/$NAME/Maildir/new/${FILE} test/$NAME/Maildir/cur/${CURFILE}
+TESTPATH=test/$NAME/Maildir/cur/${CURFILE}
+cmd c "move Maildir/new/${FILE} Maildir/cur/${CURFILE} (check)"
+sleep 1
+mv test/$NAME/Maildir/cur/${CURFILE} test/$NAME/Maildir/cur/${CURFILE_AF}
+cmd u "move Maildir/new/${FILE} Maildir/cur/${CURFILE} disapeared (update)"
+sleep 1
+TESTPATH=test/$NAME/Maildir/cur/${CURFILE_AF}
+cmd x "move Maildir/new/${FILE} Maildir/cur/${CURFILE_AF} (MV succes)"
+sleep 1
+mv test/$NAME/Maildir/cur/${CURFILE_AF} test/$NAME/Maildir/cur/${CURFILE_READ}
+TESTPATH=test/$NAME/Maildir/.Trash/cur/${CURFILE_READ}
+cmd x "move Maildir/cur/${CURFILE_AF} Maildir/.Trash/cur/${CURFILE_READ} (Failed MV from NEW)"
+# Delete email: hardlink in Trash and rename
+ln test/$NAME/Maildir/cur/${CURFILE_READ} test/$NAME/Maildir/.Trash/cur/${CURFILE_READ}
+mv test/$NAME/Maildir/cur/${CURFILE_READ} test/$NAME/Maildir/cur/${CURFILE_DEL}
+sleep 1
+TESTPATH=test/$NAME/Maildir/.Trash/cur/${CURFILE_DEL}
+cmd c "check:  Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE_READ} mv ${CURFILE}S ${CURFILE_DEL}"
+cmd u "update: Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE_READ} mv ${CURFILE}S ${CURFILE_DEL}"
+TESTPATH=test/$NAME
+rm -rf test/$NAME
+cmd x "clean up"
+killdaemon d PEER

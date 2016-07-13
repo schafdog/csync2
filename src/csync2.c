@@ -514,7 +514,10 @@ int main(int argc, char ** argv)
     csync_confdir = ETCDIR;
     int cmd_db_version = 0;
     int cmd_ip_version = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:Vq")) != -1 ) {
+    int do_all = 0;          // do all host or "only" dirty ones. Do all is required for csync_sync_host
+    update_func update_func;
+    
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:Vqe")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -626,6 +629,8 @@ int main(int argc, char ** argv)
 	    mode |= MODE_FORCE;
 	    break;
 	case 'u':
+	    do_all = 0;
+	    update_func = csync_update_host;
 	    if ( mode == MODE_CHECK || mode == MODE_FORCE)
 		mode |=  MODE_UPDATE;
 	    else {
@@ -695,6 +700,11 @@ int main(int argc, char ** argv)
 	case 'q':
 	    csync_quiet = 1;
 	    break;
+	case 'e':
+	    do_all = 1;
+	    update_func = csync_sync_host;
+	    mode = MODE_EQUAL;
+	    break;
 	default:
 	    help(argv[0]);
 	}
@@ -711,6 +721,7 @@ int main(int argc, char ** argv)
 	 mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
 	 mode != MODE_UPGRADE_DB &&
 	 mode != MODE_LIST_DIRTY &&
+	 mode != MODE_EQUAL &&
 	 update_format == 0)
 	help(argv[0]);
 
@@ -913,13 +924,13 @@ nofork:
 	if ( argc == optind )
 	{
 	    csync_check(db, "/", 1, init_run, db_version, 0);
-	    csync_update(db, myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version);
+	    csync_update(db, myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version, csync_update_host, 0);
 	}
 	else
 	{
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 1, init_run);
-	    csync_update(db, myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version);
+	    csync_update(db, myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version, csync_update_host, 0);
 	    csync_realnames_free(realnames, count);
 	}
     }
@@ -961,14 +972,19 @@ nofork:
 	};
     };
     
-    if (mode & MODE_UPDATE) {
-	if ( argc == optind ) {
-	    csync_update(db, myhostname, active_peers, 0, 0, 0, dry_run, ip_version,db_version);
+    if (mode & MODE_UPDATE || mode & MODE_EQUAL ) {
+	if ( argc == optind )
+	{
+	    csync_update(db, myhostname, active_peers, 0, 0, 0,
+			 dry_run, ip_version,db_version, update_func, do_all);
 	}
 	else {
 	    char *realnames[argc-optind];
-	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 0, 0);
-	    csync_update(db, myhostname, active_peers, (const char**)realnames, argc-optind, recursive, dry_run, ip_version, db_version);
+	    int count = check_file_args(db, argv+optind, argc-optind,
+					realnames, recursive, 0, 0);
+	    csync_update(db, myhostname, active_peers, (const char**)realnames,
+			 argc-optind, recursive, dry_run, ip_version,
+			 db_version, update_func, do_all);
 	    csync_realnames_free(realnames, count);
 	}
     };
