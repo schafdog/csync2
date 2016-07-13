@@ -393,17 +393,6 @@ int csync_check_pure(const char *filename)
   }
 }
 
-void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {
-  if ( recursive ) {
-    if ( !strcmp(file_encoded, "/") )
-      ASPRINTF(where_rec, "OR 1=1");
-    else {
-      ASPRINTF(where_rec, "OR filename > '%s/' and filename < '%s0'",
-	       file_encoded, file_encoded);
-    }
-  }
-}
-
 int csync_check_del(db_conn_p db, const char *file, int recursive, int init_run)
 {
     return db->check_delete(db, file, recursive, init_run);

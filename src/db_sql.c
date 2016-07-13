@@ -540,6 +540,7 @@ textlist_p db_sql_get_file_info_by_name(db_conn_p db, filename_p filename, const
 	check_file_info(&p_tl, checktxt, filename, digest);
     } SQL_END;
 
+    return p_tl;
 }
 	
 void db_sql_remove_file(db_conn_p db, const char *filename, int recursive)
@@ -563,7 +564,6 @@ void db_sql_clear_operation(db_conn_p db, const char *myname, const char *peerna
 	"UPDATE dirty set operation = '-' where myname = '%s' and peername = '%s' and filename = '%s'",
 	db_encode(myname), db_encode(peername), db_encode(filename));
 }
-
 
 textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int numpat,
 				    int (*get_dirty_by_peer) (const char *filename, const char *pattern, int recursive))
@@ -594,19 +594,6 @@ textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char
     return tl;
 }
 
-
-textlist_p db_sql_get_dirty_hosts(db_conn_p db)
-{
-    textlist_p tl = 0; 
-    SQL_BEGIN(db, "Get hosts from dirty table",
-	      "SELECT peername FROM dirty GROUP BY peername")
-    {
-	textlist_add(&tl, db_decode(SQL_V(0)), 0);
-    } SQL_END;
-    return tl;
-}
-
-
 textlist_p db_get_old_operation(db_conn_p db, const char *checktxt,
 				const char *filename, const char *device,
 				const char *ino, const char *peername,
@@ -622,8 +609,8 @@ textlist_p db_get_old_operation(db_conn_p db, const char *checktxt,
 	      "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' "
 	      "ORDER BY timestadmp ",
 	      db_encode(checktxt),
-	      db_encode(file),
-	      db_encode(dev),
+	      db_encode(filename),
+	      db_encode(device),
 	      db_encode(ino),
 	      db_encode(peername)
 	)
@@ -686,6 +673,8 @@ int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 	"                digest=%s, mode=%u, mtime=%lu, size=%lu where filename = '%s'",
 	checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, csync_db_quote(digest),
 	(07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, encoded);
+
+    return 0;
 }
 		       
 int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
@@ -704,6 +693,7 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 	file_stat->st_size,
 	file_stat->st_mtime
 	);
+    return 0;
 }
 
 void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {
@@ -773,7 +763,8 @@ int db_sql_add_action(db_conn_p db, filename_p filename, const char *prefix_cmd,
 	"Add action to database",
 	"INSERT INTO action (filename, command, logfile) "
 	"VALUES ('%s', '%s', '%s')", db_encode(filename),
-	db_encode(prefix_cmd), db_encode(prefixsubst(logfile)));			       
+	db_encode(prefix_cmd), db_encode(prefixsubst(logfile)));
+    return 0;
 }
 
 int db_sql_del_action(db_conn_p db, filename_p filename, const char *prefix_cmd)
@@ -782,6 +773,7 @@ int db_sql_del_action(db_conn_p db, filename_p filename, const char *prefix_cmd)
 	"Del action before insert",
 	"DELETE FROM action WHERE filename='%s' AND command='%s' ",
 	db_encode(filename), db_encode(prefix_cmd));
+    return 0;
 }
     
 int db_sql_remove_action_entry(db_conn_p db, filename_p filename, const char *command, const char *logfile)
@@ -790,6 +782,7 @@ int db_sql_remove_action_entry(db_conn_p db, filename_p filename, const char *co
 	"DELETE FROM action WHERE command = '%s' "
 	"and logfile = '%s' and filename = '%s'",
 	command, logfile, db_encode(filename));
+    return 0;
 }    
     
 textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char *checktxt, const char *digest, struct stat *st)
@@ -825,6 +818,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 	csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
 		    SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
     } SQL_END;
+    return 0;
 }
 
 textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
@@ -865,4 +859,5 @@ textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
     }
     free(filename_enc);
     free(peername_enc);
+    return tl;
 }
