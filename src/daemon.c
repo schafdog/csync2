@@ -78,24 +78,10 @@ int csync_unlink(db_conn_p db, const char *filename, int recursive, int unlink_f
 	return rc;
 }
 
-void csync_file_flush(db_conn_p db, const char *filename)
-{
-    SQL(db, "Removing file from dirty db",
-      "delete from dirty where filename ='%s'",
-      db_encode(filename));
-}
-
 int csync_dir_count(db_conn_p db, const char *filename)
 {
     int count = 0;
-    SQL_BEGIN(db, "Check if directory count",
-	      "SELECT count(*) FROM file WHERE filename like '%s/%%'",
-	db_encode(filename))
-    {
-	count = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
-    } SQL_FIN {
-	csync_debug(2, "%d files within directory '%s': \n", count, filename);
-    } SQL_END;
+    return db->dir_count(db, filename);
     return count;
 }
 
@@ -112,16 +98,7 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
     
     if (isflush)
     	return 0;
-
-    SQL_BEGIN(db, "Check if file is dirty",
-	      "SELECT op, mode FROM dirty WHERE filename = '%s' and peername = '%s' LIMIT 1",
-	      db_encode(filename), db_encode(peername))
-    {
-    	rc = 1;
-    	operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
-    	mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
-    } SQL_END;
-
+    rc = db->is_dirty(db, filename, &operation, &mode);
     // Found dirty
     if (rc == 1) {
 	csync_debug(2, "check_dirty_daemon: peer operation  %s %s %s\n",
@@ -130,7 +107,7 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
 	if (operation == OP_MOD && S_ISDIR(mode)) {
 	    rc = 0;
 	    csync_debug(0, "Ignoring dirty directory %s\n", filename);
-	    csync_file_flush(db, filename);
+	    db->remove_dirty(db, filename, "%", 0);
 	    return 0;
 	}
 	else {
@@ -150,15 +127,9 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
 void csync_file_update(db_conn_p db, const char *filename, const char *peername, int db_version)
 {
   struct stat st;
-  const char *filename_encoded = db_encode(filename);
-  const char *peername_encoded = db_encode(peername);
-  SQL(db, "Removing file from dirty db",
-      "delete from dirty where filename = '%s' and peername = '%s'",
-      filename_encoded, peername_encoded);
+  db->remove_dirty(db, peername, filename, 0);
   if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename) ) {
-      SQL(db, "Removing file from file db",
-	"delete from file where filename = '%s'",
-	filename_encoded);
+      db->remove_file(db, filename, 0);
   } else {
     char *digest = NULL;
     const char *checktxt = csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db_version);
@@ -170,12 +141,9 @@ void csync_file_update(db_conn_p db, const char *filename, const char *peername,
 	csync_debug(0, "Error generating digest: %s %d", digest, rc);
     }
     csync_debug(2, "daemon_check_update: INSERT into file filename: %s", filename);
-    SQL(db, "Delete old record (if exist) ",
-	"DELETE FROM file WHERE filename = '%s'",
-	filename_encoded);	  
-    SQL(db, "Insert record into file",
-	"INSERT INTO file (filename, checktxt, inode, device, digest, mode, size, mtime) values ('%s', '%s', %ld, %ld, %s, %u, %lu, %lu)",
-	filename_encoded, db_encode(checktxt), st.st_ino, st.st_dev, csync_db_quote(digest), st.st_mode, st.st_size, st.st_mtime);
+    db->remove_file(db, filename, 0);
+    db->insert_file(db, filename, checktxt, &st, digest);
+//  db->insert_file(db, encoded, checktxt_encoded, st,  digest);
     if (digest) 
       free(digest);
   }
@@ -822,20 +790,13 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
 
 void csync_daemon_list(db_conn_p db, char *filename, char *tag[32], char *peername) 
 {
-  int len = strlen(filename); 
-  char buffer[len + 50];
-  buffer[0] = 0;
-  int value = strcmp("-", filename);
-  if (value) 
-    sprintf(buffer, "WHERE filename = '%s'", db_encode(filename));
-  SQL_BEGIN(db, "DB Dump - Files for sync pair",
-	    "SELECT checktxt, filename FROM file %s ORDER BY filename",
-	    buffer)
-    {
-      if ( csync_match_file_host(db_decode(SQL_V(1)), 
-				 tag[1], peername, (const char **)&tag[3]) )
-	conn_printf("%s\t%s\n", SQL_V(0), SQL_V(1));
-    } SQL_END;
+    int len = strlen(filename); 
+    char buffer[len + 50];
+    buffer[0] = 0;
+    int value = strcmp("-", filename);
+    if (value) 
+	sprintf(buffer, "WHERE filename = '%s'", db_encode(filename));
+    db->list_file(db, buffer);
 }
 
 const char *csync_daemon_hello(db_conn_p db, char **peername, address_t *peeraddr, char *newpeername) {
@@ -991,28 +952,22 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
   return ABORT_CMD;
 }
 
-int csync_db_update_path(const char *filename, const char *newname) {
+int csync_db_update_path(db_conn_p db, const char *filename, const char *newname) {
   char *update_sql = 0;
   const char *filename_encoded = db_encode(filename);
   const char *newname_encoded  = db_encode(newname);
   int filename_length = strlen(filename_encoded);
   int newname_length  = strlen(filename_encoded);
-  //  ASPRINTF(&update_sql, "")
-  //csync_debug(1, "SQL UPDATE: %s\n", update_sql);
-  /*
-  SQL(db, "Update moved files in DB ", "UPDATE file set filename = concat('%s',substring(filename,%d)) where filename = '%s' or filename like '%s/%%'",
-      newname_encoded, filename_length+1, filename_encoded, filename_encoded);
-  */
-  //  free(update_sql);
+  db->move(db, filename, newname);
   return 0;
 }
 
-int csync_daemon_mv(const char *filename, const char *newname, const char **cmd_error) {
+int csync_daemon_mv(db_conn_p db, const char *filename, const char *newname, const char **cmd_error) {
   if (rename(filename, newname)) {
     *cmd_error = strerror(errno);
     return ABORT_CMD;
   }
-  int rc = csync_db_update_path(filename,newname);
+  int rc = csync_db_update_path(db, filename,newname);
   return OK;
 }
 
@@ -1061,9 +1016,7 @@ int csync_daemon_dispatch(db_conn_p db, char *filename,
 	return NEXT_CMD;
 	break;
     case A_FLUSH:
-	SQL(db, "Flushing dirty entry (if any) for file",
-	    "DELETE FROM dirty WHERE filename = '%s'",
-	    db_encode(filename));
+	db->remove_dirty(db, filename, "%", 0);
 	break;
     case A_DEL:
 	if (!csync_file_backup(filename, cmd_error))
@@ -1140,7 +1093,7 @@ int csync_daemon_dispatch(db_conn_p db, char *filename,
     }
     case A_MV: {
 	*otherfile = prefixsubst(secondfile);
-	return csync_daemon_mv(filename, *otherfile, cmd_error);
+	return csync_daemon_mv(db,filename, *otherfile, cmd_error);
 	break;
     }
     case A_MKSOCK:

@@ -406,56 +406,6 @@ int csync_check_del(db_conn_p db, const char *file, int recursive, int init_run)
     return db->check_delete(db, file, recursive, init_run);
 }
 
-
-/*
-struct textlist *csync_mark_hardlinks(db_conn_p db, const char *filename_enc, struct stat *st, struct textlist *tl)
-{
-  struct textlist *t = tl;
-  while (t) {
-    char *src  = t->value;
-    switch (t->intvalue) {
-    case OP_HARDLINK: {
-      char *operation = "MKH";
-      SQL(db,
-	  "Update operation to move/hardlink",
-    	  "INSERT into dirty (filename, operation, op, other) values ('%s', '%s', %d, '%s')",
-		  db_encode(src), operation, OP_HARDLINK, filename_enc);
-      break;
-    }
-    // Comment out
-//    case OP_MOVE:
-//      SQL("Remove delete operation (move)",
-//	"DELETE from dirty where filename = '%s'", db_encode(src));
-//      break;
-//
-    }
-   
-    t = t->next;
-  }
-  textlist_free(tl);
-  return 0;
-}
-*/
-
- /*
-struct textlist *csync_check_all_same_dev_inode(db_conn_p db)
-{
-    struct textlist *tl = 0, *t;
-    int count = 0;
-    SQL_BEGIN(db, "Check for same dev:inode for all dirty",
-	      "SELECT peername, device, inode, checktxt, count(*) from dirty group by 1,2,3,4 having count(*) > 1") {
-	const char *db_peername  = db_decode(SQL_V(0));
-	const char *db_device    = db_decode(SQL_V(1));
-	const char *db_inode     = db_decode(SQL_V(2));
-	const char *db_checktxt  = db_decode(SQL_V(3));
-	textlist_add4(&tl, db_peername, db_device, db_inode, db_checktxt, 0);
-    } SQL_FIN {
-	csync_debug(2, "%d files with multiple dev:inode.\n", SQL_COUNT);
-    } SQL_END;
-    return tl;
-}
- */
-
 struct textlist *csync_check_file_same_dev_inode(db_conn_p db, const char *filename, const char* checktxt, const char *digest, struct stat *st)
 {
     struct textlist *tl = 0;
@@ -612,94 +562,26 @@ static int update_dev_inode(struct stat *file_stat, const char *dev, const char 
     return 0;
 }
 
+#define IS_UPGRADE 1
+#define IS_DIRTY   2
+#define CALC_DIGEST 4
+
 int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat, int init_run, int version)
 {
     BUF_P buffer = buffer_init();
-    int this_is_dirty = 0;
-    int calc_digest = 0;
     int count = 0;
 
     char *checktxt = buffer_strdup(buffer, csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
     // Assume that this isn't a upgrade and thus same version
-    int is_upgrade = 0;
-    int db_version = version;
     const char *encoded = db_encode(file);
     operation_t operation = 0;
     char *other = 0;
     char *digest = NULL;
-    db->check_file(db, file, NULL /* Exstract body of SQL_BEGIN */);
+    int flags = db->db_check_file(db, file, encoded, version, &other, checktxt, file_stat, buffer, &operation, &digest);
+    int calc_digest   = flags & CALC_DIGEST;
+    int this_is_dirty = flags & IS_DIRTY;
+    int is_upgrade    = flags & IS_UPGRADE;
     
-    SQL_BEGIN(db, "Checking File",
-	      "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE "
-	      "filename = '%s' ", encoded)
-    {
-    	db_version = csync_get_checktxt_version(SQL_V(0));
-
-    	if (db_version < 1 || db_version > 2) {
-	    csync_debug(0, "Error extracting version from checktxt: %s", SQL_V(0));
-    	}
-    	const char *checktxt_db = db_decode(SQL_V(0));
-    	const char *checktxt_same_version = checktxt;
-    	const char *inode    = SQL_V(1);
-    	const char *device   = SQL_V(2);
-    	const char *digest_p = SQL_V(3);
-	digest = digest_p ? buffer_strdup(buffer, digest_p) : NULL;
-	long mode;
-	long size;
-	long mtime;
-	is_upgrade = SQL_V_long(4, &mode);
-	is_upgrade = SQL_V_long(5, &size) || is_upgrade;
-	is_upgrade = SQL_V_long(6, &mtime)|| is_upgrade;
-    	int flag = 0;
-    	if (strstr(checktxt_db, ":user=") != NULL)
-	    flag |= SET_USER;
-    	if (strstr(checktxt_db, ":group=") != NULL)
-	    flag |= SET_GROUP;
-
-    	if (update_dev_inode(file_stat, device, inode) ) {
-	    csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
-			file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
-	    is_upgrade = 1;
-    	}
-    	if (!digest_p && strstr(checktxt, "type=reg")) {
-	    calc_digest = 1;
-	    is_upgrade = 1;
-    	}
-    	if (db_version != version || flag != (SET_USER|SET_GROUP)) {
-	    checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
-	    if (csync_cmpchecktxt(checktxt, checktxt_same_version))
-		is_upgrade = 1;
-    	}
-    	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
-	    operation = OP_MOD;
-	    csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n",
-			file, checktxt_same_version, checktxt_db, csync_operation_str(operation));
-	    this_is_dirty = 1;
-    	}
-    } SQL_FIN {
-	if ( SQL_COUNT == 0 ) {
-	    csync_debug(2, "New file: %s\n", file);
-	    operation = OP_NEW;
-	    if (S_ISREG(file_stat->st_mode)) {
-		calc_digest = 1;
-	    }
-	    else if ( S_ISLNK(file_stat->st_mode) )
-	    {
-		// TODO get max path
-		int max = 1024;
-		char target[max];
-		int len = readlink(file, target, max-1);
-		if (len > 0) {
-		    target[len] = 0;
-		    other = buffer_strdup(buffer, target);
-		}
-		else
-		    csync_debug(0, "Failed to read link on %s\n", file);
-	    }
-	    this_is_dirty = 1;
-	}
-    } SQL_END;
-
     if (calc_digest) {
     	int size = 2*DIGEST_MAX_SIZE+1;
     	digest = buffer_malloc(buffer, size);
@@ -718,8 +600,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 		csync_debug(1, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
 		if (ptr->intvalue == OP_RM) {
 		    operation = OP_MOVE;
-		    SQL(db,
-			"Delete moved file", "DELETE FROM file where filename = '%s' ", db_encode(ptr->value));
+		    db->delete_file(db, ptr->value, 0);
 		    other = buffer_strdup(buffer, ptr->value);
 		    csync_debug(1, "Found MOVE %s -> %s \n", ptr->value, file);
 		    break;

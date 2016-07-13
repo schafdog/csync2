@@ -1022,7 +1022,7 @@ nofork:
 
     if (mode == MODE_LIST_FILE) {
 	retval = 2;
-	db->list_file(db);
+	db->list_files(db);
     };
 
     if (mode == MODE_LIST_SYNC) {

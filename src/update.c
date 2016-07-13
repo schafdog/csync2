@@ -1288,15 +1288,8 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     struct textlist *tl_del = 0, **last_tn=&tl;
     char *current_name = 0;
     struct stat st;
-    /* order DESC since building the list reverse the order */
+    tl = db->get_dirty_by_peer_match(db, myname, peername, recursive, patlist, patnum, compare_files);
 
-    int i, use_this = patnum == 0;
-    for (i=0; i< patnum && !use_this; i++) {
-	// NOT working. Need to break out on first match?
-	tl = db->get_dirty_by_peer(db, myname, peername, recursive, patlist[i], check_dirty_by_peer);
-	if (tl)
-	    break;
-    }
     /* just return if there are no files to update */
     if ( !tl)
 	return;
@@ -1341,10 +1334,6 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 	csync_debug(2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
 	if (t->operation != OP_RM && t->operation != OP_MARK) {
 	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
-/*
-	    SQL("Clear operation",
-		"UPDATE dirty set OPERATION = '-', op = %d WHERE filename = '%s' ", OP_MARK, db_encode(t->value));
-*/
 	    if (t->value3) {
 		csync_mark(db, t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0);
 		csync_debug(0, "make other dirty %s\n", t->value3);
@@ -1386,26 +1375,14 @@ void csync_sync_host(db_conn_p db, const char *myname, const char *peername,
 		     const char **patlist, int patnum, int recursive,
 		     int dry_run, int ip_version, int db_version)
 {
-    struct textlist *tl = 0, *t;
+    struct textlist *tl = 0, *tl_tmp = 0, *t = 0;
     char *current_name = 0;
     struct stat st;
     int i, use_this = patnum == 0;
     csync_debug(0, "csync_sync_host");
     for (i=0; i< patnum && !use_this; i++) {
-	SQL_BEGIN(db, "Get non-dirty files from file table",
-		  "SELECT filename, checktxt, digest FROM file WHERE filename like '%s%%' "
-		  " and filename not in (select filename from dirty where filename like '%s%%')"
-		  " ORDER by filename ASC",
-		  patlist[i], patlist[i])
-	{
-		const char *filename  = db_decode(SQL_V(0));
-		const char *checktxt  = db_decode(SQL_V(1));
-		const char *digest    = db_decode(SQL_V(2));
-	    if ( compare_files(filename, patlist[i], recursive) ) {
-		use_this = 1;
-		textlist_add3(&tl, filename, checktxt, digest, 0);
-	    }
-	} SQL_END;
+	tl_tmp = db->non_dirty_files_match(db, patlist[i]);
+	// tl = textlist_join(tl, tl_tmp);
     }
     /* just return if there are no files to update */
     if ( !tl)
@@ -1477,51 +1454,16 @@ void csync_sync_host(db_conn_p db, const char *myname, const char *peername,
     read_conn_status(0, peername);
     conn_close();
 }
+/* Dead */
 
-void csync_update_host_master(db_conn_p db, const char *myname,
-			      const char *peername,
-			      const char **patlist, int patnum, int recursive,
-			      int dry_run, int ip_version, int db_version)
+int csync_match(const char*filename, const char *patlist[], int patnum, int recursive)
 {
-  struct textlist *tl = 0, *t, *next_t;
-  struct textlist *tl_del = 0, **last_tn=&tl;
-  char *current_name = 0;
-  struct stat st;
-  /* order DESC since building the list reverse the order */
-  SQL_BEGIN(db, "Get files for host from dirty table",
-	    "SELECT filename, operation, op, other, checktxt, digest, forced FROM dirty WHERE peername = '%s' AND myname = '%s' "
-//	    "ORDER by timestamp DESC",
-	    "ORDER by op DESC, filename DESC",
-	    db_encode(peername), db_encode(myname));
-    {
-      const char *filename  = db_decode(SQL_V(0));
-      const char *op_str    = db_decode(SQL_V(1));
-      operation_t operation = (SQL_V(2) ? atoi(SQL_V(2)) : 0);
-      const char *other     = db_decode(SQL_V(3));
-      const char *checktxt  = db_decode(SQL_V(4));
-      const char *digest    = db_decode(SQL_V(5));
-      const char *forced_str= db_decode(SQL_V(6));
-      int forced = forced_str ? atoi(forced_str) : 0;
-      int i, use_this = patnum == 0;
-      for (i=0; i< patnum && !use_this; i++)
-    	  if ( compare_files(filename, patlist[i], recursive) ) {
-    		  use_this = 1;
-      		  textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
-      	  }
-    } SQL_END;
-
-  /* just return if there are no files to update */
-    if ( !tl)
-      return;
-
-    if ( connect_to_host(db, peername, ip_version) ) {
-	csync_error_count++;
-	csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n",
-		    peername);
-	csync_debug(1, "Host stays in dirty state. "
-		    "Try again later...\n");
-	return;
-  }
+    int i;
+    for (i=0; i< patnum; i++)
+	if ( compare_files(filename, patlist[i], recursive) ) {
+	    return 1;
+	}
+    return 0;
 }
 
 void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
@@ -1541,12 +1483,7 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    csync_debug(0, "No active peers given. Unable to iterate without");
     }
     else {
-	SQL_BEGIN(db, "Get hosts from dirty table",
-		  "SELECT peername FROM dirty GROUP BY peername")
-	{
-	    textlist_add(&tl, db_decode(SQL_V(0)), 0);
-	} SQL_END;
-
+	tl = db->dirty_hosts(db);
 	int found = 1;
 	for (t = tl; t != 0; t = t->next) {
 	    if (active_peers) {
