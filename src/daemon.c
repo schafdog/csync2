@@ -92,13 +92,14 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
     int mode = 0;
     csync_debug(2, "check_dirty_daemon: %s\n", filename);
 
-    // Returns newly marked dirty, so we cannot use it bail out. FIX comment: What do I mean???
+    // Returns newly marked dirty, so we cannot use it bail out.
+    // FIX comment: What do I mean???
     int markedDirty = csync_check_single(db, filename, 0, version);
     csync_debug(2, "check_dirty_daemon: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
     
     if (isflush)
     	return 0;
-    rc = db->is_dirty(db, filename, &operation, &mode);
+    rc = db->is_dirty(db, filename, peername, &operation, &mode);
     // Found dirty
     if (rc == 1) {
 	csync_debug(2, "check_dirty_daemon: peer operation  %s %s %s\n",
@@ -788,15 +789,9 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
   return OK;
 }
 
-void csync_daemon_list(db_conn_p db, char *filename, char *tag[32], char *peername) 
+void csync_daemon_list(db_conn_p db, char *filename, char *myname, char *peername) 
 {
-    int len = strlen(filename); 
-    char buffer[len + 50];
-    buffer[0] = 0;
-    int value = strcmp("-", filename);
-    if (value) 
-	sprintf(buffer, "WHERE filename = '%s'", db_encode(filename));
-    db->list_file(db, buffer);
+    db->list_file(db, filename, myname, peername);
 }
 
 const char *csync_daemon_hello(db_conn_p db, char **peername, address_t *peeraddr, char *newpeername) {
@@ -958,7 +953,7 @@ int csync_db_update_path(db_conn_p db, const char *filename, const char *newname
   const char *newname_encoded  = db_encode(newname);
   int filename_length = strlen(filename_encoded);
   int newname_length  = strlen(filename_encoded);
-  db->move(db, filename, newname);
+  db->move_file(db, filename, newname);
   return 0;
 }
 
@@ -1109,7 +1104,7 @@ int csync_daemon_dispatch(db_conn_p db, char *filename,
 	return csync_daemon_settime(filename, value, cmd_error);
 	break;
     case A_LIST:
-	csync_daemon_list(db, filename, tag, *peername);
+	csync_daemon_list(db, filename, value, *peername);
 	break;
     case A_DEBUG:
 	csync_debug(2, "DEBUG from %s %s\n", *peername, tag[1]);

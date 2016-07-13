@@ -253,8 +253,11 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 		db->remove_dirty(db, clean_other, peername, 0);
 	    }
 	    if (dirty)
-		db->add_dirty(db, file_new, csync_new_force, myname, peername,
-			      csync_operation_str(operation), checktxt, dev, ino, result_other, operation, mode);
+		db->add_dirty(db, file_new, 0,
+			      myname, peername,
+			      csync_operation_str(operation),
+			      checktxt, dev, ino,
+			      result_other, operation, mode);
 	};
     };
     free(pl);
@@ -541,7 +544,7 @@ int csync_check_dir(db_conn_p db, const char* file, int recursive, int init_run,
     return count_dirty;
 }
 
-static int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
+int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
 {
     if (!dev)
 	return 1;
@@ -562,10 +565,6 @@ static int update_dev_inode(struct stat *file_stat, const char *dev, const char 
     return 0;
 }
 
-#define IS_UPGRADE 1
-#define IS_DIRTY   2
-#define CALC_DIGEST 4
-
 int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat, int init_run, int version)
 {
     BUF_P buffer = buffer_init();
@@ -577,7 +576,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     operation_t operation = 0;
     char *other = 0;
     char *digest = NULL;
-    int flags = db->db_check_file(db, file, encoded, version, &other, checktxt, file_stat, buffer, &operation, &digest);
+    int flags = db->check_file(db, file, encoded, version, &other, checktxt, file_stat, buffer, &operation, &digest);
     int calc_digest   = flags & CALC_DIGEST;
     int this_is_dirty = flags & IS_DIRTY;
     int is_upgrade    = flags & IS_UPGRADE;

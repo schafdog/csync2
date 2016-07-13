@@ -574,7 +574,7 @@ int main(int argc, char ** argv)
 	    break;
 	case 'P':
 	    active_peerlist = optarg;
-	    active_peers = parse_peerlist(active_peerlist);	
+	    active_peers =  parse_peerlist(active_peerlist);	
 	    break;
 	case 'B':
 	    db_blocking_mode = 0;
@@ -950,7 +950,7 @@ nofork:
     if (mode & MODE_CHECK) {
 	if ( argc == optind )
 	{
-	    tl = db->list_hint(db);
+	    tl = db->get_hints(db);
 	    for (t = tl; t != 0; t = t->next) {
 		csync_check(db, t->value, t->intvalue, init_run, db_version, 0);
 		db->remove_hint(db, t->value, t->intvalue);
@@ -982,7 +982,7 @@ nofork:
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind,
 					realnames, recursive, 0, 0);
-	    csync_update(db, myhostname, active_peers, (const char**)realnames,
+	    csync_update(db, myhostname, active_peers, (const char**) realnames,
 			 argc-optind, recursive, dry_run, ip_version,
 			 db_version, update_func, do_all);
 	    csync_realnames_free(realnames, count);
@@ -1011,7 +1011,7 @@ nofork:
     if (mode ==  MODE_MARK) {
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
-	    db->mark(db, active_peers, realname, recursive);
+	    db->mark(db, active_peerlist, realname, recursive);
 	}
     };
 

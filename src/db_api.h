@@ -41,13 +41,14 @@ struct db_conn_t {
     const char* (*escape) (db_conn_p conn, const char *string);
     void        (*free)   (db_conn_p conn, const char *escaped);
     void        (*shutdown) ();
-    void        (*mark)(db_conn_p conn, char **active_peers, const char *realname, int recursive);
-    textlist_p  (*list_dirty)(db_conn_p conn, char **active_peers, const char *realname, int recursive);
-    textlist_p  (*list_hint) (db_conn_p conn);
-    int         (*is_dirty)  (db_conn_p conn, const char *filename, int *operation, int *mode);
+    void        (*mark)(db_conn_p conn, char *active_peerlist, const char *realname, int recursive);
+
+    int  (*list_dirty)(db_conn_p conn, char **active_peers, const char *realname, int recursive);
+    void        (*list_hint) (db_conn_p conn);
     void        (*list_files) (db_conn_p conn);
-    void        (*list_file)  (db_conn_p conn, const char *filename);
-    void        (*list_sync)  (db_conn_p conn);
+    void        (*list_file)  (db_conn_p conn, const char *filename, const char *myname, const char *peername);
+    void        (*list_sync)  (db_conn_p conn /*, const char *filename, const char *peername */);
+    int         (*is_dirty)  (db_conn_p conn, const char *filename, const char *peername, int *operation, int *mode);
     void        (*force) (db_conn_p conn, const char *realname, int recursive);
     int         (*upgrade_db) (db_conn_p conn);
     int         (*update_format_v1_v2) (db_conn_p conn, const char *filename, int recursive, int do_it);
@@ -58,11 +59,12 @@ struct db_conn_t {
     textlist_p  (*find_dirty) (db_conn_p conn, int (*filter_dirty) (textlist_p *p_tl, const char *filename,
 								    const char *localname, const char *peername));
     textlist_p  (*find_file) (db_conn_p conn, int (*filter_dirty) (textlist_p *p_tl, const char *filename));
-    void        (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, const char *peername,
+    int        (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, const char *peername,
 			      const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
 			      int op, int mode);
+    
     void        (*remove_dirty)    (db_conn_p conn, const char *peername, const char *filename, int recursive);
-
+    
     textlist_p  (*get_dirty_by_peer) (db_conn_p db, const char *myname, const char *peername);
     textlist_p  (*get_dirty_by_peer_match) (db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int num,
 					    int (*match_func) (const char *file, const char *pattern, int recursive));
@@ -80,6 +82,7 @@ struct db_conn_t {
     textlist_p  (*get_commands) (db_conn_p conn);
     textlist_p  (*get_command_filename) (db_conn_p conn, const char *filename, const char *logfile);
     textlist_p  (*get_hosts) (db_conn_p conn); 
+    textlist_p  (*get_hints) (db_conn_p conn); 
 
     int         (*update_file) (db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 				const char *digest);
@@ -91,18 +94,19 @@ struct db_conn_t {
     int         (*add_action)  (db_conn_p conn, filename_p filename, const char *prefix_command, const char *logfile);
     int         (*remove_action_entry)  (db_conn_p conn, filename_p filename, const char *command, const char *logfile);
 
-    void       (*check_file) (db_conn_p db, filename_p filename, void *check_file_info);
-    int        (*db_check_file) (db_conn_p db, const char *file, const char *encoded, int version, char **other,
-			       char *checktxt, struct stat *file_stat, BUF_P buffer, int *operation,
-			       char **digest);
+    int        (*check_file) (db_conn_p db, const char *file,
+			      const char *enc, int version, char **other,
+			      char *checktxt, struct stat *file_stat,
+			      BUF_P buffer, int *operation,
+			      char **digest);
 		
     textlist_p (*check_file_same_dev_inode) (db_conn_p db, filename_p filename, const char *checktxt, const char *digest, struct stat *st);
     textlist_p (*check_dirty_file_same_dev_inode) (db_conn_p db, peername_p peername, filename_p filename,
 						   const char *checktxt, const char *digest, struct stat *st);
     textlist_p (*non_dirty_files_match) (db_conn_p db, const char *pattern);
-    textlist_p (*dirty_hosts) (db_conn_p db);
-    int  (*dir_count) (db_conn_p db, const char *dirname);
-    int (*move) (db_conn_p db, const char *oldfile, const char *newfile);
+    textlist_p (*get_dirty_hosts) (db_conn_p db);
+    int (*dir_count) (db_conn_p db, const char *dirname);
+    int (*move_file) (db_conn_p db, const char *oldfile, const char *newfile);
 };
 
 struct db_stmt_t {

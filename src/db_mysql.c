@@ -36,6 +36,7 @@
 #elif HAVE_MYSQL_MYSQL_H
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
+#include "db_sql.h"
 #endif 
 
 
@@ -172,6 +173,9 @@ fatal:
     return DB_ERROR;
   }
   *conn_p = conn;
+  // Setup common SQL statements. Override where needed
+  db_sql_init(conn);
+
   conn->private = db;
   conn->close   = db_mysql_close;
   conn->exec    = db_mysql_exec;

@@ -253,6 +253,8 @@ extern int csync_cmpchecktxt(const char *a, const char *b);
 extern int csync_cmpchecktxt_component(const char *a, const char *b);
 int csync_get_checktxt_version(const char *value);
 
+/* check.c */
+int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino);
 
 struct textlist;
 
@@ -268,6 +270,11 @@ struct textlist;
 #define OP_MARK	    256
 #define OP_UNDEF    512
 
+#define IS_UPGRADE 1
+#define IS_DIRTY   2
+#define CALC_DIGEST 4
+
+int compare_files(const char *filename, const char *pattern, int recursive);
 extern const char *csync_mode_op_str(int st_mode, int op);
 extern operation_t csync_operation(const char *operation);
 extern const char *csync_operation_str(operation_t op);

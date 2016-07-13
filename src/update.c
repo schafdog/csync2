@@ -890,7 +890,7 @@ int csync_update_file_mod(db_conn_p db,
 	    sprintf(ino_str, INO_FORMAT, st.st_ino);
 	    int mode;
 	    char *result_other = NULL;
-	    db->add_dirty(db, other, csync_new_force, myname, peername,
+	    db->add_dirty(db, other, force, myname, peername,
 			  csync_operation_str(operation), checktxt, dev_str, ino_str, result_other, operation, st.st_mode);
 	} else {
 	    csync_debug(0, "ERROR: Cannot stat %s %s.\n", filename,
@@ -1483,7 +1483,7 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    csync_debug(0, "No active peers given. Unable to iterate without");
     }
     else {
-	tl = db->dirty_hosts(db);
+	tl = db->get_dirty_hosts(db);
 	int found = 1;
 	for (t = tl; t != 0; t = t->next) {
 	    if (active_peers) {

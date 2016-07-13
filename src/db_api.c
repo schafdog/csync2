@@ -196,6 +196,7 @@ int db_upgrade_to_schema(db_conn_p db, int version)
 textlist_p db_list_dirty(db_conn_p db, char **active_peers, const char *realname, int recursive)
 {
     if (db)
+
 	return db->list_dirty(db, active_peers, realname, recursive);
     return NULL;
 }
