@@ -524,11 +524,6 @@ void db_sql_clear_operation(db_conn_p db, const char *myname, const char *peerna
 	db_encode(myname), db_encode(peername), db_encode(filename));
 }
 
-textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char *peername) {
-    const char *patlist = "/";
-    return db_sql_get_dirty_by_peer_match(db, myname, peername, 1, &patlist, 1, NULL);
-}
-
 textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int numpat,
 				    int (*get_dirty_by_peer) (const char *filename, const char *pattern, int recursive))
 {
@@ -557,6 +552,12 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, cons
 
     return tl;
 }
+
+textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char *peername) {
+    const char *patlist = "/";
+    return db_sql_get_dirty_by_peer_match(db, myname, peername, 1, &patlist, 1, NULL);
+}
+
 
 textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 				     const char *peername, filename_p filename, 
