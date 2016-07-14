@@ -1,6 +1,8 @@
 #ifndef DB_SQL_H
 #define DB_SQL_H 1
 
+#include "db_api.h"
+
 int  db_sql_init(db_conn_p conn);
 
 // Action
@@ -27,6 +29,12 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 		     const char *dev, const char *ino, const char *result_other,
 		     operation_t op, int mode);
 void db_sql_clear_operation(db_conn_p db, const char *myname, peername_p peername, filename_p filename);
+
+textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
+				    peername_p peername, filename_p filename,
+				    const char *device, const char *ino,
+				    struct stat *st_file, int mode, BUF_P buffer,
+				    check_old_operation_f check_old_operation);
 
 // Both Files and dirty
 void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname, int recursive);

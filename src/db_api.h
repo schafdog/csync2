@@ -30,6 +30,14 @@ typedef struct db_stmt_t *db_stmt_p;
 struct textlist;
 typedef struct textlist *textlist_p;
 
+typedef textlist_p (*check_old_operation_f) (const char *old_filename,
+					     const char *old_other,
+					     operation_t old_operation,
+					     const char *old_checktxt,
+					     const char *peername,
+					     int mode,
+					     struct stat *st_file, const char *file, BUF_P buffer);
+
 struct db_conn_t {
     void *private;
     int         (*exec)   (db_conn_p conn, const char* exec);
@@ -73,14 +81,13 @@ struct db_conn_t {
 
     void        (*clear_dirty)     (db_conn_p conn, const char *peername, const char *filename, int recursive);
     void        (*clear_operation) (db_conn_p conn, const char *myname, const char *peername, const char *filename, int recursive);
-    void        (*get_old_operation) (db_conn_p db, const char *checktxt,
-				      const char *peername, const char *filename, 
+
+    textlist_p  (*get_old_operation) (db_conn_p db, const char *checktxt,
+				      const char *peername, filename_p filename, 
 				      const char *device, const char *ino,
 				      struct stat *st_file, int mode, BUF_P buffer,
-				      int (*check_old_operation) (textlist_p *p_tl, const char *op_str, const char *old_filename,
-								  const char *old_other, operation_t old_operation,
-								  const char *old_checktxt, const char *peername, int mode,
-								  int rc_file, struct stat *st_file, const char *file, BUF_P buffer));
+				      check_old_operation_f check_old_operation);
+
     textlist_p  (*get_commands) (db_conn_p conn);
     textlist_p  (*get_command_filename) (db_conn_p conn, const char *filename, const char *logfile);
     textlist_p  (*get_hosts) (db_conn_p conn); 
