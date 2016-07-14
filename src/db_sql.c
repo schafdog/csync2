@@ -24,7 +24,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->add_dirty  = db_sql_add_dirty;
     conn->remove_dirty  = db_sql_remove_dirty;
 //    conn->get_dirty_by_peer = db_sql_get_dirty_by_peer;
-//    conn->get_dirty_by_peer_match  = db_sql_get_dirty_by_peer_match;
+    conn->get_dirty_by_peer_match  = db_sql_get_dirty_by_peer_match;
 //    conn->clear_dirty = db_sql_clear_dirty;
 //    conn->clear_operation = db_sql_clear_operation;
     conn->get_commands = db_sql_get_commands;
@@ -565,7 +565,12 @@ void db_sql_clear_operation(db_conn_p db, const char *myname, const char *peerna
 	db_encode(myname), db_encode(peername), db_encode(filename));
 }
 
-textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int numpat,
+textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char *peername) {
+    const char *patlist = "/";
+    return db_sql_get_dirty_by_peer_match(db, myname, peername, 1, &patlist, 1, NULL);
+}
+
+textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int numpat,
 				    int (*get_dirty_by_peer) (const char *filename, const char *pattern, int recursive))
 {
     textlist_p tl = 0;
@@ -585,7 +590,7 @@ textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char
 	int forced = forced_str ? atoi(forced_str) : 0;
 	int i = 0, found = 0;
 	for (int i ; i < numpat && !found; i++)
-	    if (get_dirty_by_peer(filename, patlist[i], recursive)) {
+	    if (get_dirty_by_peer == NULL || get_dirty_by_peer(filename, patlist[i], recursive)) {
 		textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
 		found = 1;
 	    }

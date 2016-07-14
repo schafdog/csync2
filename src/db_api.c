@@ -133,7 +133,7 @@ int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt, char **ppt
   if (conn && conn->prepare)
     return conn->prepare(conn, sql, stmt, pptail);
 
-  csync_debug(0, "No prepare function in db_prepare_stmt.\n");
+  csync_debug(0, "No prepare function in db_prepare_stmt %p %p %s.\n", conn, (conn ? conn->prepare : NULL), sql);
   return DB_ERROR;
 }
 
@@ -193,11 +193,3 @@ int db_upgrade_to_schema(db_conn_p db, int version)
 	return DB_ERROR;
 }
 
-textlist_p db_list_dirty(db_conn_p db, char **active_peers, const char *realname, int recursive)
-{
-    if (db)
-
-	return db->list_dirty(db, active_peers, realname, recursive);
-    return NULL;
-}
-	
