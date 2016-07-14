@@ -19,6 +19,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->add_hint   = db_sql_add_hint;
     conn->remove_hint= db_sql_remove_hint;
     conn->remove_file= db_sql_remove_file;
+    conn->get_old_operation = db_sql_get_old_operation;
     conn->delete_file= db_sql_remove_file;
     conn->find_dirty = db_sql_find_dirty;
     conn->add_dirty  = db_sql_add_dirty;
@@ -31,7 +32,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->get_command_filename = db_sql_get_command_filename;
     conn->update_file = db_sql_update_file;
     conn->insert_file = db_sql_insert_file;
-//    conn->check_delete  = db_sql_check_delete;
+    conn->check_delete  = db_sql_check_delete;
     conn->add_action = db_sql_add_action;
     conn->del_action = db_sql_del_action;
     conn->remove_action_entry = db_sql_remove_action_entry;
@@ -86,7 +87,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 			file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
 	    is_upgrade = 1;
     	}
-    	if (!*digest_p && strstr(checktxt, "type=reg")) {
+    	if (!*digest && strstr(checktxt, "type=reg")) {
 	    calc_digest = 1;
 	    is_upgrade = 1;
     	}
@@ -599,20 +600,17 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, cons
     return tl;
 }
 
-textlist_p db_get_old_operation(db_conn_p db, const char *checktxt,
-				const char *filename, const char *device,
-				const char *ino, const char *peername,
-				int (*get_old_operation) (const char *operation,
-							  const char *filename,
-							  const char *other,
-							  operation_t op)
-    )
+textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
+				     const char *peername, filename_p filename, 
+				     const char *device, const char *ino,
+				     struct stat *st_file, int mode, BUF_P buffer,
+				     check_old_operation_f check_old_operation)
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Checking old opertion(s) on dirty",
-	      "SELECT operation, filename, other, op FROM dirty WHERE "
+	      "SELECT operation, filename, other, checktxt, digest  FROM dirty WHERE "
 	      "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' "
-	      "ORDER BY timestadmp ",
+	      "ORDER BY timestamp ",
 	      db_encode(checktxt),
 	      db_encode(filename),
 	      db_encode(device),
@@ -626,10 +624,9 @@ textlist_p db_get_old_operation(db_conn_p db, const char *checktxt,
 	old_operation = csync_operation(SQL_V(0));
 	old_filename = db_decode(SQL_V(1));
 	old_other    = db_decode(SQL_V(2));
-	const char *old_op_str = SQL_V(3);
-	int old_op   = (old_op_str ? atoi(old_op_str) : 0);
-	//TODO what does it do? 
-	// get_old_operation(old_operation, old_filename, old_other, old_op);
+	const char *old_checktxt = SQL_V(3);
+	const char *old_digest   = SQL_V(4);
+	tl = check_old_operation(old_filename, old_other, old_operation, old_checktxt, peername, mode, st_file, filename, buffer);
 	break; 
     } SQL_FIN {
     } SQL_END;
@@ -657,14 +654,13 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 	db_encode(checktxt),
 	(dev ? dev : "NULL"),
 	(ino ? ino : "NULL"),
-	csync_db_escape_quote((result_other ? result_other : 0 /* MISSING other*/ )),
+	csync_db_escape_quote((result_other ? result_other : 0 /* TODO MISSING other*/ )),
 	op,
 	mode
 	);
     return 0;
 };
 
-inline 
 unsigned long long fstat_dev(struct stat *file_stat) {
     return (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
 }
