@@ -4,48 +4,6 @@
 #include <unistd.h>
 
 
-int  db_sql_init(db_conn_p conn) {
-    // SQL statements, using common SQL layer
-    conn->mark       = db_sql_mark;
-    conn->list_dirty = db_sql_list_dirty;
-    conn->list_hint  = db_sql_list_hint;
-    conn->get_hints  = db_sql_get_hints;
-    conn->list_files = db_sql_list_files;
-    conn->list_file  = db_sql_list_file;
-//    conn->list_sync  = db_sql_list_sync;
-    conn->is_dirty   = db_sql_is_dirty;
-    conn->force      =  db_sql_force;
-    conn->upgrade_db = db_sql_upgrade_db;
-    conn->add_hint   = db_sql_add_hint;
-    conn->remove_hint= db_sql_remove_hint;
-    conn->remove_file= db_sql_remove_file;
-    conn->get_old_operation = db_sql_get_old_operation;
-    conn->delete_file= db_sql_remove_file;
-    conn->find_dirty = db_sql_find_dirty;
-    conn->add_dirty  = db_sql_add_dirty;
-    conn->remove_dirty  = db_sql_remove_dirty;
-//    conn->get_dirty_by_peer = db_sql_get_dirty_by_peer;
-    conn->get_dirty_by_peer_match  = db_sql_get_dirty_by_peer_match;
-//    conn->clear_dirty = db_sql_clear_dirty;
-//    conn->clear_operation = db_sql_clear_operation;
-    conn->get_commands = db_sql_get_commands;
-    conn->get_command_filename = db_sql_get_command_filename;
-    conn->update_file = db_sql_update_file;
-    conn->insert_file = db_sql_insert_file;
-    conn->check_delete  = db_sql_check_delete;
-    conn->add_action = db_sql_add_action;
-    conn->del_action = db_sql_del_action;
-    conn->remove_action_entry = db_sql_remove_action_entry;
-    conn->check_file = db_sql_check_file;
-    conn->check_file_same_dev_inode = db_sql_check_file_same_dev_inode;
-    conn->check_dirty_file_same_dev_inode = db_sql_check_dirty_file_same_dev_inode;
-    conn->non_dirty_files_match = db_sql_non_dirty_files_match;
-    conn->get_dirty_hosts = db_sql_get_dirty_hosts;
-    conn->dir_count = db_sql_dir_count;
-    conn->move_file = db_sql_move_file;
-    return 0; 
-};
-
 int db_sql_check_file(db_conn_p db, const char *file,
 		      const char *encoded,
 		      int version, char **other,
@@ -708,7 +666,7 @@ void csync_generate_recursive_sql(const char *file_encoded, int recursive, char 
   }
 }
 
-int db_sql_check_del(db_conn_p db, const char *file, int recursive, int init_run)
+int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_run)
 {
     char *where_rec = "";
     struct textlist *tl = 0, *t;
@@ -862,3 +820,46 @@ textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
     free(peername_enc);
     return tl;
 }
+
+int  db_sql_init(db_conn_p conn) {
+    // SQL statements, using common SQL layer
+    conn->mark       = db_sql_mark;
+    conn->list_dirty = db_sql_list_dirty;
+    conn->list_hint  = db_sql_list_hint;
+    conn->get_hints  = db_sql_get_hints;
+    conn->list_files = db_sql_list_files;
+    conn->list_file  = db_sql_list_file;
+//    conn->list_sync  = db_sql_list_sync;
+    conn->is_dirty   = db_sql_is_dirty;
+    conn->force      =  db_sql_force;
+    conn->upgrade_db = db_sql_upgrade_db;
+    conn->add_hint   = db_sql_add_hint;
+    conn->remove_hint= db_sql_remove_hint;
+    conn->remove_file= db_sql_remove_file;
+    conn->get_old_operation = db_sql_get_old_operation;
+    conn->delete_file= db_sql_remove_file;
+    conn->find_dirty = db_sql_find_dirty;
+    conn->add_dirty  = db_sql_add_dirty;
+    conn->remove_dirty  = db_sql_remove_dirty;
+//    conn->get_dirty_by_peer = db_sql_get_dirty_by_peer;
+    conn->get_dirty_by_peer_match  = db_sql_get_dirty_by_peer_match;
+//    conn->clear_dirty = db_sql_clear_dirty;
+//    conn->clear_operation = db_sql_clear_operation;
+    conn->get_commands = db_sql_get_commands;
+    conn->get_command_filename = db_sql_get_command_filename;
+    conn->update_file = db_sql_update_file;
+    conn->insert_file = db_sql_insert_file;
+    conn->check_delete  = db_sql_check_delete;
+    conn->add_action = db_sql_add_action;
+    conn->del_action = db_sql_del_action;
+    conn->remove_action_entry = db_sql_remove_action_entry;
+    conn->check_file = db_sql_check_file;
+    conn->check_file_same_dev_inode = db_sql_check_file_same_dev_inode;
+    conn->check_dirty_file_same_dev_inode = db_sql_check_dirty_file_same_dev_inode;
+    conn->non_dirty_files_match = db_sql_non_dirty_files_match;
+    conn->get_dirty_hosts = db_sql_get_dirty_hosts;
+    conn->dir_count = db_sql_dir_count;
+    conn->move_file = db_sql_move_file;
+    return 0; 
+};
+
