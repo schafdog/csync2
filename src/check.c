@@ -143,18 +143,19 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
   return 0;
 }
 
-int check_old_operation(textlist_p *p_tl, const char *op_str, const char *old_filename,
-			 const char *old_other, operation_t old_operation,
-			 const char *old_checktxt, const char *peername, int mode, int rc_file, struct stat *st_file, const char *file, BUF_P buffer)
+textlist_p check_old_operation(const char *old_filename, const char *old_other, operation_t old_operation,
+			       const char *old_checktxt, const char *peername,
+			       int mode, struct stat *st_file, const char *file, BUF_P buffer)
 {
     operation_t operation;
-    char *result_other;
-    char *file_new;
-    char *other = NULL;
+    char *file_new = buffer_strdup(buffer, file);;
+    char *result_other = NULL;
     char *clean_other = NULL;
+    char *other = NULL;
     int dirty = 0;
+    textlist_p tl; 
     csync_debug(1, "mark other: Old operation: %s '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_filename, old_other);
-    if (CHECK_HARDLINK && !rc_file && csync_same_stat_file(st_file, old_filename)) {
+    if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
 	csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
 	operation = OP_HARDLINK;
 	result_other = buffer_strdup(buffer,old_filename);
@@ -186,18 +187,16 @@ int check_old_operation(textlist_p *p_tl, const char *op_str, const char *old_fi
 	file_new = buffer_strdup(buffer, old_other);
 	clean_other = buffer_strdup(buffer, old_filename);
 	csync_debug(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
-	other = NULL;
     }
     else if (CHECK_NEW_MV && OP_NEW == old_operation && OP_MOVE == operation) {
 	operation = OP_NEW;
 	file_new = buffer_strdup(buffer, file);
 	clean_other = buffer_strdup(buffer, old_filename);
 	csync_debug(1, "mark operation NEW->MV => NEW %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
-	other = NULL;
     }
-    // Run only once? Does not work in function
-    // break
-    return 1;
+    textlist_add4(&tl, file_new, clean_other, result_other, (dirty ? "YES": NULL),  operation);
+
+    return tl;
 }
 
 
@@ -229,7 +228,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 	    csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n",
 			csync_mode_op_str(st_file.st_mode, operation),
 			peername, file, (other ? other : "-"));
-	    if (operation && operation == OP_MOVE && other == NULL) {
+	    if (operation == OP_MOVE && other == NULL) {
 		csync_debug(1, "mark other MV operation missing other %s %s \n", peername, file);
 		operation = OP_UNDEF;
 	    }
@@ -241,12 +240,18 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 	    /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run,
 	       and thus leaking other side */
 	    if (1 && checktxt) {
-	
-		db->get_old_operation(db, checktxt, peername, file, dev, ino, &st_file, mode, buffer, check_old_operation);
-		// TODO extract from textlist !!!!!
+		textlist_p tl = db->get_old_operation(db, checktxt, peername, file, dev, ino, (rc_file ? NULL : &st_file), mode, buffer, check_old_operation);
+		if (tl) {
+		    file_new = tl->value;
+		    clean_other = tl->value2;
+		    result_other = tl->value3;
+		    dirty = (tl->value4 != NULL);
+		    operation = tl->intvalue;
+		    csync_debug(0, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
+				file_new, clean_other, result_other, dirty, operation);
+		}
 	    }
-
-	    db->remove_dirty(db, file_new, peername, 0);
+	    db->remove_dirty(db, peername, file_new, 0);
 
 	    /* Delete other file dirty status if differs from file_new */
 	    if (clean_other && strcmp(file_new, clean_other)) {
@@ -456,7 +461,7 @@ struct textlist *csync_check_link_move(db_conn_p db, const char *peername, const
     	int rc = stat(db_filename, &file_stat);
     	int db_version = csync_get_checktxt_version(db_checktxt);
     	int i = 0;
-	if (operation_new && db_operation && !strcmp(db_operation, "NEW")) {
+	if (db_operation && !strcmp(db_operation, "NEW")) {
 	    csync_debug(1, "Unable to MOVE/LINK: both NEW\n");
 	    continue;
 	}
