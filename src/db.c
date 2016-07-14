@@ -134,8 +134,8 @@ void csync_db_maycommit()
 db_conn_p csync_db_open(const char *file)
 {
     db_conn_p db = malloc(sizeof(struct db_conn_t));
-    global_db = db; 
     int rc = db_open(file, db_type, &db);
+    global_db = db; 
     if ( rc != DB_OK )
 	csync_fatal("Can't open database: %s\n", file)
 	    ;
@@ -164,8 +164,9 @@ void csync_db_close(db_conn_p db)
 	SQL(db, "COMMIT (close)", "COMMIT ");
 	tqueries_counter = -10;
     }
+    csync_debug(3, "Closing db: %p\n", db);    
     db_conn_close(db);
-    free(db);
+    csync_debug(3, "Closed db: %p\n", db);
     begin_commit_recursion--;
     global_db = 0;
 }
