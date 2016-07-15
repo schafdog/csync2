@@ -574,7 +574,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     int calc_digest   = flags & CALC_DIGEST;
     int this_is_dirty = flags & IS_DIRTY;
     int is_upgrade    = flags & IS_UPGRADE;
-    
+    csync_debug(0, "check_file: flags: %d calc_digest: %d dirty: %d is_upgrade %d \n", flags, calc_digest, this_is_dirty, is_upgrade);
     if (calc_digest) {
     	int size = 2*DIGEST_MAX_SIZE+1;
     	digest = buffer_malloc(buffer, size);
