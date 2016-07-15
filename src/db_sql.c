@@ -11,7 +11,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 		      BUF_P buffer, int *operation,
 		      char **digest)
 {
-    int flags, is_upgrade, calc_digest, this_is_dirty;
+    int flags = 0;
     int db_version = version;
     SQL_BEGIN(db, "Checking File",
 	      "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE "
@@ -31,9 +31,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	long mode;
 	long size;
 	long mtime;
-	is_upgrade = SQL_V_long(4, &mode);
-	is_upgrade = SQL_V_long(5, &size) || is_upgrade;
-	is_upgrade = SQL_V_long(6, &mtime)|| is_upgrade;
+	flags |= ( SQL_V_long(4, &mode) || SQL_V_long(5, &size) || SQL_V_long(6, &mtime) ? IS_UPGRADE : 0);
     	int flag = 0;
     	if (strstr(checktxt_db, ":user=") != NULL)
 	    flag |= SET_USER;
@@ -43,29 +41,29 @@ int db_sql_check_file(db_conn_p db, const char *file,
     	if (update_dev_inode(file_stat, device, inode) ) {
 	    csync_debug(0, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
 			file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
-	    is_upgrade = 1;
+	    flags |= IS_UPGRADE;
     	}
     	if (!*digest && strstr(checktxt, "type=reg")) {
-	    calc_digest = 1;
-	    is_upgrade = 1;
+	    flags |= CALC_DIGEST;
+	    flags |= IS_UPGRADE;
     	}
     	if (db_version != version || flag != (SET_USER|SET_GROUP)) {
 	    checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
 	    if (csync_cmpchecktxt(checktxt, checktxt_same_version))
-		is_upgrade = 1;
+	    flags |= IS_UPGRADE;
     	}
     	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	    *operation = OP_MOD;
 	    csync_debug(2, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
-	    this_is_dirty = 1;
+	    flags |= IS_DIRTY;
     	}
     } SQL_FIN {
 	if ( SQL_COUNT == 0 ) {
 	    csync_debug(2, "New file: %s\n", file);
 	    *operation = OP_NEW;
 	    if (S_ISREG(file_stat->st_mode)) {
-		calc_digest = 1;
+		flags |= CALC_DIGEST;
 	    }
 	    else if ( S_ISLNK(file_stat->st_mode) )
 	    {
@@ -80,16 +78,9 @@ int db_sql_check_file(db_conn_p db, const char *file,
 		else
 		    csync_debug(0, "Failed to read link on %s\n", file);
 	    }
-	    this_is_dirty = 1;
+	    flags |= IS_DIRTY;
 	}
     } SQL_END;
-    
-    if (is_upgrade)
-	flags |= IS_UPGRADE;
-    if (this_is_dirty)
-	flags |= IS_DIRTY;
-    if (calc_digest)
-	flags |= CALC_DIGEST;
     return flags; 
 }
 
