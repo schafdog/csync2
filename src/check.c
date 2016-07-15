@@ -247,7 +247,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 		    result_other = tl->value3;
 		    dirty = (tl->value4 != NULL);
 		    operation = tl->intvalue;
-		    csync_debug(0, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
+		    csync_debug(3, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
 				file_new, clean_other, result_other, dirty, operation);
 		}
 	    }
