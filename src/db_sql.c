@@ -31,6 +31,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	long mode;
 	long size;
 	long mtime;
+	// Missing any value then upgrade
 	flags |= ( SQL_V_long(4, &mode) || SQL_V_long(5, &size) || SQL_V_long(6, &mtime) ? IS_UPGRADE : 0);
     	int flag = 0;
     	if (strstr(checktxt_db, ":user=") != NULL)
