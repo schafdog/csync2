@@ -85,7 +85,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
     return flags; 
 }
 
-int db_sql_is_dirty(db_conn_p db, const char *peername, const char *filename,
+int db_sql_is_dirty(db_conn_p db, const char *peername, filename_p filename,
 		int *operation, int *mode)
 {
     int rc = 0;
@@ -120,7 +120,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
 	      where)
     {
 	const char *peername = db_decode(SQL_V(2));
-	const char *filename = db_decode(SQL_V(3));
+	filename_p filename = db_decode(SQL_V(3));
 	if (csync_find_next(0, filename)) {
 	    const char *force_str = SQL_V(0);
 	    if (match_peer(active_peers, peername)) {
@@ -147,7 +147,7 @@ textlist_p db_sql_non_dirty_files_match(db_conn_p db, const char *pattern) {
 	      " ORDER by filename ASC",
 	      pattern, pattern)
     {
-	const char *filename  = db_decode(SQL_V(0));
+	filename_p filename  = db_decode(SQL_V(0));
 	const char *checktxt  = db_decode(SQL_V(1));
 	const char *digest    = db_decode(SQL_V(2));
 	if ( compare_files(filename, pattern, 0 /*recursive*/) ) {
@@ -216,7 +216,7 @@ int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, in
 	      "SELECT filename, checktxt from file where "
 	      "filename = '%s' %s ORDER BY filename", url_encode(file), where_rec)
     {
-	const char *filename = url_decode(SQL_V(0));
+	filename_p filename = url_decode(SQL_V(0));
 	const char *checktxt = url_decode(SQL_V(1));
 	const char *db_filename = csync_db_escape(filename);
 	// Differ then add
@@ -260,7 +260,7 @@ textlist_p db_sql_get_hints(db_conn_p db) {
     return tl; 
 };
 
-void db_sql_remove_hint(db_conn_p db, const char *filename, int recursive)
+void db_sql_remove_hint(db_conn_p db, filename_p filename, int recursive)
 {
     SQL(db,"Remove processed hint.",
 	"DELETE FROM hint WHERE filename = '%s' "
@@ -364,10 +364,10 @@ void db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, pee
 
 }
 
-int db_sql_move_file(db_conn_p db, const char *filename, const char *newname) {
+int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {
 /*    
     char *update_sql = 0;
-    const char *filename_encoded = db_encode(filename);
+    filename_p filename_encoded = db_encode(filename);
     const char *newname_encoded  = db_encode(newname);
     int filename_length = strlen(filename_encoded);
     int newname_length  = strlen(filename_encoded);
@@ -444,19 +444,19 @@ void db_sql_add_hint(db_conn_p db, const char *file, int recursive)
 }
 
 void db_sql_remove_dirty(db_conn_p db, const char *peername,
-			 const char *filename, int recursive_NOT_IMPLEMENTED)
+			 filename_p filename, int recursive_NOT_IMPLEMENTED)
 {
     SQL(db, "Deleting old dirty file entries",
 	"DELETE FROM dirty WHERE filename = '%s' AND peername like '%s'",
 	db_encode(filename), db_encode(peername));
 }
 
-textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (const char *filename, const char *localname, const char *peername))
+textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, const char *localname, const char *peername))
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Query dirty DB",
 	      "SELECT filename, myname, peername FROM dirty") {
-	const char *filename  = db_decode(SQL_V(0));
+	filename_p filename   = db_decode(SQL_V(0));
 	const char *localname = db_decode(SQL_V(1));
 	const char *peername  = db_decode(SQL_V(2));
 	if (!filter(filename, localname, peername)) {
@@ -468,13 +468,14 @@ textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (const char *filename, 
     return tl; 
 }
 
-textlist_p db_sql_find_file(db_conn_p db,
-			    int (*filter_file) (const char *filename))
+textlist_p db_sql_find_file(db_conn_p db, filename_p pattern,
+			    int (*filter_file) (filename_p filename))
 {
     textlist_p tl = 0;    
     SQL_BEGIN(db, "Query file DB",
-	      "SELECT filename FROM file") {
-	const char *filename  = db_decode(SQL_V(0));
+	      "SELECT filename FROM file where filename like '%s%%' ",
+	      pattern) {
+	filename_p filename  = db_decode(SQL_V(0));
 	if (!filter_file(filename)) {
 	    textlist_add(&tl, filename, 0);
 	}
@@ -484,7 +485,7 @@ textlist_p db_sql_find_file(db_conn_p db,
 
 /*
 textlist_p db_sql_get_file_info_by_name(db_conn_p db, filename_p filename, const char *checktxt, const char *digest,
-					int (*check_file_info) (textlist_p *p_tl, const char *checktxt, const char *filename, const char *digest))
+					int (*check_file_info) (textlist_p *p_tl, const char *checktxt, filename_p filename, const char *digest))
 {
     textlist_p p_tl = 0;    
     SQL_BEGIN(db, "DB Dump - File",
@@ -503,7 +504,7 @@ textlist_p db_sql_get_file_info_by_name(db_conn_p db, filename_p filename, const
 }
 */
 	
-void db_sql_remove_file(db_conn_p db, const char *filename, int recursive)
+void db_sql_remove_file(db_conn_p db, filename_p filename, int recursive)
 {
     if (recursive)
 	csync_debug(0, "ERROR: Recursive delete on file is NOT IMPLEMENTED");
@@ -511,14 +512,14 @@ void db_sql_remove_file(db_conn_p db, const char *filename, int recursive)
 	"DELETE FROM file WHERE filename = '%s'", db_encode(filename));
 }
 
-void db_sql_add_dirty_simple(db_conn_p db, const char *myname, const char *peername, const char *filename)
+void db_sql_add_dirty_simple(db_conn_p db, const char *myname, const char *peername, filename_p filename)
 {
     SQL(db, "Add operation",
 	"INSERT INTO dirty (myname, peername, filename) values ('%s', '%s', '%s')",
 	db_encode(myname), db_encode(peername), db_encode(filename));
 }
 
-void db_sql_clear_operation(db_conn_p db, const char *myname, const char *peername, const char *filename)
+void db_sql_clear_operation(db_conn_p db, const char *myname, const char *peername, filename_p filename)
 {
     SQL(db, "Clear operation",
 	"UPDATE dirty set operation = '-' where myname = '%s' and peername = '%s' and filename = '%s'",
@@ -526,7 +527,7 @@ void db_sql_clear_operation(db_conn_p db, const char *myname, const char *peerna
 }
 
 textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int numpat,
-				    int (*get_dirty_by_peer) (const char *filename, const char *pattern, int recursive))
+				    int (*get_dirty_by_peer) (filename_p filename, const char *pattern, int recursive))
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Get files for host from dirty table",
@@ -534,7 +535,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, cons
 	      "ORDER by op DESC, filename DESC",
 	      db_encode(peername), db_encode(myname));
     {
-	const char *filename  = db_decode(SQL_V(0));
+	filename_p filename  = db_decode(SQL_V(0));
 	const char *op_str    = db_decode(SQL_V(1));
 	operation_t operation = (SQL_V(2) ? atoi(SQL_V(2)) : 0);
 	const char *other     = db_decode(SQL_V(3));
@@ -686,7 +687,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	      "%s where (filename = '%s' %s) ORDER BY filename",
 	      SELECT_SQL, db_encode(file), where_rec)
     {
-	const char *filename = db_decode(SQL_V(0));
+	filename_p filename  = db_decode(SQL_V(0));
 	const char *checktxt = db_decode(SQL_V(1));
 	const char *device   = db_decode(SQL_V(2));
 	const char *inode    = db_decode(SQL_V(3));
@@ -842,6 +843,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->get_old_operation = db_sql_get_old_operation;
     conn->delete_file= db_sql_remove_file;
     conn->find_dirty = db_sql_find_dirty;
+    conn->find_file = db_sql_find_file;
     conn->add_dirty  = db_sql_add_dirty;
     conn->remove_dirty  = db_sql_remove_dirty;
 //    conn->get_dirty_by_peer = db_sql_get_dirty_by_peer;
