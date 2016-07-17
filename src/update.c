@@ -1291,8 +1291,9 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     tl = db->get_dirty_by_peer_match(db, myname, peername, recursive, patlist, patnum, compare_files);
 
     /* just return if there are no files to update */
-    if ( !tl)
+    if ( !tl) {
 	return;
+    }
     
     if ( connect_to_host(db, peername, ip_version) ) {
 	csync_error_count++;
@@ -1489,14 +1490,13 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    if (active_peers) {
 		int i=0;
 		found = 0;
-		while (active_peers[i]) {
+		while (active_peers[i] && !found) {
 		    if (!strcmp(active_peers[i], t->value)) {
 			found = 1;
 			while (active_peers[i]) {
 			    active_peers[i] = active_peers[i+1];
 			    ++i;
 			}
-			break;
 		    }
 		    i++;
 		}
