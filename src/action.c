@@ -70,7 +70,7 @@ void csync_run_single_command(db_conn_p db, const char *command, const char *log
     char *real_command, *mark;
     pid_t pid;
 
-    struct textlist *tl = 0, *t;
+    textlist_p tl = 0, t;
     tl = db->get_command_filename(db, command, logfile);
     mark = strstr(command_clr, "%%");
     if ( !mark ) {
@@ -122,7 +122,7 @@ void csync_run_single_command(db_conn_p db, const char *command, const char *log
 
 void csync_run_commands(db_conn_p db)
 {
-    struct textlist *tl = 0, *t;
+    textlist_p tl = 0, t;
 
     tl = db->get_commands(db);
     for (t = tl; t != 0; t = t->next)
