@@ -99,7 +99,7 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
     
     if (isflush)
     	return 0;
-    rc = db->is_dirty(db, filename, peername, &operation, &mode);
+    rc = db->is_dirty(db, peername, filename, &operation, &mode);
     // Found dirty
     if (rc == 1) {
 	csync_debug(2, "check_dirty_daemon: peer operation  %s %s %s\n",
