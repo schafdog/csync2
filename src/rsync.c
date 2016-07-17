@@ -323,9 +323,8 @@ int csync_rs_check(const char *filename, int isreg)
   FILE *basis_file = 0, *sig_file = 0;
   char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
   int rc, chunk, found_diff = 0;
-  int backup_errno;
   rs_stats_t stats;
-  rs_result result;
+  rs_result result = 0;
   long size;
 
   csync_debug(3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n",
@@ -359,10 +358,9 @@ int csync_rs_check(const char *filename, int isreg)
   basis_file = 0;
 
   {
-    char line[100];
-    csync_debug(3, "Reading signature size from peer....\n");
-    if (conn_read_get_content_length(&size))
-      csync_fatal("Format-error while receiving data length for signature (%ld) \n", size);
+      csync_debug(3, "Reading signature size from peer....\n");
+      if (conn_read_get_content_length(&size))
+	  csync_fatal("Format-error while receiving data length for signature (%ld) \n", size);
   }
 
   if (sig_file) {
@@ -546,7 +544,6 @@ int rsync_patch_io_error(const char *errstr, const char *filename, FILE *delta_f
 int csync_rs_patch(const char *filename)
 {
   FILE *basis_file = 0, *delta_file = 0, *new_file = 0;
-  int backup_errno;
   rs_stats_t stats;
   rs_result result;
   char *errstr = "?";
