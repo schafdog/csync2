@@ -140,7 +140,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
 }
 
 textlist_p db_sql_non_dirty_files_match(db_conn_p db, const char *pattern) {
-    struct textlist *tl = 0;
+    textlist_p tl = 0;
     SQL_BEGIN(db, "Get non-dirty files from file table",
 	      "SELECT filename, checktxt, digest FROM file WHERE filename like '%s%%' "
 	      " and filename not in (select filename from dirty where filename like '%s%%')"
@@ -159,7 +159,7 @@ textlist_p db_sql_non_dirty_files_match(db_conn_p db, const char *pattern) {
 }
 
 textlist_p db_sql_get_dirty_hosts(db_conn_p db) {
-    struct textlist *tl = 0;
+    textlist_p tl = 0;
     csync_debug(3, "get dirty host\n" );
     SQL_BEGIN(db, "Get hosts from dirty table",
 	      "SELECT peername FROM dirty GROUP BY peername")
@@ -201,7 +201,7 @@ int db_sql_upgrade_db(db_conn_p db)
 int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, int do_it)
 {
     char *where_rec = "";
-    struct textlist *tl = 0, *t;
+    textlist_p tl = 0, t;
 
     if ( recursive ) {
 	if ( !strcmp(file, "/") )
@@ -673,7 +673,7 @@ void csync_generate_recursive_sql(const char *file_encoded, int recursive, char 
 int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_run)
 {
     char *where_rec = "";
-    struct textlist *tl = 0, *t;
+    textlist_p tl = 0, t;
     struct stat st;
     const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode from file ";
     csync_debug(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
