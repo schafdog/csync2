@@ -68,9 +68,9 @@ struct db_conn_t {
     void        (*remove_hint) (db_conn_p conn, const char *filename, int recursive);
     void        (*remove_file) (db_conn_p conn, const char *filename, int recursive);
     void        (*delete_file) (db_conn_p conn, const char *filename, int recursive);
-    textlist_p  (*find_dirty) (db_conn_p conn, int (*filter_dirty) (textlist_p *p_tl, const char *filename,
+    textlist_p  (*find_dirty) (db_conn_p conn, int (*filter_dirty) (const char *filename,
 								    const char *localname, const char *peername));
-    textlist_p  (*find_file) (db_conn_p conn, int (*filter_dirty) (textlist_p *p_tl, const char *filename));
+    textlist_p  (*find_file) (db_conn_p conn, int (*filter_file) (const char *filename));
     int         (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, const char *peername,
 			      const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
 			      int op, int mode);
