@@ -1073,7 +1073,7 @@ nofork:
 	retval = 0;
 	char *realname = ""; 
 	if (optind < argc) {
-	    char *realname = getrealfn(argv[optind]);
+	    realname = getrealfn(argv[optind]);
 	}
 	db->list_dirty(db, active_peers, realname, recursive);
     }
