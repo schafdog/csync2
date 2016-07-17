@@ -260,6 +260,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 			operation = t->intvalue;
 			csync_debug(3, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
 				    file_new, clean_other, result_other, dirty, operation);
+			textlist_free(t);
 		    }
 		    else {
 			csync_debug(0, "ERROR: check_old_operation MUST always return row\n");
@@ -418,35 +419,23 @@ int csync_check_del(db_conn_p db, const char *file, int recursive, int init_run)
     return db->check_delete(db, file, recursive, init_run);
 }
 
-struct textlist *csync_check_file_same_dev_inode(db_conn_p db, const char *filename, const char* checktxt, const char *digest, struct stat *st)
+textlist_p csync_check_file_same_dev_inode(db_conn_p db, const char *filename, const char* checktxt, const char *digest, struct stat *st)
 {
-    struct textlist *tl = 0;
+    textlist_p tl = 0;
     csync_debug(1, "csync_check_file_same_dev_inode %s\n", filename);
     tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st);
     return tl;
 }
 
-struct textlist *csync_check_same_dev_inode(db_conn_p db, const char *peername, const char *filename,
-					    const char *checktxt, const char *digest, struct stat *st)
+textlist_p csync_check_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st)
 {
-    struct textlist *tl = 0, *t;
-    unsigned long long dev = (st->st_dev != 0 ? st->st_dev : st->st_rdev);
-    unsigned long long ino = st->st_ino;
-    tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
-    return tl;
-}
-
-struct textlist *csync_check_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st)
-{
-    struct textlist *t;
-    struct textlist *db_tl = csync_check_same_dev_inode(db, peername, filename, checktxt, digest, st);
+    textlist_p t;
+    textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
     struct stat file_stat;
-    int count = 0;
     for (t = db_tl; t != NULL; t = t->next) {
 	const char *db_filename = t->value;
 	const char *db_checktxt = t->value2;
 	int rc = stat(db_filename, &file_stat);
-	int db_version = csync_get_checktxt_version(db_checktxt);
 	int i = 0;
 	if (rc) {
 	    csync_debug(1, "Other file not found. Posible MOVE operation: %s\n", db_filename);
@@ -460,13 +449,12 @@ struct textlist *csync_check_move(db_conn_p db, const char *peername, const char
 }
 
 
-struct textlist *csync_check_link_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, int operation, const char *digest,
+textlist_p csync_check_link_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, int operation, const char *digest,
 				       struct stat *st, textlist_loop_t loop)
 {
-    struct textlist *t, *tl = NULL;
-    struct textlist *db_tl = csync_check_same_dev_inode(db, peername, filename, checktxt, digest, st);
+    textlist_p t, tl = NULL;
+    textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
     struct stat file_stat;
-    int operation_new = operation == OP_NEW;
     int count = 0;
     for (t = db_tl; t != NULL; t = t->next) {
     	const char *db_filename = t->value;
@@ -532,7 +520,6 @@ int csync_check_dir(db_conn_p db, const char* file, int recursive, int init_run,
 		sprintf(fn, "%s/%s",
 			!strcmp(file, "/") ? "" : file,
 			namelist[n]->d_name);
-		char *operation;
 		if (csync_check_mod(db, fn, recursive, 0, init_run, version, flags, &count_dirty))
 		    dirdump_this = 1;
 	    }
@@ -602,8 +589,8 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     }
     if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
 	if (operation == OP_NEW && digest) {
-	    struct textlist *tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat);
-	    struct textlist *ptr = tl;
+	    textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat);
+	    textlist_p ptr = tl;
 	    while (ptr != NULL) {
 		csync_debug(1, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
 		if (ptr->intvalue == OP_RM) {
@@ -653,7 +640,6 @@ int csync_check_mod(db_conn_p db, const char *file, int recursive, int ignnoent,
 {
     int check_type = csync_match_file(file);
     int dirdump_this = 0, dirdump_parent = MATCH_NONE;
-    int this_is_dirty = 0;
     struct stat st;
 
     if ( check_type>0 && lstat_strict(file, &st) != 0 ) {
@@ -706,8 +692,6 @@ int csync_check_recursive(db_conn_p db, const char *filename, int recursive, int
     if (!csync_compare_mode)
 	count_dirty += csync_check_del(db, filename, recursive, init_run);
 
-    const char *file_encoded = db_encode(filename);
-
     return count_dirty;
 }
 
@@ -718,10 +702,10 @@ void csync_combined_operation(const char *peername, const char *dev, const char 
 
 void csync_check(db_conn_p db, const char *filename, int recursive, int init_run, int version, int flags)
 {
-    int hasDirty = csync_check_recursive(db, filename, recursive, init_run, version, flags);
+    /*int hasDirty = */ csync_check_recursive(db, filename, recursive, init_run, version, flags);
 /*    
-    struct textlist *dub_entries = csync_check_all_same_dev_inode(db);
-    struct textlist *ptr = dub_entries;
+    textlist_p dub_entries = csync_check_all_same_dev_inode(db);
+    textlist_p ptr = dub_entries;
     while (ptr != NULL) {
 	csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4);
 	ptr = ptr->next;
