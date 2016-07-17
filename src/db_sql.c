@@ -445,7 +445,7 @@ void db_sql_add_hint(db_conn_p db, const char *file, int recursive)
 void db_sql_remove_dirty(db_conn_p db, const char *peername,
 			 const char *filename, int recursive_NOT_IMPLEMENTED)
 {
-    SQL(db, "Remove dirty entry (if any) from dirty db",
+    SQL(db, "Deleting old dirty file entries",
 	"DELETE FROM dirty WHERE filename = '%s' AND peername like '%s'",
 	db_encode(filename), db_encode(peername));
 }
@@ -563,7 +563,7 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Checking old opertion(s) on dirty",
-	      "SELECT operation, filename, other, checktxt, digest, op  FROM dirty WHERE "
+	      "SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE "
 	      "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' "
 	      "ORDER BY timestamp ",
 	      db_encode(checktxt),
@@ -573,6 +573,7 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 	      db_encode(peername)
 	)
     {
+	// TODO remove usage of string operation
 	operation_t old_operation = csync_operation(SQL_V(0));
 	const char *old_filename = db_decode(SQL_V(1));
 	const char *old_other    = db_decode(SQL_V(2));
@@ -747,13 +748,13 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
     const char *sql =
 	" SELECT filename, checktxt, digest FROM file "
 	" WHERE "
-	"     device = %lu "
+	    " device = %lu "
 	" AND inode = %llu "
 	" AND filename != '%s'"
 	" AND checktxt  = '%s' "
 	" AND digest    = '%s' ";
 
-    SQL_BEGIN(db, "Check for same dev:inode",
+    SQL_BEGIN(db, "check_file_same_dev_inode",
 	      sql,
 	      st->st_dev, st->st_ino, db_encode(filename), checktxt, digest) {
 	const char *db_filename = db_decode(SQL_V(0));
@@ -794,7 +795,7 @@ textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
     textlist_p tl = 0;
     
     for (int index = 0; index < 2; index++) {
-	SQL_BEGIN(db, "Check for same dev:inode (not checktxt, digest)",
+	SQL_BEGIN(db, "check_dirty_file_same_dev_inode (not checktxt, digest)",
 		  sqls[index],
 		  st->st_dev, st->st_ino, filename_enc, peername_enc) {
 	    const char *db_filename = db_decode(SQL_V(0));
