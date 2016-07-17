@@ -88,7 +88,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 int db_sql_is_dirty(db_conn_p db, const char *peername, const char *filename,
 		int *operation, int *mode)
 {
-    int rc;
+    int rc = 0;
     SQL_BEGIN(db, "Check if file is dirty",
 	      "SELECT op, mode FROM dirty "
 	      "WHERE filename = '%s' and peername = '%s' LIMIT 1",
@@ -97,6 +97,7 @@ int db_sql_is_dirty(db_conn_p db, const char *peername, const char *filename,
     	rc = 1;
     	*operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
     	*mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
+	csync_debug(0, "db_sql_is_dirty %s:%s %d %d", filename, peername, *operation, *mode); 
     } SQL_END;
     return rc;
 }
@@ -159,10 +160,12 @@ textlist_p db_sql_non_dirty_files_match(db_conn_p db, const char *pattern) {
 
 textlist_p db_sql_get_dirty_hosts(db_conn_p db) {
     struct textlist *tl = 0;
+    csync_debug(0, "dirty host\n" );
     SQL_BEGIN(db, "Get hosts from dirty table",
 	      "SELECT peername FROM dirty GROUP BY peername")
     {
 	textlist_add(&tl, db_decode(SQL_V(0)), 0);
+	csync_debug(0, "dirty host %s \n", tl->value);
     } SQL_END;
 
     return tl;
@@ -522,7 +525,6 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, cons
     textlist_p tl = 0;
     SQL_BEGIN(db, "Get files for host from dirty table",
 	      "SELECT filename, operation, op, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
-//	      "ORDER by timestamp DESC",
 	      "ORDER by op DESC, filename DESC",
 	      db_encode(peername), db_encode(myname));
     {
@@ -534,12 +536,15 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, cons
 	const char *digest    = db_decode(SQL_V(5));
 	const char *forced_str= db_decode(SQL_V(6));
 	int forced = forced_str ? atoi(forced_str) : 0;
-	int i = 0, found = 0;
-	for (int i ; i < numpat && !found; i++)
+	int found = 0;
+	for (int i = 0 ; i < numpat && !found; i++) {
+	    csync_debug(0, "compare file with pattern %s\n", patlist[i]);
 	    if (get_dirty_by_peer == NULL || get_dirty_by_peer(filename, patlist[i], recursive)) {
 		textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
 		found = 1;
 	    }
+	}
+	csync_debug(0, "dirty: %s:%s %d\n", peername, filename, found);
     } SQL_END;
 
     return tl;
@@ -552,14 +557,13 @@ textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char
 
 
 textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
-				     const char *peername, filename_p filename, 
-				     const char *device, const char *ino,
-				     struct stat *st_file, int mode, BUF_P buffer,
-				     check_old_operation_f check_old_operation)
+				    const char *peername, filename_p filename, 
+				    const char *device, const char *ino,
+				    BUF_P buffer)
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Checking old opertion(s) on dirty",
-	      "SELECT operation, filename, other, checktxt, digest  FROM dirty WHERE "
+	      "SELECT operation, filename, other, checktxt, digest, op  FROM dirty WHERE "
 	      "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' "
 	      "ORDER BY timestamp ",
 	      db_encode(checktxt),
@@ -569,15 +573,15 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 	      db_encode(peername)
 	)
     {
-	operation_t old_operation;
-	const char *old_filename;
-	const char *old_other;
-	old_operation = csync_operation(SQL_V(0));
-	old_filename = db_decode(SQL_V(1));
-	old_other    = db_decode(SQL_V(2));
+	operation_t old_operation = csync_operation(SQL_V(0));
+	const char *old_filename = db_decode(SQL_V(1));
+	const char *old_other    = db_decode(SQL_V(2));
 	const char *old_checktxt = SQL_V(3);
 	const char *old_digest   = SQL_V(4);
-	tl = check_old_operation(old_filename, old_other, old_operation, old_checktxt, peername, mode, st_file, filename, buffer);
+	operation_t op = SQL_V(5) ? atoi(SQL_V(5)) : 0;
+	if (op != old_operation)
+	    csync_debug(0, "ERROR: operation differs: %s != %d %s\n", SQL_V(0), op, csync_operation_str(op));
+	textlist_add4(&tl, old_filename, old_other, old_checktxt, old_digest, old_operation);
 	break; 
     } SQL_FIN {
     } SQL_END;

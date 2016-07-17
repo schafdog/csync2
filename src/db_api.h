@@ -30,13 +30,15 @@ typedef struct db_stmt_t *db_stmt_p;
 struct textlist;
 typedef struct textlist *textlist_p;
 
-typedef textlist_p (*check_old_operation_f) (const char *old_filename,
+typedef textlist_p (*check_old_operation_f) (const char *file,
+					     int mode,
+					     struct stat *st_file, 
+					     const char *old_filename,
 					     const char *old_other,
 					     operation_t old_operation,
 					     const char *old_checktxt,
 					     const char *peername,
-					     int mode,
-					     struct stat *st_file, const char *file, BUF_P buffer);
+					     BUF_P buffer);
 
 struct db_conn_t {
     void *private;
@@ -84,9 +86,7 @@ struct db_conn_t {
 
     textlist_p  (*get_old_operation) (db_conn_p db, const char *checktxt,
 				      const char *peername, filename_p filename, 
-				      const char *device, const char *ino,
-				      struct stat *st_file, int mode, BUF_P buffer,
-				      check_old_operation_f check_old_operation);
+				      const char *device, const char *ino, BUF_P buffer);
 
     textlist_p  (*get_commands) (db_conn_p conn);
     textlist_p  (*get_command_filename) (db_conn_p conn, const char *filename, const char *logfile);
