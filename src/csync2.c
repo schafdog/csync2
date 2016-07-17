@@ -723,6 +723,7 @@ int main(int argc, char ** argv)
 	 mode != MODE_UPGRADE_DB &&
 	 mode != MODE_LIST_DIRTY &&
 	 mode != MODE_EQUAL &&
+	 mode != MODE_REMOVE_OLD &&
 	 update_format == 0)
 	help(argv[0]);
 
@@ -1079,9 +1080,14 @@ nofork:
 	db->list_dirty(db, active_peers, realname, recursive);
     }
     if (mode == MODE_REMOVE_OLD) {
+	char *realname = ""; 
+	if (optind < argc) {
+	    realname = getrealfn(argv[optind]);
+	}
 	if ( active_grouplist )
 	    csync_fatal("Never run -R with -G!\n");
-	csync_remove_old();
+	// TODO add "path" to limit clean up
+	csync_remove_old(db, realname);
     }
 
     csync_run_commands(db);
