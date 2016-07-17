@@ -484,7 +484,8 @@ void select_recursive(char *db_encoded, char **where_rec) {
 }
 
 int main(int argc, char ** argv)
-{	struct textlist *tl = 0, *t;
+{
+    textlist_p tl = 0, t;
     int mode = MODE_NONE;
     int mode_test_auto_diff = 0;
     int init_run = 0;
