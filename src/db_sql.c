@@ -774,7 +774,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 	csync_debug(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
 		    SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
     } SQL_END;
-    return 0;
+    return tl;
 }
 
 textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
