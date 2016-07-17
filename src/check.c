@@ -143,15 +143,14 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
   return 0;
 }
 
-textlist_p check_old_operation(const char *file, operation_t operation, int mode, struct stat *st_file,
+textlist_p check_old_operation(const char *file, operation_t operation, int mode, struct stat *st_file, const char *other,
 			       const char *old_filename, const char *old_other, operation_t old_operation,
 			       const char *old_checktxt, const char *peername,
 			       BUF_P buffer)
 {
-    char *file_new = buffer_strdup(buffer, file);;
-    char *result_other = NULL;
+    char *file_new = buffer_strdup(buffer, file);
+    const char *result_other = other;
     char *clean_other = NULL;
-    char *other = NULL;
     int dirty = 1; // Assume dirty
     textlist_p tl; 
     csync_debug(1, "mark other: Old operation: %s '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_filename, old_other);
@@ -194,6 +193,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 	file_new = buffer_strdup(buffer, file);
 	clean_other = buffer_strdup(buffer, old_filename);
 	csync_debug(1, "mark operation NEW->MV => NEW %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
+	result_other = NULL;
     }
     textlist_add4(&tl, file_new, clean_other, result_other, (dirty ? "YES": NULL),  operation);
 
@@ -235,7 +235,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 	    }
 	    short dirty = 1;
 	    char *clean_other = NULL;
-	    char *result_other = NULL;
+	    const char *result_other = other;
 	    char *file_new = buffer_strdup(buffer, file);
 	    /* We dont currently have a checktxt when marking files. */
 	    /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run,
@@ -243,7 +243,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 	    if (1 && checktxt) {
 		textlist_p tl = db->get_old_operation(db, checktxt, peername, file, dev, ino, buffer);
 		if (tl) {
-		    textlist_p t = check_old_operation(file, operation, mode, (rc_file ? NULL : &st_file),
+		    textlist_p t = check_old_operation(file, operation, mode, (rc_file ? NULL : &st_file), other, 
 							tl->value,  // old filename
 							tl->value2, // old other
 							tl->intvalue, // operation
@@ -270,7 +270,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 
 	    /* Delete other file dirty status if differs from file_new */
 	    if (clean_other && strcmp(file_new, clean_other)) {
-		db->remove_dirty(db, clean_other, peername, 0);
+		db->remove_dirty(db, peername, clean_other, 0);
 	    }
 	    if (dirty)
 		db->add_dirty(db, file_new, 0,
