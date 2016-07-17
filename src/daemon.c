@@ -533,14 +533,17 @@ static void destroy_tag(char *tag[32]) {
 
 int csync_daemon_hardlink(const char *filename, const char *linkname, const char *is_identical, const char **cmd_error);
 
-struct textlist *csync_hardlink(const char *filename, struct stat *st, struct textlist *tl)
+textlist_p csync_hardlink(const char *filename, struct stat *st, textlist_p tl)
 {
   const char *cmd_error = NULL;
-  struct textlist *t = tl;
+  textlist_p t = tl;
   while (t) {
     char *src  = t->value;
     int rc = unlink(src);
-    
+    if (rc) {
+	csync_debug(0, "Failed to unlink '%s'before hardlinking to '%s'",
+		    src, filename);
+    }
     csync_daemon_hardlink(filename, src, "1", &cmd_error);
     t = t->next;
   }
@@ -566,14 +569,17 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
     int new_rc = stat(filename, &st_patched);
     if (!new_rc) {
       if (st.st_nlink > 1) {
-	const char *checktxt = csync_genchecktxt_version(&st_patched, filename, SET_USER|SET_GROUP, db_version);
-
-	// TODO scan file for hardlinks to old file. 
-	// check_link now works on dirty
-	struct textlist *tl = NULL; // csync_check_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
-	// csync_hardlink does not return a list. 
-	if (tl) 
-	  textlist_free(tl);
+/*	  
+	  const char *checktxt = csync_genchecktxt_version(&st_patched, filename,
+							 SET_USER|SET_GROUP,
+							 db_version);
+*/
+ 	  // TODO scan file for hardlinks to old file. 
+	  // check_link now works on dirty
+	  textlist_p tl = NULL; // csync_check_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
+	  // csync_hardlink does not return a list. 
+	  if (tl) 
+	      textlist_free(tl);
       }
     }
     else
@@ -947,22 +953,16 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
   return ABORT_CMD;
 }
 
-int csync_db_update_path(db_conn_p db, const char *filename, const char *newname) {
-  char *update_sql = 0;
-  const char *filename_encoded = db_encode(filename);
-  const char *newname_encoded  = db_encode(newname);
-  int filename_length = strlen(filename_encoded);
-  int newname_length  = strlen(filename_encoded);
-  db->move_file(db, filename, newname);
-  return 0;
-}
-
 int csync_daemon_mv(db_conn_p db, const char *filename, const char *newname, const char **cmd_error) {
   if (rename(filename, newname)) {
     *cmd_error = strerror(errno);
     return ABORT_CMD;
   }
-  int rc = csync_db_update_path(db, filename,newname);
+  int rc = db->move_file(db, filename, newname);
+  if (rc) {
+      csync_debug(0, "ERROR: failed to update path for moved file %s -> %s\n",
+		  filename, newname);
+  }
   return OK;
 }
 
@@ -1162,7 +1162,6 @@ void csync_daemon_session(db_conn_p db, int db_version, int protocol_version, in
   address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
   socklen_t peerlen = sizeof(peeraddr);
   char line[4096], *peername=0, *tag[32];
-  int i;
   const char *cmd_error  = NULL;
   //TODO only valid for INETD mode since we do not set fd 0 otherwise.
   if (MODE_INETD == mode)  
