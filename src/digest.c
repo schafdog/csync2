@@ -9,7 +9,6 @@ int dsync_digest(int file, const char *digest_name, unsigned char *md_value, uns
 {
   EVP_MD_CTX *mdctx;
   const EVP_MD *md;
-  int i; 
 
   OpenSSL_add_all_digests();
 
