@@ -202,7 +202,6 @@ int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, in
 {
     char *where_rec = "";
     struct textlist *tl = 0, *t;
-    struct stat st;
 
     if ( recursive ) {
 	if ( !strcmp(file, "/") )
@@ -366,11 +365,13 @@ void db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, pee
 }
 
 int db_sql_move_file(db_conn_p db, const char *filename, const char *newname) {
+/*    
     char *update_sql = 0;
     const char *filename_encoded = db_encode(filename);
     const char *newname_encoded  = db_encode(newname);
     int filename_length = strlen(filename_encoded);
     int newname_length  = strlen(filename_encoded);
+*/
     //  ASPRINTF(&update_sql, "")
     //csync_debug(1, "SQL UPDATE PATH: %s\n", update_sql);
     /*
@@ -422,7 +423,7 @@ textlist_p db_sql_get_command_filename(db_conn_p db, const char *command, const 
 
 int db_sql_dir_count(db_conn_p db, const char *dirname)
 {
-    int count;
+    int count = 0;
     SQL_BEGIN(db, "Check if directory count",
 	      "SELECT count(*) FROM file WHERE filename like '%s/%%'",
 	      db_encode(dirname))
@@ -450,7 +451,7 @@ void db_sql_remove_dirty(db_conn_p db, const char *peername,
 	db_encode(filename), db_encode(peername));
 }
 
-textlist_p db_sql_find_dirty(db_conn_p db, int (*filter_dirty) (textlist_p *p_tl, const char *filename, const char *localname, const char *peername))
+textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (const char *filename, const char *localname, const char *peername))
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Query dirty DB",
@@ -458,26 +459,30 @@ textlist_p db_sql_find_dirty(db_conn_p db, int (*filter_dirty) (textlist_p *p_tl
 	const char *filename  = db_decode(SQL_V(0));
 	const char *localname = db_decode(SQL_V(1));
 	const char *peername  = db_decode(SQL_V(2));
-	//TODO FIX check_dirty(&tl, filename, localname, peername);
-	    
+	if (!filter(filename, localname, peername)) {
+	    csync_debug(1, "Remove '%s:%s' from dirty. No longer in configuration", peername, filename);
+	    textlist_add2(&tl, filename, peername, 0);
+	}
     } SQL_END;
 
     return tl; 
 }
 
 textlist_p db_sql_find_file(db_conn_p db,
-			    int (*check_file) (const char *filename,
-					       textlist_p *p_tl))
+			    int (*filter_file) (const char *filename))
 {
     textlist_p tl = 0;    
     SQL_BEGIN(db, "Query file DB",
 	      "SELECT filename FROM file") {
 	const char *filename  = db_decode(SQL_V(0));
-	if (check_file(filename, &tl))
-	    return tl; 
+	if (!filter_file(filename)) {
+	    textlist_add(&tl, filename, 0);
+	}
     } SQL_END;
     return tl;
 }
+
+/*
 textlist_p db_sql_get_file_info_by_name(db_conn_p db, filename_p filename, const char *checktxt, const char *digest,
 					int (*check_file_info) (textlist_p *p_tl, const char *checktxt, const char *filename, const char *digest))
 {
@@ -496,6 +501,7 @@ textlist_p db_sql_get_file_info_by_name(db_conn_p db, filename_p filename, const
 
     return p_tl;
 }
+*/
 	
 void db_sql_remove_file(db_conn_p db, const char *filename, int recursive)
 {
@@ -697,7 +703,6 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
     for (t = tl; t != 0; t = t->next) {
 	if (!init_run) {
 	    //csync_debug(0, "check_dirty (rm): before mark (all) \n");
-	    struct stat stat;
 	    csync_mark(db, t->value, 0, 0, OP_RM, t->value2, t->value3, t->value4, t->intvalue);
 	    count_deletes++;
 	}
