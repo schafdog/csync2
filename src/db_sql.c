@@ -97,7 +97,7 @@ int db_sql_is_dirty(db_conn_p db, const char *peername, const char *filename,
     	rc = 1;
     	*operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
     	*mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
-	csync_debug(0, "db_sql_is_dirty %s:%s %d %d", filename, peername, *operation, *mode); 
+	csync_debug(3, "db_sql_is_dirty %s:%s %d %d\n", filename, peername, *operation, *mode); 
     } SQL_END;
     return rc;
 }
