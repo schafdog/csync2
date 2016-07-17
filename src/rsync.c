@@ -318,7 +318,7 @@ int csync_recv_file(FILE *out)
   return 0;
 }
 
-int csync_rs_check(const char *filename, int isreg)
+int csync_rs_check(filename_p filename, int isreg)
 {
   FILE *basis_file = 0, *sig_file = 0;
   char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
@@ -410,14 +410,14 @@ int csync_rs_check(const char *filename, int isreg)
 }
  
 
-int rsync_check_io_error(int err_no, const char *filename, FILE *basis_file, FILE *sig_file, FILE *new_file) 
+int rsync_check_io_error(int err_no, filename_p filename, FILE *basis_file, FILE *sig_file, FILE *new_file) 
 {
   csync_debug(0, "I/O Error '%s' in rsync-check: %s\n", strerror(errno), filename);
   return rsync_close_error(err_no, basis_file, sig_file, new_file);
 
 }
 
-void csync_rs_sig(const char *filename)
+void csync_rs_sig(filename_p filename)
 {
   FILE *basis_file = 0, *sig_file = 0;
   rs_stats_t stats;
@@ -469,13 +469,13 @@ void io_error(const char * filename, FILE *basis_file, FILE *sig_file) {
 }
 
 
-int rsync_delta_io_error(int err_no, const char *filename, FILE *new_file, FILE *delta_file, FILE *sig_file) 
+int rsync_delta_io_error(int err_no, filename_p filename, FILE *new_file, FILE *delta_file, FILE *sig_file) 
 {
   csync_debug(0, "I/O Error '%s' in rsync-delta: %s\n", strerror(errno), filename);
   return rsync_close_error(err_no, new_file, delta_file, sig_file);
 }
 
-int csync_rs_delta(const char *filename)
+int csync_rs_delta(filename_p filename)
 {
   FILE *sig_file = 0, *new_file = 0, *delta_file = 0;
   rs_result result;
@@ -534,14 +534,14 @@ int csync_rs_delta(const char *filename)
   return 0;
 }
 
-int rsync_patch_io_error(const char *errstr, const char *filename, FILE *delta_file, FILE* basis_file, FILE *new_file)
+int rsync_patch_io_error(const char *errstr, filename_p filename, FILE *delta_file, FILE* basis_file, FILE *new_file)
 {
   csync_debug(0, "I/O Error '%s' while %s in rsync-patch: %s\n",
 	      strerror(errno), errstr, filename);
   return rsync_close_error(errno, delta_file, basis_file, new_file); 
 }
 
-int csync_rs_patch(const char *filename)
+int csync_rs_patch(filename_p filename)
 {
   FILE *basis_file = 0, *delta_file = 0, *new_file = 0;
   rs_stats_t stats;

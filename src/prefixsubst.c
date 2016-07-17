@@ -56,7 +56,7 @@ const char *prefixsubst(const char *in)
 	return 0;
 }
 
-const char *prefixencode(const char *filename) {
+const char *prefixencode(filename_p filename) {
 #if __CYGWIN__
 	if (!strcmp(filename, "/")) {
 		filename = "/cygdrive";
