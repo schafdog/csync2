@@ -160,12 +160,12 @@ textlist_p db_sql_non_dirty_files_match(db_conn_p db, const char *pattern) {
 
 textlist_p db_sql_get_dirty_hosts(db_conn_p db) {
     struct textlist *tl = 0;
-    csync_debug(0, "dirty host\n" );
+    csync_debug(3, "get dirty host\n" );
     SQL_BEGIN(db, "Get hosts from dirty table",
 	      "SELECT peername FROM dirty GROUP BY peername")
     {
 	textlist_add(&tl, db_decode(SQL_V(0)), 0);
-	csync_debug(0, "dirty host %s \n", tl->value);
+	csync_debug(3, "dirty host %s \n", tl->value);
     } SQL_END;
 
     return tl;
@@ -538,13 +538,13 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, cons
 	int forced = forced_str ? atoi(forced_str) : 0;
 	int found = 0;
 	for (int i = 0 ; i < numpat && !found; i++) {
-	    csync_debug(0, "compare file with pattern %s\n", patlist[i]);
+	    csync_debug(3, "compare file with pattern %s\n", patlist[i]);
 	    if (get_dirty_by_peer == NULL || get_dirty_by_peer(filename, patlist[i], recursive)) {
 		textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
 		found = 1;
 	    }
 	}
-	csync_debug(0, "dirty: %s:%s %d\n", peername, filename, found);
+	csync_debug(3, "dirty: %s:%s %d\n", peername, filename, found);
     } SQL_END;
 
     return tl;
