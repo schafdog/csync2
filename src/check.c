@@ -143,22 +143,23 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
   return 0;
 }
 
-textlist_p check_old_operation(const char *old_filename, const char *old_other, operation_t old_operation,
+textlist_p check_old_operation(const char *file, operation_t operation, int mode, struct stat *st_file,
+			       const char *old_filename, const char *old_other, operation_t old_operation,
 			       const char *old_checktxt, const char *peername,
-			       int mode, struct stat *st_file, const char *file, BUF_P buffer)
+			       BUF_P buffer)
 {
-    operation_t operation;
     char *file_new = buffer_strdup(buffer, file);;
     char *result_other = NULL;
     char *clean_other = NULL;
     char *other = NULL;
-    int dirty = 0;
+    int dirty = 1; // Assume dirty
     textlist_p tl; 
     csync_debug(1, "mark other: Old operation: %s '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_filename, old_other);
     if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
 	csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
 	operation = OP_HARDLINK;
 	result_other = buffer_strdup(buffer,old_filename);
+	dirty = 1;
     }
     // NEW/MK A -> RM A => remove from dirty, as it newer happened if it is same filename
     else if (CHECK_NEW_RM && operation == OP_RM && (old_operation == OP_NEW || old_operation == OP_HARDLINK) && !strcmp(file,old_filename)) {
@@ -240,15 +241,29 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 	    /* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run,
 	       and thus leaking other side */
 	    if (1 && checktxt) {
-		textlist_p tl = db->get_old_operation(db, checktxt, peername, file, dev, ino, (rc_file ? NULL : &st_file), mode, buffer, check_old_operation);
+		textlist_p tl = db->get_old_operation(db, checktxt, peername, file, dev, ino, buffer);
 		if (tl) {
-		    file_new = tl->value;
-		    clean_other = tl->value2;
-		    result_other = tl->value3;
-		    dirty = (tl->value4 != NULL);
-		    operation = tl->intvalue;
-		    csync_debug(3, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
-				file_new, clean_other, result_other, dirty, operation);
+		    textlist_p t = check_old_operation(file, operation, mode, (rc_file ? NULL : &st_file),
+							tl->value,  // old filename
+							tl->value2, // old other
+							tl->intvalue, // operation
+							tl->value3,   // checktxt
+							peername,
+							buffer);
+		    textlist_free(tl);
+		    
+		    if (t) {
+			file_new = t->value;
+			clean_other = t->value2;
+			result_other = t->value3;
+			dirty = (t->value4 != NULL);
+			operation = t->intvalue;
+			csync_debug(3, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
+				    file_new, clean_other, result_other, dirty, operation);
+		    }
+		    else {
+			csync_debug(0, "ERROR: check_old_operation MUST always return row\n");
+		    }
 		}
 	    }
 	    db->remove_dirty(db, peername, file_new, 0);
@@ -628,15 +643,6 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	}
 	else {
 	    db->insert_file(db, encoded, checktxt_encoded, file_stat, digest);
-	}
-	if (!init_run && this_is_dirty) {
-	    //      csync_debug(0, "check_dirty (mod): before mark (all) \n");
-	    char dev_str[100];
-	    char ino_str[100];
-	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
-	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode);
-	    count = 1;
 	}
     }
     buffer_destroy(buffer);
