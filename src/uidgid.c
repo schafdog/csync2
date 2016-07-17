@@ -65,7 +65,6 @@ int gid_to_name(gid_t gid, char *buffer, int length, const char *default_value)
    //return NULL;
   // requires c99
   char buf[buflen];
-  struct passwd pwbuf, *pwbufp;
   struct group grpbuf, *grpbufp;
   if (0 != getgrgid_r(gid, &grpbuf, buf, buflen, &grpbufp) || !grpbufp) {
      if (default_value)
