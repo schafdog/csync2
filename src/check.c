@@ -145,7 +145,7 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
 
 textlist_p check_old_operation(const char *file, operation_t operation, int mode, struct stat *st_file, const char *other,
 			       const char *old_filename, const char *old_other, operation_t old_operation,
-			       const char *old_checktxt, const char *peername,
+			       const char *old_checktxt, peername_p peername,
 			       BUF_P buffer)
 {
     char *file_new = buffer_strdup(buffer, file);
@@ -221,7 +221,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
     int rc_file = stat(file, &st_file);
     const char *other;
     for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
-	const char *peername = pl[pl_idx].peername;
+	peername_p peername = pl[pl_idx].peername;
 	const char *myname = pl[pl_idx].myname;
 	operation = operation_org;
 	other = org_other;
@@ -427,7 +427,7 @@ textlist_p csync_check_file_same_dev_inode(db_conn_p db, const char *filename, c
     return tl;
 }
 
-textlist_p csync_check_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st)
+textlist_p csync_check_move(db_conn_p db, peername_p peername, const char *filename, const char* checktxt, const char *digest, struct stat *st)
 {
     textlist_p t;
     textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
@@ -449,7 +449,7 @@ textlist_p csync_check_move(db_conn_p db, const char *peername, const char *file
 }
 
 
-textlist_p csync_check_link_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, int operation, const char *digest,
+textlist_p csync_check_link_move(db_conn_p db, peername_p peername, const char *filename, const char* checktxt, int operation, const char *digest,
 				       struct stat *st, textlist_loop_t loop)
 {
     textlist_p t, tl = NULL;
@@ -696,7 +696,7 @@ int csync_check_recursive(db_conn_p db, const char *filename, int recursive, int
 }
 
 
-void csync_combined_operation(const char *peername, const char *dev, const char *inode, const char *checktxt) {
+void csync_combined_operation(peername_p peername, const char *dev, const char *inode, const char *checktxt) {
 
 }
 

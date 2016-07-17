@@ -1368,7 +1368,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
   conn_close();
 }
 
-void csync_sync_host(db_conn_p db, const char *myname, const char *peername,
+void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 		     const char **patlist, int patnum, int recursive,
 		     int dry_run, int ip_version, int db_version)
 {
@@ -1909,7 +1909,7 @@ int filter_missing_dirty(const char *filename, const char *localname, peername_p
 
 int filter_missing_file(const char *filename)
 {
-    return !csync_find_next(0, filename);
+    return csync_find_next(0, filename) != NULL;
 
 };
 

@@ -52,7 +52,7 @@ int conn_get()
     return conn_fd_in;
 }
 /* getaddrinfo stuff mostly copied from its manpage */
-int conn_connect(const char *peername, int ip_version)
+int conn_connect(peername_p peername, int ip_version)
 {
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
@@ -105,7 +105,7 @@ int conn_connect(const char *peername, int ip_version)
 
 char *active_peer = 0;
 
-int conn_open(const char *peername, int ip_version)
+int conn_open(peername_p peername, int ip_version)
 {
 	int on = 1;
 
@@ -261,7 +261,7 @@ int conn_activate_ssl(int server_role)
 	return 0;
 }
 
-int conn_check_peer_cert(db_conn_p db, const char *peername, int callfatal)
+int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 {
 	const gnutls_datum_t *peercerts;
 	unsigned npeercerts;
@@ -318,7 +318,7 @@ int conn_check_peer_cert(db_conn_p db, const char *peername, int callfatal)
 
 #else
 
-int conn_check_peer_cert(const char *peername, int callfatal)
+int conn_check_peer_cert(peername_p peername, int callfatal)
 {
 	return 1;
 }

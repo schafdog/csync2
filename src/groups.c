@@ -124,7 +124,7 @@ void csync_check_usefullness(const char *file, int recursive)
   csync_fatal("FATAL: %s did not match any configuration.\n", file);
 }
 
-int csync_match_file_host(const char *file, const char *myname, const char *peername, const char **keys)
+int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys)
 {
   const struct csync_group *g = NULL;
 

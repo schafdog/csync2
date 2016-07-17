@@ -85,7 +85,7 @@ int csync_dir_count(db_conn_p db, const char *filename)
     return count;
 }
 
-int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
+int csync_check_dirty(db_conn_p db, const char *filename, peername_p peername, int isflush, int version, const char **cmd_error)
 {
     int rc = 0;
     int operation = 0;
@@ -125,7 +125,7 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
     return rc;
 }
 
-void csync_file_update(db_conn_p db, const char *filename, const char *peername, int db_version)
+void csync_file_update(db_conn_p db, const char *filename, peername_p peername, int db_version)
 {
   struct stat st;
   db->remove_dirty(db, peername, filename, 0);
@@ -642,7 +642,7 @@ struct csync_command *find_command(const char *cmd) {
   return &cmdtab[cmdnr];
 }
 
-int csync_daemon_check_identify(struct csync_command *cmd, const char *peername, address_t *peeraddr) {
+int csync_daemon_check_identify(struct csync_command *cmd, peername_p peername, address_t *peeraddr) {
   char buf[INET6_ADDRSTRLEN];
   if ( cmd->need_ident && !peername ) {
     conn_printf("Dear %s, please identify first.\n",
