@@ -1913,8 +1913,9 @@ int filter_missing_file(const char *filename)
 
 };
 
-void csync_remove_old(db_conn_p db)
+void csync_remove_old(db_conn_p db, filename_p pattern)
 {
+    csync_debug(0,"remove_old: dirty\n");
     textlist_p tl = 0, t;
     tl = db->find_dirty(db, filter_missing_dirty);
     for (t = tl; t != 0; t = t->next) {
@@ -1924,11 +1925,13 @@ void csync_remove_old(db_conn_p db)
 	db->remove_dirty(db, peername, filename, 0);
     }
     textlist_free(tl);
+    csync_debug(0,"remove_old: file\n");
     tl = 0;
-    tl = db->find_file(db, filter_missing_file); 
+    tl = db->find_file(db, pattern, filter_missing_file); 
     for (t = tl; t != 0; t = t->next) {
 	csync_debug(1, "Removing %s from file db.\n", t->value);
 	db->remove_file(db, t->value, 0);
     }
     textlist_free(tl);
+    csync_debug(0,"remove_old: end\n");
 };
