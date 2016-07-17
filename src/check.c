@@ -152,7 +152,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     const char *result_other = other;
     char *clean_other = NULL;
     int dirty = 1; // Assume dirty
-    textlist_p tl; 
+    textlist_p tl = NULL; 
     csync_debug(1, "mark other: Old operation: %s '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_filename, old_other);
     if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
 	csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
@@ -253,14 +253,14 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 		    textlist_free(tl);
 		    
 		    if (t) {
-			file_new = t->value;
-			clean_other = t->value2;
-			result_other = t->value3;
+			file_new = buffer_strdup(buffer, t->value);
+			clean_other = buffer_strdup(buffer, t->value2);
+			result_other = buffer_strdup(buffer,t->value3);
 			dirty = (t->value4 != NULL);
 			operation = t->intvalue;
+			textlist_free(t);
 			csync_debug(3, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
 				    file_new, clean_other, result_other, dirty, operation);
-			textlist_free(t);
 		    }
 		    else {
 			csync_debug(0, "ERROR: check_old_operation MUST always return row\n");
