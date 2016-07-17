@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-void csync_schedule_commands(db_conn_p db, const char *filename, int islocal)
+void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal)
 {
     const struct csync_group *g = NULL;
     const struct csync_group_action *a = NULL;

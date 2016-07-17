@@ -40,7 +40,7 @@ static char *my_get_current_dir_name()
 /*
  * glibc's realpath() is broken - so don't use it!
  */
-char *getrealfn(const char *filename)
+char *getrealfn(filename_p filename)
 {
 	static char *ret = 0;
 	char *st_mark = 0;
