@@ -399,7 +399,6 @@ int csync_update_file_setmod(peername_p peername, const char *key_enc,
   return read_conn_status(filename, peername);
 }
 
-static
 int csync_next_step_UNUSED(int rc, int auto_run, const char *myname, peername_p peername,
 		    const char *key_enc,
 		    const char *filename, const char *filename_enc,
@@ -438,7 +437,7 @@ int csync_update_file_del(db_conn_p db,
 			  const char *myname, peername_p peername, const char *filename,
 			  const char *digest, int force, int dry_run)
 {
-    int last_conn_status = 0, auto_resolve_run = 0;
+    int auto_resolve_run = 0;
     const char *key = csync_key(peername, filename);
 
     if ( !key ) {
@@ -506,7 +505,6 @@ int csync_update_file_del(db_conn_p db,
 	    csync_debug(1, "?D: %-15s %s\n", peername, filename);
 	    return OK_DRY;
 	}
-	int skip_delete = 0;
 	int rc;
 	conn_printf("DEL %s %s \n", key_enc, filename_enc);
 	rc = read_conn_status(filename, peername);
@@ -685,8 +683,8 @@ int csync_update_file_all_hardlink(db_conn_p db,
 				   int is_identical,
 				   int *last_conn_status)
 {
-    struct textlist *tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st, NULL);
-    struct textlist *t = tl;
+    textlist_p tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st, NULL);
+    textlist_p t = tl;
     int found_one = 0;
     int errors = 0;
 
@@ -888,7 +886,6 @@ int csync_update_file_mod(db_conn_p db,
 	    char ino_str[100];
 	    sprintf(dev_str, DEV_FORMAT, st.st_dev);
 	    sprintf(ino_str, INO_FORMAT, st.st_ino);
-	    int mode;
 	    char *result_other = NULL;
 	    db->add_dirty(db, other, force, myname, peername,
 			  csync_operation_str(operation), checktxt, dev_str, ino_str, result_other, operation, st.st_mode);
@@ -985,9 +982,9 @@ int csync_update_file_mod(db_conn_p db,
 	}
 
 	/*
-	struct textlist *link_move_list = csync_check_link_move(peername,
+	textlist_p link_move_list = csync_check_link_move(peername,
 								filename, checktxt, operation, digest, &st, NULL);
-	struct textlist *list_ptr = link_move_list;
+	textlist_p list_ptr = link_move_list;
 	*/
 	/* Need to do the moves first, otherwise hard link could be between two non-existing files */
 	/*
@@ -1248,7 +1245,7 @@ int compare_files(const char *filename, const char *pattern, int recursive)
   return 0;
 }
 
-void csync_directory_add(struct textlist **directory_list, char *directory) {
+void csync_directory_add(textlist_p *directory_list, char *directory) {
   char *pos = strrchr(directory, '/');
   if (pos) {
     pos[0] = 0;
@@ -1284,9 +1281,8 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 		       const char **patlist, int patnum, int recursive,
 		       int dry_run, int ip_version, int db_version)
 {
-    struct textlist *tl = 0, *t, *next_t;
-    struct textlist *tl_del = 0, **last_tn=&tl;
-    char *current_name = 0;
+    textlist_p tl = 0, t, next_t;
+    textlist_p tl_del = 0, *last_tn=&tl;
     struct stat st;
     tl = db->get_dirty_by_peer_match(db, myname, peername, recursive, patlist, patnum, compare_files);
 
@@ -1311,7 +1307,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 	return ;
     }
   int rc;
-  struct textlist *directory_list = 0;
+  textlist_p directory_list = 0;
   for (t = tl; t != 0; t = next_t) {
     next_t = t->next;
     if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
@@ -1376,9 +1372,7 @@ void csync_sync_host(db_conn_p db, const char *myname, const char *peername,
 		     const char **patlist, int patnum, int recursive,
 		     int dry_run, int ip_version, int db_version)
 {
-    struct textlist *tl = 0, *tl_tmp = 0, *t = 0;
-    char *current_name = 0;
-    struct stat st;
+    textlist_p tl = 0, tl_tmp = 0, t = 0;
     int i, use_this = patnum == 0;
     csync_debug(0, "csync_sync_host");
     for (i=0; i< patnum && !use_this; i++) {
@@ -1409,7 +1403,6 @@ void csync_sync_host(db_conn_p db, const char *myname, const char *peername,
     if (dry_run)
 	status = "(DRY RUN)";
   
-    struct textlist *directory_list = 0;
     for (t = tl; t != 0; t = t->next) {
 	const char *filename = t->value;
 	const char *key = csync_key(peername, filename);
@@ -1470,7 +1463,7 @@ int csync_match(const char*filename, const char *patlist[], int patnum, int recu
 void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 		  const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version, update_func func, int do_all)
 {
-    struct textlist *tl = 0, *t;
+    textlist_p tl = 0, t;
     int i = 0;
     if (do_all) {
 	if (active_peers)
@@ -1755,12 +1748,12 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 		     int init_run, int auto_diff,
 		     const char *filename, int ip_version)
 {
-    struct textlist *diff_list = 0, *diff_ent;
+    textlist_p diff_list = 0, diff_ent;
     const struct csync_group *g;
     const struct csync_group_host *h;
     char *r_file=0, *r_checktxt=0;
-    int remote_reuse = 0, remote_eof = 0;
-    int rel, ret = 1;
+    int remote_eof = 0;
+    int ret = 1;
 
     int found = 0;
     for (g = csync_group; !found && g; g = g->next) {
@@ -1801,7 +1794,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
     }
     conn_printf("\n");
 
-//    struct textlist *tl = db->get_file(db, filename);
+//    textlist_p tl = db->get_file(db, filename);
     
     if ( !remote_eof )
 	while ( !csync_insynctest_readline(&r_file, &r_checktxt) ) {
@@ -1844,7 +1837,7 @@ int peer_in(char *active_peers[], const char* peer)
 
 int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, const char *filename, int ip_version, char *active_peers[])
 {
-    struct textlist *myname_list = 0, *myname;
+    textlist_p myname_list = 0, myname;
     struct csync_group *g;
     int ret = 1;
     if (auto_diff && filename) {
@@ -1867,7 +1860,7 @@ int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, const char *
     }
 
     for (myname=myname_list; myname; myname=myname->next) {
-	struct textlist *peername_list = 0, *peername;
+	textlist_p peername_list = 0, peername;
 	struct csync_group_host *h;
 
 	for (g = csync_group; g; g = g->next) {
@@ -1897,7 +1890,7 @@ int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, const char *
     return ret;
 }
 
-int filter_missing_dirty(textlist_p *p_tl, const char *filename, const char *localname, peername_p peername)
+int filter_missing_dirty(const char *filename, const char *localname, peername_p peername)
 {
     const struct csync_group *g = 0;
     const struct csync_group_host *h;
@@ -1911,26 +1904,22 @@ int filter_missing_dirty(textlist_p *p_tl, const char *filename, const char *loc
 		}
 	    }
     }
-    if (!found)
-	textlist_add2(p_tl, filename, peername, 0);
-    return 0; 
+    return found;
 }
 
-int filter_missing_file(textlist_p *p_tl, const char *filename)
+int filter_missing_file(const char *filename)
 {
-    if (!csync_find_next(0, filename))
-	textlist_add(p_tl, filename, 0);
-    return 0;
+    return !csync_find_next(0, filename);
+
 };
 
 void csync_remove_old(db_conn_p db)
 {
-    struct textlist *tl = 0, *t;
-    tl = db->find_dirty(db, filter_missing_dirty); 
+    textlist_p tl = 0, t;
+    tl = db->find_dirty(db, filter_missing_dirty);
     for (t = tl; t != 0; t = t->next) {
 	const char *filename = t->value;
 	peername_p peername = t->value2;
-    
 	csync_debug(1, "Removing %s (%s) from dirty db.\n", filename, peername);
 	db->remove_dirty(db, peername, filename, 0);
     }
