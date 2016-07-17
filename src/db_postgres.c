@@ -132,7 +132,6 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   char *host, *user, *pass, *database;
   unsigned int port = 5432;  /* default postgres port */
   char *db_url = malloc(strlen(file)+1);
-  char *create_database_statement;
   char *pg_conn_info;
 
   db_postgres_dlopen();
