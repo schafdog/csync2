@@ -108,7 +108,7 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
 	if (operation == OP_MOD && S_ISDIR(mode)) {
 	    rc = 0;
 	    csync_debug(0, "Ignoring dirty directory %s\n", filename);
-	    db->remove_dirty(db, filename, "%", 0);
+	    db->remove_dirty(db, "%", filename, 0);
 	    return 0;
 	}
 	else {
@@ -1011,7 +1011,7 @@ int csync_daemon_dispatch(db_conn_p db, char *filename,
 	return NEXT_CMD;
 	break;
     case A_FLUSH:
-	db->remove_dirty(db, filename, "%", 0);
+	db->remove_dirty(db, "%", filename, 0);
 	break;
     case A_DEL:
 	if (!csync_file_backup(filename, cmd_error))
