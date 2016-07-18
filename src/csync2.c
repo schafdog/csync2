@@ -211,7 +211,7 @@ void help(char *cmd)
     exit(1);
 }
 
-int create_keyfile(const char *filename)
+int create_keyfile(filename_p filename)
 {
     int fd = open(filename, O_WRONLY|O_CREAT|O_EXCL, 0600);
     int rand = open("/dev/urandom", O_RDONLY);

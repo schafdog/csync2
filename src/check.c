@@ -41,7 +41,7 @@
 /* This does only check the case of the last filename element. But that should
  * be OK for us now...
  */
-int csync_cygwin_case_check(const char *filename)
+int csync_cygwin_case_check(filename_p filename)
 {
 	if (!strcmp(filename, "/cygdrive"))
 		goto check_ok;
@@ -145,7 +145,7 @@ int csync_same_stat(struct stat *st1, struct stat *st2) {
 
 textlist_p check_old_operation(const char *file, operation_t operation, int mode, struct stat *st_file, const char *other,
 			       const char *old_filename, const char *old_other, operation_t old_operation,
-			       const char *old_checktxt, const char *peername,
+			       const char *old_checktxt, peername_p peername,
 			       BUF_P buffer)
 {
     char *file_new = buffer_strdup(buffer, file);
@@ -221,7 +221,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
     int rc_file = stat(file, &st_file);
     const char *other;
     for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
-	const char *peername = pl[pl_idx].peername;
+	peername_p peername = pl[pl_idx].peername;
 	const char *myname = pl[pl_idx].myname;
 	operation = operation_org;
 	other = org_other;
@@ -326,7 +326,7 @@ char *csync_check_path(char *filename)
 }
 
 /* return 0 if path does not contain any symlinks */
-int csync_check_pure(const char *filename)
+int csync_check_pure(filename_p filename)
 {
 #ifdef __CYGWIN__
   // For some reason or another does this function __kills__
@@ -419,7 +419,7 @@ int csync_check_del(db_conn_p db, const char *file, int recursive, int init_run)
     return db->check_delete(db, file, recursive, init_run);
 }
 
-textlist_p csync_check_file_same_dev_inode(db_conn_p db, const char *filename, const char* checktxt, const char *digest, struct stat *st)
+textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char* checktxt, const char *digest, struct stat *st)
 {
     textlist_p tl = 0;
     csync_debug(1, "csync_check_file_same_dev_inode %s\n", filename);
@@ -427,7 +427,7 @@ textlist_p csync_check_file_same_dev_inode(db_conn_p db, const char *filename, c
     return tl;
 }
 
-textlist_p csync_check_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st)
+textlist_p csync_check_move(db_conn_p db, peername_p peername, filename_p filename, const char* checktxt, const char *digest, struct stat *st)
 {
     textlist_p t;
     textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
@@ -449,7 +449,7 @@ textlist_p csync_check_move(db_conn_p db, const char *peername, const char *file
 }
 
 
-textlist_p csync_check_link_move(db_conn_p db, const char *peername, const char *filename, const char* checktxt, int operation, const char *digest,
+textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename, const char* checktxt, int operation, const char *digest,
 				       struct stat *st, textlist_loop_t loop)
 {
     textlist_p t, tl = NULL;
@@ -675,7 +675,7 @@ int csync_check_mod(db_conn_p db, const char *file, int recursive, int ignnoent,
 /*
    check for dirty files, updates the DB and returns number of dirty found in this check (or total?) NOT IMPLEMENTED
  */
-int csync_check_recursive(db_conn_p db, const char *filename, int recursive, int init_run, int version, int flags)
+int csync_check_recursive(db_conn_p db, filename_p filename, int recursive, int init_run, int version, int flags)
 {
 #if __CYGWIN__
     if (!strcmp(filename, "/")) {
@@ -696,11 +696,11 @@ int csync_check_recursive(db_conn_p db, const char *filename, int recursive, int
 }
 
 
-void csync_combined_operation(const char *peername, const char *dev, const char *inode, const char *checktxt) {
+void csync_combined_operation(peername_p peername, const char *dev, const char *inode, const char *checktxt) {
 
 }
 
-void csync_check(db_conn_p db, const char *filename, int recursive, int init_run, int version, int flags)
+void csync_check(db_conn_p db, filename_p filename, int recursive, int init_run, int version, int flags)
 {
     /*int hasDirty = */ csync_check_recursive(db, filename, recursive, init_run, version, flags);
 /*    
@@ -715,7 +715,7 @@ void csync_check(db_conn_p db, const char *filename, int recursive, int init_run
 }
 
 
-int csync_check_single(db_conn_p db, const char *filename, int init_run, int version)
+int csync_check_single(db_conn_p db, filename_p filename, int init_run, int version)
 {
     return csync_check_recursive(db, filename, 0, init_run, version, 0);
 }

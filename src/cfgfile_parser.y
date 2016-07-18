@@ -405,7 +405,7 @@ static void set_tempdir(const char *tempdir)
 	csync_tempdir = strdup(tempdir);
 }
 
-static void set_database(const char *filename)
+static void set_database(filename_p filename)
 {
 	if (!csync_database)
 		csync_database = strdup(filename);

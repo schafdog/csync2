@@ -40,12 +40,12 @@
 	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
 	len+=t; elidx++; }
 
-const char *csync_genchecktxt(const struct stat *st, const char *filename, int flags)
+const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags)
 {
   return csync_genchecktxt_version(st, filename, flags, 1);
 }
 
-const char *csync_genchecktxt_version(const struct stat *st, const char *filename, int flags, int version)
+const char *csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version)
 {
 	static char *buffer = 0;
 	char *elements[64];

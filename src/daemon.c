@@ -48,7 +48,7 @@ extern char *active_peer;
  
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 
-int csync_rmdir(db_conn_p db, const char *filename, int recursive, int db_version)
+int csync_rmdir(db_conn_p db, filename_p filename, int recursive, int db_version)
 {
     /* TODO: check if all files and sub directories are ignored,
        delete them. We need a version of csync_check_dir */
@@ -63,7 +63,7 @@ int csync_rmdir(db_conn_p db, const char *filename, int recursive, int db_versio
     return rc;
 }
 
-int csync_unlink(db_conn_p db, const char *filename, int recursive, int unlink_flag, const char **cmd_error, int db_version)
+int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_flag, const char **cmd_error, int db_version)
 {
 	struct stat st;
 	int rc;
@@ -78,14 +78,14 @@ int csync_unlink(db_conn_p db, const char *filename, int recursive, int unlink_f
 	return rc;
 }
 
-int csync_dir_count(db_conn_p db, const char *filename)
+int csync_dir_count(db_conn_p db, filename_p filename)
 {
     int count = 0;
     return db->dir_count(db, filename);
     return count;
 }
 
-int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, int isflush, int version, const char **cmd_error)
+int csync_check_dirty(db_conn_p db, filename_p filename, peername_p peername, int isflush, int version, const char **cmd_error)
 {
     int rc = 0;
     int operation = 0;
@@ -125,7 +125,7 @@ int csync_check_dirty(db_conn_p db, const char *filename, const char *peername, 
     return rc;
 }
 
-void csync_file_update(db_conn_p db, const char *filename, const char *peername, int db_version)
+void csync_file_update(db_conn_p db, filename_p filename, peername_p peername, int db_version)
 {
   struct stat st;
   db->remove_dirty(db, peername, filename, 0);
@@ -150,7 +150,7 @@ void csync_file_update(db_conn_p db, const char *filename, const char *peername,
   }
 }
 
-int csync_file_backup(const char *filename, const char **cmd_error)
+int csync_file_backup(filename_p filename, const char **cmd_error)
 {
   static char error_buffer[1024];
   const struct csync_group *g = NULL;
@@ -158,7 +158,7 @@ int csync_file_backup(const char *filename, const char **cmd_error)
   int rc;
   while ( (g=csync_find_next(g, filename)) ) {
     if (g->backup_directory && g->backup_generations > 1) {
-      //	    const char *filename = prefixsubst(prefixed_filename);
+      //	    filename_p filename = prefixsubst(prefixed_filename);
       
       int bak_dir_len = strlen(g->backup_directory);
       int filename_len = strlen(filename);
@@ -531,9 +531,9 @@ static void destroy_tag(char *tag[32]) {
     free(tag[i]);
 }
 
-int csync_daemon_hardlink(const char *filename, const char *linkname, const char *is_identical, const char **cmd_error);
+int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error);
 
-textlist_p csync_hardlink(const char *filename, struct stat *st, textlist_p tl)
+textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl)
 {
   const char *cmd_error = NULL;
   textlist_p t = tl;
@@ -551,7 +551,7 @@ textlist_p csync_hardlink(const char *filename, struct stat *st, textlist_p tl)
   return 0;
 }
 
-int csync_daemon_patch(const char *filename, const char **cmd_error, int db_version) 
+int csync_daemon_patch(filename_p filename, const char **cmd_error, int db_version) 
 {
   struct stat st;
   int rc = stat(filename, &st);
@@ -589,7 +589,7 @@ int csync_daemon_patch(const char *filename, const char **cmd_error, int db_vers
   return ABORT_CMD;
 }
 
-int csync_daemon_mkdir(const char *filename, const char **cmd_error) 
+int csync_daemon_mkdir(filename_p filename, const char **cmd_error) 
 {
     struct stat st;
     *cmd_error = 0;
@@ -642,7 +642,7 @@ struct csync_command *find_command(const char *cmd) {
   return &cmdtab[cmdnr];
 }
 
-int csync_daemon_check_identify(struct csync_command *cmd, const char *peername, address_t *peeraddr) {
+int csync_daemon_check_identify(struct csync_command *cmd, peername_p peername, address_t *peeraddr) {
   char buf[INET6_ADDRSTRLEN];
   if ( cmd->need_ident && !peername ) {
     conn_printf("Dear %s, please identify first.\n",
@@ -675,7 +675,7 @@ const char *csync_daemon_check_perm(db_conn_p db,
   return 0;
 }
 
-int csync_daemon_setown(const char *filename, const char *uidp, const char *gidp, const char *userp, const char *groupp, const char **cmd_error) 
+int csync_daemon_setown(filename_p filename, const char *uidp, const char *gidp, const char *userp, const char *groupp, const char **cmd_error) 
 {
   if ( !csync_ignore_uid || !csync_ignore_gid ) {
     int uid = csync_ignore_uid ? -1 : atoi(uidp);
@@ -861,7 +861,7 @@ int csync_daemon_group(char **active_grouplist, char *newgroup,
   return OK;
 }
 
-void csync_daemon_check_update(db_conn_p db, const char *filename, const char *otherfile, struct csync_command *cmd, char *peer, int db_version) 
+void csync_daemon_check_update(db_conn_p db, filename_p filename, const char *otherfile, struct csync_command *cmd, char *peer, int db_version) 
 {
     if ( cmd->update)
 	csync_file_update(db, filename, peer, db_version);
@@ -912,7 +912,7 @@ int csync_daemon_setmod(char *filename, char *mod, const char **cmd_error) {
   return OK;
 }
 
-int csync_daemon_hardlink(const char *filename, const char *linkname, const char *is_identical, const char **cmd_error)
+int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error)
 {
   struct stat st_file, st_link; 
   int rc = stat(filename, &st_file);
@@ -953,7 +953,7 @@ int csync_daemon_hardlink(const char *filename, const char *linkname, const char
   return ABORT_CMD;
 }
 
-int csync_daemon_mv(db_conn_p db, const char *filename, const char *newname, const char **cmd_error) {
+int csync_daemon_mv(db_conn_p db, filename_p filename, const char *newname, const char **cmd_error) {
   if (rename(filename, newname)) {
     *cmd_error = strerror(errno);
     return ABORT_CMD;
@@ -966,7 +966,7 @@ int csync_daemon_mv(db_conn_p db, const char *filename, const char *newname, con
   return OK;
 }
 
-int csync_daemon_symlink(const char *filename, const char *target, const char **cmd_error) {
+int csync_daemon_symlink(filename_p filename, const char *target, const char **cmd_error) {
   if (!symlink(target, filename))
     return OK;
   *cmd_error = strerror(errno);
@@ -1134,7 +1134,7 @@ int csync_daemon_dispatch(db_conn_p db, char *filename,
     return OK;
 }
 
-void csync_end_command(const char *filename, char *tag[32], const char *cmd_error, int rc) {
+void csync_end_command(filename_p filename, char *tag[32], const char *cmd_error, int rc) {
   if ( cmd_error ) {
     csync_debug(0, "Error: %s (%s)\n", cmd_error, filename ? filename : "<no file>");
     conn_printf("%s (%s)\n", cmd_error, filename ? filename : "<no file>");

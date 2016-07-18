@@ -24,7 +24,7 @@
 int csync_compare_mode = 0;
 
 int match_pattern_list(
-		const char *filename, const char *basename,
+		filename_p filename, const char *basename,
 		const struct csync_group_pattern *p)
 {
   int match_path = 0, match_base = 1;
@@ -124,7 +124,7 @@ void csync_check_usefullness(const char *file, int recursive)
   csync_fatal("FATAL: %s did not match any configuration.\n", file);
 }
 
-int csync_match_file_host(const char *file, const char *myname, const char *peername, const char **keys)
+int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys)
 {
   const struct csync_group *g = NULL;
 
@@ -184,7 +184,7 @@ next_group:	;
 	return plist;
 }
 
-const char *csync_key(const char *hostname, const char *filename)
+const char *csync_key(const char *hostname, filename_p filename)
 {
 	const struct csync_group *g = NULL;
 	struct csync_group_host *h;
@@ -196,7 +196,7 @@ const char *csync_key(const char *hostname, const char *filename)
 	return 0;
 }
 
-int csync_perm(const char *filename, const char *key, const char *hostname)
+int csync_perm(filename_p filename, const char *key, const char *hostname)
 {
   const struct csync_group *g = NULL;
   struct csync_group_host *h;

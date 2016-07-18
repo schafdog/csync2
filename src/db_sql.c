@@ -85,7 +85,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
     return flags; 
 }
 
-int db_sql_is_dirty(db_conn_p db, const char *peername, filename_p filename,
+int db_sql_is_dirty(db_conn_p db, peername_p peername, filename_p filename,
 		int *operation, int *mode)
 {
     int rc = 0;
@@ -119,7 +119,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
 	      "SELECT forced, myname, peername, filename, operation FROM dirty %s ORDER BY filename", 
 	      where)
     {
-	const char *peername = db_decode(SQL_V(2));
+	peername_p peername = db_decode(SQL_V(2));
 	filename_p filename = db_decode(SQL_V(3));
 	if (csync_find_next(0, filename)) {
 	    const char *force_str = SQL_V(0);
@@ -443,7 +443,7 @@ void db_sql_add_hint(db_conn_p db, const char *file, int recursive)
 	"VALUES ('%s', %d)", db_encode(file), recursive);
 }
 
-void db_sql_remove_dirty(db_conn_p db, const char *peername,
+void db_sql_remove_dirty(db_conn_p db, peername_p peername,
 			 filename_p filename, int recursive_NOT_IMPLEMENTED)
 {
     SQL(db, "Deleting old dirty file entries",
@@ -451,14 +451,14 @@ void db_sql_remove_dirty(db_conn_p db, const char *peername,
 	db_encode(filename), db_encode(peername));
 }
 
-textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, const char *localname, const char *peername))
+textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, const char *localname, peername_p peername))
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Query dirty DB",
 	      "SELECT filename, myname, peername FROM dirty") {
 	filename_p filename   = db_decode(SQL_V(0));
 	const char *localname = db_decode(SQL_V(1));
-	const char *peername  = db_decode(SQL_V(2));
+	peername_p peername  = db_decode(SQL_V(2));
 	if (!filter(filename, localname, peername)) {
 	    csync_debug(1, "Remove '%s:%s' from dirty. No longer in configuration", peername, filename);
 	    textlist_add2(&tl, filename, peername, 0);
@@ -512,21 +512,21 @@ void db_sql_remove_file(db_conn_p db, filename_p filename, int recursive)
 	"DELETE FROM file WHERE filename = '%s'", db_encode(filename));
 }
 
-void db_sql_add_dirty_simple(db_conn_p db, const char *myname, const char *peername, filename_p filename)
+void db_sql_add_dirty_simple(db_conn_p db, const char *myname, peername_p peername, filename_p filename)
 {
     SQL(db, "Add operation",
 	"INSERT INTO dirty (myname, peername, filename) values ('%s', '%s', '%s')",
 	db_encode(myname), db_encode(peername), db_encode(filename));
 }
 
-void db_sql_clear_operation(db_conn_p db, const char *myname, const char *peername, filename_p filename)
+void db_sql_clear_operation(db_conn_p db, const char *myname, peername_p peername, filename_p filename)
 {
     SQL(db, "Clear operation",
 	"UPDATE dirty set operation = '-' where myname = '%s' and peername = '%s' and filename = '%s'",
 	db_encode(myname), db_encode(peername), db_encode(filename));
 }
 
-textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int numpat,
+textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peername_p peername, int recursive, const char *patlist[], int numpat,
 				    int (*get_dirty_by_peer) (filename_p filename, const char *pattern, int recursive))
 {
     textlist_p tl = 0;
@@ -557,14 +557,14 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, cons
     return tl;
 }
 
-textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, const char *peername) {
+textlist_p db_sql_get_dirty_by_peer(db_conn_p db, const char *myname, peername_p peername) {
     const char *patlist = "/";
     return db_sql_get_dirty_by_peer_match(db, myname, peername, 1, &patlist, 1, NULL);
 }
 
 
 textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
-				    const char *peername, filename_p filename, 
+				    peername_p peername, filename_p filename, 
 				    const char *device, const char *ino,
 				    BUF_P buffer)
 {
@@ -600,7 +600,7 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 
 int db_sql_add_dirty(db_conn_p db, const char *file_new,
 		     int new_force,
-		     const char *myname, const char *peername,
+		     const char *myname, peername_p peername,
 		     const char *operation, const char *checktxt,
 		     const char *dev, const char *ino, const char *result_other,
 		     operation_t op, int mode)

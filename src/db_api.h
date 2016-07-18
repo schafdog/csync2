@@ -37,7 +37,7 @@ typedef textlist_p (*check_old_operation_f) (const char *file,
 					     const char *old_other,
 					     operation_t old_operation,
 					     const char *old_checktxt,
-					     const char *peername,
+					     peername_p peername,
 					     BUF_P buffer);
 
 struct db_conn_t {
@@ -57,10 +57,10 @@ struct db_conn_t {
     int         (*list_dirty) (db_conn_p conn, char **active_peers, const char *realname, int recursive);
     void        (*list_hint)  (db_conn_p conn);
     void        (*list_files) (db_conn_p conn);
-    void        (*list_file)  (db_conn_p conn, filename_p filename, const char *myname, const char *peername);
-    void        (*list_sync)  (db_conn_p conn /*, filename_p filename, const char *peername */);
+    void        (*list_file)  (db_conn_p conn, filename_p filename, const char *myname, peername_p peername);
+    void        (*list_sync)  (db_conn_p conn /*, filename_p filename, peername_p peername */);
 
-    int         (*is_dirty)  (db_conn_p conn, filename_p filename, const char *peername, int *operation, int *mode);
+    int         (*is_dirty)  (db_conn_p conn, filename_p filename, peername_p peername, int *operation, int *mode);
     void        (*force) (db_conn_p conn, const char *realname, int recursive);
     int         (*upgrade_db) (db_conn_p conn);
     int         (*update_format_v1_v2) (db_conn_p conn, filename_p filename, int recursive, int do_it);
@@ -69,23 +69,23 @@ struct db_conn_t {
     void        (*remove_file) (db_conn_p conn, filename_p filename, int recursive);
     void        (*delete_file) (db_conn_p conn, filename_p filename, int recursive);
     textlist_p  (*find_dirty) (db_conn_p conn, int (*filter_dirty) (filename_p filename,
-								    const char *localname, const char *peername));
+								    const char *localname, peername_p peername));
     textlist_p  (*find_file) (db_conn_p conn, filename_p pattern, int (*filter_file) (filename_p filename));
-    int         (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, const char *peername,
+    int         (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, peername_p peername,
 			      const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
 			      int op, int mode);
     
-    void        (*remove_dirty)    (db_conn_p conn, const char *peername, filename_p filename, int recursive);
+    void        (*remove_dirty)    (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
     
-//    textlist_p  (*get_dirty_by_peer) (db_conn_p db, const char *myname, const char *peername);
-    textlist_p  (*get_dirty_by_peer_match) (db_conn_p db, const char *myname, const char *peername, int recursive, const char *patlist[], int num,
+//    textlist_p  (*get_dirty_by_peer) (db_conn_p db, const char *myname, peername_p peername);
+    textlist_p  (*get_dirty_by_peer_match) (db_conn_p db, const char *myname, peername_p peername, int recursive, const char *patlist[], int num,
 					    int (*match_func) (const char *file, filename_p pattern, int recursive));
 
-    void        (*clear_dirty)     (db_conn_p conn, const char *peername, filename_p filename, int recursive);
-    void        (*clear_operation) (db_conn_p conn, const char *myname, const char *peername, filename_p filename, int recursive);
+    void        (*clear_dirty)     (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
+    void        (*clear_operation) (db_conn_p conn, const char *myname, peername_p peername, filename_p filename, int recursive);
 
     textlist_p  (*get_old_operation) (db_conn_p db, const char *checktxt,
-				      const char *peername, filename_p filename, 
+				      peername_p peername, filename_p filename, 
 				      const char *device, const char *ino, BUF_P buffer);
 
     textlist_p  (*get_commands) (db_conn_p conn);
