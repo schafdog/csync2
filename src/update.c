@@ -1374,14 +1374,16 @@ void csync_sync_host(db_conn_p db, const char *myname, const char *peername,
 {
     textlist_p tl = 0, tl_tmp = 0, t = 0;
     int i, use_this = patnum == 0;
-    csync_debug(0, "csync_sync_host");
+    csync_debug(0, "csync_sync_host\n");
     for (i=0; i< patnum && !use_this; i++) {
-	tl_tmp = db->non_dirty_files_match(db, patlist[i]);
-	// tl = textlist_join(tl, tl_tmp);
+	tl = db->non_dirty_files_match(db, patlist[i]);
+	if (tl)
+	    use_this = 1;
     }
     /* just return if there are no files to update */
-    if ( !tl)
+    if ( !tl) {
 	return;
+    }
 
     if ( connect_to_host(db, peername, ip_version) ) {
 	csync_error_count++;
