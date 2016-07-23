@@ -476,7 +476,7 @@ int csync_update_file_del(db_conn_p db,
 	    else
 		return status;
 	}
-	if ( !conn_gets_newline(chk_peer, 4096, 1) )
+	if ( !conn_gets_newline(conn_get(), chk_peer, 4096, 1) )
 	    return ERROR;
 	const char *chk_peer_decoded = url_decode(chk_peer);
 
@@ -613,7 +613,7 @@ int csync_update_file_sig(peername_p peername, filename_p filename,
     if (rc < 0 || rc == OK_MISSING)
 	return rc;
 
-    if (rc == OK_MISSING || !conn_gets_newline(chk_peer, 4096,1) )
+    if (rc == OK_MISSING || !conn_gets_newline(conn_get(), chk_peer, 4096,1) )
 	return ERROR;
 
     int peer_version = csync_get_checktxt_version(chk_peer);
