@@ -354,7 +354,7 @@ int conn_close()
 	return 0;
 }
 
-static inline int READ(void *buf, size_t count)
+static inline int READ(int filedesc, void *buf, size_t count)
 {
 #ifdef HAVE_LIBGNUTLS
   if (csync_conn_usessl)
@@ -364,7 +364,7 @@ static inline int READ(void *buf, size_t count)
   struct timeval timeout;
   /* Initialize the file descriptor set. */
   FD_ZERO (&set);
-  FD_SET (conn_fd_in, &set);
+  FD_SET (filedesc, &set);
   /* Initialize the timeout data structure. */
   timeout.tv_sec = 60;
   timeout.tv_usec = 0;
@@ -411,17 +411,17 @@ static inline int WRITE(const void *buf, size_t count)
     }
 }
 
-int conn_raw_read(void *buf, size_t count)
+int conn_raw_read(int filedesc, void *buf, size_t count)
 {
     static char buffer[512];
     static int buf_start=0, buf_end=0;
 
     if ( buf_start == buf_end ) {
 	if (count > 128)
-	    return READ(buf, count);
+	    return READ(filedesc, buf, count);
 	else {
 	    buf_start = 0;
-	    buf_end = READ(buffer, 512);
+	    buf_end = READ(filedesc, buffer, 512);
 	    if (buf_end < 0) { 
 		buf_end=0; 
 		return -1; 
@@ -485,7 +485,7 @@ int conn_read(void *buf, size_t count)
 {
     int pos, rc;
     for (pos=0; pos < count ; pos+=rc) {
-	rc = conn_raw_read((char *)buf+pos, count-pos);
+	rc = conn_raw_read(conn_fd_in, (char *)buf+pos, count-pos);
 	if (rc < 0)
 	    return rc;
 	/* End of file */
@@ -574,12 +574,12 @@ void conn_printf_cmd_filepath(const char *cmd, const char *file, const char *key
     csync_debug(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
-size_t conn_gets_newline(char *s, size_t size, int remove_newline)
+size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 {
     size_t i=0;
     int rc = 0;
     while (i<size-1) {
-	rc = conn_raw_read(s+i, 1);
+	rc = conn_raw_read(filedesc, s+i, 1);
 	if (rc != 1) 
 	    break;
 	if (s[i++] == '\n') {
@@ -600,6 +600,6 @@ size_t conn_gets_newline(char *s, size_t size, int remove_newline)
 
 
 size_t conn_gets(char *s, size_t size) {
-  return conn_gets_newline(s, size, 1);
+    return conn_gets_newline(conn_fd_in, s, size, 1);
 }
 

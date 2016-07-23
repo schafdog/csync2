@@ -88,7 +88,8 @@ enum {
 	MODE_SIMPLE =  65536,
 	MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
 	MODE_MARK = 2*MODE_UPGRADE_DB,
-	MODE_EQUAL = 2*MODE_MARK
+	MODE_EQUAL = 2*MODE_MARK,
+	MODE_TAIL = 2*MODE_EQUAL
 };
 
 #define DEFAULT_PORT "30865" 
@@ -174,7 +175,7 @@ extern int conn_close();
 extern int conn_read(void *buf, size_t count);
 extern int conn_read_get_content_length(long *size);
 extern int conn_write(const void *buf, size_t count);
-size_t conn_gets_newline(char *s, size_t size, int remove_newline);
+size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);
 
 extern void conn_printf(const char *fmt, ...);
 extern int conn_fgets(char *s, int size);
