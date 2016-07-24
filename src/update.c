@@ -177,6 +177,7 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
 	      peername, use_ssl ? "SSL" : "PLAIN");
 
   int conn = conn_open(peername, ip_version);
+  csync_debug(3, "Connection %d ", conn);
   if (conn < 0 )
       return conn;
 
@@ -207,7 +208,7 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
   conn_printf(conn, "DEBUG %d\n", csync_debug_level);
   if (read_conn_status(conn, 0, peername) != OK) {
       csync_debug(0, "DEBUG command failed.\n");
-      conn_close();
+      conn_close(conn);
       return -1; 
   }
   
@@ -215,7 +216,7 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
     conn_printf(conn, "GROUP %s\n", url_encode(active_grouplist));
     if ( read_conn_status(conn, 0, peername) != OK) {
       csync_debug(0, "GROUP command failed.\n");
-      conn_close();
+      conn_close(conn);
       return -1;
     }
   }
@@ -1370,7 +1371,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 
   conn_printf(conn, "BYE\n");
   read_conn_status(conn, 0, peername);
-  conn_close();
+  conn_close(conn);
 }
 
 void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
@@ -1402,7 +1403,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
     if (read_conn_status(conn, 0, peername) ) {
 	conn_printf(conn, "BYE\n");
 	read_conn_status(conn, 0, peername);
-	conn_close();
+	conn_close(conn);
 	return ;
     }
     int rc = 0;
@@ -1453,7 +1454,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
     textlist_free(tl);
     conn_printf(conn, "BYE\n");
     read_conn_status(conn, 0, peername);
-    conn_close();
+    conn_close(conn);
 }
 /* Dead */
 
@@ -1510,9 +1511,9 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 }
 
 /* emulate the label, should remove */
-int finish_close()
+int finish_close(int conn)
 {
-  conn_close();
+  conn_close(conn);
   return 0;
 };
 
@@ -1551,7 +1552,7 @@ int csync_diff(db_conn_p db,
 
   conn_printf(conn, "HELLO %s\n", url_encode(myname));
   if ( read_conn_status(conn, 0, peername) )
-    return finish_close();
+    return finish_close(conn);
 
   const char *key_enc  = url_encode(g->key);
   filename_p filename_enc = url_encode(prefixencode(filename));
@@ -1565,25 +1566,25 @@ int csync_diff(db_conn_p db,
 					 NULL, NULL,  &last_conn_status, 0);
   if (rc < 0 && rc != ERROR_PATH_MISSING) {
       csync_debug(0, "Error while TYPE: %d \n", rc);
-      return finish_close();
+      return finish_close(conn);
   }
 
   if (rc == IDENTICAL) {
       csync_debug(1, "Identical files. Skipping diff\n");
-      return finish_close();
+      return finish_close(conn);
 
   }
 
   if (!rc_exist && !S_ISREG(st.st_mode))
   {
       csync_debug(1, "Skipping diff on non-regular file (%s)\n", filename) ;
-      return finish_close(); 
+      return finish_close(conn); 
   }
 
   conn_printf(conn, "TYPE %s %s\n", key_enc, filename);
 
   if ( read_conn_status(conn, 0, peername) )
-      return finish_close();
+      return finish_close(conn);
 
   /* FIXME
    * verify type of file first!
@@ -1615,7 +1616,7 @@ int csync_diff(db_conn_p db,
   csync_debug(2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d " , myname, filename, peername, filename, length);
   fclose(p);
   signal(SIGPIPE, old_sigpipe_handler);
-  return finish_close();
+  return finish_close(conn);
 }
 
 int csync_insynctest_readline(int conn, char **file, char **checktxt)
@@ -1822,7 +1823,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 
     conn_printf(conn, "BYE\n");
     read_conn_status(conn, 0, peername);
-    conn_close();
+    conn_close(conn);
 
     for (diff_ent=diff_list; diff_ent; diff_ent=diff_ent->next)
 	csync_diff(db, myname, peername, diff_ent->value, ip_version);
