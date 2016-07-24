@@ -169,7 +169,7 @@ extern int conn_open(peername_p peername, int ip_version);
 extern int conn_set(int infd, int outfd);
 extern int conn_activate_ssl(int server_role, int in, int out);
 extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal);
-extern int conn_close();
+extern int conn_close(int conn);
 
 extern int conn_read(int fd, void *buf, size_t count);
 extern int conn_read_get_content_length(int fd, long *size);
@@ -337,7 +337,7 @@ int csync_update_file_sig_rs_diff(int conn,
 
 /* daemon.c */
 
-extern void csync_daemon_session(int conn, db_conn_p db, int db_version, int protocol_version, int mode);
+extern void csync_daemon_session(int conn, int conn_out, db_conn_p db, int db_version, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
 extern int csync_dir_count(db_conn_p db, filename_p filename);
 
