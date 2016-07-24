@@ -234,7 +234,7 @@ static FILE *paranoid_tmpfile()
 }
 #endif
 
-void csync_send_file(FILE *in)
+void csync_send_file(int conn, FILE *in)
 {
   char buffer[CHUNK_SIZE];
   int rc, chunk;
@@ -245,7 +245,7 @@ void csync_send_file(FILE *in)
   rewind(in);
 
   csync_debug(3, "Sending octet-stream of %ld bytes\n", size);
-  conn_printf("octet-stream %ld\n", size);
+  conn_printf(conn, "octet-stream %ld\n", size);
 
   while ( size > 0 ) {
     chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
@@ -255,7 +255,7 @@ void csync_send_file(FILE *in)
       csync_fatal("Read-error while sending data.\n");
     chunk = rc;
 
-    rc = conn_write(buffer, chunk);
+    rc = conn_write(conn, buffer, chunk);
     if ( rc != chunk )
       csync_fatal("Write-error while sending data.\n");
 
@@ -275,20 +275,18 @@ int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_
   return -1;
 }
 
-
-
-void csync_send_error()
+void csync_send_error(int conn)
 {
-  conn_printf("ERROR\n");
+    conn_printf(conn, "ERROR\n");
 }
 
-int csync_recv_file(FILE *out)
+int csync_recv_file(int conn, FILE *out)
 {
   char buffer[CHUNK_SIZE];
   int rc, chunk;
   long size;
 
-  if (conn_read_get_content_length(&size)) {
+  if (conn_read_get_content_length(conn, &size)) {
       if (errno == EIO)
 	  return -1;
       csync_fatal("Format-error while receiving data length for file (%ld) .\n", size);
@@ -298,7 +296,7 @@ int csync_recv_file(FILE *out)
 
   while ( size > 0 ) {
     chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
-    rc = conn_read(buffer, chunk);
+    rc = conn_read(conn, buffer, chunk);
 
     if ( rc <= 0 )
       csync_fatal("Read-error while receiving data.\n");
@@ -318,7 +316,7 @@ int csync_recv_file(FILE *out)
   return 0;
 }
 
-int csync_rs_check(filename_p filename, int isreg)
+int csync_rs_check(int conn, filename_p filename, int isreg)
 {
   FILE *basis_file = 0, *sig_file = 0;
   char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
@@ -359,7 +357,7 @@ int csync_rs_check(filename_p filename, int isreg)
 
   {
       csync_debug(3, "Reading signature size from peer....\n");
-      if (conn_read_get_content_length(&size))
+      if (conn_read_get_content_length(conn, &size))
 	  csync_fatal("Format-error while receiving data length for signature (%ld) \n", size);
   }
 
@@ -380,7 +378,7 @@ int csync_rs_check(filename_p filename, int isreg)
 
   while ( size > 0 ) {
     chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
-    rc = conn_read(buffer1, chunk);
+    rc = conn_read(conn, buffer1, chunk);
 
     if ( rc <= 0 )
       csync_fatal("Read-error while receiving signature data.\n");
@@ -417,7 +415,7 @@ int rsync_check_io_error(int err_no, filename_p filename, FILE *basis_file, FILE
 
 }
 
-void csync_rs_sig(filename_p filename)
+void csync_rs_sig(int conn, filename_p filename)
 {
   FILE *basis_file = 0, *sig_file = 0;
   rs_stats_t stats;
@@ -448,7 +446,7 @@ void csync_rs_sig(filename_p filename)
     csync_fatal("Got an error from librsync, too bad!\n");
 
   csync_debug(3, "Sending sig_file to peer..\n");
-  csync_send_file(sig_file);
+  csync_send_file(conn, sig_file);
   
   csync_debug(3, "Signature has been created successfully.\n");
   fclose(basis_file);
@@ -475,7 +473,7 @@ int rsync_delta_io_error(int err_no, filename_p filename, FILE *new_file, FILE *
   return rsync_close_error(err_no, new_file, delta_file, sig_file);
 }
 
-int csync_rs_delta(filename_p filename)
+int csync_rs_delta(int conn, filename_p filename)
 {
   FILE *sig_file = 0, *new_file = 0, *delta_file = 0;
   rs_result result;
@@ -489,7 +487,7 @@ int csync_rs_delta(filename_p filename)
   if ( !sig_file ) 
     return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
 
-  if ( csync_recv_file(sig_file) ) {
+  if ( csync_recv_file(conn, sig_file) ) {
     fclose(sig_file);
     return -1;
   }
@@ -504,7 +502,7 @@ int csync_rs_delta(filename_p filename)
     int backup_errno = errno;
     csync_debug(0, "I/O Error '%s' while %s in rsync-delta: %s\n",
 		strerror(errno), "opening data file for reading", filename);
-    csync_send_error();
+    csync_send_error(conn);
     errno = backup_errno;
     return -1;
   }
@@ -524,7 +522,7 @@ int csync_rs_delta(filename_p filename)
     csync_fatal("Got an error from librsync, too bad!\n");
 
   csync_debug(3, "Sending delta_file to peer..\n");
-  csync_send_file(delta_file);
+  csync_send_file(conn, delta_file);
   
   csync_debug(3, "Delta has been created successfully.\n");
   rs_free_sumset(sumset);
@@ -541,7 +539,7 @@ int rsync_patch_io_error(const char *errstr, filename_p filename, FILE *delta_fi
   return rsync_close_error(errno, delta_file, basis_file, new_file); 
 }
 
-int csync_rs_patch(filename_p filename)
+int csync_rs_patch(int conn, filename_p filename)
 {
   FILE *basis_file = 0, *delta_file = 0, *new_file = 0;
   rs_stats_t stats;
@@ -557,7 +555,7 @@ int csync_rs_patch(filename_p filename)
     errstr="creating delta temp file"; 
     return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
   }
-  if ( csync_recv_file(delta_file) ) 
+  if ( csync_recv_file(conn, delta_file) ) 
     return rsync_close_error(errno, basis_file, delta_file, new_file);
 
   csync_debug(3, "Opening to be patched file on local host..\n");
