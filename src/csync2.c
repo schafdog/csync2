@@ -238,6 +238,67 @@ int create_keyfile(filename_p filename)
     return 0;
 }
 
+#define ERROR -1
+
+int csync_scan(char *buffer) {
+    int i = 0;
+    while (buffer[i] != '\n' && buffer[i] != 0 && buffer[i] != ' ') {
+	i++;
+    }
+    return i;
+}
+
+int csync_read_buffer(char *buffer, char *value) {
+    
+    int match = csync_scan(buffer);
+    if (match > 0) {
+	strncpy(value, buffer, match);
+	value[match] = 0;
+	if (buffer[match] == 0) {
+	    csync_debug(0, "Line too short %s", buffer);
+	    return ERROR;
+	}
+    }
+    return match;
+}
+
+static int csync_tail(db_conn_p db, int fileno, int dry_run) {
+    char readbuffer[1000];
+    char time[100];
+    char operation[100];
+    char file[500];
+    while (1) {
+	char *buffer = readbuffer;
+	int rc = gets_newline(fileno, buffer, 1000, 1);
+	if (rc == 0) {
+	    sleep(1);
+	    continue;
+	}
+	if (rc < 0) {
+	    csync_debug(0, "Got error from read %d\n", rc);
+	    return ERROR;
+	}
+	int match = csync_read_buffer(buffer, time);
+	if (match < 0)
+	    return ERROR;
+	buffer += match + 1;
+	match = csync_read_buffer(buffer, operation);
+	if (match <= 0)
+	    return ERROR;
+	buffer += match + 1;
+	int len = strlen(buffer);
+	if (buffer[len] == '\n')
+	    buffer[len] = 0;
+	strcpy(file, buffer);
+	csync_debug(0, "tail '%s' '%s' '%s' \n", time, operation, file);
+	csync_check(db, file, 1, 0, db_version, 0);
+	const char *patlist[1];
+	patlist[0] = file;
+	csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
+		     0, dry_run, ip_version, db_version, csync_update_host, 0);
+    }
+}
+
 static int csync_bind(int ip_version)
 {
     struct linger sl = { 1, 5 };
@@ -518,7 +579,7 @@ int main(int argc, char ** argv)
     int do_all = 0;          // do all host or "only" dirty ones. Do all is required for csync_sync_host
     update_func update_func;
     
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:Vqe")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VqeE")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -706,6 +767,11 @@ int main(int argc, char ** argv)
 	    update_func = csync_sync_host;
 	    mode = MODE_EQUAL;
 	    break;
+	case 'E':
+	{
+	    mode = MODE_TAIL;
+	    break;
+	}
 	default:
 	    help(argv[0]);
 	}
@@ -724,6 +790,7 @@ int main(int argc, char ** argv)
 	 mode != MODE_LIST_DIRTY &&
 	 mode != MODE_EQUAL &&
 	 mode != MODE_REMOVE_OLD &&
+	 mode != MODE_TAIL &&
 	 update_format == 0)
 	help(argv[0]);
 
@@ -785,14 +852,19 @@ nofork:
      */
     if (server) {
 	char line[4096], *cmd, *para;
-	  
+	int conn_out = 1;
+	conn = 0;
 	/* configure conn.c for inetd mode */
-	if (MODE_INETD & mode)
-	    conn_set(0, 1);
-	else {
-	    conn_set(conn,dup(conn));
+	if (MODE_INETD & mode) {
+	    conn = 0;
+	    conn_out = 1;
+	    conn_set(conn, conn_out);
 	}
-	if ( !conn_gets(line, 4096) ) {
+	else {
+	    conn_out = dup(conn);
+	    conn_set(conn,conn_out);
+	}
+	if ( !conn_gets(conn, line, 4096) ) {
 	    goto handle_error;
 	}
 	cmd = strtok(line, "\t \r\n");
@@ -800,10 +872,10 @@ nofork:
 	  
 	if (cmd && !strcasecmp(cmd, "ssl")) {
 #ifdef HAVE_LIBGNUTLS
-	    conn_printf("OK (activating_ssl).\n");
-	    conn_activate_ssl(1);
+	    conn_printf(conn, "OK (activating_ssl).\n");
+	    conn_activate_ssl(1, conn, conn_out);
 	    
-	    if ( !conn_gets(line, 4096) ) {
+	    if ( !conn_gets(conn,line, 4096) ) {
 		goto handle_error;
 	    }
 	    cmd = strtok(line, "\t \r\n");
@@ -815,7 +887,7 @@ nofork:
 	}
 
 	if (!cmd || strcasecmp(cmd, "config")) {
-	    conn_printf("Expecting SSL (optional) and CONFIG as first commands.\n");
+	    conn_printf(conn, "Expecting SSL (optional) and CONFIG as first commands.\n");
 	    goto handle_error;
 	}
 	  
@@ -835,7 +907,7 @@ nofork:
 		 !(cfgname[i] >= 'a' && cfgname[i] <= 'z') ) {
 		char *error  = "Config names are limited to [a-z0-9]+.\n";
 		if (mode & MODE_INETD)
-		    conn_printf(error);
+		    conn_printf(conn, error);
 		else
 		    csync_fatal(error);
 		goto handle_error;
@@ -932,7 +1004,8 @@ nofork:
 	{
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 1, init_run);
-	    csync_update(db, myhostname, active_peers, (const char**)realnames, count, recursive, dry_run, ip_version, db_version, csync_update_host, 0);
+	    csync_update(db, myhostname, active_peers, (const char**)realnames, count,
+			 recursive, dry_run, ip_version, db_version, csync_update_host, 0);
 	    csync_realnames_free(realnames, count);
 	}
     }
@@ -1006,8 +1079,8 @@ nofork:
     };
 
     if (server) {
-	conn_printf("OK (cmd_finished).\n");
-	csync_daemon_session(db, db_version, protocol_version, mode);
+	conn_printf(conn, "OK (cmd_finished).\n");
+	csync_daemon_session(conn, db, db_version, protocol_version, mode);
     };
 
     if (mode ==  MODE_MARK) {
@@ -1027,6 +1100,21 @@ nofork:
 	db->list_files(db);
     };
 
+    if (mode == MODE_TAIL) {
+	retval = 2;
+	int fileno = 0;
+	if (optind < argc) {
+	    fileno = open(argv[optind], O_RDONLY);
+	    csync_debug(0, "Opening %s %d \n", argv[optind], fileno);
+	    lseek(fileno, 0, SEEK_END);
+	}
+	else {
+	    csync_debug(0, "tailing stdin \n");
+	}
+	csync_tail(db, fileno, dry_run);
+    };
+
+    
     if (mode == MODE_LIST_SYNC) {
 	retval = 2;
 	db->list_sync(db);
