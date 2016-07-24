@@ -166,20 +166,20 @@ csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 /* conn.c */
 
 extern int conn_open(peername_p peername, int ip_version);
-extern int conn_get();
 extern int conn_set(int infd, int outfd);
-extern int conn_activate_ssl(int server_role);
+extern int conn_activate_ssl(int server_role, int in, int out);
 extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal);
 extern int conn_close();
 
-extern int conn_read(void *buf, size_t count);
-extern int conn_read_get_content_length(long *size);
-extern int conn_write(const void *buf, size_t count);
+extern int conn_read(int fd, void *buf, size_t count);
+extern int conn_read_get_content_length(int fd, long *size);
+extern int conn_write(int fd, const void *buf, size_t count);
+size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline);
 size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);
 
-extern void conn_printf(const char *fmt, ...);
-extern int conn_fgets(char *s, int size);
-extern size_t conn_gets(char *s, size_t size);
+extern void conn_printf(int fd, const char *fmt, ...);
+extern int conn_fgets(int fd, char *s, int size);
+extern size_t conn_gets(int fd, char *s, size_t size);
 
 
 /* db.c */
@@ -240,10 +240,10 @@ extern int db_sync_mode;
 
 /* rsync.c */
 
-extern int csync_rs_check(filename_p filename, int isreg);
-extern void csync_rs_sig(filename_p filename);
-extern int csync_rs_delta(filename_p filename);
-extern int csync_rs_patch(filename_p filename);
+extern int csync_rs_check(int conn, filename_p filename, int isreg);
+extern void csync_rs_sig( int conn, filename_p filename);
+extern int csync_rs_delta(int conn, filename_p filename);
+extern int csync_rs_patch(int conn, filename_p filename);
 
 
 /* checktxt.c */
@@ -298,7 +298,7 @@ extern int csync_check_dir(db_conn_p db, const char* file, int recursive, int in
 
 /* update.c */
 
-void cmd_printf(const char *cmd, const char *key, 
+void cmd_printf(int conn, const char *cmd, const char *key, 
 		filename_p filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr);
 
@@ -313,8 +313,8 @@ extern void csync_update(db_conn_p db, const char *myname, char **peers,
 			 int dry_run, int ip_version, int db_version, update_func func, int do_all);
 
 extern void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-		       const char **patlist, int patnum, int recursive,
-		       int dry_run, int ip_version, int db_version);
+			      const char **patlist, int patnum, int recursive,
+			      int dry_run, int ip_version, int db_version);
 
 extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 			    const char **patlist, int patnum, int recursive,
@@ -324,7 +324,8 @@ extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, fil
 extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, int init_run, int auto_diff, filename_p filename, int ip_version);
 extern int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, filename_p filename, int ip_version, char *active_peers[]);
 extern void csync_remove_old(db_conn_p db, filename_p pattern);
-int csync_update_file_sig_rs_diff(peername_p peername, const char *key_enc,
+int csync_update_file_sig_rs_diff(int conn,
+				  peername_p peername, const char *key_enc,
 				  filename_p filename, filename_p filename_enc,
 				  const struct stat *st, 
 				  const char *uidptr, const char *gidptr,
@@ -336,7 +337,7 @@ int csync_update_file_sig_rs_diff(peername_p peername, const char *key_enc,
 
 /* daemon.c */
 
-extern void csync_daemon_session(db_conn_p db, int db_version, int protocol_version, int mode);
+extern void csync_daemon_session(int conn, db_conn_p db, int db_version, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
 extern int csync_dir_count(db_conn_p db, filename_p filename);
 
