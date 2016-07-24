@@ -846,14 +846,13 @@ nofork:
 
     // print time (if -t is set)
     csync_printtime();
+    int conn_out = 1;
 
     /* In inetd (actually any server) mode we need to read the module name from the peer
      * before we open the config file and database
      */
     if (server) {
 	char line[4096], *cmd, *para;
-	int conn_out = 1;
-	conn = 0;
 	/* configure conn.c for inetd mode */
 	if (MODE_INETD & mode) {
 	    conn = 0;
@@ -862,7 +861,7 @@ nofork:
 	}
 	else {
 	    conn_out = dup(conn);
-	    conn_set(conn,conn_out);
+	    conn_set(conn, conn_out);
 	}
 	if ( !conn_gets(conn, line, 4096) ) {
 	    goto handle_error;
@@ -881,7 +880,7 @@ nofork:
 	    cmd = strtok(line, "\t \r\n");
 	    para = cmd ? strtok(0, "\t \r\n") : 0;
 #else
-	    conn_printf("This csync2 server is built without SSL support.\n");
+	    conn_printf(conn_out, "This csync2 server is built without SSL support.\n");
 	    goto handle_error;
 #endif
 	}
@@ -1080,7 +1079,7 @@ nofork:
 
     if (server) {
 	conn_printf(conn, "OK (cmd_finished).\n");
-	csync_daemon_session(conn, db, db_version, protocol_version, mode);
+	csync_daemon_session(conn, conn_out, db, db_version, protocol_version, mode);
     };
 
     if (mode ==  MODE_MARK) {
