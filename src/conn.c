@@ -36,8 +36,6 @@
 #  include <gnutls/x509.h>
 #endif
 
-int conn_clisok = 0;
-
 #ifdef HAVE_LIBGNUTLS
 int csync_conn_usessl = 0;
 
@@ -109,13 +107,12 @@ int conn_open(peername_p peername, int ip_version)
     }
 
     if (setsockopt(conn_fd_in, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on) ) < 0) {
-	csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
+	csync_debug(1, "conn_open: Can't set TCP_NODELAY option on TCP socket.\n");
 	close(conn_fd_in);
 	conn_fd_in = -1;
 	return -1;
     }
 
-    conn_clisok = 1;
 #ifdef HAVE_LIBGNUTLS
     csync_conn_usessl = 0;
 #endif
@@ -133,7 +130,6 @@ int conn_set(int infd, int outfd)
 
 //	conn_fd_in  = infd;
 //	conn_fd_out = outfd;
-	conn_clisok = 1;
 #ifdef HAVE_LIBGNUTLS
 	csync_conn_usessl = 0;
 #endif
@@ -142,7 +138,7 @@ int conn_set(int infd, int outfd)
 	// in csync2.c with more restrictive error handling..
 	// FIXME don't even try in "ssh" mode
 	if ( setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0 )
-                csync_debug(1, "Can't set TCP_NODELAY option on TCP socket (outfd).\n");
+	    csync_debug(1, "Can't set TCP_NODELAY option on TCP socket (outfd): %d.\n", outfd);
 
 	return 0;
 }
@@ -320,8 +316,6 @@ int conn_check_peer_cert(peername_p peername, int callfatal)
 
 int conn_close(int conn)
 {
-    if ( !conn_clisok ) return -1;
-
 #ifdef HAVE_LIBGNUTLS
     if ( csync_conn_usessl ) {
 	gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
@@ -337,8 +331,6 @@ int conn_close(int conn)
     }
 
     close(conn);
-    conn_clisok =  0;
-  
     return 0;
 }
 
