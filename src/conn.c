@@ -36,8 +36,6 @@
 #  include <gnutls/x509.h>
 #endif
 
-int conn_fd_in  = -1;
-int conn_fd_out = -1;
 int conn_clisok = 0;
 
 #ifdef HAVE_LIBGNUTLS
@@ -47,10 +45,6 @@ static gnutls_session_t conn_tls_session;
 static gnutls_certificate_credentials_t conn_x509_cred;
 #endif
 
-int conn_get()
-{
-    return conn_fd_in;
-}
 /* getaddrinfo stuff mostly copied from its manpage */
 int conn_connect(peername_p peername, int ip_version)
 {
@@ -107,39 +101,38 @@ char *active_peer = 0;
 
 int conn_open(peername_p peername, int ip_version)
 {
-	int on = 1;
+    int on = 1;
+    int conn_fd_in = conn_connect(peername, ip_version);
+    if (conn_fd_in < 0) {
+	csync_debug(1, "Can't create socket.\n");
+	return -1;
+    }
 
-        conn_fd_in = conn_connect(peername, ip_version);
-        if (conn_fd_in < 0) {
-                csync_debug(1, "Can't create socket.\n");
-                return -1;
-        }
+    if (setsockopt(conn_fd_in, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on) ) < 0) {
+	csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
+	close(conn_fd_in);
+	conn_fd_in = -1;
+	return -1;
+    }
 
-	if (setsockopt(conn_fd_in, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on) ) < 0) {
-                csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
-		close(conn_fd_in); conn_fd_in = -1;
-                return -1;
-	}
-
-	conn_fd_out = conn_fd_in;
-	conn_clisok = 1;
+    conn_clisok = 1;
 #ifdef HAVE_LIBGNUTLS
-	csync_conn_usessl = 0;
+    csync_conn_usessl = 0;
 #endif
-	if (active_peer) { 
-	  free(active_peer);
-	  csync_debug(0, "Connection not closed on open?");
-	}
-	active_peer = strdup(peername);
-	return 0;
+    if (active_peer) { 
+	free(active_peer);
+	csync_debug(0, "Connection not closed on open?");
+    }
+    active_peer = strdup(peername);
+    return conn_fd_in;
 }
 
 int conn_set(int infd, int outfd)
 {
 	int on = 1;
 
-	conn_fd_in  = infd;
-	conn_fd_out = outfd;
+//	conn_fd_in  = infd;
+//	conn_fd_out = outfd;
 	conn_clisok = 1;
 #ifdef HAVE_LIBGNUTLS
 	csync_conn_usessl = 0;
@@ -148,8 +141,8 @@ int conn_set(int infd, int outfd)
 	// when running in server mode, this has been done already
 	// in csync2.c with more restrictive error handling..
 	// FIXME don't even try in "ssh" mode
-	if ( setsockopt(conn_fd_out, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0 )
-                csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
+	if ( setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0 )
+                csync_debug(1, "Can't set TCP_NODELAY option on TCP socket (outfd).\n");
 
 	return 0;
 }
@@ -163,7 +156,7 @@ static void ssl_log(int level, const char* msg)
 static const char *ssl_keyfile = ETCDIR "/csync2_ssl_key.pem";
 static const char *ssl_certfile = ETCDIR "/csync2_ssl_cert.pem";
 
-int conn_activate_ssl(int server_role)
+int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out)
 {
 	gnutls_alert_description_t alrt;
 	int err;
@@ -325,66 +318,68 @@ int conn_check_peer_cert(peername_p peername, int callfatal)
 
 #endif /* HAVE_LIBGNUTLS */
 
-int conn_close()
+int conn_close(int conn)
 {
-	if ( !conn_clisok ) return -1;
+    if ( !conn_clisok ) return -1;
 
 #ifdef HAVE_LIBGNUTLS
-	if ( csync_conn_usessl ) {
-		gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
-		gnutls_deinit(conn_tls_session);
-		gnutls_certificate_free_credentials(conn_x509_cred);
-		gnutls_global_deinit();
-	}
+    if ( csync_conn_usessl ) {
+	gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
+	gnutls_deinit(conn_tls_session);
+	gnutls_certificate_free_credentials(conn_x509_cred);
+	gnutls_global_deinit();
+    }
 #endif
 
-  if (active_peer) {
-    free(active_peer);
-    active_peer = NULL;
-  }
-    
-	if ( conn_fd_in != conn_fd_out) 
-	  close(conn_fd_in);
-	close(conn_fd_out);
+    if (active_peer) {
+	free(active_peer);
+	active_peer = NULL;
+    }
 
-	conn_fd_in  = -1;
-	conn_fd_out = -1;
-	conn_clisok =  0;
-
-	return 0;
+    close(conn);
+    conn_clisok =  0;
+  
+    return 0;
 }
 
 static inline int READ(int filedesc, void *buf, size_t count)
 {
 #ifdef HAVE_LIBGNUTLS
-  if (csync_conn_usessl)
-    return gnutls_record_recv(conn_tls_session, buf, count);
+    if (csync_conn_usessl)
+	return gnutls_record_recv(conn_tls_session, buf, count);
 #endif
-  fd_set set;
-  struct timeval timeout;
-  /* Initialize the file descriptor set. */
-  FD_ZERO (&set);
-  FD_SET (filedesc, &set);
-  /* Initialize the timeout data structure. */
-  timeout.tv_sec = 60;
-  timeout.tv_usec = 0;
-  int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
-  if (rc == 0)
-    return -2;
-  if (rc < 0)
-    return rc;
-  int length = 0; 
-  while (1) {
-     length = read(conn_fd_in, buf, count);
-     if (length == -1 && errno == EINTR)
-	csync_debug(2, "Interupted while reading");
-     else
-	return length;
-  }
-  return length;
+    fd_set set;
+    struct timeval timeout;
+    /* Initialize the file descriptor set. */
+    FD_ZERO (&set);
+    FD_SET (filedesc, &set);
+    /* Initialize the timeout data structure. */
+    timeout.tv_sec = 60;
+    timeout.tv_usec = 0;
+    int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
+    if (rc == 0) {
+	
+	return -2;
+    }
+    if (rc < 0) {
+	csync_debug(0, "Error in READ: %d %s\n", errno, strerror(errno));
+	return rc;
+    }
+    int length = 0; 
+    while (1) {
+	length = read(filedesc, buf, count);
+	if (length == -1 && errno == EINTR)
+	    csync_debug(2, "Interupted while reading\n");
+	else {
+	    if (length < 0)
+		csync_debug(3, "Error in READ: %d %s\n", errno, strerror(errno));	    
+	    return length;
+	}
+    }
+    return length;
 }
 
-static inline int WRITE(const void *buf, size_t count)
+static inline int WRITE(int fd, const void *buf, size_t count)
 {
   static int n, total;
 #ifdef HAVE_LIBGNUTLS
@@ -396,7 +391,7 @@ static inline int WRITE(const void *buf, size_t count)
       total = 0;
       
       while (count > total) {
-	n = write(conn_fd_out, ((char *) buf) + total, count - total);
+	n = write(fd, ((char *) buf) + total, count - total);
 	
 	if (n >= 0)
 	  total += n;
@@ -422,9 +417,10 @@ int conn_raw_read(int filedesc, void *buf, size_t count)
 	else {
 	    buf_start = 0;
 	    buf_end = READ(filedesc, buffer, 512);
-	    if (buf_end < 0) { 
+	    if (buf_end < 0) {
+		int rc = buf_end;
 		buf_end=0; 
-		return -1; 
+		return rc; 
 	    }
 	}
     }
@@ -467,11 +463,11 @@ void conn_debug(const char *name, const char*buf, size_t count)
 	fprintf(csync_debug_out, "\n");
 }
 
-int conn_read_get_content_length(long *size) 
+int conn_read_get_content_length(int fd, long *size) 
 {
    char buffer[100];
    *size = 0;
-   int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
+   int rc = !conn_gets(fd, buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
    csync_debug(2, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
    if (!strcmp(buffer, "ERROR\n")) {
       errno=EIO;
@@ -481,11 +477,11 @@ int conn_read_get_content_length(long *size)
 }
 
 /* Rewritten not to mask errors */ 
-int conn_read(void *buf, size_t count)
+int conn_read(int fd, void *buf, size_t count)
 {
     int pos, rc;
     for (pos=0; pos < count ; pos+=rc) {
-	rc = conn_raw_read(conn_fd_in, (char *)buf+pos, count-pos);
+	rc = conn_raw_read(fd, (char *)buf+pos, count-pos);
 	if (rc < 0)
 	    return rc;
 	/* End of file */
@@ -496,10 +492,10 @@ int conn_read(void *buf, size_t count)
     return pos;
 }
 
-int conn_write(const void *buf, size_t count)
+int conn_write(int fd, const void *buf, size_t count)
 {
     // conn_debug("Local", buf, count);
-    return WRITE(buf, count);
+    return WRITE(fd, buf, count);
 }
 
 void  conn_remove_key(char *buf) {
@@ -532,7 +528,7 @@ void  conn_remove_key(char *buf) {
        *ptr = 0;
 }
 
-void conn_printf(const char *fmt, ...)
+void conn_printf(int fd, const char *fmt, ...)
 {
     char dummy = 0, *buffer = 0;
     va_list ap;
@@ -548,12 +544,12 @@ void conn_printf(const char *fmt, ...)
     va_end(ap);
     
     buffer[size] = 0;
-    conn_write(buffer, size);
+    conn_write(fd, buffer, size);
     conn_remove_key(buffer);
     csync_debug(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
-void conn_printf_cmd_filepath(const char *cmd, const char *file, const char *key_enc, const char *fmt, ...)
+void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...)
 {
     char dummy = 0, *buffer = 0;
     va_list ap;
@@ -569,12 +565,12 @@ void conn_printf_cmd_filepath(const char *cmd, const char *file, const char *key
     va_end(ap);
     
     buffer[size] = 0;
-    conn_write(buffer, size);
+    conn_write(fd, buffer, size);
     conn_remove_key(buffer);
     csync_debug(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
-size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
+size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 {
     size_t i=0;
     int rc = 0;
@@ -589,17 +585,23 @@ size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 	}
     }
     s[i] = 0;
+    return rc ? rc : i;
+}
+
+size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
+{
+    int rc = gets_newline(filedesc, s, size, remove_newline);
     if (rc == -1) {
 	csync_debug(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
 	return rc; 
     }
     //	conn_debug(active_peer, s, i);
     csync_debug(2, "CONN %s > %s\n", active_peer, s);
-    return i;
+    return rc;
 }
 
 
-size_t conn_gets(char *s, size_t size) {
+size_t conn_gets(int conn_fd_in, char *s, size_t size) {
     return conn_gets_newline(conn_fd_in, s, size, 1);
 }
 
