@@ -344,11 +344,12 @@ void db_sql_list_files(db_conn_p db)
     } SQL_END;
 }
 
-void db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, peername_p peername)
+textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, peername_p peername)
 {
     int len = strlen(filename); 
     char where_sql[len + 50];
     where_sql[0] = 0;
+    textlist_p tl = 0;
     int limit_by_file = strcmp("-", filename);
     if (limit_by_file) 
 	sprintf(where_sql, "WHERE filename = '%s'", db_encode(filename));
@@ -358,10 +359,10 @@ void db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, pee
     {
 	if ( csync_match_file_host(db_decode(SQL_V(1)), 
 				   myname, peername, 0) )
-	    conn_printf("%s\t%s\n", SQL_V(0), SQL_V(1));
+	    textlist_add2( &tl, SQL_V(0), SQL_V(1), 0);
     } SQL_END;
 
-
+    return tl;
 }
 
 int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {

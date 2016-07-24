@@ -57,7 +57,7 @@ struct db_conn_t {
     int         (*list_dirty) (db_conn_p conn, char **active_peers, const char *realname, int recursive);
     void        (*list_hint)  (db_conn_p conn);
     void        (*list_files) (db_conn_p conn);
-    void        (*list_file)  (db_conn_p conn, filename_p filename, const char *myname, peername_p peername);
+    textlist_p  (*list_file)  (db_conn_p conn, filename_p filename, const char *myname, peername_p peername);
     void        (*list_sync)  (db_conn_p conn /*, filename_p filename, peername_p peername */);
 
     int         (*is_dirty)  (db_conn_p conn, filename_p filename, peername_p peername, int *operation, int *mode);
