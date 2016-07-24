@@ -42,10 +42,10 @@
 
 //static char *cmd_error;
 extern char *update_format;
-//extern int version; 
+//extern int version;
 extern char *allow_peer;
 extern char *active_peer;
- 
+
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 
 int csync_rmdir(db_conn_p db, filename_p filename, int recursive, int db_version)
@@ -73,7 +73,7 @@ int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_fl
 
 	rc = S_ISDIR(st.st_mode) ? csync_rmdir(db, filename, recursive, db_version) : unlink(filename);
 
-	if ( rc && !unlink_flag ) 
+	if ( rc && !unlink_flag )
 	  *cmd_error = strerror(errno);
 	return rc;
 }
@@ -96,7 +96,7 @@ int csync_check_dirty(db_conn_p db, filename_p filename, peername_p peername, in
     // FIX comment: What do I mean???
     int markedDirty = csync_check_single(db, filename, 0, version);
     csync_debug(2, "check_dirty_daemon: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
-    
+
     if (isflush)
     	return 0;
     rc = db->is_dirty(db, peername, filename, &operation, &mode);
@@ -145,7 +145,7 @@ void csync_file_update(db_conn_p db, filename_p filename, peername_p peername, i
     db->remove_file(db, filename, 0);
     db->insert_file(db, filename, checktxt, &st, digest);
 //  db->insert_file(db, encoded, checktxt_encoded, st,  digest);
-    if (digest) 
+    if (digest)
       free(digest);
   }
 }
@@ -159,7 +159,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
   while ( (g=csync_find_next(g, filename)) ) {
     if (g->backup_directory && g->backup_generations > 1) {
       //	    filename_p filename = prefixsubst(prefixed_filename);
-      
+
       int bak_dir_len = strlen(g->backup_directory);
       int filename_len = strlen(filename);
       char backup_filename[bak_dir_len + filename_len + 10];
@@ -175,41 +175,41 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	csync_debug(0, "Nothing to backup: %s. New file?\n", filename);
 	return 0;
       }
-	    
+	
       if (S_ISDIR(buf.st_mode)) {
 	csync_debug(4, "directory. Skip generation \n");
 	return 0;
       }
 
       fd_in = open(filename, O_RDONLY);
-      if (fd_in < 0) 
+      if (fd_in < 0)
 	return 0;
-      
+
       memcpy(backup_filename, g->backup_directory, bak_dir_len);
       backup_filename[bak_dir_len] = 0;
       mode = 0777;
-      
+
 
       for (i=filename_len; i> 0; i--)
 	if (filename[i] == '/')  {
 	  lastSlash = i;
 	  break;
 	}
-      
+
       for (i=0; i < filename_len; i++) {
 	// Create directories in filename
 	// TODO: Get the mode from the orig. dir
 	if (filename[i] == '/' && i <= lastSlash) {
-	  
+	
 	  backup_filename[bak_dir_len+i] = 0;
-	  
+	
 	  csync_debug(4, "mkdir %s \n", backup_filename);
-	  
+	
 	  mkdir(backup_filename, mode);
 	  // Dont check the empty string.
 	  if (i!= 0)
 	    csync_set_backup_file_status(backup_filename, bak_dir_len);
-	  
+	
 	}
 	backup_filename[bak_dir_len+i] = filename[i];
       }
@@ -218,19 +218,19 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       backup_filename[bak_dir_len] = '/';
       memcpy(backup_otherfilename, backup_filename,
 	     bak_dir_len + filename_len);
-      
+
       for (i=g->backup_generations-1; i; i--) {
 	if (i != 1)
 	  snprintf(backup_filename+bak_dir_len+filename_len, 10, ".%d", i-1);
 	else
 	  backup_filename[bak_dir_len+filename_len] = '\0';
 	rc = stat(backup_filename, &buf);
-	if (rc != 0) 
+	if (rc != 0)
 	  continue; // File does not exists
 	snprintf(backup_otherfilename+bak_dir_len+filename_len, 10, ".%d", i);
 	
 	rc = rename(backup_filename, backup_otherfilename);
-	csync_debug(3, "renaming backup files '%s' to '%s'. rc = %d\n", 
+	csync_debug(3, "renaming backup files '%s' to '%s'. rc = %d\n",
 		    backup_filename, backup_otherfilename, rc);
 	
       }
@@ -238,7 +238,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       /* strcpy(backup_filename+bak_dir_len+filename_len, ""); */
 
       fd_out = open(backup_filename, O_WRONLY|O_CREAT, 0600);
-      
+
       if (fd_out < 0) {
 	snprintf(error_buffer, 1024,
 		 "Open error while backing up '%s': %s\n",
@@ -259,8 +259,8 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 		 filename, strerror(errno));
 
 	*cmd_error = error_buffer;
-	// TODO verify file disapeared ? 
-	// 
+	// TODO verify file disapeared ?
+	//
 	// return 1;
       }
       csync_set_backup_file_status(backup_filename, bak_dir_len);
@@ -271,20 +271,20 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
   return 0;
 }
 
-int csync_copy_file(int fd_in, int fd_out) 
+int csync_copy_file(int fd_in, int fd_out)
 {
   char buffer[512];
   int read_len = read(fd_in, buffer, 512);
 
   while (read_len > 0) {
     int write_len = 0;
-    
+
     while (write_len < read_len) {
       int rc = write(fd_out, buffer+write_len, read_len-write_len);
       if (rc == -1) {
 	close(fd_in);
 	close(fd_out);
-	//TODO verify return code. 
+	//TODO verify return code.
 	return errno;
       }
       write_len += rc;
@@ -308,11 +308,11 @@ int csync_set_backup_file_status(char *filename, int backupDirLength) {
 
     rc = chown(filename, buf.st_uid, buf.st_gid);
 
-    csync_debug(rc == 0 ? 4:0, "Changing owner of %s to user %d and group %d, rc= %d \n", 
+    csync_debug(rc == 0 ? 4:0, "Changing owner of %s to user %d and group %d, rc= %d \n",
 		filename, buf.st_uid, buf.st_gid, rc);
 
     rc = chmod(filename, buf.st_mode);
-    csync_debug(rc == 0 ? 4:0, "Changing mode of %s to mode %d, rc= %d \n", 
+    csync_debug(rc == 0 ? 4:0, "Changing mode of %s to mode %d, rc= %d \n",
 		filename, buf.st_mode, rc);
 
   }
@@ -335,17 +335,17 @@ struct csync_command {
 
 enum {
   A_SIG, A_FLUSH, A_MARK, A_TYPE, A_GETTM, A_GETSZ, A_DEL, A_PATCH, A_CREATE,
-  A_MKDIR, A_MOD, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV, 
+  A_MKDIR, A_MOD, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV,
   A_SETOWN, A_SETMOD, A_SETTIME, A_LIST, A_GROUP,
   A_DEBUG, A_HELLO, A_BYE
 };
 
 struct csync_command cmdtab[] = {
-  /*      command,      perm, 
+  /*      command,      perm,
 	                   dirty,
-			      unlink, 
-			         update, 
-				    need_ident, 
+			      unlink,
+			         update,
+				    need_ident,
 				       action */
 	{ "sig",	1, 0, 0, 0, 1, A_SIG	},
 	{ "mark",	1, 0, 0, 0, 1, A_MARK	},
@@ -395,10 +395,10 @@ const char *csync_inet_ntop(address_t *addr, char *buf, size_t size)
 			 buf, size);
 }
 
-#define OK        0 
+#define OK        0
 #define IDENTICAL 1
-#define NEXT_CMD  2 
-#define ERROR     3 
+#define NEXT_CMD  2
+#define ERROR     3
 #define ABORT_CMD 3
 #define BYEBYE    4
 
@@ -515,10 +515,10 @@ static int setup_tag(char *tag[32], char *line) {
     tag[++i] = strtok_r(NULL, "\t \r\n", &save_ptr);
   while ( i < 32 )
     tag[i++] = "";
-  
-  if ( !tag[0][0] ) 
+
+  if ( !tag[0][0] )
     return 1;
-  
+
   for (i=0; i<32; i++)
     tag[i] = strdup(url_decode(tag[i]));
 
@@ -551,12 +551,12 @@ textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl)
   return 0;
 }
 
-int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error, int db_version) 
+int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error, int db_version)
 {
     struct stat st;
     int rc = stat(filename, &st);
-    // Only try to backup if the file exists already. 
-    // TODO also skip if it is a directory that already exists. 
+    // Only try to backup if the file exists already.
+    // TODO also skip if it is a directory that already exists.
     if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
 	conn_printf(conn, "OK (send_data).\n");
 	csync_rs_sig(conn, filename);
@@ -565,31 +565,31 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error, in
 	    return ABORT_CMD;
 	}
 	//TODO restore hardlinks
-	struct stat st_patched; 
+	struct stat st_patched;
 	int new_rc = stat(filename, &st_patched);
 	if (!new_rc) {
 	    if (st.st_nlink > 1) {
-/*	  
+/*	
 	  const char *checktxt = csync_genchecktxt_version(&st_patched, filename,
 							 SET_USER|SET_GROUP,
 							 db_version);
 */
- 	  // TODO scan file for hardlinks to old file. 
+ 	  // TODO scan file for hardlinks to old file.
 	  // check_link now works on dirty
 		textlist_p tl = NULL; // csync_check_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
-		// csync_hardlink does not return a list. 
-		if (tl) 
+		// csync_hardlink does not return a list.
+		if (tl)
 		    textlist_free(tl);
 	    }
 	}
 	else
-	    csync_debug(0, "Failed to stat patched file: %s %d", filename, new_rc); 
+	    csync_debug(0, "Failed to stat patched file: %s %d", filename, new_rc);
 	return OK;
     }
     return ABORT_CMD;
 }
 
-int csync_daemon_mkdir(filename_p filename, const char **cmd_error) 
+int csync_daemon_mkdir(filename_p filename, const char **cmd_error)
 {
     struct stat st;
     *cmd_error = 0;
@@ -612,7 +612,7 @@ int csync_daemon_mkdir(filename_p filename, const char **cmd_error)
 	*cmd_error = "Win32 I/O Error on CreateDirectory()";
     }
 #else
-  int found = lstat_strict(filename, &st) == 0; 
+  int found = lstat_strict(filename, &st) == 0;
   if (found) {
       if (!S_ISDIR(st.st_mode)) {
 	  csync_debug(1, "Entry '%s' already exists but not a directory\n", filename);
@@ -637,7 +637,7 @@ int csync_daemon_mkdir(filename_p filename, const char **cmd_error)
 struct csync_command *find_command(const char *cmd) {
   int cmdnr;
   for (cmdnr=0; cmdtab[cmdnr].text; cmdnr++)
-    if ( !strcasecmp(cmdtab[cmdnr].text, cmd)) 
+    if ( !strcasecmp(cmdtab[cmdnr].text, cmd))
       break;
   return &cmdtab[cmdnr];
 }
@@ -653,8 +653,8 @@ int csync_daemon_check_identify(int conn, struct csync_command *cmd, peername_p 
 }
 
 const char *csync_daemon_check_perm(db_conn_p db,
-				    struct csync_command *cmd, 
-				    char *filename, char *peername, 
+				    struct csync_command *cmd,
+				    char *filename, char *peername,
 				    char* key) {
   const char *cmd_error = 0;
   if ( cmd->check_perm ) {
@@ -675,21 +675,21 @@ const char *csync_daemon_check_perm(db_conn_p db,
   return 0;
 }
 
-int csync_daemon_setown(filename_p filename, const char *uidp, const char *gidp, const char *userp, const char *groupp, const char **cmd_error) 
+int csync_daemon_setown(filename_p filename, const char *uidp, const char *gidp, const char *userp, const char *groupp, const char **cmd_error)
 {
   if ( !csync_ignore_uid || !csync_ignore_gid ) {
     int uid = csync_ignore_uid ? -1 : atoi(uidp);
     int gid = csync_ignore_gid ? -1 : atoi(gidp);
-    
+
     const char *user = csync_ignore_uid ? NULL : userp;
     if (user != NULL && user[0] != '-') {
-      int local_uid = name_to_uid(user, NULL); 
-      if (local_uid != -1) 
+      int local_uid = name_to_uid(user, NULL);
+      if (local_uid != -1)
 	uid = local_uid;
     }
     const char *group = csync_ignore_gid ? NULL : groupp ;
-    int local_gid = name_to_gid(group); 
-    if (local_gid != -1) 
+    int local_gid = name_to_gid(group);
+    if (local_gid != -1)
       gid = local_gid;
     if ( lchown(filename, uid, gid) )
       *cmd_error = strerror(errno);
@@ -719,7 +719,7 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], int db_version, co
       conn_printf(conn, "OK (not_found).\n---\noctet-stream 0\n");
     return OK;
   }
-  // Found a file that we ca do a check text on 
+  // Found a file that we ca do a check text on
   conn_printf(conn, "OK (data_follows).\n");
   int flags = 0;
   // Prob. all non-regular files, but testing with directories
@@ -730,7 +730,7 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], int db_version, co
   if (strcmp("user/group",tag[3]) == 0)
       flags |= SET_USER|SET_GROUP;
   csync_debug(2, "Flags for gencheck: %d \n", flags);
-  const char *checktxt = csync_genchecktxt_version(&st, filename, 
+  const char *checktxt = csync_genchecktxt_version(&st, filename,
 						   flags, db_version);
   if (db_version == 1)
       conn_printf(conn, "%s\n", checktxt);
@@ -738,10 +738,10 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], int db_version, co
       conn_printf(conn, "%s\n", url_encode(checktxt));
   else
       conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
-  
+
   if ( S_ISREG(st.st_mode) )
       csync_rs_sig(conn, filename);
-  else 
+  else
       conn_printf(conn, "octet-stream 0\n");
 
   return OK;
@@ -750,14 +750,14 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], int db_version, co
 void csync_daemon_type(int conn, char *filename, const char **cmd_error)
 {
   FILE *f = fopen(filename, "rb");
-  
+
   if (!f && errno == ENOENT)
     f = fopen("/dev/null", "rb");
-  
+
   if (f) {
     char buffer[512];
     size_t rc;
-    
+
     conn_printf(conn, "OK (data_follows).\n");
     while ( (rc=fread(buffer, 1, 512, f)) > 0 )
 	if ( conn_write(conn, buffer, rc) != rc ) {
@@ -795,7 +795,7 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
   return OK;
 }
 
-void csync_daemon_list(int conn, db_conn_p db, char *filename, char *myname, char *peername) 
+void csync_daemon_list(int conn, db_conn_p db, char *filename, char *myname, char *peername)
 {
     textlist_p tl = db->list_file(db, filename, myname, peername);
     textlist_p t = tl;
@@ -814,7 +814,7 @@ const char *csync_daemon_hello(db_conn_p db, char **peername, address_t *peeradd
   // Hack to allow test cases on local machine
   if ((allow_peer && !strcmp(allow_peer, newpeername)) || verify_peername(db, newpeername, peeraddr)) {
     *peername = strdup(newpeername);
-  } 
+  }
   else {
     peername = NULL;
     return "Identification failed!";
@@ -834,19 +834,19 @@ const char *csync_daemon_hello(db_conn_p db, char **peername, address_t *peeradd
   return 0;
 }
 
-int csync_daemon_group(char **active_grouplist, char *newgroup, 
+int csync_daemon_group(char **active_grouplist, char *newgroup,
 			       const char **cmd_error) {
   if (*active_grouplist) {
     *cmd_error =  "Group list already set!";
     return ERROR;
-  } 
+  }
   else {
     const struct csync_group *g;
     int i, gnamelen;
-    
+
     *active_grouplist = strdup(newgroup);
     for (g=csync_group; g; g=g->next) {
-      if (!g->myname) 
+      if (!g->myname)
 	continue;
       i=0;
       gnamelen = strlen(csync_group->gname);
@@ -860,14 +860,14 @@ int csync_daemon_group(char **active_grouplist, char *newgroup,
 	  if (*active_grouplist[i++]==',') break;
       }
       csync_group->myname = 0;
-    found_asactive: 
+    found_asactive:
       ;
     }
   }
   return OK;
 }
 
-void csync_daemon_check_update(db_conn_p db, filename_p filename, const char *otherfile, struct csync_command *cmd, char *peer, int db_version) 
+void csync_daemon_check_update(db_conn_p db, filename_p filename, const char *otherfile, struct csync_command *cmd, char *peer, int db_version)
 {
     if ( cmd->update)
 	csync_file_update(db, filename, peer, db_version);
@@ -875,10 +875,10 @@ void csync_daemon_check_update(db_conn_p db, filename_p filename, const char *ot
     if (otherfile)
 	csync_file_update(db, otherfile, peer, db_version);
     if ( cmd->update == 1 ) {
-	csync_debug(1, "Updated(%s) %s:%s %s \n", 
-		    cmd->text, 
-		    peer ? peer : "???", 
-		    filename, 
+	csync_debug(1, "Updated(%s) %s:%s %s \n",
+		    cmd->text,
+		    peer ? peer : "???",
+		    filename,
 		    otherfile ? otherfile: "");
 	csync_schedule_commands(db, filename, 0);
     }
@@ -902,7 +902,7 @@ void csync_daemon_stdin_check(int fd, address_t *peeraddr, socklen_t *peerlen) {
 	break;
 	/* fall through */
     default:
-	csync_fatal("I'm only talking to sockets or pipes! %x\n", 
+	csync_fatal("I'm only talking to sockets or pipes! %x\n",
 		    sb.st_mode & S_IFMT);
 	break;
     }
@@ -920,23 +920,23 @@ int csync_daemon_setmod(char *filename, char *mod, const char **cmd_error) {
 
 int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error)
 {
-  struct stat st_file, st_link; 
+  struct stat st_file, st_link;
   int rc = stat(filename, &st_file);
   int rc_link = stat(linkname, &st_link);
   int identical = atoi(is_identical);
-  
-  if (rc == 0 && rc_link == 0 && 
+
+  if (rc == 0 && rc_link == 0 &&
       st_file.st_dev == st_link.st_dev &&
       st_file.st_rdev == st_link.st_rdev) {
-    // OK on the same device 
+    // OK on the same device
     if (identical && st_file.st_ino == st_link.st_ino)
-      return OK; 
+      return OK;
   }
   // This should not happen. File should be there (patched)
   if (rc != 0) {
     *cmd_error = "PATCH";
     return ABORT_CMD;
-  }  
+  }
   /* Found */
   if (!identical) {
     *cmd_error = "PATCH";
@@ -979,11 +979,11 @@ int csync_daemon_symlink(filename_p filename, const char *target, const char **c
   return ABORT_CMD;
 }
 
-int csync_daemon_dispatch(int conn, db_conn_p db, char *filename, 
+int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
 			  struct csync_command *cmd,
 			  char *tag[32],
-			  int db_version, 
-			  int protocol_version, 
+			  int db_version,
+			  int protocol_version,
 			  char **peername,
 			  address_t *peeraddr,
 			  const char **otherfile,
@@ -999,21 +999,21 @@ int csync_daemon_dispatch(int conn, db_conn_p db, char *filename,
     char *time       = tag[9];
 
     switch ( cmd->action) {
-    
+
     case A_SIG: {
-	return csync_daemon_sig(conn, filename, tag, db_version, cmd_error);
+	return csync_daemon_sig(conn_out, filename, tag, db_version, cmd_error);
 	break;
     }
     case A_MARK:
 	csync_mark(db, filename, *peername, 0, OP_MOD, NULL, NULL, NULL, 0);
 	break;
     case A_TYPE:
-	csync_daemon_type(conn, filename, cmd_error);
+	csync_daemon_type(conn_out, filename, cmd_error);
 	return BYEBYE;
 	break;
     case A_GETTM:
     case A_GETSZ:
-	csync_daemon_get_size_time(conn, filename, cmd);
+	csync_daemon_get_size_time(conn_out, filename, cmd);
 	return NEXT_CMD;
 	break;
     case A_FLUSH:
@@ -1026,11 +1026,11 @@ int csync_daemon_dispatch(int conn, db_conn_p db, char *filename,
 	break;
     case A_PATCH:
     case A_CREATE: {
-	int rc = csync_daemon_patch(conn, filename, cmd_error, db_version); 
+	int rc = csync_daemon_patch(conn_out, filename, cmd_error, db_version);
 	if (rc != OK)
 	    return rc;
 	rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
-	if (rc != OK) 
+	if (rc != OK)
 	    return rc;
 	rc = csync_daemon_setmod(filename, mod, cmd_error);
 	if (rc != OK)
@@ -1047,7 +1047,7 @@ int csync_daemon_dispatch(int conn, db_conn_p db, char *filename,
 	if (rc != OK)
 	    return rc;
 	// fall through on OK
-    } 
+    }
     case A_MOD: {
 	int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
 	csync_debug(2, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n", filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
@@ -1110,7 +1110,7 @@ int csync_daemon_dispatch(int conn, db_conn_p db, char *filename,
 	return csync_daemon_settime(filename, value, cmd_error);
 	break;
     case A_LIST:
-	csync_daemon_list(conn, db, filename, value, *peername);
+	csync_daemon_list(conn_out, db, filename, value, *peername);
 	break;
     case A_DEBUG:
 	csync_debug(2, "DEBUG from %s %s\n", *peername, tag[1]);
@@ -1125,15 +1125,15 @@ int csync_daemon_dispatch(int conn, db_conn_p db, char *filename,
 	break;
     case A_HELLO:
 	*cmd_error = csync_daemon_hello(db, peername, peeraddr, tag[1]);
-	csync_debug(1, "HELLO from %s. Response: %s\n", *peername, (*cmd_error ? *cmd_error : "OK")); 
+	csync_debug(1, "HELLO from %s. Response: %s\n", *peername, (*cmd_error ? *cmd_error : "OK"));
 	return ABORT_CMD;
     case A_GROUP:
 	csync_daemon_group(&active_grouplist, tag[1], cmd_error);
 	break;
     case A_BYE:
 	destroy_tag(tag);
-	conn_printf(conn, "OK (cu_later).\n");
-	return BYEBYE; 
+	conn_printf(conn_out, "OK (cu_later).\n");
+	return BYEBYE;
     }
     if (*cmd_error)
 	return ABORT_CMD;
@@ -1158,35 +1158,35 @@ void csync_end_command(int conn, filename_p filename, char *tag[32], const char 
     default:
       csync_debug(1, "Unknown return rc: %d. Assuming OK\n", rc);
       conn_printf(conn, "OK (cmd_finished).\n");
-    } 
+    }
   }
   destroy_tag(tag);
 }
 
-void csync_daemon_session(int conn, db_conn_p db, int db_version, int protocol_version, int mode)
+void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int db_version, int protocol_version, int mode)
 {
   address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
   socklen_t peerlen = sizeof(peeraddr);
   char line[4096], *peername=0, *tag[32];
   const char *cmd_error  = NULL;
   //TODO only valid for INETD mode since we do not set fd 0 otherwise.
-  if (MODE_INETD == mode)  
+  if (MODE_INETD == mode)
       csync_daemon_stdin_check(0, &peeraddr, &peerlen);
   else
-      csync_daemon_stdin_check(conn, &peeraddr, &peerlen);
-  
-  while ( conn_gets(conn, line, 4096) ) {
+      csync_daemon_stdin_check(conn_in, &peeraddr, &peerlen);
+
+  while ( conn_gets(conn_in, line, 4096) ) {
     //csync_debug(1, "Command: %s", line);
     if (setup_tag(tag, line))
       continue;
     struct csync_command *cmd = find_command(tag[0]);
     if (!cmd->text) {
       cmd_error = "Unkown command!";
-      csync_end_command(conn, tag[2], tag, cmd_error, 0);
-      continue; 
+      csync_end_command(conn_out, tag[2], tag, cmd_error, 0);
+      continue;
     }
 
-    char *filename = NULL; 
+    char *filename = NULL;
     if (tag[2])
       filename = (char *) prefixsubst(tag[2]);
     const char *other = prefixsubst(tag[3]);
@@ -1202,20 +1202,20 @@ void csync_daemon_session(int conn, db_conn_p db, int db_version, int protocol_v
 
     cmd_error = 0;
 
-    if (csync_daemon_check_identify(conn, cmd, peername, &peeraddr)) {
+    if (csync_daemon_check_identify(conn_out, cmd, peername, &peeraddr)) {
       destroy_tag(tag);
       continue;
-    }		  	  
+    }		  	
     int rc = OK, isDirty = 0;
     if ( cmd->check_perm )
       on_cygwin_lowercase(filename);
-    
+
     if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername,tag[1])))
       rc = ABORT_CMD;
 
-    if (rc == OK && cmd->check_dirty && 
+    if (rc == OK && cmd->check_dirty &&
 	csync_check_dirty(db, filename, peername,
-			  cmd->action == A_FLUSH, 
+			  cmd->action == A_FLUSH,
 			  db_version, &cmd_error)) {
 	rc  = ABORT_CMD;
 	//	  csync_debug(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
@@ -1231,14 +1231,14 @@ void csync_daemon_session(int conn, db_conn_p db, int db_version, int protocol_v
 	    }
 	}
       const char *otherfile = NULL;
-      rc = csync_daemon_dispatch(conn, db, filename, cmd, tag, 
-			       db_version, protocol_version, 
+      rc = csync_daemon_dispatch(conn_in, conn_out,  db, filename, cmd, tag,
+			       db_version, protocol_version,
 			       &peername, &peeraddr, &otherfile,
 			       &cmd_error);
-	  
+	
       if (rc == OK || rc ==  IDENTICAL) {
 	 // check updates done
-	 csync_debug(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" )); 
+	 csync_debug(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" ));
 	 csync_daemon_check_update(db, filename, otherfile, cmd, peername, db_version);
       }
       else if (rc == NEXT_CMD){
@@ -1247,15 +1247,15 @@ void csync_daemon_session(int conn, db_conn_p db, int db_version, int protocol_v
 	continue;
       }
       else if (rc == BYEBYE) {
-	if (active_peer) 
+	if (active_peer)
 	  free(active_peer);
 	active_peer = 0;
 	return ;
       }
     }
     // END CMD, in error if cmd_error (but finish it with a reply)
-    csync_end_command(conn, filename, tag, cmd_error, rc);
-  } 
+    csync_end_command(conn_out, filename, tag, cmd_error, rc);
+  }
   csync_debug(0, "CONN %s closed without BYE\n", active_peer);
   if (active_peer)
       free(active_peer);
