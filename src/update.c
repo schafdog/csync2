@@ -396,47 +396,13 @@ int csync_update_file_setmod(int conn, peername_p peername, const char *key_enc,
   return read_conn_status(conn, filename, peername);
 }
 
-int csync_next_step_UNUSED(int conn, int rc, int auto_run, const char *myname, peername_p peername,
-		    const char *key_enc,
-		    filename_p filename, filename_p filename_enc,
-		    const struct stat *st, const char *uid, const char *gid,
-		    operation_t op, int force, int dry_run)
-{
-  if (dry_run)
-    return 1;
-  if (auto_run)
-    return 1;
-
-  switch (rc) {
-  case SETOWN:
-      rc = csync_update_file_setown(conn, peername, key_enc, filename, filename_enc, st, uid, gid);
-      // no break
-  case SETMOD:
-      rc = csync_update_file_setmod(conn, peername, key_enc, filename, filename_enc, st);
-      // no break
-  case SETTIME:
-      rc = csync_update_file_settime(conn, peername, key_enc,
-				     filename, filename_enc, st);
-      // no break
-  case IDENTICAL:
-  case OK:
-      csync_clear_dirty(NULL, peername, filename, auto_run);
-    break;
-  case ERROR_DIRTY:
-      // do autoresolve, but only once per file
-    ;
-  }
-  return rc;
-}
-
-
 int csync_update_file_del(int conn, db_conn_p db,
 			  const char *myname, peername_p peername, filename_p filename,
-			  const char *digest, int force, int dry_run)
+			  const char *digest, int force, int flags)
 {
     int auto_resolve_run = 0;
     const char *key = csync_key(peername, filename);
-
+    int dry_run = flags & FLAG_DRY_RUN;
     if ( !key ) {
 	csync_debug(2, "Skipping deletion/move %s on %s - not in my groups.\n", filename, peername);
 	return SKIP;
@@ -1283,13 +1249,13 @@ int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char *op_st
 }
 
 void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-		       const char **patlist, int patnum, int recursive,
-		       int dry_run, int ip_version, int db_version)
+		       const char **patlist, int patnum, 
+		       int ip_version, int db_version, int flags)
 {
     textlist_p tl = 0, t, next_t;
     textlist_p tl_del = 0, *last_tn=&tl;
     struct stat st;
-    tl = db->get_dirty_by_peer_match(db, myname, peername, recursive, patlist, patnum, compare_files);
+    tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
 
     /* just return if there are no files to update */
     if ( !tl) {
@@ -1318,7 +1284,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	if (!connection_closed_error)
 	    rc = csync_update_file_mod(conn, db, myname, peername,
-				       t->value, t->operation, t->value3, t->value4, t->value5, t->intvalue, dry_run, db_version);
+				       t->value, t->operation, t->value3, t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN, db_version);
 	if (rc == CONN_CLOSE || connection_closed_error) {
 	   csync_debug(0, "Connection closed on updating %s\n", t->value);
 	   break;
@@ -1349,7 +1315,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
   textlist_free(tl);
   for (t = tl_del; t != 0; t = t->next) {
       rc = csync_update_file_del(conn, db, myname, peername,
-				 t->value, t->value5, t->intvalue, dry_run);
+				 t->value, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
       if (rc == CONN_CLOSE || connection_closed_error) {
 	 csync_debug(0, "Connection closed on deleting  %s\n", t->value);
 	 break;
@@ -1358,9 +1324,9 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
   }
   textlist_free(tl_del);
 
-  if (!dry_run)
+  if (! flags & FLAG_DRY_RUN)
      for (t = directory_list; rc != CONN_CLOSE && !connection_closed_error && t != 0; t = t->next) {
-	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, dry_run, db_version);
+	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN, db_version);
 	if (rc == CONN_CLOSE || connection_closed_error) {
 	   csync_debug(0, "Connection closed on setting time on directory %s\n", t->value);
 	   break;
@@ -1374,11 +1340,13 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 }
 
 void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
-		     const char **patlist, int patnum, int recursive,
-		     int dry_run, int ip_version, int db_version)
+		     const char **patlist, int patnum, 
+		     int ip_version, int db_version, int flags)
 {
     textlist_p tl = 0, tl_tmp = 0, t = 0;
     int i, use_this = patnum == 0;
+    int dry_run = flags & FLAG_DRY_RUN;
+    
     csync_debug(0, "csync_sync_host\n");
     for (i=0; i< patnum && !use_this; i++) {
 	tl = db->non_dirty_files_match(db, patlist[i]);
@@ -1468,16 +1436,17 @@ int csync_match(const char*filename, const char *patlist[], int patnum, int recu
 }
 
 void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
-		  const char ** patlist, int patnum, int recursive, int dry_run, int ip_version, int db_version, update_func func, int do_all)
+		  const char ** patlist, int patnum, int ip_version, int db_version, update_func func,
+		  int flags)
 {
     textlist_p tl = 0, t;
     int i = 0;
-    if (do_all) {
+    if (flags & FLAG_DO_ALL) {
 	if (active_peers)
 	    while (active_peers[i]) {
 		func(db, myhostname, active_peers[i],
 		     patlist, patnum,
-		     recursive, dry_run, ip_version, db_version);
+		     ip_version, db_version, flags);
 		i++;
 	    }
 	else
@@ -1503,7 +1472,7 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    }
 	    if (found)
 		func(db, myhostname, t->value, patlist, patnum,
-		     recursive, dry_run, ip_version, db_version);
+		     ip_version, db_version, flags);
 	}
 	textlist_free(tl);
     }
@@ -1667,9 +1636,9 @@ struct insynctest {
     int remote_reuse; 
 };
 
-void file_insynctest(int conn, db_conn_p db, textlist_p *diff_list, const char *l_checktxt,
+void file_insynctest_NOUSED(int conn, db_conn_p db, textlist_p *diff_list, const char *l_checktxt,
 		     const char *l_file, const char *digest,
-		     struct insynctest *ctx)
+		     struct insynctest *ctx, int flags)
 {
     int auto_diff = ctx->auto_diff;
     char *myname = ctx->myname;
@@ -1753,9 +1722,10 @@ void file_insynctest(int conn, db_conn_p db, textlist_p *diff_list, const char *
 }
 
 int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
-		     int init_run, int auto_diff,
-		     filename_p filename, int ip_version)
+		     filename_p filename, int ip_version, int flags)
 {
+    int auto_diff = flags & FLAG_AUTO_DIFF;
+
     textlist_p diff_list = 0, diff_ent;
     const struct csync_group *g;
     const struct csync_group_host *h;
@@ -1812,8 +1782,8 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 	    else
 		csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file);
 	    ret=0;
-	    if (init_run & 2)
-		csync_mark(db, r_file, 0, (init_run & 4) ? peername : 0,
+	    if (flags & FLAG_INIT_RUN)
+		csync_mark(db, r_file, 0, (flags & FLAG_INIT_RUN_STRAIGHT) ? peername : 0,
 			   OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0);
 	}
 
@@ -1844,9 +1814,10 @@ int peer_in(char *active_peers[], const char* peer)
     return 0;
 }
 
-int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, filename_p filename, int ip_version, char *active_peers[])
+int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags)
 {
     textlist_p myname_list = 0, myname;
+    int auto_diff = flags & FLAG_AUTO_DIFF;
     struct csync_group *g;
     int ret = 1;
     if (auto_diff && filename) {
@@ -1888,8 +1859,8 @@ int csync_insynctest_all(db_conn_p db, int init_run, int auto_diff, filename_p f
 	    {
 		csync_debug(1, "Running in-sync check for %s <-> %s.\n",
 			    myname->value, peername->value);
-		if ( !csync_insynctest(db, myname->value, peername->value, init_run,
-				       auto_diff, filename, ip_version) ) ret=0;
+		if ( !csync_insynctest(db, myname->value, peername->value,
+				       filename, ip_version, flags) ) ret=0;
 	    }
 	}
 	textlist_free(peername_list);

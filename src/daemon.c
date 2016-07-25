@@ -54,7 +54,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive, int db_version
        delete them. We need a version of csync_check_dir */
 
     int dir_count = csync_dir_count(db, filename);
-    int dirty_count = csync_check_dir(db, filename, recursive, 0 /* init_run */, db_version, 0 /* dump */, 0 /* flags */);
+    int dirty_count = csync_check_dir(db, filename, db_version, (recursive ? FLAG_RECURSIVE : 0));
     if (recursive && dirty_count == 0) {
 	csync_debug(0, "Deleting recursive from clean directory (%s): %d (NOT IMPLEMENTED)\n", filename, dir_count);
     }
