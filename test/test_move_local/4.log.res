@@ -9,8 +9,6 @@ mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/tes
 mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local (not synced) .
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '-'.
-csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir/C
-check same file (64) /export/home/dennis/Projects/csync2/csync2/test/test/local/B -> /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir/C 
 Found MOVE /export/home/dennis/Projects/csync2/csync2/test/test/local/B -> /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir/C 
 mark other operation: 'MV' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir/C' '/export/home/dennis/Projects/csync2/csync2/test/test/local/B'.
 mark other: Old operation: NEW '/export/home/dennis/Projects/csync2/csync2/test/test/local/B' '(null)'
