@@ -767,13 +767,13 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 	" WHERE "
 	    " device = %lu "
 	" AND inode = %llu "
-	" AND filename != '%s'"
+	" AND filename != '%s' "
 	" AND checktxt  = '%s' "
 	" AND digest    = '%s' ";
 
     SQL_BEGIN(db, "check_file_same_dev_inode",
 	      sql,
-	      st->st_dev, st->st_ino, db_escape(db, filename), checktxt, digest) {
+	      st->st_dev, st->st_ino, filename, checktxt, digest) {
 	const char *db_filename = db_decode(SQL_V(0));
 	const char *db_checktxt = db_decode(SQL_V(1));
 	const char *db_digest   = db_decode(SQL_V(2));
