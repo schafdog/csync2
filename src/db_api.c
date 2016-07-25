@@ -176,7 +176,7 @@ int db_schema_version(db_conn_p db)
 	int version = -1;
 
         SQL_BEGIN(db, NULL,  /* ignore errors */
-                "SELECT count(*) from file")
+                "SELECT checktxt from file limit 1")
         {
 		version = 0;
         } SQL_END;
@@ -187,9 +187,9 @@ int db_schema_version(db_conn_p db)
 
 int db_upgrade_to_schema(db_conn_p db, int version)
 {
-	if (db && db->upgrade_to_schema)
-	    return db->upgrade_to_schema(db, version);
-
-	return DB_ERROR;
+    csync_debug(0, "db_upgrade_to_schema: %d", version);
+    if (db && db->upgrade_to_schema)
+	return db->upgrade_to_schema(db, version);
+    return DB_ERROR;
 }
 
