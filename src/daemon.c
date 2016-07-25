@@ -142,8 +142,8 @@ void csync_file_update(db_conn_p db, filename_p filename, peername_p peername, i
     }
     csync_debug(2, "daemon_check_update: INSERT into file filename: %s", filename);
     db->remove_file(db, filename, 0);
-    db->insert_file(db, filename, checktxt, &st, digest);
-//  db->insert_file(db, encoded, checktxt_encoded, st,  digest);
+    //db->insert_file(db, filename, checktxt, &st, digest);
+    db->insert_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
     if (digest)
       free(digest);
   }
