@@ -357,10 +357,10 @@ struct csync_command cmdtab[] = {
 	{ "create",	1, 1, S_IFREG, 1, 1, A_CREATE	},
 	{ "mkdir",	1, 1, S_IFDIR, 1, 1, A_MKDIR	},
 	{ "mod",	1, 1, 0,       1, 1, A_MOD	},
-	{ "mkchr",	1, 1, S_IFCHR, 1, 1, A_MKCHR	},
-	{ "mkblk",	1, 1, S_IFBLK, 1, A_MKBLK	},
-	{ "mkfifo",	1, 1, S_IFIFO, 1, 1, A_MKFIFO	},
-	{ "mklink",	1, 1, S_IFLNK, 1, 1, A_MKLINK	},
+	{ "mkchr",	1, 1, -1, 1, 1, A_MKCHR	},
+	{ "mkblk",	1, 1, -1, 1, A_MKBLK	},
+	{ "mkfifo",	1, 1, -1, 1, 1, A_MKFIFO	},
+	{ "mklink",	1, 1, -1, 1, 1, A_MKLINK	},
 	{ "mkhardlink",	1, 1, 0, 1, 1, A_MKHLINK},
 	{ "mksock",	1, 1, S_IFSOCK, 1, 1, A_MKSOCK	},
 	{ "mv",	        1, 0, 0, 1, 1, A_MV	},
@@ -1224,8 +1224,9 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int db_versio
 	// TODO: Unlink only if different type
 	if (rc == OK && cmd->unlink) {
 	    struct stat st;
-	    if (lstat_strict(filename, &st) == 0 && cmd->unlink != (st.st_mode & S_IFMT)) {
-		csync_debug(0, "Unlinking entry due to different type: %d %d \n", cmd->unlink, st.st_mode & S_IFMT);
+	    if (lstat_strict(filename, &st) == 0 && (cmd->unlink != (st.st_mode & S_IFMT) || cmd->unlink == -1)) {
+		if (cmd->unlink != -1)
+		    csync_debug(0, "Unlinking entry due to different type: %d %d \n", cmd->unlink, st.st_mode & S_IFMT);
 		csync_unlink(db, filename, 0, cmd->unlink, &cmd_error, db_version);
 	    }
 	}
