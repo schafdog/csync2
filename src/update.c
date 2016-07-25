@@ -177,7 +177,6 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
 	      peername, use_ssl ? "SSL" : "PLAIN");
 
   int conn = conn_open(peername, ip_version);
-  csync_debug(3, "Connection %d ", conn);
   if (conn < 0 )
       return conn;
 
