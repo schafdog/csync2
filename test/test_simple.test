@@ -3,7 +3,7 @@
 daemon d PEER
 clean local
 clean peer
-FILENAME="new_file"
+FILENAME="new_file 'N' all"
 mkdir -p "test/$NAME"
 echo "far" >"test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
