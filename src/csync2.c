@@ -262,7 +262,7 @@ int csync_read_buffer(char *buffer, char *value) {
     return match;
 }
 
-static int csync_tail(db_conn_p db, int fileno, int dry_run) {
+static int csync_tail(db_conn_p db, int fileno, int recursive, int init_run, int dry_run) {
     char readbuffer[1000];
     char time[100];
     char operation[100];
@@ -291,11 +291,11 @@ static int csync_tail(db_conn_p db, int fileno, int dry_run) {
 	    buffer[len] = 0;
 	strcpy(file, buffer);
 	csync_debug(0, "tail '%s' '%s' '%s' \n", time, operation, file);
-	csync_check(db, file, 1, 0, db_version, 0);
+	csync_check(db, file, recursive, init_run, db_version, 0);
 	const char *patlist[1];
 	patlist[0] = file;
 	csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
-		     0, dry_run, ip_version, db_version, csync_update_host, 0);
+		     recursive, dry_run, ip_version, db_version, csync_update_host, 0);
     }
 }
 
@@ -1110,7 +1110,7 @@ nofork:
 	else {
 	    csync_debug(0, "tailing stdin \n");
 	}
-	csync_tail(db, fileno, dry_run);
+	csync_tail(db, fileno, recursive, init_run, dry_run);
     };
 
     
