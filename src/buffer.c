@@ -72,6 +72,16 @@ char *buffer_strdup(BUF_P handle, const char *cpy)
   }
   return out;
 };
+char *buffer_quote(BUF_P handle, const char *cpy)
+{
+  char *out = NULL;
+  if (cpy) {
+      out = malloc(strlen(cpy)+2);
+      sprintf(out, "\"%s\"", cpy);
+      buffer_add(handle, out);
+  }
+  return out;
+};
 
 void buffer_destroy(BUF_P handle) {
   int index;
