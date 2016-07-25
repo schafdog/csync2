@@ -117,7 +117,7 @@ const char *csync_mode_op_str(int st_mode, int op)
     else if (S_ISFIFO(st_mode))
 	operation = "MKFIFO";
     else
-	csync_debug(1, "Unknown mode op: %d %d\n", st_mode, op);
+	csync_debug(1, "WARN: Unknown mode op: %d %d\n", st_mode, op);
     return operation;
 }
 
@@ -422,7 +422,7 @@ int csync_check_del(db_conn_p db, const char *file, int recursive, int init_run)
 textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char* checktxt, const char *digest, struct stat *st)
 {
     textlist_p tl = 0;
-    csync_debug(1, "csync_check_file_same_dev_inode %s\n", filename);
+    csync_debug(2, "csync_check_file_same_dev_inode %s\n", filename);
     tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st);
     return tl;
 }
@@ -592,7 +592,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat);
 	    textlist_p ptr = tl;
 	    while (ptr != NULL) {
-		csync_debug(1, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
+		csync_debug(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
 		if (ptr->intvalue == OP_RM) {
 		    operation = OP_MOVE;
 		    db->delete_file(db, ptr->value, 0);
@@ -686,7 +686,7 @@ int csync_check_recursive(db_conn_p db, filename_p filename, int recursive, int 
 	
     // TODO How about swapping deletes and updates?
     int count_dirty = 0;
-    csync_debug(1, "Checking%s for modified files %s \n", (recursive ? " recursive" : ""), filename);
+    csync_debug(1, "Checking%s for modified file %s \n", (recursive ? " recursive" : ""), filename);
     csync_check_mod(db, filename, recursive, 1, init_run, version, flags, &count_dirty);
 
     if (!csync_compare_mode)
