@@ -373,60 +373,33 @@ static inline int READ(int filedesc, void *buf, size_t count)
 
 static inline int WRITE(int fd, const void *buf, size_t count)
 {
-  static int n, total;
+    int n, total;
 #ifdef HAVE_LIBGNUTLS
-  if (csync_conn_usessl)
-    return gnutls_record_send(conn_tls_session, buf, count);
-  else
+    if (csync_conn_usessl)
+	return gnutls_record_send(conn_tls_session, buf, count);
+    else
 #endif
     {
-      total = 0;
+	total = 0;
       
-      while (count > total) {
-	n = write(fd, ((char *) buf) + total, count - total);
-	
-	if (n >= 0)
-	  total += n;
-	else {
-	  if (errno == EINTR)
-	    continue;
-	  else
-	    return -1;
+	while (count > total) {
+	    n = write(fd, ((char *) buf) + total, count - total);
+	    if (n >= 0)
+		total += n;
+	    else {
+		if (errno == EINTR)
+		    continue;
+		else
+		    return -1;
+	    }
 	}
-      }
-      return total;
+	return total;
     }
 }
 
 int conn_raw_read(int filedesc, void *buf, size_t count)
 {
-    static char buffer[512];
-    static int buf_start=0, buf_end=0;
-
-    if ( buf_start == buf_end ) {
-	if (count > 128)
-	    return READ(filedesc, buf, count);
-	else {
-	    buf_start = 0;
-	    buf_end = READ(filedesc, buffer, 512);
-	    if (buf_end < 0) {
-		int rc = buf_end;
-		buf_end=0; 
-		return rc; 
-	    }
-	}
-    }
-
-    if ( buf_start < buf_end ) {
-	size_t real_count = buf_end - buf_start;
-	if ( real_count > count ) real_count = count;
-
-	memcpy(buf, buffer+buf_start, real_count);
-	buf_start += real_count;
-
-	return real_count;
-    }
-    return 0;
+    return READ(filedesc, buf, count);
 }
 
 void conn_debug(const char *name, const char*buf, size_t count)
@@ -588,12 +561,12 @@ size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 	return rc; 
     }
     //	conn_debug(active_peer, s, i);
-    csync_debug(2, "CONN %s > %s\n", active_peer, s);
+    csync_debug(2, "CONN %s > '%s'\n", active_peer, s);
     return rc;
 }
 
 
-size_t conn_gets(int conn_fd_in, char *s, size_t size) {
-    return conn_gets_newline(conn_fd_in, s, size, 1);
+size_t conn_gets(int conn_in, char *s, size_t size) {
+    return conn_gets_newline(conn_in, s, size, 1);
 }
 
