@@ -721,6 +721,6 @@ void csync_check(db_conn_p db, filename_p filename, int version, int flags)
 
 int csync_check_single(db_conn_p db, filename_p filename, int version, int flags)
 {
-    return csync_check_recursive(db, filename, version, flags & !FLAG_RECURSIVE);
+    return csync_check_recursive(db, filename, version, flags & ~FLAG_RECURSIVE);
 }
 

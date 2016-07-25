@@ -829,8 +829,9 @@ int csync_update_directory(int conn,
 int csync_update_file_mod(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
 			  filename_p filename, operation_t operation, const char *other,
-			  const char *checktxt, const char *digest, int force, int dry_run,
-			  int db_version) {
+			  const char *checktxt, const char *digest,
+			  int force, int dry_run, int db_version)
+{
     struct stat st;
     char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
     int last_conn_status = 0, auto_resolve_run = 0;
@@ -876,7 +877,8 @@ int csync_update_file_mod(int conn, db_conn_p db,
     strcpy(filename_enc, enc_tmp);
     int rc;
     while (not_done) {
-	csync_debug(1, "Updating (%s) '%s:%s' '%s'\n", operation_str, peername, filename, (other ? other : ""));
+	csync_debug(1, "Updating (%s) '%s:%s' '%s'\n",
+		    operation_str, peername, filename, (other ? other : ""));
 
 	if (lstat_strict(filename, &st) != 0) {
 	    csync_debug(0, "ERROR: Cant stat %s.\n", filename);
@@ -1284,7 +1286,8 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	if (!connection_closed_error)
 	    rc = csync_update_file_mod(conn, db, myname, peername,
-				       t->value, t->operation, t->value3, t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN, db_version);
+				       t->value, t->operation, t->value3,
+				       t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN, db_version);
 	if (rc == CONN_CLOSE || connection_closed_error) {
 	   csync_debug(0, "Connection closed on updating %s\n", t->value);
 	   break;
@@ -1324,7 +1327,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
   }
   textlist_free(tl_del);
 
-  if (! flags & FLAG_DRY_RUN)
+  if (! (flags & FLAG_DRY_RUN))
      for (t = directory_list; rc != CONN_CLOSE && !connection_closed_error && t != 0; t = t->next) {
 	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN, db_version);
 	if (rc == CONN_CLOSE || connection_closed_error) {
@@ -1332,6 +1335,8 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 	   break;
 	}
      }
+  else
+      csync_debug(1, "Skipping directories due to dry run");
   textlist_free(directory_list);
 
   conn_printf(conn, "BYE\n");
