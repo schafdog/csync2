@@ -930,7 +930,7 @@ nofork:
 	    db_version = cfg_db_version;
     }
     if (db_version == 2) {
-	db_encode = csync_db_escape;
+//	db_encode = csync_db_escape;
 	db_decode = csync_decode_v1_v2;
     }
 
