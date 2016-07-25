@@ -72,13 +72,18 @@ char *buffer_strdup(BUF_P handle, const char *cpy)
   }
   return out;
 };
+
+void csync_debug(int level, const char *format, ...);
+
 char *buffer_quote(BUF_P handle, const char *cpy)
 {
   char *out = NULL;
   if (cpy) {
       out = malloc(strlen(cpy)+2);
-      sprintf(out, "\"%s\"", cpy);
+      sprintf(out, "'%s'", cpy);
+      csync_debug(2, "QUOTE: %s => %s\n", cpy, out);
       buffer_add(handle, out);
+      return out;
   }
   return "NULL";
 };

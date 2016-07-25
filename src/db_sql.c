@@ -608,8 +608,8 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 		     const char *dev, const char *ino, const char *result_other,
 		     operation_t op, int mode)
 {
-    const char *encoded = db_escape(db, (result_other ? result_other : 0 /* TODO MISSING other*/));
-    BUF_P buffer = buffer_init();
+    BUF_P buf = buffer_init();
+    const char *result_enc = buffer_quote(buf, db_escape(db, result_other));
     SQL(db,
 	"Marking File Dirty",
 	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode) "
@@ -622,12 +622,12 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 	db_escape(db, checktxt),
 	(dev ? dev : "NULL"),
 	(ino ? ino : "NULL"),
-	buffer_quote(buffer, encoded),
+	result_enc,
 	op,
 	mode
 	);
     //db->free(db, encoded);
-    buffer_destroy(buffer);
+    buffer_destroy(buf);
     return 0;
 };
 
@@ -773,7 +773,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 
     SQL_BEGIN(db, "check_file_same_dev_inode",
 	      sql,
-	      st->st_dev, st->st_ino, filename, checktxt, digest) {
+	      st->st_dev, st->st_ino, db_escape(db, filename), checktxt, digest) {
 	const char *db_filename = db_decode(SQL_V(0));
 	const char *db_checktxt = db_decode(SQL_V(1));
 	const char *db_digest   = db_decode(SQL_V(2));
