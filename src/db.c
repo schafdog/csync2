@@ -313,24 +313,6 @@ void csync_db_fin(void *vmx, const char *err)
 	in_sql_query--;
 }
 
-const char *csync_db_quote(const char *in) {
-  if (in == NULL)
-    return "NULL";
-  char *pointer;
-  ASPRINTF(&pointer, "'%s'", in);
-  ringbuffer_add(pointer, 0);
-  return pointer;
-}
-
-
-const char* csync_db_escape(const char* string) {
-  return db_escape(global_db, string);
-}
-
-const char* csync_db_escape_quote(const char* string) {
-  return csync_db_quote(db_escape(global_db, string));
-}
-
 #if defined(HAVE_SQLITE)
 #define DBEXTENSION ".db"
 #endif
