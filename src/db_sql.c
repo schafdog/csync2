@@ -218,27 +218,29 @@ int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, in
     {
 	filename_p filename = url_decode(SQL_V(0));
 	const char *checktxt = url_decode(SQL_V(1));
-	const char *db_filename = csync_db_escape(filename);
+	const char *db_filename = db_escape(db, filename);
 	// Differ then add
 	if (strcmp(db_filename,SQL_V(0))) {
-	    csync_debug(1, "URL encode %s => DB encode %s ", SQL_V(0),db_filename); 
+	    csync_debug(1, "URL encode %s => DB encode %s ", SQL_V(0),db_filename);
 	    textlist_add2(&tl, filename, checktxt, 0);
 	    found++;
 	}
+	//db->free(db, db_filename);
 	total++;
 
     } SQL_END;
     printf("Found %d files out of %d to upgrade.\n", found, total);
     if (do_it)
 	for (t = tl; t != 0; t = t->next) {
+	    const char *encoded = db_escape(db, t->value);
 	    SQL(db, "Updating url encoding to db encoding in file",
 		"UPDATE file set filename='%s' WHERE filename = '%s'",
-		csync_db_escape(t->value), url_encode(t->value));
+		encoded, url_encode(t->value));
 
 	    SQL(db, "Updating url encoding to db encoding in dirty",
 		"UPDATE dirty set filename='%s' WHERE filename = '%s'",
-		csync_db_escape(t->value), url_encode(t->value));
-
+		encoded, url_encode(t->value));
+	    //db->free(db, encoded);
 	    total--;
 	}
 
@@ -296,7 +298,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
     csync_check_usefullness(realname, recursive);
     // TODO For each active_peer?
     csync_mark(db, realname, 0, active_peerlist, OP_MARK, NULL, NULL, NULL, 0);
-    char *db_encoded = strdup(csync_db_escape(realname));
+    const char *db_encoded = db_escape(db, realname);
 		    
     if ( recursive ) {
 	char *where_rec = "";
@@ -321,7 +323,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 	} SQL_END;
 	free(where_rec);
     }
-    free(db_encoded);
+    //db->free(db, db_encoded);
 }
 
 void db_sql_list_hint(db_conn_p db)
@@ -606,6 +608,8 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 		     const char *dev, const char *ino, const char *result_other,
 		     operation_t op, int mode)
 {
+    const char *encoded = db_escape(db, (result_other ? result_other : 0 /* TODO MISSING other*/));
+    BUF_P buffer = buffer_init();
     SQL(db,
 	"Marking File Dirty",
 	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode) "
@@ -618,10 +622,12 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 	db_encode(checktxt),
 	(dev ? dev : "NULL"),
 	(ino ? ino : "NULL"),
-	csync_db_escape_quote((result_other ? result_other : 0 /* TODO MISSING other*/ )),
+	buffer_quote(buffer, encoded),
 	op,
 	mode
 	);
+    //db->free(db, encoded);
+    buffer_destroy(buffer);
     return 0;
 };
 
@@ -632,19 +638,22 @@ unsigned long long fstat_dev(struct stat *file_stat) {
 int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 		       const char *digest)
 {
+    BUF_P buf = buffer_init();
     SQL(db,
 	"Update file entry",
 	"UPDATE file set checktxt='%s', device=%lu, inode=%llu, "
 	"                digest=%s, mode=%u, mtime=%lu, size=%lu where filename = '%s'",
-	checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, csync_db_quote(digest),
+	checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, buffer_quote(buf, digest),
 	(07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, encoded);
 
+    buffer_destroy(buf);
     return 0;
 }
 		       
 int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 		       const char *digest)
 {
+    BUF_P buf = buffer_init();
     SQL(db,
 	"Adding new file entry",
 	"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
@@ -653,11 +662,12 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 	checktxt_encoded,
 	fstat_dev(file_stat),
 	file_stat->st_ino,
-	csync_db_quote(digest),
+	buffer_quote(buf, digest),
 	file_stat->st_mode,
 	file_stat->st_size,
 	file_stat->st_mtime
 	);
+    buffer_destroy(buf);
     return 0;
 }
 
