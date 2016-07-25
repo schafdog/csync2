@@ -370,80 +370,79 @@ int db_mysql_stmt_close(db_stmt_p stmt)
 #define FILE_LENGTH 275
 int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 {
-	if (version < 0)
-		return DB_OK;
+    if (version < 0)
+	return DB_OK;
+    
+    if (version > 0)
+	return DB_ERROR;
 
-	if (version > 0)
-		return DB_ERROR;
-
-	csync_debug(2, "Upgrading database schema to version %d.\n", version);
+    csync_debug(2, "Upgrading database schema to version %d.\n", version);
 
 /* We want proper logging, so use the csync sql function instead
  * of that from the database layer.
  */
-	csync_db_sql(conn, "Creating action table",
-		"CREATE TABLE `action` ("
-		"  `filename` varchar(%u) DEFAULT NULL,"
-		"  `command`  varchar(%u),"
-		"  `logfile` text,"
-		"  UNIQUE KEY `filename` (`filename`(%u),`command`(20))"
+    csync_db_sql(conn, "Creating action table",
+		 "CREATE TABLE `action` ("
+		 "  `filename` varchar(%u) DEFAULT NULL,"
+		 "  `command`  varchar(%u),"
+		 "  `logfile` text,"
+		 "  UNIQUE KEY `filename` (`filename`(%u),`command`(20))"
 		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating dirty table",
-		"CREATE TABLE `dirty` ("
-		     //		"  `id`        bigint        AUTO_INCREMENT,"
-		"  filename  varchar(%u)   DEFAULT NULL,"
-		"  forced    int 	       DEFAULT NULL,"
-		"  myname    varchar(50)   DEFAULT NULL,"
-		"  peername  varchar(50)   DEFAULT NULL,"
-		"  operation varchar(100)  DEFAULT NULL,"
-		"  op 	     int	  	   DEFAULT NULL,"
-		"  checktxt  varchar(200)  DEFAULT NULL,"
-		"  device    bigint        DEFAULT NULL,"
-		"  inode     bigint        DEFAULT NULL,"
-		"  other     varchar(%u)   DEFAULT NULL,"
-		"  file_id   bigint        DEFAULT NULL,"
-		"  digest    varchar(130)  DEFAULT NULL,"
-		"  mode      int	   DEFAULT NULL,"
-		"  mtime     int    	   DEFAULT NULL,"
-		"  type      int    	   DEFAULT NULL,"
-		"  UNIQUE KEY `filename` (`filename`(%u),`peername`)"
-		     //		"  KEY `dirty_host` (`peername`(10))"
-		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
+    csync_db_sql(conn, "Creating dirty table",
+		 "CREATE TABLE `dirty` ("
+		 //		"  `id`        bigint        AUTO_INCREMENT,"
+		 "  filename  varchar(%u)   DEFAULT NULL,"
+		 "  forced    int 	       DEFAULT NULL,"
+		 "  myname    varchar(50)   DEFAULT NULL,"
+		 "  peername  varchar(50)   DEFAULT NULL,"
+		 "  operation varchar(100)  DEFAULT NULL,"
+		 "  op 	     int	  	   DEFAULT NULL,"
+		 "  checktxt  varchar(200)  DEFAULT NULL,"
+		 "  device    bigint        DEFAULT NULL,"
+		 "  inode     bigint        DEFAULT NULL,"
+		 "  other     varchar(%u)   DEFAULT NULL,"
+		 "  file_id   bigint        DEFAULT NULL,"
+		 "  digest    varchar(130)  DEFAULT NULL,"
+		 "  mode      int	   DEFAULT NULL,"
+		 "  mtime     int    	   DEFAULT NULL,"
+		 "  type      int    	   DEFAULT NULL,"
+		 "  UNIQUE KEY `filename` (`filename`(%u),`peername`)"
+		 //		"  KEY `dirty_host` (`peername`(10))"
+		 ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating file table",
-		"CREATE TABLE `file` ("
-		     //		"  `id`       bigint AUTO_INCREMENT,"
-		     //		"  `parent`   bigint DEFAULT NULL,"
-		"  filename varchar(%u)  DEFAULT NULL,"
-		"  hostname varchar(50)  DEFAULT NULL,"
-		"  checktxt varchar(200) DEFAULT NULL,"
-		"  device   bigint 		 DEFAULT NULL,"
-		"  inode    bigint 		 DEFAULT NULL,"
-		"  size     bigint 		 DEFAULT NULL,"
-		"  mode     int    		 DEFAULT NULL,"
-		"  mtime    int    		 DEFAULT NULL,"
-		"  type     int    		 DEFAULT NULL,"
-		"  digest   varchar(130) DEFAULT NULL,"
-		"  UNIQUE KEY `filename` (`filename`(%u))"
-		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
+    csync_db_sql(conn, "Creating file table",
+		 "CREATE TABLE `file` ("
+		 //		"  `id`       bigint AUTO_INCREMENT,"
+		 //		"  `parent`   bigint DEFAULT NULL,"
+		 "  filename varchar(%u)  DEFAULT NULL,"
+		 "  hostname varchar(50)  DEFAULT NULL,"
+		 "  checktxt varchar(200) DEFAULT NULL,"
+		 "  device   bigint 		 DEFAULT NULL,"
+		 "  inode    bigint 		 DEFAULT NULL,"
+		 "  size     bigint 		 DEFAULT NULL,"
+		 "  mode     int    		 DEFAULT NULL,"
+		 "  mtime    int    		 DEFAULT NULL,"
+		 "  type     int    		 DEFAULT NULL,"
+		 "  digest   varchar(130) DEFAULT NULL,"
+		 "  UNIQUE KEY `filename` (`filename`(%u))"
+		 ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating hint table",
-		"CREATE TABLE `hint` ("
-		"  `filename` varchar(%u) DEFAULT NULL,"
-		"  `recursive` int(11)     DEFAULT NULL"
-		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
+    csync_db_sql(conn, "Creating hint table",
+		     "CREATE TABLE `hint` ("
+		 "  `filename` varchar(%u) DEFAULT NULL,"
+		 "  `recursive` int(11)     DEFAULT NULL"
+		 ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating x509_cert table",
-		"CREATE TABLE `x509_cert` ("
-		"  `peername` varchar(50)  DEFAULT NULL,"
-		"  `certdata` varchar(255) DEFAULT NULL,"
-		"  UNIQUE KEY `peername` (`peername`)"
-		") ENGINE=MyISAM");
+    csync_db_sql(conn, "Creating x509_cert table",
+		 "CREATE TABLE `x509_cert` ("
+		 "  `peername` varchar(50)  DEFAULT NULL,"
+		 "  `certdata` varchar(255) DEFAULT NULL,"
+		 "  UNIQUE KEY `peername` (`peername`)"
+		 ") ENGINE=MyISAM");
 
 /* csync_db_sql does a csync_fatal on error, so we always return DB_OK here. */
-
-	return DB_OK;
+    return DB_OK;
 }
 
 const char* db_mysql_escape(db_conn_p conn, const char *string) 
