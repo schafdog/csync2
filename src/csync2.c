@@ -455,12 +455,14 @@ const char* csync_nop(const char *value) {
     return value;
 }
 
-const char* csync_decode_v1_v2(const char *value) {
+const char* csync_decode_v2(const char *value) {
+/* 
     int version = csync_get_checktxt_version(value);
     if (version == 1)
 	return url_decode(value);
     else
-	return value;
+*/
+    return value;
 }
 
 extern int cfg_ip_version; 
@@ -931,7 +933,7 @@ nofork:
     }
     if (db_version == 2) {
 	db_encode = csync_db_escape;
-	db_decode = csync_decode_v1_v2;
+	db_decode = csync_decode_v2;
     }
 
     if (cfg_protocol_version != -1)
