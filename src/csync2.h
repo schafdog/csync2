@@ -217,7 +217,7 @@ extern const char *csync_db_escape_quote(filename_p filename);
 #define SQL(db, e, s, rest...) csync_db_sql(db, e, s, ##rest)
 
 extern const char* (*db_decode) (const char *value); 
-extern const char* (*db_encode) (const char *value); 
+//extern const char* (*db_encode) (const char *value); 
 
 #define SQL_BEGIN(db, e, s, ...)			\
 { \

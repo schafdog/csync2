@@ -560,7 +560,6 @@ int main(int argc, char ** argv)
 	
     // Default db_decodes (version 1 scheme)
     db_decode = url_decode;
-    db_encode = url_encode;
 
     ringbuffer_init();
     csync_debug_out = stderr;
@@ -932,7 +931,7 @@ nofork:
 	    db_version = cfg_db_version;
     }
     if (db_version == 2) {
-	db_encode = csync_db_escape;
+//	db_encode = csync_db_escape;
 	db_decode = csync_decode_v2;
     }
 

@@ -92,7 +92,7 @@ int db_sql_is_dirty(db_conn_p db, peername_p peername, filename_p filename,
     SQL_BEGIN(db, "Check if file is dirty",
 	      "SELECT op, mode FROM dirty "
 	      "WHERE filename = '%s' and peername = '%s' LIMIT 1",
-	      db_encode(filename), db_encode(peername))
+	      db_escape(db, filename), db_escape(db, peername))
     {
     	rc = 1;
     	*operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
@@ -107,7 +107,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     int retval = 0;
     char *where = "";
     if (realname[0] != 0) {
-	const char *db_encoded = db_encode(realname);
+	const char *db_encoded = db_escape(db, realname);
 	ASPRINTF(&where,
 		 "where filename = '%s' or "
 		 "      filename > '%s/' and " 
@@ -218,27 +218,29 @@ int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, in
     {
 	filename_p filename = url_decode(SQL_V(0));
 	const char *checktxt = url_decode(SQL_V(1));
-	const char *db_filename = csync_db_escape(filename);
+	const char *db_filename = db_escape(db, filename);
 	// Differ then add
 	if (strcmp(db_filename,SQL_V(0))) {
-	    csync_debug(1, "URL encode %s => DB encode %s ", SQL_V(0),db_filename); 
+	    csync_debug(1, "URL encode %s => DB encode %s ", SQL_V(0),db_filename);
 	    textlist_add2(&tl, filename, checktxt, 0);
 	    found++;
 	}
+	//db->free(db, db_filename);
 	total++;
 
     } SQL_END;
     printf("Found %d files out of %d to upgrade.\n", found, total);
     if (do_it)
 	for (t = tl; t != 0; t = t->next) {
+	    const char *encoded = db_escape(db, t->value);
 	    SQL(db, "Updating url encoding to db encoding in file",
 		"UPDATE file set filename='%s' WHERE filename = '%s'",
-		csync_db_escape(t->value), url_encode(t->value));
+		encoded, url_encode(t->value));
 
 	    SQL(db, "Updating url encoding to db encoding in dirty",
 		"UPDATE dirty set filename='%s' WHERE filename = '%s'",
-		csync_db_escape(t->value), url_encode(t->value));
-
+		encoded, url_encode(t->value));
+	    //db->free(db, encoded);
 	    total--;
 	}
 
@@ -265,7 +267,7 @@ void db_sql_remove_hint(db_conn_p db, filename_p filename, int recursive)
     SQL(db,"Remove processed hint.",
 	"DELETE FROM hint WHERE filename = '%s' "
 	"and recursive = %d",
-	db_encode(filename), recursive);
+	db_escape(db, filename), recursive);
 };
 
 void db_sql_force(db_conn_p db, const char *realname, int recursive)
@@ -279,11 +281,11 @@ void db_sql_force(db_conn_p db, const char *realname, int recursive)
 	else
 	    ASPRINTF(&where_rec, "or (filename > '%s/' "
 		     "and filename < '%s0')",
-		     db_encode(realname), db_encode(realname));
+		     db_escape(db, realname), db_escape(db, realname));
     };
     SQL(db, "Mark file as to be forced",
 	"UPDATE dirty SET forced = 1 WHERE filename = '%s' %s",
-	db_encode(realname), where_rec);
+	db_escape(db, realname), where_rec);
 
     if ( recursive )
 	free(where_rec);
@@ -296,7 +298,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
     csync_check_usefullness(realname, recursive);
     // TODO For each active_peer?
     csync_mark(db, realname, 0, active_peerlist, OP_MARK, NULL, NULL, NULL, 0);
-    char *db_encoded = strdup(csync_db_escape(realname));
+    const char *db_encoded = db_escape(db, realname);
 		    
     if ( recursive ) {
 	char *where_rec = "";
@@ -321,7 +323,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 	} SQL_END;
 	free(where_rec);
     }
-    free(db_encoded);
+    //db->free(db, db_encoded);
 }
 
 void db_sql_list_hint(db_conn_p db)
@@ -352,7 +354,7 @@ textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *mynam
     textlist_p tl = 0;
     int limit_by_file = strcmp("-", filename);
     if (limit_by_file) 
-	sprintf(where_sql, "WHERE filename = '%s'", db_encode(filename));
+	sprintf(where_sql, "WHERE filename = '%s'", db_escape(db, filename));
     SQL_BEGIN(db, "DB Dump - Files for sync pair",
 	      "SELECT checktxt, filename FROM file %s ORDER BY filename",
 	      where_sql)
@@ -368,8 +370,8 @@ textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *mynam
 int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {
 /*    
     char *update_sql = 0;
-    filename_p filename_encoded = db_encode(filename);
-    const char *newname_encoded  = db_encode(newname);
+    filename_p filename_encoded = db_escape(db, filename);
+    const char *newname_encoded  = db_escape(db, newname);
     int filename_length = strlen(filename_encoded);
     int newname_length  = strlen(filename_encoded);
 */
@@ -427,7 +429,7 @@ int db_sql_dir_count(db_conn_p db, const char *dirname)
     int count = 0;
     SQL_BEGIN(db, "Check if directory count",
 	      "SELECT count(*) FROM file WHERE filename like '%s/%%'",
-	      db_encode(dirname))
+	      db_escape(db, dirname))
     {
 	count = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
     } SQL_FIN {
@@ -441,7 +443,7 @@ void db_sql_add_hint(db_conn_p db, const char *file, int recursive)
 {
     SQL(db, "Adding Hint",
 	"INSERT INTO hint (filename, recursive) "
-	"VALUES ('%s', %d)", db_encode(file), recursive);
+	"VALUES ('%s', %d)", db_escape(db, file), recursive);
 }
 
 void db_sql_remove_dirty(db_conn_p db, peername_p peername,
@@ -449,7 +451,7 @@ void db_sql_remove_dirty(db_conn_p db, peername_p peername,
 {
     SQL(db, "Deleting old dirty file entries",
 	"DELETE FROM dirty WHERE filename = '%s' AND peername like '%s'",
-	db_encode(filename), db_encode(peername));
+	db_escape(db, filename), db_escape(db, peername));
 }
 
 textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, const char *localname, peername_p peername))
@@ -492,7 +494,7 @@ textlist_p db_sql_get_file_info_by_name(db_conn_p db, filename_p filename, const
     SQL_BEGIN(db, "DB Dump - File",
 	      "SELECT checktxt, filename, digest FROM file %s%s%s ORDER BY filename",
 	      filename ? "WHERE filename = '" : "",
-	      filename ? db_encode(filename) : "",
+	      filename ? db_escape(db, filename) : "",
 	      filename ? "'" : "")
     {
 	const char *l_file     = db_decode(SQL_V(1)),
@@ -510,21 +512,21 @@ void db_sql_remove_file(db_conn_p db, filename_p filename, int recursive)
     if (recursive)
 	csync_debug(0, "ERROR: Recursive delete on file is NOT IMPLEMENTED");
     SQL(db, "Remove old file from file db",
-	"DELETE FROM file WHERE filename = '%s'", db_encode(filename));
+	"DELETE FROM file WHERE filename = '%s'", db_escape(db, filename));
 }
 
 void db_sql_add_dirty_simple(db_conn_p db, const char *myname, peername_p peername, filename_p filename)
 {
     SQL(db, "Add operation",
 	"INSERT INTO dirty (myname, peername, filename) values ('%s', '%s', '%s')",
-	db_encode(myname), db_encode(peername), db_encode(filename));
+	db_escape(db, myname), db_escape(db, peername), db_escape(db, filename));
 }
 
 void db_sql_clear_operation(db_conn_p db, const char *myname, peername_p peername, filename_p filename)
 {
     SQL(db, "Clear operation",
 	"UPDATE dirty set operation = '-' where myname = '%s' and peername = '%s' and filename = '%s'",
-	db_encode(myname), db_encode(peername), db_encode(filename));
+	db_escape(db, myname), db_escape(db, peername), db_escape(db, filename));
 }
 
 textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peername_p peername, int recursive, const char *patlist[], int numpat,
@@ -534,7 +536,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peer
     SQL_BEGIN(db, "Get files for host from dirty table",
 	      "SELECT filename, operation, op, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
 	      "ORDER by op DESC, filename DESC",
-	      db_encode(peername), db_encode(myname));
+	      db_escape(db, peername), db_escape(db, myname));
     {
 	filename_p filename  = db_decode(SQL_V(0));
 	const char *op_str    = db_decode(SQL_V(1));
@@ -574,11 +576,11 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 	      "SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE "
 	      "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' "
 	      "ORDER BY timestamp ",
-	      db_encode(checktxt),
-	      db_encode(filename),
-	      db_encode(device),
-	      db_encode(ino),
-	      db_encode(peername)
+	      db_escape(db, checktxt),
+	      db_escape(db, filename),
+	      db_escape(db, device),
+	      db_escape(db, ino),
+	      db_escape(db, peername)
 	)
     {
 	// TODO remove usage of string operation
@@ -612,18 +614,20 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 	"Marking File Dirty",
 	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode) "
 	"VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d)",
-	db_encode(file_new),
+	db_escape(db, file_new),
 	new_force ? "1" : "0",
-	db_encode(myname),
-	db_encode(peername),
+	db_escape(db, myname),
+	db_escape(db, peername),
 	csync_mode_op_str(mode, op),
-	db_encode(checktxt),
+	db_escape(db, checktxt),
 	(dev ? dev : "NULL"),
 	(ino ? ino : "NULL"),
 	result_enc,
 	op,
 	mode
 	);
+    //db->free(db, encoded);
+    buffer_destroy(buf);
     return 0;
 };
 
@@ -634,13 +638,15 @@ unsigned long long fstat_dev(struct stat *file_stat) {
 int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 		       const char *digest)
 {
+    BUF_P buf = buffer_init();
     SQL(db,
 	"Update file entry",
 	"UPDATE file set checktxt='%s', device=%lu, inode=%llu, "
 	"                digest=%s, mode=%u, mtime=%lu, size=%lu where filename = '%s'",
-	checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, csync_db_quote(digest),
+	checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, buffer_quote(buf, digest),
 	(07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, encoded);
 
+    buffer_destroy(buf);
     return 0;
 }
 		       
@@ -656,11 +662,12 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 	checktxt_encoded,
 	fstat_dev(file_stat),
 	file_stat->st_ino,
-	csync_db_quote(digest),
+	buffer_quote(buf, digest),
 	file_stat->st_mode,
 	file_stat->st_size,
 	file_stat->st_mtime
 	);
+    buffer_destroy(buf);
     return 0;
 }
 
@@ -682,14 +689,14 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
     struct stat st;
     const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode from file ";
     csync_debug(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
-    const char *file_encoded = db_encode(file);
+    const char *file_encoded = db_escape(db, file);
     csync_debug(3,"file %s encoded %s \n", file, file_encoded);
 
     csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 
     SQL_BEGIN(db, "Checking for removed files",
 	      "%s where (filename = '%s' %s) ORDER BY filename",
-	      SELECT_SQL, db_encode(file), where_rec)
+	      SELECT_SQL, db_escape(db, file), where_rec)
     {
 	filename_p filename  = db_decode(SQL_V(0));
 	const char *checktxt = db_decode(SQL_V(1));
@@ -714,7 +721,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	SQL(db,
 	    "Delete file from DB. It isn't with us anymore.",
 	    "delete from file WHERE filename = '%s'",
-	    db_encode(t->value));
+	    db_escape(db, t->value));
     }
 
     textlist_free(tl);
@@ -729,8 +736,8 @@ int db_sql_add_action(db_conn_p db, filename_p filename, const char *prefix_cmd,
     SQL(db,
 	"Add action to database",
 	"INSERT INTO action (filename, command, logfile) "
-	"VALUES ('%s', '%s', '%s')", db_encode(filename),
-	db_encode(prefix_cmd), db_encode(prefixsubst(logfile)));
+	"VALUES ('%s', '%s', '%s')", db_escape(db, filename),
+	db_escape(db, prefix_cmd), db_escape(db, prefixsubst(logfile)));
     return 0;
 }
 
@@ -739,7 +746,7 @@ int db_sql_del_action(db_conn_p db, filename_p filename, const char *prefix_cmd)
     SQL(db,
 	"Del action before insert",
 	"DELETE FROM action WHERE filename='%s' AND command='%s' ",
-	db_encode(filename), db_encode(prefix_cmd));
+	db_escape(db, filename), db_escape(db, prefix_cmd));
     return 0;
 }
     
@@ -748,7 +755,7 @@ int db_sql_remove_action_entry(db_conn_p db, filename_p filename, const char *co
     SQL(db, "Remove action entry",
 	"DELETE FROM action WHERE command = '%s' "
 	"and logfile = '%s' and filename = '%s'",
-	command, logfile, db_encode(filename));
+	command, logfile, db_escape(db, filename));
     return 0;
 }    
     
@@ -760,7 +767,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 	" WHERE "
 	    " device = %lu "
 	" AND inode = %llu "
-	" AND filename != '%s'"
+	" AND filename != '%s' "
 	" AND checktxt  = '%s' "
 	" AND digest    = '%s' ";
 
@@ -795,8 +802,8 @@ textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
 						  const char *digest,
 						  struct stat *st)
 {
-    char *peername_enc = strdup(db_encode(peername));
-    char *filename_enc = strdup(db_encode(filename));
+    char *peername_enc = strdup(db_escape(db, peername));
+    char *filename_enc = strdup(db_escape(db, filename));
     const char *sqls[] = { " SELECT filename, checktxt, digest, operation FROM dirty "
 			   " WHERE device = %lu and inode = %llu and filename != '%s' and peername = '%s' " ,
 			   " SELECT filename, checktxt, digest, NULL FROM file "

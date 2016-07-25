@@ -663,7 +663,7 @@ int csync_update_file_all_hardlink(int conn,
 	    const char *path = filename_enc, *other_enc = url_encode(prefixencode(other));
 	    int rc;
 	    rc = csync_update_file_sig_rs_diff(conn,
-					       peername, db_encode(key),
+					       peername, db_escape(db, key),
 					       other, other_enc,
 					       st, uid, gid,
 					       NULL, digest, last_conn_status, 2);
@@ -809,7 +809,7 @@ int csync_update_directory(int conn,
     csync_debug(4, "Skipping directory update %s on %s - not in my groups.\n", dirname, peername);
     return OK;
   }
-  const char *key_enc = db_encode(key);
+  const char *key_enc = url_encode(key);
 
   int rc = lstat_strict(dirname, &dir_st);
   if (rc != 0) {

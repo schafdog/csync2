@@ -423,7 +423,7 @@ int csync_check_del(db_conn_p db, const char *file, int flags)
 textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char* checktxt, const char *digest, struct stat *st)
 {
     textlist_p tl = 0;
-    csync_debug(2, "csync_check_file_same_dev_inode %s\n", filename);
+    csync_debug(2, "csync_check_file_same_dev_inode %s %s\n", filename, db_escape(db,filename));
     tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st);
     return tl;
 }
@@ -570,7 +570,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     int init_run = flags & FLAG_INIT_RUN;
     char *checktxt = buffer_strdup(buffer, csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
     // Assume that this isn't a upgrade and thus same version
-    const char *encoded = db_encode(file);
+    const char *encoded = db_escape(db, file);
     operation_t operation = 0;
     char *other = 0;
     char *digest = NULL;
@@ -616,7 +616,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    // TODO do something
 	}
 
-	const char *checktxt_encoded = db_encode(checktxt);
+	const char *checktxt_encoded = db_escape(db, checktxt);
 	// Insert into dirty first due to new clean up method. With this there could be a race condition
 	if (!init_run && this_is_dirty) {
 	    //      csync_debug(0, "check_dirty (mod): before mark (all) \n");
