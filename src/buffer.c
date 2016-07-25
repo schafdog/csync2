@@ -80,7 +80,7 @@ char *buffer_quote(BUF_P handle, const char *cpy)
       sprintf(out, "\"%s\"", cpy);
       buffer_add(handle, out);
   }
-  return out;
+  return "NULL";
 };
 
 void buffer_destroy(BUF_P handle) {
