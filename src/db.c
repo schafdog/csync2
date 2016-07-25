@@ -66,7 +66,7 @@ void csync_db_alarmhandler(int signum)
 	begin_commit_recursion--;
 }
 
-void csync_db_maybegin()
+void csync_db_maybegin(db_conn_p db)
 {
     if ( !db_blocking_mode || begin_commit_recursion ) return;
     begin_commit_recursion++;
@@ -84,7 +84,7 @@ void csync_db_maybegin()
 	transaction_begin = time(0);
 	if (!last_wait_cycle)
 	    last_wait_cycle = transaction_begin;
-	SQL(global_db, "BEGIN ", "BEGIN ");
+	SQL(db, "BEGIN ", "BEGIN ");
     }
 
     begin_commit_recursion--;
@@ -118,7 +118,7 @@ void csync_db_maycommit(db_conn_p db)
     }
 
     if ((tqueries_counter > 1000) || ((now - transaction_begin) > 3)) {
-	SQL(global_db, "COMMIT (1000) ", "COMMIT ");
+	SQL(db, "COMMIT (1000) ", "COMMIT ");
 	tqueries_counter = 0;
 	begin_commit_recursion--;
 	return;
@@ -182,7 +182,7 @@ void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 	va_end(ap);
 
 	in_sql_query++;
-	csync_db_maybegin();
+	csync_db_maybegin(db);
 
 	csync_debug(3, "%s SQL: %s\n", err, sql);
 
@@ -214,7 +214,7 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...)
 	va_end(ap);
 
 	in_sql_query++;
-	csync_db_maybegin();
+	csync_db_maybegin(db);
 
 	csync_debug(3, "SQL: %s\n", sql);
 	while (1) {
