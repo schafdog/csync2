@@ -90,7 +90,7 @@ void csync_db_maybegin()
     begin_commit_recursion--;
 }
 
-void csync_db_maycommit()
+void csync_db_maycommit(db_conn_p db)
 {
     time_t now;
 
@@ -105,7 +105,7 @@ void csync_db_maycommit()
     now = time(0);
 
     if (wait_length && (now - last_wait_cycle) > 10) {
-	SQL(global_db, "COMMIT", "COMMIT ");
+	SQL(db, "COMMIT", "COMMIT ");
 	if (wait_length) {
 	    csync_debug(3, "Waiting %d secs so others can lock the database (%d - %d)...\n",
 			wait_length, (int)now, (int)last_wait_cycle);
@@ -189,16 +189,16 @@ void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 	while (1) {
 	  rc = db_exec(db, sql);
 	  if ( rc != DB_BUSY ) break;
-	  if (busyc++ > get_dblock_timeout()) { global_db = 0; csync_fatal(DEADLOCK_MESSAGE); }
+	  if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
 	  csync_debug(3, "Database is busy, sleeping a sec.\n");
 	  sleep(1);
 	}
 
 	if ( rc != DB_OK && err )
-	    csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(global_db), sql);
+	    csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
 	free(sql);
 
-	csync_db_maycommit();
+	csync_db_maycommit(db);
 	in_sql_query--;
 }
 
@@ -220,13 +220,13 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...)
 	while (1) {
 	        rc = db_prepare_stmt(db, sql, &stmt, &ppTail);
 		if ( rc != DB_BUSY ) break;
-		if (busyc++ > get_dblock_timeout()) { global_db = 0; csync_fatal(DEADLOCK_MESSAGE); }
+		if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
 		csync_debug(3, "Database is busy, sleeping a sec.\n");
 		sleep(1);
 	}
 
 	if ( rc != DB_OK && err )
-		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(global_db), sql);
+		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
 	free(sql);
 
 	return stmt;
@@ -309,7 +309,7 @@ void csync_db_fin(void *vmx, const char *err)
 	if ( rc != DB_OK && err )
 		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(global_db));
 
-	csync_db_maycommit();
+	csync_db_maycommit(global_db);
 	in_sql_query--;
 }
 
