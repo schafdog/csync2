@@ -262,7 +262,7 @@ int csync_read_buffer(char *buffer, char *value) {
     return match;
 }
 
-static int csync_tail(db_conn_p db, int fileno, int recursive, int init_run, int dry_run) {
+static int csync_tail(db_conn_p db, int fileno, int flags) {
     char readbuffer[1000];
     char time[100];
     char operation[100];
@@ -291,11 +291,11 @@ static int csync_tail(db_conn_p db, int fileno, int recursive, int init_run, int
 	    buffer[len] = 0;
 	strcpy(file, buffer);
 	csync_debug(0, "tail '%s' '%s' '%s' \n", time, operation, file);
-	csync_check(db, file, recursive, init_run, db_version, 0);
+	csync_check(db, file, db_version, flags);
 	const char *patlist[1];
 	patlist[0] = file;
 	csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
-		     recursive, dry_run, ip_version, db_version, csync_update_host, 0);
+		     ip_version, db_version, csync_update_host, flags);
     }
 }
 
@@ -513,7 +513,7 @@ int match_peer(char **active_peers, const char *peer) {
 
 void csync_config_destroy();
 
-int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int recursive, int do_check, int init_run) {
+int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
 	const char *real_name = getrealfn(files[i]);
@@ -522,9 +522,11 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
 	}
 	else {
 	    realnames[count] = strdup(real_name);
-	    csync_check_usefullness(realnames[count], recursive);
-	    if (do_check)
-		csync_check(db, realnames[count], recursive, init_run, db_version, 0);
+	    csync_check_usefullness(realnames[count], flags);
+	    if (flags & FLAG_DO_CHECK) {
+		csync_check(db, realnames[count], db_version, flags);
+		csync_debug(2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+	    }
 	    count++;
 	}
     }
@@ -549,10 +551,7 @@ int main(int argc, char ** argv)
     textlist_p tl = 0, t;
     int mode = MODE_NONE;
     int mode_test_auto_diff = 0;
-    int init_run = 0;
-    int init_run_with_removals = 0;
-    int init_run_straight = 0;
-    int recursive = 0;
+    int flags = 0;
     int retval = -1;
     int dry_run = 0;
     int opt, i;
@@ -645,13 +644,13 @@ int main(int argc, char ** argv)
 	    db_sync_mode = 0;
 	    break;
 	case 'I':
-	    init_run = 1;
+	    flags |= FLAG_INIT_RUN;
 	    break;
 	case 'X':
-	    init_run_with_removals = 1;
+	    flags |= FLAG_INIT_RUN_REMOVAL;
 	    break;
 	case 'U':
-	    init_run_straight = 1;
+	    flags |= FLAG_INIT_RUN_STRAIGHT;
 	    break;
 	case 'C':
 	    cfgname = optarg;
@@ -691,7 +690,7 @@ int main(int argc, char ** argv)
 	    mode |= MODE_FORCE;
 	    break;
 	case 'u':
-	    do_all = 0;
+	    flags |= FLAG_DO_ALL;
 	    update_func = csync_update_host;
 	    if ( mode == MODE_CHECK || mode == MODE_FORCE)
 		mode |=  MODE_UPDATE;
@@ -748,10 +747,10 @@ int main(int argc, char ** argv)
 	    mode = MODE_REMOVE_OLD;
 	    break;
 	case 'r':
-	    recursive = 1;
+	    flags |= FLAG_RECURSIVE;
 	    break;
 	case 'd':
-	    dry_run = 1;
+	    flags |= FLAG_DRY_RUN;
 	    break;
 	case 'Z':
 	    mode = MODE_UPGRADE_DB;
@@ -996,15 +995,15 @@ nofork:
     if (mode == MODE_SIMPLE) {
 	if ( argc == optind )
 	{
-	    csync_check(db, "/", 1, init_run, db_version, 0);
-	    csync_update(db, myhostname, active_peers, 0, 0, 0, dry_run, ip_version, db_version, csync_update_host, 0);
+	    csync_check(db, "/", db_version, flags);
+	    csync_update(db, myhostname, active_peers, 0, 0, ip_version, db_version, csync_update_host, flags);
 	}
 	else
 	{
 	    char *realnames[argc-optind];
-	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 1, init_run);
+	    int count = check_file_args(db, argv+optind, argc-optind, realnames, flags | FLAG_DO_CHECK);
 	    csync_update(db, myhostname, active_peers, (const char**)realnames, count,
-			 recursive, dry_run, ip_version, db_version, csync_update_host, 0);
+			 ip_version, db_version, csync_update_host, flags);
 	    csync_realnames_free(realnames, count);
 	}
     }
@@ -1012,8 +1011,8 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) { 
-		csync_check_usefullness(realname, recursive);
-		db->add_hint(db, realname, recursive);
+		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
+		db->add_hint(db, realname, flags & FLAG_RECURSIVE);
 	    }
 	    else {
 		csync_debug(0, "%s did not match a real path. Skipping.", argv[i]); 
@@ -1026,7 +1025,7 @@ nofork:
 	{
 	    tl = db->get_hints(db);
 	    for (t = tl; t != 0; t = t->next) {
-		csync_check(db, t->value, t->intvalue, init_run, db_version, 0);
+		csync_check(db, t->value, db_version, (t->intvalue ? flags | FLAG_RECURSIVE : flags));
 		db->remove_hint(db, t->value, t->intvalue);
 	    }
 	    textlist_free(tl);
@@ -1034,7 +1033,7 @@ nofork:
 	else
 	{
 	    char *realnames[argc-optind];
-	    int count = check_file_args(db, argv+optind, argc-optind, realnames, recursive, 1, init_run);
+	    int count = check_file_args(db, argv+optind, argc-optind, realnames, flags | FLAG_DO_CHECK);
 	    csync_realnames_free(realnames, count);
 	}
     };
@@ -1042,23 +1041,23 @@ nofork:
     if (mode & MODE_FORCE) {
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
-	    db->force(db, realname, recursive);
+	    db->force(db, realname, flags & FLAG_RECURSIVE);
 	};
     };
     
     if (mode & MODE_UPDATE || mode & MODE_EQUAL ) {
 	if ( argc == optind )
 	{
-	    csync_update(db, myhostname, active_peers, 0, 0, 0,
-			 dry_run, ip_version,db_version, update_func, do_all);
+	    csync_update(db, myhostname, active_peers, 0, 0, 
+			 ip_version, db_version, update_func, flags);
 	}
 	else {
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind,
-					realnames, recursive, 0, 0);
+					realnames, flags);
 	    csync_update(db, myhostname, active_peers, (const char**) realnames,
-			 argc-optind, recursive, dry_run, ip_version,
-			 db_version, update_func, do_all);
+			 argc-optind, ip_version,
+			 db_version, update_func, flags);
 	    csync_realnames_free(realnames, count);
 	}
     };
@@ -1068,8 +1067,8 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
-		csync_check_usefullness(realname, recursive);
-		csync_check(db, realname, recursive, init_run,db_version, 0);
+		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
+		csync_check(db, realname, db_version, flags);
 	    }
 	    else {
 		csync_debug(0, "%s is not a real path", argv[i]);
@@ -1085,7 +1084,7 @@ nofork:
     if (mode ==  MODE_MARK) {
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
-	    db->mark(db, active_peerlist, realname, recursive);
+	    db->mark(db, active_peerlist, realname, flags & FLAG_RECURSIVE);
 	}
     };
 
@@ -1110,7 +1109,7 @@ nofork:
 	else {
 	    csync_debug(0, "tailing stdin \n");
 	}
-	csync_tail(db, fileno, recursive, init_run, dry_run);
+	csync_tail(db, fileno, flags);
     };
 
     
@@ -1121,25 +1120,27 @@ nofork:
 
     if (mode == MODE_TEST_SYNC) {
 	char *realname;
+/*
 	if (init_run && init_run_with_removals)
 	    init_run |= 2;
 	if (init_run && init_run_straight)
 	    init_run |= 4;
+*/
 	switch (argc-optind)
 	{
 	case 3:
 	    realname = getrealfn(argv[optind+2]);
-	    csync_check_usefullness(realname, 0);
+	    csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
 
 	    if ( mode_test_auto_diff ) {
 		csync_compare_mode = 1;
 		retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
 	    } else
-		if ( csync_insynctest(db, argv[optind], argv[optind+1], init_run, 0, realname, ip_version))
+		if ( csync_insynctest(db, argv[optind], argv[optind+1], realname, ip_version, flags))
 		    retval = 2;
 	    break;
 	case 2:
-	    if ( csync_insynctest(db, argv[optind], argv[optind+1], init_run, mode_test_auto_diff, 0, ip_version) )
+	    if ( csync_insynctest(db, argv[optind], argv[optind+1], 0, ip_version, flags) )
 		retval = 2;
 	    break;
 	case 1:
@@ -1148,11 +1149,11 @@ nofork:
 
 	    if ( mode_test_auto_diff )
 		csync_compare_mode = 1;
-	    if ( csync_insynctest_all(db, init_run, mode_test_auto_diff, realname, ip_version, active_peers))
+	    if ( csync_insynctest_all(db, realname, ip_version, active_peers, flags))
 		retval = 2;
 	    break;
 	case 0:
-	    if ( csync_insynctest_all(db, init_run, mode_test_auto_diff, 0, ip_version, active_peers) )
+	    if ( csync_insynctest_all(db, 0, ip_version, active_peers, flags) )
 		retval = 2;
 	    break;
 	}
@@ -1164,7 +1165,7 @@ nofork:
 	if (optind < argc) {
 	    realname = getrealfn(argv[optind]);
 	}
-	db->list_dirty(db, active_peers, realname, recursive);
+	db->list_dirty(db, active_peers, realname, flags & FLAG_RECURSIVE);
     }
     if (mode == MODE_REMOVE_OLD) {
 	char *realname = ""; 

@@ -54,7 +54,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive, int db_version
        delete them. We need a version of csync_check_dir */
 
     int dir_count = csync_dir_count(db, filename);
-    int dirty_count = csync_check_dir(db, filename, recursive, 0 /* init_run */, db_version, 0 /* dump */, 0 /* flags */);
+    int dirty_count = csync_check_dir(db, filename, db_version, (recursive ? FLAG_RECURSIVE : 0));
     if (recursive && dirty_count == 0) {
 	csync_debug(0, "Deleting recursive from clean directory (%s): %d (NOT IMPLEMENTED)\n", filename, dir_count);
     }
@@ -93,8 +93,7 @@ int csync_check_dirty(db_conn_p db, filename_p filename, peername_p peername, in
     csync_debug(2, "check_dirty_daemon: %s\n", filename);
 
     // Returns newly marked dirty, so we cannot use it bail out.
-    // FIX comment: What do I mean???
-    int markedDirty = csync_check_single(db, filename, 0, version);
+    int markedDirty = csync_check_single(db, filename, version, FLAG_DO_CHECK);
     csync_debug(2, "check_dirty_daemon: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
 
     if (isflush)

@@ -41,6 +41,7 @@ function testing {
 	fi
     else
 	cp $RESULT $OLD_RESULT
+	rm -f ${RESULT}.diff
     fi
 }
 
