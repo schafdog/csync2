@@ -54,16 +54,17 @@ typedef const char * peername_p;
 #define SET_GROUP   32
 #define IGNORE_LINK 64
 #define IGNORE_    128
-#define FLAG_RECURSIVE 256
-#define FLAG_DRY_RUN 512
-#define FLAG_INIT_RUN 1024
-#define FLAG_INIT_RUN_STRAIGHT 2048
-#define FLAG_INIT_RUN_REMOVAL  4096
-#define FLAG_AUTO_DIFF 8192
-#define FLAG_DO_CHECK (FLAG_AUTO_DIFF<<1)
-#define FLAG_DIRDUMP (FLAG_DO_CHECK<<1)
-#define FLAG_IGN_NOENT (FLAG_DIRDUMP<<1)
-#define FLAG_DO_ALL (FLAG_IGN_NOENT<<1)
+
+#define FLAG_RECURSIVE          1
+#define FLAG_DRY_RUN            2
+#define FLAG_INIT_RUN           4
+#define FLAG_INIT_RUN_STRAIGHT  8
+#define FLAG_INIT_RUN_REMOVAL  16
+#define FLAG_AUTO_DIFF         32
+#define FLAG_DO_CHECK          64
+#define FLAG_DIRDUMP          128
+#define FLAG_IGN_NOENT        256
+#define FLAG_DO_ALL           512
 
 
 
