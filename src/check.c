@@ -423,7 +423,7 @@ int csync_check_del(db_conn_p db, const char *file, int flags)
 textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char* checktxt, const char *digest, struct stat *st)
 {
     textlist_p tl = 0;
-    csync_debug(1, "csync_check_file_same_dev_inode %s\n", filename);
+    csync_debug(2, "csync_check_file_same_dev_inode %s\n", filename);
     tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st);
     return tl;
 }
@@ -594,7 +594,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat);
 	    textlist_p ptr = tl;
 	    while (ptr != NULL) {
-		csync_debug(1, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
+		csync_debug(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
 		if (ptr->intvalue == OP_RM) {
 		    operation = OP_MOVE;
 		    db->delete_file(db, ptr->value, 0);
