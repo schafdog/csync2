@@ -563,22 +563,22 @@ int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
     return 0;
 }
 
-int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat, int init_run, int version)
+int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat, int version,  int flags)
 {
     BUF_P buffer = buffer_init();
     int count = 0;
-
+    int init_run = flags & FLAG_INIT_RUN;
     char *checktxt = buffer_strdup(buffer, csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
     // Assume that this isn't a upgrade and thus same version
     const char *encoded = db_encode(file);
     operation_t operation = 0;
     char *other = 0;
     char *digest = NULL;
-    int flags = db->check_file(db, file, encoded, version, &other, checktxt, file_stat, buffer, &operation, &digest);
-    int calc_digest   = flags & CALC_DIGEST;
-    int this_is_dirty = flags & IS_DIRTY;
-    int is_upgrade    = flags & IS_UPGRADE;
-    csync_debug(3, "check_file: flags: %d calc_digest: %d dirty: %d is_upgrade %d \n", flags, calc_digest, this_is_dirty, is_upgrade);
+    int db_flags = db->check_file(db, file, encoded, version, &other, checktxt, file_stat, buffer, &operation, &digest);
+    int calc_digest   = db_flags & CALC_DIGEST;
+    int this_is_dirty = db_flags & IS_DIRTY;
+    int is_upgrade    = db_flags & IS_UPGRADE;
+    csync_debug(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d \n", calc_digest, this_is_dirty, is_upgrade);
     if (calc_digest) {
     	int size = 2*DIGEST_MAX_SIZE+1;
     	digest = buffer_malloc(buffer, size);
@@ -665,6 +665,7 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
 	    break;
 	if ( !S_ISDIR(st.st_mode) )
 	    break;
+	csync_debug(2, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
 	*count += csync_check_dir(db, file, version, flags | dirdump_this);
 	break;
     default:
@@ -704,7 +705,8 @@ void csync_combined_operation(peername_p peername, const char *dev, const char *
 
 void csync_check(db_conn_p db, filename_p filename, int version, int flags)
 {
-    /*int hasDirty = */ csync_check_recursive(db, filename, version, flags);
+    /*int hasDirty = */
+    csync_check_recursive(db, filename, version, flags);
 /*    
     textlist_p dub_entries = csync_check_all_same_dev_inode(db);
     textlist_p ptr = dub_entries;
