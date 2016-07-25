@@ -93,8 +93,7 @@ int csync_check_dirty(db_conn_p db, filename_p filename, peername_p peername, in
     csync_debug(2, "check_dirty_daemon: %s\n", filename);
 
     // Returns newly marked dirty, so we cannot use it bail out.
-    // FIX comment: What do I mean???
-    int markedDirty = csync_check_single(db, filename, 0, version);
+    int markedDirty = csync_check_single(db, filename, version, FLAG_DO_CHECK);
     csync_debug(2, "check_dirty_daemon: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
 
     if (isflush)
