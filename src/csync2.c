@@ -456,10 +456,6 @@ const char* csync_nop(const char *value) {
 }
 
 const char* csync_decode_v1_v2(const char *value) {
-    int version = csync_get_checktxt_version(value);
-    if (version == 1)
-	return url_decode(value);
-    else
 	return value;
 }
 
