@@ -523,8 +523,10 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
 	else {
 	    realnames[count] = strdup(real_name);
 	    csync_check_usefullness(realnames[count], flags);
-	    if (flags & FLAG_DO_CHECK)
+	    if (flags & FLAG_DO_CHECK) {
 		csync_check(db, realnames[count], db_version, flags);
+		csync_debug(2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+	    }
 	    count++;
 	}
     }
@@ -688,7 +690,7 @@ int main(int argc, char ** argv)
 	    mode |= MODE_FORCE;
 	    break;
 	case 'u':
-	    flags |= FLAG_DO_ALL;;
+	    flags |= FLAG_DO_ALL;
 	    update_func = csync_update_host;
 	    if ( mode == MODE_CHECK || mode == MODE_FORCE)
 		mode |=  MODE_UPDATE;
