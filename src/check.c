@@ -685,11 +685,11 @@ int csync_check_recursive(db_conn_p db, filename_p filename, int version, int fl
 	filename = "/cygdrive";
     }
 #endif
-    csync_debug(1, "Running%s check for %s ...\n", flags | FLAG_RECURSIVE ? " recursive" : "", filename);
+    csync_debug(1, "Running%s check for %s ...\n", flags & FLAG_RECURSIVE ? " recursive" : "", filename);
 	
     // TODO How about swapping deletes and updates?
     int count_dirty = 0;
-    csync_debug(1, "Checking%s for modified files %s \n", (flags | FLAG_RECURSIVE ? " recursive" : ""), filename);
+    csync_debug(1, "Checking%s for modified files %s \n", (flags & FLAG_RECURSIVE ? " recursive" : ""), filename);
     csync_check_mod(db, filename, version, flags, &count_dirty);
 
     if (!csync_compare_mode)
