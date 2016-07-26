@@ -1,5 +1,5 @@
 #!/bin/bash
-CURRENT=`basedir $0`
+CURRENT=`dirname $0`
 cd ${CURRENT}
 sudo -u dennis /bin/bash <<EOF
 cd ${CURRENT}
