@@ -691,7 +691,6 @@ int main(int argc, char ** argv)
 	    mode |= MODE_FORCE;
 	    break;
 	case 'u':
-	    flags |= FLAG_DO_ALL;
 	    update_func = csync_update_host;
 	    if ( mode == MODE_CHECK || mode == MODE_FORCE)
 		mode |=  MODE_UPDATE;
@@ -763,7 +762,7 @@ int main(int argc, char ** argv)
 	    csync_quiet = 1;
 	    break;
 	case 'e':
-	    do_all = 1;
+	    flags |= FLAG_DO_ALL;
 	    update_func = csync_sync_host;
 	    mode = MODE_EQUAL;
 	    break;
