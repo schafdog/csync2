@@ -137,7 +137,7 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
 
   MYSQL *db = f.mysql_init_fn(0);
   char *host = 0, *user = 0, *pass = 0, *database = 0, *unix_socket = 0;
-  unsigned int port;
+  unsigned int port = 0;
   char db_url[strlen(file)+1];
   char *create_database_statement = 0;
 
