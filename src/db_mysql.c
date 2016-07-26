@@ -202,7 +202,8 @@ void db_mysql_close(db_conn_p conn)
     return;
   f.mysql_close_fn(conn->private);
   conn->private = 0;
-  free(conn);
+//  csync_debug("freeing db_conn_p %p");
+//  free(conn);
   // TODO wrong place
   //f.mysql_library_end_fn();
 }
