@@ -473,7 +473,6 @@ int protocol_version;
 const char* (*db_decode) (const char *value); 
 const char* (*db_encode) (const char *value); 
 
-
 char **peers = NULL;
 char ** parse_peerlist(char *peerlist)
 {
@@ -557,11 +556,11 @@ int main(int argc, char ** argv)
     int retval = -1;
     int dry_run = 0;
     int opt, i;
-	
     // Default db_decodes (version 1 scheme)
     db_decode = url_decode;
 
     ringbuffer_init();
+
     csync_debug_out = stderr;
 	
     if ( argc==3 && !strcmp(argv[1], "-k") ) {
@@ -975,16 +974,20 @@ nofork:
 
     if (mode == MODE_UPGRADE_DB) {
 	int rc = db->upgrade_db(db);
+	csync_db_close(db);
 	exit(rc);
     }
 
     if (update_format) {
 	if (!strcmp(update_format, "v1-v2")) {
 	    int rc = db->update_format_v1_v2(db, "/", 1, 1);
+	    csync_db_close(db);
 	    exit(rc);
 	}
 	else {
 	    printf("Update format %s unknown\n", update_format);
+	    int rc = db->upgrade_db(db);
+	    csync_db_close(db);
 	    exit(1);
 	}
     }
