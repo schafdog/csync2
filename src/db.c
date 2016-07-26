@@ -133,7 +133,7 @@ void csync_db_maycommit(db_conn_p db)
 
 db_conn_p csync_db_open(const char *file)
 {
-    db_conn_p db = malloc(sizeof(struct db_conn_t));
+    db_conn_p db = NULL;
     int rc = db_open(file, db_type, &db);
     global_db = db; 
     if ( rc != DB_OK )
@@ -169,6 +169,7 @@ void csync_db_close(db_conn_p db)
     csync_debug(3, "Closed db: %p\n", db);
     begin_commit_recursion--;
     global_db = 0;
+    free(db);
 }
 
 void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
