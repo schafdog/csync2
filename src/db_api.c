@@ -98,9 +98,9 @@ void db_set_logger(db_conn_p conn, void (*logger)(int lv, const char *fmt, ...))
 
 void db_conn_close(db_conn_p conn)
 {
-  if (!conn || !conn->close)
-    return;
-  conn->close(conn);
+    if (!conn || !conn->close)
+	return;
+    conn->close(conn);
 }
 
 const char *db_errmsg(db_conn_p conn)
