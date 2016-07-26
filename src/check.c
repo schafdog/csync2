@@ -91,7 +91,6 @@ check_failed:
 
 const char *csync_mode_op_str(int st_mode, int op)
 {
-    const char* operation = "???";
     if (op == OP_RM)
 	return "RM";
     if (op == OP_MARK)
@@ -100,25 +99,29 @@ const char *csync_mode_op_str(int st_mode, int op)
 	return "MV";
     if (op == OP_HARDLINK)
 	return "HARDLINK";
+    if (st_mode == 0) {	
+	csync_debug(1, "WARN: stat failed. op: %d %d\n", op);
+	return "RM?";
+    }
     if (S_ISREG(st_mode))
 	if (op == OP_NEW)
-	    operation = "NEW";
+	    return  "NEW";
 	else
-	    operation = "MOD";
+	    return "MOD";
     else if (S_ISDIR(st_mode))
 	if (op == OP_NEW)
-	    operation = "MKDIR";
+	    return "MKDIR";
 	else
-	    operation = "MOD_DIR";
+	    return "MOD_DIR";
     else if (S_ISCHR(st_mode))
-	operation = "MKCHR";
+	return "MKCHR";
     else if (S_ISBLK(st_mode))
-	operation = "MKBLK";
+	return "MKBLK";
     else if (S_ISFIFO(st_mode))
-	operation = "MKFIFO";
+	return "MKFIFO";
     else
 	csync_debug(1, "WARN: Unknown mode op: %d %d\n", st_mode, op);
-    return operation;
+    return "???";
 }
 
 int csync_same_file(const char *file1, const char *file2) {
@@ -219,7 +222,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 
     struct stat st_file;
     int rc_file = stat(file, &st_file);
-    const char *other;
+    const char *other = 0;
     for (pl_idx=0; pl[pl_idx].peername; pl_idx++) {
 	peername_p peername = pl[pl_idx].peername;
 	const char *myname = pl[pl_idx].myname;
@@ -227,7 +230,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 	other = org_other;
 	if (!peerfilter || !strcmp(peerfilter, peername)) {
 	    csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n",
-			csync_mode_op_str(st_file.st_mode, operation),
+			csync_mode_op_str(rc_file ? 0 : st_file.st_mode, operation),
 			peername, file, (other ? other : "-"));
 	    if (operation == OP_MOVE && other == NULL) {
 		csync_debug(1, "mark other MV operation missing other %s %s \n", peername, file);
@@ -644,10 +647,14 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
     int dirdump_this = 0, dirdump_parent = MATCH_NONE;
     struct stat st;
 
-    if ( check_type>0 && lstat_strict(file, &st) != 0 ) {
-	if ( flags | FLAG_IGN_NOENT )
-	    return 0;
-	csync_debug(0, "check_mod: ERROR: Can't stat %s.\n", file);
+    if (check_type == MATCH_NONE) {
+	csync_debug(2, "No match. Don't check at all: %s\n", file);
+    }
+	
+    if (lstat_strict(file, &st) != 0 ) {
+	if ( flags & FLAG_IGN_NOENT )
+	    return MATCH_NONE;
+	csync_debug(0, "check_mod: ERROR: Can't stat '%s' as expected.\n", file);
 	// TODO verify what to return, since caller of csync_check_mod is only checking for non-zero.
 	// return ERROR;
 	return  MATCH_NONE;
