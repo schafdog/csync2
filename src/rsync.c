@@ -318,93 +318,93 @@ int csync_recv_file(int conn, FILE *out)
 
 int csync_rs_check(int conn, filename_p filename, int isreg)
 {
-  FILE *basis_file = 0, *sig_file = 0;
-  char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
-  int rc, chunk, found_diff = 0;
-  rs_stats_t stats;
-  rs_result result = 0;
-  long size;
+    FILE *basis_file = 0, *sig_file = 0;
+    char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
+    int rc, chunk, found_diff = 0;
+    rs_stats_t stats;
+    rs_result result = 0;
+    long size = 0; 
 
-  csync_debug(3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n",
-	      filename, isreg, isreg ? "regular file" : "non-regular file");
+    csync_debug(2, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n",
+		filename, isreg, isreg ? "regular file" : "non-regular file");
 
-  csync_debug(3, "Opening basis_file and sig_file..\n");
+    csync_debug(3, "rs_check: Opening basis_file and sig_file..\n");
 
-  sig_file = paranoid_tmpfile();
-  /* if ( !sig_file ) 
-        return rsync_check_io_error(...);
-  */
+    sig_file = paranoid_tmpfile();
+    /* if ( !sig_file ) 
+       return rsync_check_io_error(...);
+    */
 
-  if ( isreg ) {
-    basis_file = fopen(filename, "rb");
-    if ( !basis_file ) 
-      basis_file = fopen("/dev/null", "rb");
-    csync_debug(3, "Running rs_sig_file() from librsync....\n");
-    if (basis_file)
-      result = rs_sig_file(basis_file, sig_file,
-			   RS_DEFAULT_BLOCK_LEN, STRONG_LEN,
+    if ( isreg ) {
+	basis_file = fopen(filename, "rb");
+	if ( !basis_file ) 
+	    basis_file = fopen("/dev/null", "rb");
+	csync_debug(3, "Running rs_sig_file() from librsync....\n");
+	if (basis_file)
+	    result = rs_sig_file(basis_file, sig_file,
+				 RS_DEFAULT_BLOCK_LEN, STRONG_LEN,
 #ifdef RS_MAX_STRONG_SUM_LENGTH
-			   RS_MD4_SIG_MAGIC,
+				 RS_MD4_SIG_MAGIC,
 #endif
-			   &stats);
-    if (result != RS_DONE) {
-      csync_debug(0, "Internal error from rsync library!\n");
-      rsync_close_error(errno, basis_file, sig_file, 0);
+				 &stats);
+	if (result != RS_DONE) {
+	    csync_debug(0, "Internal error from rsync library!\n");
+	    rsync_close_error(errno, basis_file, sig_file, 0);
+	}
+	fclose(basis_file);
     }
-    fclose(basis_file);
-  }
-  basis_file = 0;
+    basis_file = 0;
 
-  {
-      csync_debug(3, "Reading signature size from peer....\n");
-      if (conn_read_get_content_length(conn, &size))
-	  csync_fatal("Format-error while receiving data length for signature (%ld) \n", size);
-  }
-
-  if (sig_file) {
-    fflush(sig_file);
-    if ( size != ftell(sig_file) ) {
-      csync_debug(2, "Signature size differs: local=%d, peer=%d\n",
-		  ftell(sig_file), size);
-      found_diff = 1;
+    {
+	csync_debug(3, "rs_check: Reading signature size from peer....\n");
+	if (conn_read_get_content_length(conn, &size))
+	    csync_fatal("Format-error while receiving data length for signature (%ld) \n", size);
     }
-    rewind(sig_file);
-  }
-  else {
-    csync_debug(2, "Signature size differs: local don't exist, peer=%d\n", size);
-    found_diff = 1;
-  }
-  csync_debug(3, "Receiving signature %ld bytes ..\n", size);
-
-  while ( size > 0 ) {
-    chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
-    rc = conn_read(conn, buffer1, chunk);
-
-    if ( rc <= 0 )
-      csync_fatal("Read-error while receiving signature data.\n");
-    chunk = rc;
 
     if (sig_file) {
-      if ( fread(buffer2, chunk, 1, sig_file) != 1 ) {
-	csync_debug(2, "Found EOF in local sig file.\n");
-	found_diff = 1;
-      }
-      if ( memcmp(buffer1, buffer2, chunk) ) {
-	csync_debug(2, "Found diff in sig at -%d:-%d\n",
-		    size, size-chunk);
-	found_diff = 1;
-      }
+	fflush(sig_file);
+	if ( size != ftell(sig_file) ) {
+	    csync_debug(2, "rs_check: Signature size differs: local=%d, peer=%d\n",
+			ftell(sig_file), size);
+	    found_diff = 1;
+	}
+	rewind(sig_file);
     }
-    size -= chunk;
-    csync_debug(3, "Got %d bytes, %ld bytes left ..\n",
-		chunk, size);
-  }
+    else {
+	csync_debug(2, "rs_check: Signature size differs: local don't exist, peer=%d\n", size);
+	found_diff = 1;
+    }
+    csync_debug(3, "rs_check: Receiving signature %ld bytes ..\n", size);
 
-  csync_debug(3, "File has been checked successfully (%s).\n",
-	      found_diff ? "difference found" : "files are equal");
-  if (sig_file)
-    fclose(sig_file);
-  return found_diff;
+    while ( size > 0 ) {
+	chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
+	rc = conn_read(conn, buffer1, chunk);
+
+	if ( rc <= 0 )
+	    csync_fatal("Read-error while receiving signature data.\n");
+	chunk = rc;
+
+	if (sig_file) {
+	    if ( fread(buffer2, chunk, 1, sig_file) != 1 ) {
+		csync_debug(2, "rs_check: Found EOF in local sig file (%s) before reading chuck (%d) .\n", filename, chunk);
+		found_diff = 1;
+	    }
+	    else if (memcmp(buffer1, buffer2, chunk) ) {
+		csync_debug(2, "rs_check: Found diff in sig at -%d:-%d\n",
+			    size, size-chunk);
+		found_diff = 1;
+	    }
+	}
+	size -= chunk;
+	csync_debug(3, "Got %d bytes, %ld bytes left ..\n",
+		    chunk, size);
+    }
+    
+    csync_debug(3, "File has been checked successfully (%s).\n",
+		found_diff ? "difference found" : "files are equal");
+    if (sig_file)
+	fclose(sig_file);
+    return found_diff;
 }
  
 
