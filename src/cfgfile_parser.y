@@ -407,23 +407,25 @@ static void set_tempdir(const char *tempdir)
 
 static void set_database(filename_p filename)
 {
-	if (!csync_database)
-		csync_database = strdup(filename);
+    csync_database = (char*) filename;
 }
 
-static void set_database_version(const char *version)
+static void set_database_version(char *version)
 {
   cfg_db_version = atoi(version);
+  free(version);
 }
 
-static void set_protocol_version(const char *version)
+static void set_protocol_version(char *version)
 {
   cfg_protocol_version = atoi(version);
+  free(version);
 }
 
-static void set_ip_version(const char *version)
+static void set_ip_version(char *version)
 {
   cfg_ip_version = atoi(version);
+  free(version);
 }
 
 static void new_hostinfo_entry(char *name, char *host_service)
@@ -527,7 +529,7 @@ static void new_ignore(char *propname)
 	if ( !strcmp(propname, "mod") )
 		csync_ignore_mod = 1;
 	else
-		csync_fatal("Config error: Unknown 'ignore' porperty: '%s'.\n", propname);
+		csync_fatal("Config error: Unknown 'ignore' property: '%s'.\n", propname);
 
 	free(propname);
 }
@@ -536,6 +538,8 @@ void csync_config_destroy() {
     prefix_destroy(csync_prefix);
     csync_prefix = NULL;
     nossl_destroy(csync_nossl);
+    if (csync_database) 
+	free(csync_database);
     csync_nossl = NULL;
     csync_config_destroy_group(csync_group);
     csync_group = NULL;
