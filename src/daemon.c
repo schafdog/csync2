@@ -796,7 +796,7 @@ int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
 
 void csync_daemon_list(int conn, db_conn_p db, char *filename, char *myname, char *peername, int recursive)
 {
-    textlist_p tl = db->list_file(db, filename, myname, peername);
+    textlist_p tl = db->list_file(db, filename, myname, peername, recursive);
     textlist_p t = tl;
     while (t) {
 	conn_printf(conn, "%s\t%s\n", t->value, t->value2);
@@ -1049,7 +1049,8 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
     }
     case A_MOD: {
 	int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
-	csync_debug(2, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n", filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
+	csync_debug(2, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n",
+		    filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
 	if (rc != OK)
 	    return rc;
 	rc = csync_daemon_setmod(filename, mod, cmd_error);
@@ -1109,7 +1110,9 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
 	return csync_daemon_settime(filename, value, cmd_error);
 	break;
     case A_LIST:
-	csync_daemon_list(conn_out, db, filename, myhostname, value, (tag[3] ? atoi(tag[3]): 0));
+	// LIST <host> <filename> <key> <recursive>
+	csync_debug(0, "peername: %s file: %s key: %s recursive %s\n", *peername, filename, tag[3], tag[4]);
+	csync_daemon_list(conn_out, db, filename, myhostname, *peername, (tag[4] ? atoi(tag[4]): 0));
 	break;
     case A_DEBUG:
 	csync_debug(2, "DEBUG from %s %s\n", *peername, tag[1]);
