@@ -48,9 +48,9 @@ function testing {
 function cmd {
     CMD=$1
     : ${TESTPATH:=test}
-    if [ "$CMD" == "TT" ] ; then
+    if [ "$CMD" == "T" ] || [ "$CMD" == "TT" ] ; then
 	TESTPATH=$2
-	echo "TT ${TESTPATH}"
+	echo "T[T] $CMD ${TESTPATH} "
 	shift
     fi
     DESC=$2
@@ -69,11 +69,11 @@ function cmd {
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
     if [ "$LLDB" != "" ] ; then 
-	$LLDB -f $PROG -- -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG ${TESTPATH}
+	$LLDB -f $PROG -- -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
-	$GDB $PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG ${TESTPATH}
+	$GDB $PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
-	$PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG ${TESTPATH} >> ${TESTNAME}/${COUNT}.log 2>&1
+	$PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
     echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null

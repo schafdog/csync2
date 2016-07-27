@@ -5,8 +5,9 @@ clean local
 clean peer
 FILENAME="new_file 'N' all"
 mkdir -p "test/$NAME"
-echo "far" >"test/$NAME/$FILENAME"
+echo "far" > "test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
+cmd T test/$NAME "List daemon" 
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon d PEER
