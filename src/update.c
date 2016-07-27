@@ -1671,24 +1671,25 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
     read_conn_status(conn, 0, peername);
 
     filename_p filename_enc = (filename ? url_encode(prefixencode(filename)) : "-");
-    conn_printf(conn, "LIST %s %s", peername, filename_enc);
-    for (g = csync_group; g; g = g->next) {
+    found = 0; 
+    for (g = csync_group; g && !found; g = g->next) {
 	if ( !g->myname || strcmp(g->myname, myname) )
 	    continue;
 	for (h = g->host; h; h = h->next)
 	    if (!strcmp(h->hostname, peername)) {
-		conn_printf(conn, " %s", g->key);
+		found = 1;
 		break;
 	    }
     }
-    conn_printf(conn, "\n");
+    conn_printf(conn, "LIST %s %s %s \n", peername, filename_enc, g->key);
 
-//    textlist_p tl = db->get_file(db, filename);
+    textlist_p tl = db->list_file(db, filename, myname, peername);
+    textlist_free(tl);
     
     if ( !remote_eof )
 	while ( !csync_insynctest_readline(conn, &r_file, &r_checktxt) ) {
 	    if (auto_diff)
-		textlist_add(&diff_list, strdup(r_file), 0);
+		textlist_add(&diff_list, r_file, 0);
 	    else
 		csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file);
 	    ret=0;
@@ -1763,16 +1764,20 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char
 	textlist_p peername_list = 0, peername;
 	struct csync_group_host *h;
 	for (g = csync_group; g; g = g->next) {
-	    csync_debug(0, "insynctest_all: host %s\n", myname->value, g->myname);
 
-	    if ( !g->myname || strcmp(myname->value, g->myname) )
+	    if (!g->myname) // || strcmp(myname->value, g->myname) )
 		continue;
 	    for (h=g->host; h; h=h->next) {
+		int found = 0;
 		for (peername=peername_list; peername; peername=peername->next)
-		    if (strcmp(h->hostname, peername->value)) {
-			csync_debug(0, "Adding peer: %s\n", h->hostname);
-			textlist_add(&peername_list, h->hostname, 0);
+		    if (!strcmp(h->hostname, peername->value)) {
+			found = 1;
+			break;
 		    }
+		if (!found) {
+		    csync_debug(0, "Adding peer: %s\n", h->hostname);
+		    textlist_add(&peername_list, h->hostname, 0);
+		}
 	    }
 	}
 
@@ -1781,11 +1786,11 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char
 	    csync_debug(0 ,"Check peername \n", myname->value, peername->value);
 	    if (peer_in(active_peers, peername->value))
 	    {
-		csync_debug(1, "Running in-sync check for %s <-> %s.\n",
-			    myname->value, peername->value);
+		csync_debug(1, "Running in-sync check for %s <-> %s for file %s.\n",
+			    myname->value, peername->value, filename);
 		if ( !csync_insynctest(db, myname->value, peername->value,
 				       filename, ip_version, flags) ) 
-ret=0;
+		    ret=0;
 	    }
 	}
 	textlist_free(peername_list);
