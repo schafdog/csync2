@@ -346,17 +346,24 @@ void db_sql_list_files(db_conn_p db)
     } SQL_END;
 }
 
-textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, peername_p peername)
+textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, peername_p peername, int recursive)
 {
     csync_debug(0, "db_sql_list_file %s <-> %s %s\n", myname, peername, filename);
 
     int len = strlen(filename); 
-    char where_sql[len + 50];
+    char where_sql[2*len + 50];
     where_sql[0] = 0;
     textlist_p tl = 0;
     int limit_by_file = strcmp("-", filename);
-    if (limit_by_file) 
-	sprintf(where_sql, "WHERE filename like '%s'", db_escape(db, filename));
+    if (limit_by_file) {
+	char recursive_str[len + 30];
+	recursive_str[0] = 0;
+
+	const char *file_enc = db_escape(db, filename);
+	if (recursive)
+	    sprintf(recursive_str, "or filename like '%s/%%'", file_enc);
+	sprintf(where_sql, "WHERE filename like '%s' %s", file_enc, recursive_str);
+    }
     SQL_BEGIN(db, "DB Dump - Files for sync pair",
 	      "SELECT checktxt, filename FROM file %s ORDER BY filename",
 	      where_sql)
