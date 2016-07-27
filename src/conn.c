@@ -465,8 +465,9 @@ int conn_write(int fd, const void *buf, size_t count)
 
 void  conn_remove_key(char *buf) {
     if (!strncmp(buf, "HELLO", 5) ||
-	!strncmp(buf, "CONFIG", 6) || 
-	!strncmp(buf, "BYE", 3))
+	!strncmp(buf, "CONFIG",6) || 
+	!strncmp(buf, "BYE", 3)   ||
+	!strncmp(buf, "LIST", 4))
 	return ;
     char *ptr = buf;
     while (*ptr != 0 && *ptr != ' ')
