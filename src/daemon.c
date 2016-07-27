@@ -1109,7 +1109,7 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
 	return csync_daemon_settime(filename, value, cmd_error);
 	break;
     case A_LIST:
-	csync_daemon_list(conn_out, db, filename, value, *peername);
+	csync_daemon_list(conn_out, db, filename, myhostname, value);
 	break;
     case A_DEBUG:
 	csync_debug(2, "DEBUG from %s %s\n", *peername, tag[1]);
