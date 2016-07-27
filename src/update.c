@@ -1684,7 +1684,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
     conn_printf(conn, "LIST %s %s %s %d \n", peername, filename_enc, g->key, recursive);
 
     if (filename) {
-	textlist_p tl = db->list_file(db, filename, myname, peername);
+	textlist_p tl = db->list_file(db, filename, myname, peername, recursive);
 	textlist_free(tl);
     }
     if ( !remote_eof )
