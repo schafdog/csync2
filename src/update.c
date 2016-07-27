@@ -1742,21 +1742,29 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char
 	return ret;
     }
     // No autotest or filename
+    csync_debug(0, "csync_insynctest_all: get all groups \n");
     for (g = csync_group; g; g = g->next)
     {
-	if (g->myname)
+	if (g->myname) {
+	    int found = 0;
 	    for (myname=myname_list; myname; myname=myname->next)
-		if (strcmp(g->myname, myname->value)) {
-		    csync_debug(0, "insynctest_all: Adding Group %s\n", g->myname);
-		    textlist_add(&myname_list, g->myname, 0);
-		}
+		if (!strcmp(g->myname, myname->value)) {
+		    found = 1;
+		    break;
+		};
+	    if (!found) {
+		csync_debug(0, "insynctest_all: Adding host %s\n", g->myname);
+		textlist_add(&myname_list, g->myname, 0);
+	    }
+	}
     }
    
     for (myname=myname_list; myname; myname=myname->next) {
 	textlist_p peername_list = 0, peername;
 	struct csync_group_host *h;
-
 	for (g = csync_group; g; g = g->next) {
+	    csync_debug(0, "insynctest_all: host %s\n", myname->value, g->myname);
+
 	    if ( !g->myname || strcmp(myname->value, g->myname) )
 		continue;
 	    for (h=g->host; h; h=h->next) {
