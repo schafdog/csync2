@@ -356,7 +356,7 @@ textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *mynam
     textlist_p tl = 0;
     int limit_by_file = strcmp("-", filename);
     if (limit_by_file) 
-	sprintf(where_sql, "WHERE filename = '%s'", db_escape(db, filename));
+	sprintf(where_sql, "WHERE filename like '%s'", db_escape(db, filename));
     SQL_BEGIN(db, "DB Dump - Files for sync pair",
 	      "SELECT checktxt, filename FROM file %s ORDER BY filename",
 	      where_sql)
