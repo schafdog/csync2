@@ -60,7 +60,7 @@ typedef const char * peername_p;
 #define FLAG_INIT_RUN           4
 #define FLAG_INIT_RUN_STRAIGHT  8
 #define FLAG_INIT_RUN_REMOVAL  16
-#define FLAG_AUTO_DIFF         32
+#define FLAG_TEST_AUTO_DIFF    32
 #define FLAG_DO_CHECK          64
 #define FLAG_DIRDUMP          128
 #define FLAG_IGN_NOENT        256

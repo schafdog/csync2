@@ -551,7 +551,6 @@ int main(int argc, char ** argv)
 {
     textlist_p tl = 0, t;
     int mode = MODE_NONE;
-    int mode_test_auto_diff = 0;
     int flags = 0;
     int retval = -1;
     int dry_run = 0;
@@ -731,7 +730,7 @@ int main(int argc, char ** argv)
 	    break;
 	case 'T':
 	    if ( mode == MODE_TEST_SYNC ) {
-		mode_test_auto_diff = 1;
+		flags |= FLAG_TEST_AUTO_DIFF;
 	    } else {
 		if ( mode != MODE_NONE ) help(argv[0]);
 		mode = MODE_TEST_SYNC;
@@ -1066,7 +1065,6 @@ nofork:
     };
 
     if (mode == MODE_COMPARE) {
-	csync_compare_mode = 1;
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
@@ -1135,8 +1133,7 @@ nofork:
 	    realname = getrealfn(argv[optind+2]);
 	    csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
 
-	    if ( mode_test_auto_diff ) {
-		csync_compare_mode = 1;
+	    if (flags & FLAG_TEST_AUTO_DIFF ) {
 		retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
 	    } else
 		if ( csync_insynctest(db, argv[optind], argv[optind+1], realname, ip_version, flags))
@@ -1150,8 +1147,6 @@ nofork:
 	    realname = getrealfn(argv[optind]);
 	    csync_check_usefullness(realname, 0);
 
-	    if ( mode_test_auto_diff )
-		csync_compare_mode = 1;
 	    if ( csync_insynctest_all(db, realname, ip_version, active_peers, flags))
 		retval = 2;
 	    break;

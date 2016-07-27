@@ -618,10 +618,12 @@ int csync_rs_patch(int conn, filename_p filename)
   // TODO this will break any hardlink to filename. 
   // DS: That is not what we want IMHO
   if (rename(newfname, filename) == 0) {
-    csync_debug(3, "File has been patched successfully.\n");
-    fclose(delta_file);
-    fclose(new_file);
-    return 0;
+      // Now inotify sends MOVED_TO
+      csync_debug(3, "File '%s' has been patched successfully.\n", filename);
+      fclose(delta_file);
+      fclose(new_file);
+      // inotify also sends this?
+      return 0;
   }
   errstr="renaming tmp file to to be patched file"; 
   return rsync_patch_io_error(errstr, filename, delta_file, basis_file, new_file);

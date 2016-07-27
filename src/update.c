@@ -1632,105 +1632,10 @@ int csync_insynctest_readline(int conn, char **file, char **checktxt)
 	return 0;
 }
 
-struct insynctest {
-    int auto_diff;
-    char *myname;
-    int remote_eof;
-    char *peername;
-    int init_run;
-    int remote_reuse; 
-};
-
-void file_insynctest_NOUSED(int conn, db_conn_p db, textlist_p *diff_list, const char *l_checktxt,
-		     const char *l_file, const char *digest,
-		     struct insynctest *ctx, int flags)
-{
-    int auto_diff = ctx->auto_diff;
-    char *myname = ctx->myname;
-    int remote_eof = ctx->remote_eof;
-    char *r_file=0, *r_checktxt=0;
-    char *peername = ctx->peername;
-    int init_run = ctx->init_run;
-    int remote_reuse = ctx->remote_reuse;
-    int ret = 0;
-    
-    if ( csync_match_file_host(l_file, myname, peername, 0) ) {
-	if ( remote_eof ) {
-	got_remote_eof:
-	    if (auto_diff)
-		textlist_add(diff_list, l_file, 0);
-	    else
-		csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file);
-	    ret=0;
-	    if (init_run & 1)
-		csync_mark(db, l_file, 0, (init_run & 4) ? peername : 0, OP_MOD /* | LOCAL */,
-			   NULL, "NULL", "NULL", 0);
-	} else {
-	    if ( !remote_reuse )
-		if ( csync_insynctest_readline(conn, &r_file, &r_checktxt) ) {
-		    remote_eof = 1;
-		    goto got_remote_eof;
-		}
-	    int rel = strcmp(l_file, r_file);
-	
-	    while ( rel > 0 ) {
-		if (auto_diff)
-		    textlist_add(diff_list, r_file, 0);
-		else
-		    csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file); ret=0;
-		if (init_run & 2)
-		    csync_mark(db, r_file, 0, (init_run & 4) ? peername : 0, OP_MOD /* | PEER */,
-			       NULL, "NULL", "NULL", 0);
-		if ( csync_insynctest_readline(conn, &r_file, &r_checktxt) ) {
-		    remote_eof = 1;
-		    goto got_remote_eof;
-		}
-		rel = strcmp(l_file, r_file);
-	    }
-	
-	    if ( rel < 0 ) {
-		if (auto_diff)
-		    textlist_add(diff_list, strdup(l_file), 0);
-		else
-		    csync_debug(1, "L\t%s\t%s\t%s\n", myname, peername, l_file); ret=0;
-		if (init_run & 1)
-		    csync_mark(db, l_file, 0, (init_run & 4) ? peername : 0,
-			       OP_MOD /* | LOCAL | AUTOUPDATE */ , NULL, "NULL", "NULL", 0);
-		remote_reuse = 1;
-	    } else {
-		remote_reuse = 0;
-		if ( !rel ) {
-		    if ( strcmp(l_checktxt, r_checktxt) ) {
-			if (auto_diff)
-			    textlist_add(diff_list, strdup(l_file), 0);
-			else {
-			    //DS disabled the simple X out.
-			    if (csync_debug_level >= 0) {
-				csync_cmpchecktxt_component(l_checktxt, r_checktxt);
-				csync_debug(0, "\t%s\t%s\t%s\n", myname, peername, l_file);
-			    }
-			    else
-				csync_debug(0, "X\t%s\t%s\t%s\n", myname, peername, l_file);
-			    ret=0;
-			}
-			if (init_run & 1)
-			    csync_mark(db, l_file, 0, (init_run & 4) ? peername : 0,
-				       OP_MOD /* LOCAL | PEER */, NULL, "NULL", "NULL", 0);
-		    }
-		}
-	    }
-	}
-    }
-    free(r_checktxt);
-    free(r_file);
-//    free(*r_digest);
-}
-
 int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 		     filename_p filename, int ip_version, int flags)
 {
-    int auto_diff = flags & FLAG_AUTO_DIFF;
-
+    int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
     textlist_p diff_list = 0, diff_ent;
     const struct csync_group *g;
     const struct csync_group_host *h;
@@ -1821,8 +1726,9 @@ int peer_in(char *active_peers[], const char* peer)
 
 int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags)
 {
+    csync_debug(0, "csync_insynctest_all: flags %d \n", flags);
     textlist_p myname_list = 0, myname;
-    int auto_diff = flags & FLAG_AUTO_DIFF;
+    int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
     struct csync_group *g;
     int ret = 1;
     if (auto_diff && filename) {
@@ -1835,15 +1741,17 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char
 	free(pl);
 	return ret;
     }
-
+    // No autotest or filename
     for (g = csync_group; g; g = g->next)
     {
 	if (g->myname)
 	    for (myname=myname_list; myname; myname=myname->next)
-		if (strcmp(g->myname, myname->value) )
+		if (strcmp(g->myname, myname->value)) {
+		    csync_debug(0, "insynctest_all: Adding Group %s\n", g->myname);
 		    textlist_add(&myname_list, g->myname, 0);
+		}
     }
-
+   
     for (myname=myname_list; myname; myname=myname->next) {
 	textlist_p peername_list = 0, peername;
 	struct csync_group_host *h;
@@ -1853,19 +1761,23 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char
 		continue;
 	    for (h=g->host; h; h=h->next) {
 		for (peername=peername_list; peername; peername=peername->next)
-		    if (strcmp(h->hostname, peername->value))
+		    if (strcmp(h->hostname, peername->value)) {
+			csync_debug(0, "Adding peer: %s\n", h->hostname);
 			textlist_add(&peername_list, h->hostname, 0);
+		    }
 	    }
 	}
 
 	for (peername=peername_list; peername; peername=peername->next)
 	{
+	    csync_debug(0 ,"Check peername \n", myname->value, peername->value);
 	    if (peer_in(active_peers, peername->value))
 	    {
 		csync_debug(1, "Running in-sync check for %s <-> %s.\n",
 			    myname->value, peername->value);
 		if ( !csync_insynctest(db, myname->value, peername->value,
-				       filename, ip_version, flags) ) ret=0;
+				       filename, ip_version, flags) ) 
+ret=0;
 	    }
 	}
 	textlist_free(peername_list);
