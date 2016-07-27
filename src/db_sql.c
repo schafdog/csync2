@@ -174,7 +174,7 @@ textlist_p db_sql_get_dirty_hosts(db_conn_p db) {
 int db_sql_upgrade_db(db_conn_p db) 
 {
     struct csync_prefix *p;
-    csync_debug(1, "Upgrade database.. ");
+    csync_debug(1, "Upgrade database.. \n");
 
     for (p = csync_prefix; p; p = p->next) {
 	if (p->name && p->path) {
@@ -348,6 +348,8 @@ void db_sql_list_files(db_conn_p db)
 
 textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, peername_p peername)
 {
+    csync_debug(0, "db_sql_list_file %s <-> %s %s\n", myname, peername, filename);
+
     int len = strlen(filename); 
     char where_sql[len + 50];
     where_sql[0] = 0;
@@ -360,8 +362,10 @@ textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *mynam
 	      where_sql)
     {
 	if ( csync_match_file_host(db_decode(SQL_V(1)), 
-				   myname, peername, 0) )
+				   myname, peername, 0) ) {
 	    textlist_add2( &tl, SQL_V(0), SQL_V(1), 0);
+	    csync_debug(0, "db_sql_list_file  %s:%s\n", peername, filename);
+	}
     } SQL_END;
 
     return tl;
