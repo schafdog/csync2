@@ -1636,6 +1636,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 		     filename_p filename, int ip_version, int flags)
 {
     int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
+    int recursive = flags & FLAG_RECURSIVE;
     textlist_p diff_list = 0, diff_ent;
     const struct csync_group *g;
     const struct csync_group_host *h;
@@ -1669,7 +1670,6 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 
     conn_printf(conn, "HELLO %s\n", url_encode(myname));
     read_conn_status(conn, 0, peername);
-
     filename_p filename_enc = (filename ? url_encode(prefixencode(filename)) : "-");
     found = 0; 
     for (g = csync_group; g && !found; g = g->next) {
@@ -1681,11 +1681,12 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 		break;
 	    }
     }
-    conn_printf(conn, "LIST %s %s %s \n", peername, filename_enc, g->key);
+    conn_printf(conn, "LIST %s %s %s %d \n", peername, filename_enc, g->key, recursive);
 
-    textlist_p tl = db->list_file(db, filename, myname, peername);
-    textlist_free(tl);
-    
+    if (filename) {
+	textlist_p tl = db->list_file(db, filename, myname, peername);
+	textlist_free(tl);
+    }
     if ( !remote_eof )
 	while ( !csync_insynctest_readline(conn, &r_file, &r_checktxt) ) {
 	    if (auto_diff)
