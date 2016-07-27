@@ -179,7 +179,9 @@ int db_schema_version(db_conn_p db)
                 "SELECT checktxt from file limit 1")
         {
 		version = 0;
-        } SQL_END;
+        } SQL_END {
+	    version = 0;
+	};
 
 	return version;
 }
@@ -187,7 +189,7 @@ int db_schema_version(db_conn_p db)
 
 int db_upgrade_to_schema(db_conn_p db, int version)
 {
-    csync_debug(0, "db_upgrade_to_schema: %d", version);
+    csync_debug(0, "db_upgrade_to_schema: %d\n", version);
     if (db && db->upgrade_to_schema)
 	return db->upgrade_to_schema(db, version);
     return DB_ERROR;
