@@ -649,14 +649,13 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
 
     if (check_type == MATCH_NONE) {
 	csync_debug(2, "No match. Don't check at all: %s\n", file);
+	return MATCH_NONE; 
     }
 	
     if (lstat_strict(file, &st) != 0 ) {
 	if ( flags & FLAG_IGN_NOENT )
 	    return MATCH_NONE;
-	csync_debug(0, "check_mod: ERROR: Can't stat '%s' as expected.\n", file);
-	// TODO verify what to return, since caller of csync_check_mod is only checking for non-zero.
-	// return ERROR;
+	csync_debug(2, "check_mod: No such file '%s' .\n", file);
 	return  MATCH_NONE;
     }
 
