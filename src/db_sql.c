@@ -348,7 +348,7 @@ void db_sql_list_files(db_conn_p db)
 
 textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *myname, peername_p peername, int recursive)
 {
-    csync_debug(0, "db_sql_list_file %s <-> %s %s\n", myname, peername, filename);
+    csync_debug(2, "db_sql_list_file %s <-> %s %s\n", myname, peername, filename);
 
     int len = strlen(filename); 
     char where_sql[2*len + 50];
@@ -371,7 +371,7 @@ textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *mynam
 	if ( csync_match_file_host(db_decode(SQL_V(1)), 
 				   myname, peername, 0) ) {
 	    textlist_add2( &tl, SQL_V(0), SQL_V(1), 0);
-	    csync_debug(0, "db_sql_list_file  %s:%s\n", peername, filename);
+	    csync_debug(2, "db_sql_list_file  %s:%s\n", peername, filename);
 	}
     } SQL_END;
 
