@@ -1697,7 +1697,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 	    }
     }
     conn_printf(conn, "LIST %s %s %s %d \n", peername, filename_enc, g->key, recursive);
-
+    int count_diff = 0;
     if ( !remote_eof )
 	while ( !csync_insynctest_readline(conn, &r_file, &r_checktxt) ) {
 	    if (auto_diff)
@@ -1708,13 +1708,17 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 		if (tl) {
 		    chk_local = tl->value;
 		}
-		csync_debug(1, "S\t%s\t%s\t%s\n", myname, peername, r_file);
 		int i;
 		if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
-		    csync_debug(0, "'%s' is different:\n", filename);
-		    csync_debug(0, ">>> %s %s\n>>> %s %s\n",
+		    csync_debug(1, "D\t%s\t%s\t%s\n", myname, peername, r_file);
+		    csync_debug(2, "'%s' is different:\n", filename);
+		    csync_debug(2, ">>> %s %s\n>>> %s %s\n",
 				r_checktxt, peername, chk_local, myname);
+		    count_diff++;
 		}
+		else
+		    csync_debug(1, "S\t%s\t%s\t%s\n", myname, peername, r_file);
+		
 		textlist_free(tl);
 	    }
 	    ret=0;
