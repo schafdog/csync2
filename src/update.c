@@ -49,6 +49,7 @@
 #define OK     0
 #define ERROR -1
 #define CONN_CLOSE  -3
+#define NOT_REG -4
 
 #define SETOWN  -6
 #define SETMOD  -7
@@ -1490,106 +1491,120 @@ int finish_close(int conn)
   return 0;
 };
 
+int csync_insynctest_file(int conn,
+			  const char *myname, peername_p peername, const char *key_enc,
+			  filename_p filename, int *last_conn_status)
+{
+    filename_p filename_enc = url_encode(prefixencode(filename));
+    struct stat st;
+    char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
+    int rc_exist = csync_stat(filename, &st, uid, gid);
+    int rc = csync_update_file_sig_rs_diff(conn, peername, key_enc,
+					   filename, filename_enc,
+					   (!rc_exist  ? &st : NULL), uid, gid,
+					   NULL, NULL,  last_conn_status, 0);
+    if (rc < 0 && rc != ERROR_PATH_MISSING) {
+	csync_debug(0, "Error while SIG_RS (before TYPE): %d \n", rc);
+	return rc; 
+    }
+    if (!rc_exist && !S_ISREG(st.st_mode))
+    {
+	return NOT_REG;
+    }
+
+    return rc;
+}
+
 int csync_diff(db_conn_p db,
 	       const char *myname, peername_p peername,
 	       filename_p filename, int ip_version)
 {
-  FILE *p;
-  void *old_sigpipe_handler;
-  const struct csync_group *g = 0;
-  const struct csync_group_host *h;
-  char buffer[512];
-  int found = 0;
-  while (!found && (g=csync_find_next(g, filename)) ) {
-    if ( !g->myname || strcmp(g->myname, myname) )
-      continue;
-    for (h = g->host; h; h = h->next)
-      if (!strcmp(h->hostname, peername)) {
-	found = 1;
-	break;
-      }
-  }
+    FILE *p;
+    void *old_sigpipe_handler;
+    const struct csync_group *g = 0;
+    const struct csync_group_host *h;
+    int last_conn_status = 0;
+    char buffer[512];
+    int found = 0;
+    while (!found && (g=csync_find_next(g, filename)) ) {
+	if ( !g->myname || strcmp(g->myname, myname) )
+	    continue;
+	for (h = g->host; h; h = h->next)
+	    if (!strcmp(h->hostname, peername)) {
+		found = 1;
+		break;
+	    }
+    }
 
-  if (!found) {
-    csync_debug(0, "Host pair + file not found in configuration.\n");
-    csync_error_count++;
-    return 0;
-  }
+    if (!found) {
+	csync_debug(0, "Host pair + file not found in configuration.\n");
+	csync_error_count++;
+	return 0;
+    }
 
-  int conn = connect_to_host(db, peername, ip_version);
-  if ( conn < 0) {
-      csync_error_count++;
-      csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
-      return 0;
-  }
+    int conn = connect_to_host(db, peername, ip_version);
+    if ( conn < 0) {
+	csync_error_count++;
+	csync_debug(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
+	return 0;
+    }
 
-  conn_printf(conn, "HELLO %s\n", url_encode(myname));
-  if ( read_conn_status(conn, 0, peername) )
+    conn_printf(conn, "HELLO %s\n", url_encode(myname));
+    if ( read_conn_status(conn, 0, peername) )
+	return finish_close(conn);
+    const char *key_enc  = url_encode(g->key);
+
+    int rc = csync_insynctest_file(conn, myname, peername, key_enc, filename, &last_conn_status);
+
+    if (rc == IDENTICAL) {
+	csync_debug(1, "Identical files. Skipping diff\n");
+	return finish_close(conn);
+    }    
+    if (rc == NOT_REG) {
+  	csync_debug(1, "Skipping diff on non-regular file (%s)\n", filename) ;
+	return finish_close(conn); 
+    }    
+    if (rc < 0) {
+	csync_debug(1, "ERROR: rs_sig '%s' failed with %d. Skipping TYPE\n", filename, rc) ;
+	return finish_close(conn);
+    }
+      
+    conn_printf(conn, "TYPE %s %s\n", key_enc, filename);
+
+    if ( read_conn_status(conn, 0, peername) )
+	return finish_close(conn);
+
+    /* FIXME
+     * verify type of file first!
+     * (symlink vs. file vs. dir vs. whatever)
+     */
+
+    /* avoid unwanted side effects due to special chars in filenames,
+     * pass them in the environment */
+    snprintf(buffer,512,"%s:%s",myname,filename);
+    setenv("my_label",buffer,1);
+    snprintf(buffer,512,"%s:%s",peername,filename);
+    setenv("peer_label",buffer,1);
+    snprintf(buffer,512,"%s",filename);
+    setenv("diff_file",buffer,1);
+    /* XXX no error check on setenv
+     * (could be insufficient space in environment) */
+
+    snprintf(buffer, 512, "diff -Nus --label \"$peer_label\" - --label \"$my_label\" \"$diff_file\"");
+    old_sigpipe_handler = signal(SIGPIPE, SIG_IGN);
+    p = popen(buffer, "w");
+
+    int length = 0;
+    while ( (rc=conn_read(conn, buffer, 512)) > 0 ) {
+	fwrite(buffer, rc, 1, p);
+	length += rc;
+    }
+    if (rc < 0)
+	csync_debug(0, "Diff %s:%s failed with connection read %s %d", peername, filename, strerror(errno), errno);
+    csync_debug(2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d " , myname, filename, peername, filename, length);
+    fclose(p);
+    signal(SIGPIPE, old_sigpipe_handler);
     return finish_close(conn);
-
-  const char *key_enc  = url_encode(g->key);
-  filename_p filename_enc = url_encode(prefixencode(filename));
-  struct stat st;
-  char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
-  int rc_exist = csync_stat(filename, &st, uid, gid);
-  int last_conn_status;
-  int rc = csync_update_file_sig_rs_diff(conn, peername, key_enc,
-					 filename, filename_enc,
-					 (!rc_exist  ? &st : NULL), uid, gid,
-					 NULL, NULL,  &last_conn_status, 0);
-  if (rc < 0 && rc != ERROR_PATH_MISSING) {
-      csync_debug(0, "Error while TYPE: %d \n", rc);
-      return finish_close(conn);
-  }
-
-  if (rc == IDENTICAL) {
-      csync_debug(1, "Identical files. Skipping diff\n");
-      return finish_close(conn);
-
-  }
-
-  if (!rc_exist && !S_ISREG(st.st_mode))
-  {
-      csync_debug(1, "Skipping diff on non-regular file (%s)\n", filename) ;
-      return finish_close(conn); 
-  }
-
-  conn_printf(conn, "TYPE %s %s\n", key_enc, filename);
-
-  if ( read_conn_status(conn, 0, peername) )
-      return finish_close(conn);
-
-  /* FIXME
-   * verify type of file first!
-   * (symlink vs. file vs. dir vs. whatever)
-   */
-
-  /* avoid unwanted side effects due to special chars in filenames,
-   * pass them in the environment */
-  snprintf(buffer,512,"%s:%s",myname,filename);
-  setenv("my_label",buffer,1);
-  snprintf(buffer,512,"%s:%s",peername,filename);
-  setenv("peer_label",buffer,1);
-  snprintf(buffer,512,"%s",filename);
-  setenv("diff_file",buffer,1);
-  /* XXX no error check on setenv
-   * (could be insufficient space in environment) */
-
-  snprintf(buffer, 512, "diff -Nus --label \"$peer_label\" - --label \"$my_label\" \"$diff_file\"");
-  old_sigpipe_handler = signal(SIGPIPE, SIG_IGN);
-  p = popen(buffer, "w");
-
-  int length = 0;
-  while ( (rc=conn_read(conn, buffer, 512)) > 0 ) {
-      fwrite(buffer, rc, 1, p);
-      length += rc;
-  }
-  if (rc < 0)
-      csync_debug(0, "Diff %s:%s failed with connection read %s %d", peername, filename, strerror(errno), errno);
-  csync_debug(2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d " , myname, filename, peername, filename, length);
-  fclose(p);
-  signal(SIGPIPE, old_sigpipe_handler);
-  return finish_close(conn);
 }
 
 int csync_insynctest_readline(int conn, char **file, char **checktxt)
@@ -1688,16 +1703,17 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 	    if (auto_diff)
 		textlist_add(&diff_list, r_file, 0);
 	    else {
-		csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file);
 		textlist_p tl = db->list_file(db, r_file, myname, peername, 0);
+		char *chk_local = "---"; 
 		if (tl) {
-		    char *chk_local = tl->value;
-		    int i;
-		    if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
-			csync_debug(1, "File is different (cktxt char #%d):\n", peername, filename, i);
-			csync_debug(1, ">>> %s %s\n>>> %s %s\n",
-				    r_checktxt, peername, chk_local, myname);
-		    }
+		    chk_local = tl->value;
+		}
+		csync_debug(1, "S\t%s\t%s\t%s\n", myname, peername, r_file);
+		int i;
+		if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
+		    csync_debug(0, "'%s' is different:\n", filename);
+		    csync_debug(0, ">>> %s %s\n>>> %s %s\n",
+				r_checktxt, peername, chk_local, myname);
 		}
 		textlist_free(tl);
 	    }
@@ -1736,7 +1752,7 @@ int peer_in(char *active_peers[], const char* peer)
 
 int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags)
 {
-    csync_debug(0, "csync_insynctest_all: flags %d \n", flags);
+    csync_debug(3, "csync_insynctest_all: flags %d \n", flags);
     textlist_p myname_list = 0, myname;
     int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
     struct csync_group *g;
@@ -1792,10 +1808,10 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char
 
 	for (peername=peername_list; peername; peername=peername->next)
 	{
-	    csync_debug(0 ,"Check peername \n", myname->value, peername->value);
+	    csync_debug(2 ,"Check peername \n", myname->value, peername->value);
 	    if (peer_in(active_peers, peername->value))
 	    {
-		csync_debug(1, "Running in-sync check for %s <-> %s for file %s.\n",
+		csync_debug(2, "Running in-sync check for %s <-> %s for file %s.\n",
 			    myname->value, peername->value, filename);
 		if ( !csync_insynctest(db, myname->value, peername->value,
 				       filename, ip_version, flags) ) 
