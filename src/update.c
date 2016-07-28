@@ -1304,7 +1304,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 	/* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
 	csync_debug(2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
 	if (t->operation != OP_RM && t->operation != OP_MARK) {
-	    csync_debug(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation), peername, t->value);
+	    csync_debug(1, "Unable to %s %s:%s. File has disappeared sinc check.\n", csync_operation_str(t->operation), peername, t->value);
 	    if (t->value3) {
 		csync_mark(db, t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0);
 		csync_debug(0, "make other dirty %s\n", t->value3);
@@ -1683,16 +1683,24 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
     }
     conn_printf(conn, "LIST %s %s %s %d \n", peername, filename_enc, g->key, recursive);
 
-    if (filename) {
-	textlist_p tl = db->list_file(db, filename, myname, peername, recursive);
-	textlist_free(tl);
-    }
     if ( !remote_eof )
 	while ( !csync_insynctest_readline(conn, &r_file, &r_checktxt) ) {
 	    if (auto_diff)
 		textlist_add(&diff_list, r_file, 0);
-	    else
+	    else {
 		csync_debug(1, "R\t%s\t%s\t%s\n", myname, peername, r_file);
+		textlist_p tl = db->list_file(db, r_file, myname, peername, 0);
+		if (tl) {
+		    char *chk_local = tl->value;
+		    int i;
+		    if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
+			csync_debug(1, "File is different (cktxt char #%d):\n", peername, filename, i);
+			csync_debug(1, ">>> %s %s\n>>> %s %s\n",
+				    r_checktxt, peername, chk_local, myname);
+		    }
+		}
+		textlist_free(tl);
+	    }
 	    ret=0;
 	    if (flags & FLAG_INIT_RUN)
 		csync_mark(db, r_file, 0, (flags & FLAG_INIT_RUN_STRAIGHT) ? peername : 0,
