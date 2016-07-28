@@ -748,25 +748,25 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], int db_version, co
 
 void csync_daemon_type(int conn, char *filename, const char **cmd_error)
 {
-  FILE *f = fopen(filename, "rb");
+    FILE *f = fopen(filename, "rb");
 
-  if (!f && errno == ENOENT)
-    f = fopen("/dev/null", "rb");
+    if (!f && errno == ENOENT)
+	f = fopen("/dev/null", "rb");
 
-  if (f) {
-    char buffer[512];
-    size_t rc;
+    if (f) {
+	char buffer[512];
+	size_t rc;
 
-    conn_printf(conn, "OK (data_follows).\n");
-    while ( (rc=fread(buffer, 1, 512, f)) > 0 )
-	if ( conn_write(conn, buffer, rc) != rc ) {
-	  conn_printf(conn, "[[ %s ]]", strerror(errno));
-	break;
-      }
-    fclose(f);
-    return;
-  }
-  *cmd_error = strerror(errno);
+	conn_printf(conn, "OK (data_follows).\n");
+	while ( (rc=fread(buffer, 1, 512, f)) > 0 )
+	    if ( conn_write(conn, buffer, rc) != rc ) {
+		conn_printf(conn, "[[ %s ]]", strerror(errno));
+		break;
+	    }
+	fclose(f);
+	return;
+    }
+    *cmd_error = strerror(errno);
 }
 
 
