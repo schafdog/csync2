@@ -14,5 +14,5 @@ make clean all
 EOF
     make install
     /usr/local/sbin/csync2 -V
-done
+fi
 
