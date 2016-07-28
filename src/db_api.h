@@ -26,27 +26,27 @@ typedef struct db_conn_t *db_conn_p;
 typedef struct db_stmt_t *db_stmt_p;
 
 struct db_conn_t {
-  void *private;
-  int         (*exec)   (db_conn_p conn, const char* exec);
-  int         (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
-  void        (*close)  (db_conn_p conn);
-  void        (*logger) (int lv, const char *fmt, ...);
-  const char* (*errmsg) (db_conn_p conn);
-  int         (*upgrade_to_schema) (int version);
-  const char* (*escape) (db_conn_p conn, const char *string);
-  void        (*free)   (db_conn_p conn, const char *escaped);
-  void        (*shutdown) ();
+    void *private;
+    int         (*exec)   (db_conn_p conn, const char* exec);
+    int         (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
+    void        (*close)  (db_conn_p conn);
+    void        (*logger) (int lv, const char *fmt, ...);
+    const char* (*errmsg) (db_conn_p conn);
+    int         (*upgrade_to_schema) (int version);
+    const char* (*escape) (db_conn_p conn, const char *string);
+    void        (*free)   (db_conn_p conn, const char *escaped);
+    void        (*shutdown) ();
 };
 
 struct db_stmt_t {
-  void *private;
-  void *private2;
-  db_conn_p db;
-  const char *    (*get_column_text) (db_stmt_p vmx, int column);
-  const void*     (*get_column_blob) (db_stmt_p vmx, int column);
-  int             (*get_column_int)  (db_stmt_p vmx, int column);
-  int       (*next) (db_stmt_p stmt);
-  int       (*close)(db_stmt_p stmt);
+    void *private;
+    void *private2;
+    db_conn_p db;
+    const char *    (*get_column_text) (db_stmt_p vmx, int column);
+    const void*     (*get_column_blob) (db_stmt_p vmx, int column);
+    int             (*get_column_int)  (db_stmt_p vmx, int column);
+    int       (*next) (db_stmt_p stmt);
+    int       (*close)(db_stmt_p stmt);
 };
 
 //struct db_conn *db_conn;

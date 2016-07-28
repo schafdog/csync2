@@ -54,104 +54,104 @@ int conn_get()
 /* getaddrinfo stuff mostly copied from its manpage */
 int conn_connect(const char *peername, int ip_version)
 {
-	struct addrinfo hints;
-	struct addrinfo *result, *rp;
-	int sfd, s;
-	struct csync_hostinfo *p = csync_hostinfo; 
-	char *port = csync_port;
-	while (p) {
-	    if (!strcmp(peername, p->name)) {
-		peername = p->host;
-		port = p->port;
-		break;
-	    }
-	    p = p->next;
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    struct csync_hostinfo *p = csync_hostinfo; 
+    char *port = csync_port;
+    while (p) {
+	if (!strcmp(peername, p->name)) {
+	    peername = p->host;
+	    port = p->port;
+	    break;
 	}
-	/* Obtain address(es) matching host/port */
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = ip_version;	/* Allow IPv4 or IPv6 */
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = 0;
-	hints.ai_protocol = 0;	/* Any protocol */
+	p = p->next;
+    }
+    /* Obtain address(es) matching host/port */
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = ip_version;	/* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = 0;
+    hints.ai_protocol = 0;	/* Any protocol */
 
-	s = getaddrinfo(peername, port, &hints, &result);
-	if (s != 0) {
-		csync_debug(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
-		return -1;
-	}
+    s = getaddrinfo(peername, port, &hints, &result);
+    if (s != 0) {
+	csync_debug(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
+	return -1;
+    }
 
-	/* getaddrinfo() returns a list of address structures.
-	   Try each address until we successfully connect(2).
-	   If socket(2) (or connect(2)) fails, we (close the socket
-	   and) try the next address. */
+    /* getaddrinfo() returns a list of address structures.
+       Try each address until we successfully connect(2).
+       If socket(2) (or connect(2)) fails, we (close the socket
+       and) try the next address. */
 
-	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sfd == -1)
-			continue;
+    for (rp = result; rp != NULL; rp = rp->ai_next) {
+	sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+	if (sfd == -1)
+	    continue;
 
-		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-			break;	/* Success */
+	if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+	    break;	/* Success */
 
-		close(sfd);
-	}
-	freeaddrinfo(result);	/* No longer needed */
+	close(sfd);
+    }
+    freeaddrinfo(result);	/* No longer needed */
 
-	if (rp == NULL)	/* No address succeeded */
-		return -1;
+    if (rp == NULL)	/* No address succeeded */
+	return -1;
 
-	return sfd;
+    return sfd;
 }
 
 char *active_peer = 0;
 
 int conn_open(const char *peername, int ip_version)
 {
-	int on = 1;
+    int on = 1;
 
-        conn_fd_in = conn_connect(peername, ip_version);
-        if (conn_fd_in < 0) {
-                csync_debug(1, "Can't create socket.\n");
-                return -1;
-        }
+    conn_fd_in = conn_connect(peername, ip_version);
+    if (conn_fd_in < 0) {
+	csync_debug(1, "Can't create socket.\n");
+	return -1;
+    }
 
-	if (setsockopt(conn_fd_in, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on) ) < 0) {
-                csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
-		close(conn_fd_in); conn_fd_in = -1;
-                return -1;
-	}
+    if (setsockopt(conn_fd_in, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on) ) < 0) {
+	csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
+	close(conn_fd_in); conn_fd_in = -1;
+	return -1;
+    }
 
-	conn_fd_out = conn_fd_in;
-	conn_clisok = 1;
+    conn_fd_out = conn_fd_in;
+    conn_clisok = 1;
 #ifdef HAVE_LIBGNUTLS
-	csync_conn_usessl = 0;
+    csync_conn_usessl = 0;
 #endif
-	if (active_peer) { 
-	  free(active_peer);
-	  csync_debug(0, "Connection not closed on open?");
-	}
-	active_peer = strdup(peername);
-	return 0;
+    if (active_peer) { 
+	free(active_peer);
+	csync_debug(0, "Connection not closed on open?");
+    }
+    active_peer = strdup(peername);
+    return 0;
 }
 
 int conn_set(int infd, int outfd)
 {
-	int on = 1;
+    int on = 1;
 
-	conn_fd_in  = infd;
-	conn_fd_out = outfd;
-	conn_clisok = 1;
+    conn_fd_in  = infd;
+    conn_fd_out = outfd;
+    conn_clisok = 1;
 #ifdef HAVE_LIBGNUTLS
-	csync_conn_usessl = 0;
+    csync_conn_usessl = 0;
 #endif
 
-	// when running in server mode, this has been done already
-	// in csync2.c with more restrictive error handling..
-	// FIXME don't even try in "ssh" mode
-	if ( setsockopt(conn_fd_out, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0 )
-                csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
+    // when running in server mode, this has been done already
+    // in csync2.c with more restrictive error handling..
+    // FIXME don't even try in "ssh" mode
+    if ( setsockopt(conn_fd_out, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0 )
+	csync_debug(1, "Can't set TCP_NODELAY option on TCP socket.\n");
 
-	return 0;
+    return 0;
 }
 
 
@@ -165,249 +165,249 @@ static const char *ssl_certfile = ETCDIR "/csync2_ssl_cert.pem";
 
 int conn_activate_ssl(int server_role)
 {
-	gnutls_alert_description_t alrt;
-	int err;
+    gnutls_alert_description_t alrt;
+    int err;
 
-	if (csync_conn_usessl)
-		return 0;
+    if (csync_conn_usessl)
+	return 0;
 
-	gnutls_global_init();
-	gnutls_global_set_log_function(ssl_log);
-	gnutls_global_set_log_level(10);
+    gnutls_global_init();
+    gnutls_global_set_log_function(ssl_log);
+    gnutls_global_set_log_level(10);
 
-	gnutls_certificate_allocate_credentials(&conn_x509_cred);
+    gnutls_certificate_allocate_credentials(&conn_x509_cred);
 
-	err = gnutls_certificate_set_x509_key_file(conn_x509_cred, ssl_certfile, ssl_keyfile, GNUTLS_X509_FMT_PEM);
-	if(err != GNUTLS_E_SUCCESS) {
-		gnutls_certificate_free_credentials(conn_x509_cred);
-		gnutls_global_deinit();
+    err = gnutls_certificate_set_x509_key_file(conn_x509_cred, ssl_certfile, ssl_keyfile, GNUTLS_X509_FMT_PEM);
+    if(err != GNUTLS_E_SUCCESS) {
+	gnutls_certificate_free_credentials(conn_x509_cred);
+	gnutls_global_deinit();
 
-		csync_fatal(
-			"SSL: failed to use key file %s and/or certificate file %s: %s (%s)\n",
-			ssl_keyfile,
-			ssl_certfile,
-			gnutls_strerror(err),
-			gnutls_strerror_name(err)
+	csync_fatal(
+	    "SSL: failed to use key file %s and/or certificate file %s: %s (%s)\n",
+	    ssl_keyfile,
+	    ssl_certfile,
+	    gnutls_strerror(err),
+	    gnutls_strerror_name(err)
+	    );
+    }
+
+    if(server_role) {
+	gnutls_certificate_free_cas(conn_x509_cred);
+
+	if(gnutls_certificate_set_x509_trust_file(conn_x509_cred, ssl_certfile, GNUTLS_X509_FMT_PEM) < 1) {
+	    gnutls_certificate_free_credentials(conn_x509_cred);
+	    gnutls_global_deinit();
+
+	    csync_fatal(
+		"SSL: failed to use certificate file %s as CA.\n",
+		ssl_certfile
 		);
 	}
+    } else
+	gnutls_certificate_free_ca_names(conn_x509_cred);
 
-	if(server_role) {
-		gnutls_certificate_free_cas(conn_x509_cred);
+    gnutls_init(&conn_tls_session, (server_role ? GNUTLS_SERVER : GNUTLS_CLIENT));
+    gnutls_priority_set_direct(conn_tls_session, "PERFORMANCE", NULL);
+    gnutls_credentials_set(conn_tls_session, GNUTLS_CRD_CERTIFICATE, conn_x509_cred);
 
-		if(gnutls_certificate_set_x509_trust_file(conn_x509_cred, ssl_certfile, GNUTLS_X509_FMT_PEM) < 1) {
-			gnutls_certificate_free_credentials(conn_x509_cred);
-			gnutls_global_deinit();
+    if(server_role) {
+	gnutls_certificate_send_x509_rdn_sequence(conn_tls_session, 0);
+	gnutls_certificate_server_set_request(conn_tls_session, GNUTLS_CERT_REQUIRE);
+    }
 
-			csync_fatal(
-				"SSL: failed to use certificate file %s as CA.\n",
-				ssl_certfile
-			);
-		}
-	} else
-		gnutls_certificate_free_ca_names(conn_x509_cred);
-
-	gnutls_init(&conn_tls_session, (server_role ? GNUTLS_SERVER : GNUTLS_CLIENT));
-	gnutls_priority_set_direct(conn_tls_session, "PERFORMANCE", NULL);
-	gnutls_credentials_set(conn_tls_session, GNUTLS_CRD_CERTIFICATE, conn_x509_cred);
-
-	if(server_role) {
-		gnutls_certificate_send_x509_rdn_sequence(conn_tls_session, 0);
-		gnutls_certificate_server_set_request(conn_tls_session, GNUTLS_CERT_REQUIRE);
-	}
-
-	gnutls_transport_set_ptr2(
-		conn_tls_session,
-		(gnutls_transport_ptr_t) (size_t) conn_fd_in,
-		(gnutls_transport_ptr_t) (size_t) conn_fd_out
+    gnutls_transport_set_ptr2(
+	conn_tls_session,
+	(gnutls_transport_ptr_t) (size_t) conn_fd_in,
+	(gnutls_transport_ptr_t) (size_t) conn_fd_out
 	);
 
-	err = gnutls_handshake(conn_tls_session);
-	switch(err) {
-	case GNUTLS_E_SUCCESS:
-		break;
+    err = gnutls_handshake(conn_tls_session);
+    switch(err) {
+    case GNUTLS_E_SUCCESS:
+	break;
 
-	case GNUTLS_E_WARNING_ALERT_RECEIVED:
-		alrt = gnutls_alert_get(conn_tls_session);
-		fprintf(
-			csync_debug_out,
-			"SSL: warning alert received from peer: %d (%s).\n",
-			alrt, gnutls_alert_get_name(alrt)
-		);
-		break;
+    case GNUTLS_E_WARNING_ALERT_RECEIVED:
+	alrt = gnutls_alert_get(conn_tls_session);
+	fprintf(
+	    csync_debug_out,
+	    "SSL: warning alert received from peer: %d (%s).\n",
+	    alrt, gnutls_alert_get_name(alrt)
+	    );
+	break;
 
-	case GNUTLS_E_FATAL_ALERT_RECEIVED:
-		alrt = gnutls_alert_get(conn_tls_session);
-		fprintf(
-			csync_debug_out,
-			"SSL: fatal alert received from peer: %d (%s).\n",
-			alrt, gnutls_alert_get_name(alrt)
-		);
+    case GNUTLS_E_FATAL_ALERT_RECEIVED:
+	alrt = gnutls_alert_get(conn_tls_session);
+	fprintf(
+	    csync_debug_out,
+	    "SSL: fatal alert received from peer: %d (%s).\n",
+	    alrt, gnutls_alert_get_name(alrt)
+	    );
 
-	default:
-		gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
-		gnutls_deinit(conn_tls_session);
-		gnutls_certificate_free_credentials(conn_x509_cred);
-		gnutls_global_deinit();
+    default:
+	gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
+	gnutls_deinit(conn_tls_session);
+	gnutls_certificate_free_credentials(conn_x509_cred);
+	gnutls_global_deinit();
 
-		csync_fatal(
-			"SSL: handshake failed: %s (%s)\n",
-			gnutls_strerror(err),
-			gnutls_strerror_name(err)
-		);
-	}
+	csync_fatal(
+	    "SSL: handshake failed: %s (%s)\n",
+	    gnutls_strerror(err),
+	    gnutls_strerror_name(err)
+	    );
+    }
 
-	csync_conn_usessl = 1;
+    csync_conn_usessl = 1;
 
-	return 0;
+    return 0;
 }
 
 int conn_check_peer_cert(const char *peername, int callfatal)
 {
-	const gnutls_datum_t *peercerts;
-	unsigned npeercerts;
-	int i, cert_is_ok = -1;
+    const gnutls_datum_t *peercerts;
+    unsigned npeercerts;
+    int i, cert_is_ok = -1;
 
-	if (!csync_conn_usessl)
-		return 1;
-
-	peercerts = gnutls_certificate_get_peers(conn_tls_session, &npeercerts);
-	if(peercerts == NULL || npeercerts == 0) {
-		if (callfatal)
-			csync_fatal("Peer did not provide an SSL X509 cetrificate.\n");
-		csync_debug(1, "Peer did not provide an SSL X509 cetrificate.\n");
-		return 0;
-	}
-
-	{
-		char certdata[2*peercerts[0].size + 1];
-
-		for (i=0; i<peercerts[0].size; i++)
-			sprintf(&certdata[2*i], "%02X", peercerts[0].data[i]);
-		certdata[2*i] = 0;
-
-		SQL_BEGIN("Checking peer x509 certificate.",
-			"SELECT certdata FROM x509_cert WHERE peername = '%s'",
-			url_encode(peername))
-		{
-			if (!strcmp(SQL_V(0), certdata))
-				cert_is_ok = 1;
-			else
-				cert_is_ok = 0;
-		} SQL_END;
-
-		if (cert_is_ok < 0) {
-			csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
-			SQL("Adding peer x509 sha1 hash to database.",
-				"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
-				url_encode(peername), url_encode(certdata));
-			return 1;
-		}
-
-		csync_debug(2, "Peer x509 certificate is: %s\n", certdata);
-
-		if (!cert_is_ok) {
-			if (callfatal)
-				csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
-			csync_debug(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
-			return 0;
-		}
-	}
-
+    if (!csync_conn_usessl)
 	return 1;
+
+    peercerts = gnutls_certificate_get_peers(conn_tls_session, &npeercerts);
+    if(peercerts == NULL || npeercerts == 0) {
+	if (callfatal)
+	    csync_fatal("Peer did not provide an SSL X509 cetrificate.\n");
+	csync_debug(1, "Peer did not provide an SSL X509 cetrificate.\n");
+	return 0;
+    }
+
+    {
+	char certdata[2*peercerts[0].size + 1];
+
+	for (i=0; i<peercerts[0].size; i++)
+	    sprintf(&certdata[2*i], "%02X", peercerts[0].data[i]);
+	certdata[2*i] = 0;
+
+	SQL_BEGIN("Checking peer x509 certificate.",
+		  "SELECT certdata FROM x509_cert WHERE peername = '%s'",
+		  url_encode(peername))
+	{
+	    if (!strcmp(SQL_V(0), certdata))
+		cert_is_ok = 1;
+	    else
+		cert_is_ok = 0;
+	} SQL_END;
+
+	if (cert_is_ok < 0) {
+	    csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
+	    SQL("Adding peer x509 sha1 hash to database.",
+		"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
+		url_encode(peername), url_encode(certdata));
+	    return 1;
+	}
+
+	csync_debug(2, "Peer x509 certificate is: %s\n", certdata);
+
+	if (!cert_is_ok) {
+	    if (callfatal)
+		csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
+	    csync_debug(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
+	    return 0;
+	}
+    }
+
+    return 1;
 }
 
 #else
 
 int conn_check_peer_cert(const char *peername, int callfatal)
 {
-	return 1;
+    return 1;
 }
 
 #endif /* HAVE_LIBGNUTLS */
 
 int conn_close()
 {
-	if ( !conn_clisok ) return -1;
+    if ( !conn_clisok ) return -1;
 
 #ifdef HAVE_LIBGNUTLS
-	if ( csync_conn_usessl ) {
-		gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
-		gnutls_deinit(conn_tls_session);
-		gnutls_certificate_free_credentials(conn_x509_cred);
-		gnutls_global_deinit();
-	}
+    if ( csync_conn_usessl ) {
+	gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
+	gnutls_deinit(conn_tls_session);
+	gnutls_certificate_free_credentials(conn_x509_cred);
+	gnutls_global_deinit();
+    }
 #endif
 
-  if (active_peer) {
-    free(active_peer);
-    active_peer = NULL;
-  }
+    if (active_peer) {
+	free(active_peer);
+	active_peer = NULL;
+    }
     
-	if ( conn_fd_in != conn_fd_out) 
-	  close(conn_fd_in);
-	close(conn_fd_out);
+    if ( conn_fd_in != conn_fd_out) 
+	close(conn_fd_in);
+    close(conn_fd_out);
 
-	conn_fd_in  = -1;
-	conn_fd_out = -1;
-	conn_clisok =  0;
+    conn_fd_in  = -1;
+    conn_fd_out = -1;
+    conn_clisok =  0;
 
-	return 0;
+    return 0;
 }
 
 static inline int READ(void *buf, size_t count)
 {
 #ifdef HAVE_LIBGNUTLS
-  if (csync_conn_usessl)
-    return gnutls_record_recv(conn_tls_session, buf, count);
+    if (csync_conn_usessl)
+	return gnutls_record_recv(conn_tls_session, buf, count);
 #endif
-  fd_set set;
-  struct timeval timeout;
-  /* Initialize the file descriptor set. */
-  FD_ZERO (&set);
-  FD_SET (conn_fd_in, &set);
-  /* Initialize the timeout data structure. */
-  timeout.tv_sec = 60;
-  timeout.tv_usec = 0;
-  int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
-  if (rc == 0)
-    return -2;
-  if (rc < 0)
-    return rc;
-  int length = 0; 
-  while (1) {
-     length = read(conn_fd_in, buf, count);
-     if (length == -1 && errno == EINTR)
-	csync_debug(2, "Interupted while reading");
-     else
-	return length;
-  }
-  return length;
+    fd_set set;
+    struct timeval timeout;
+    /* Initialize the file descriptor set. */
+    FD_ZERO (&set);
+    FD_SET (conn_fd_in, &set);
+    /* Initialize the timeout data structure. */
+    timeout.tv_sec = 60;
+    timeout.tv_usec = 0;
+    int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
+    if (rc == 0)
+	return -2;
+    if (rc < 0)
+	return rc;
+    int length = 0; 
+    while (1) {
+	length = read(conn_fd_in, buf, count);
+	if (length == -1 && errno == EINTR)
+	    csync_debug(2, "Interupted while reading");
+	else
+	    return length;
+    }
+    return length;
 }
 
 static inline int WRITE(const void *buf, size_t count)
 {
-  static int n, total;
+    static int n, total;
 #ifdef HAVE_LIBGNUTLS
-  if (csync_conn_usessl)
-    return gnutls_record_send(conn_tls_session, buf, count);
-  else
+    if (csync_conn_usessl)
+	return gnutls_record_send(conn_tls_session, buf, count);
+    else
 #endif
     {
-      total = 0;
+	total = 0;
       
-      while (count > total) {
-	n = write(conn_fd_out, ((char *) buf) + total, count - total);
+	while (count > total) {
+	    n = write(conn_fd_out, ((char *) buf) + total, count - total);
 	
-	if (n >= 0)
-	  total += n;
-	else {
-	  if (errno == EINTR)
-	    continue;
-	  else
-	    return -1;
+	    if (n >= 0)
+		total += n;
+	    else {
+		if (errno == EINTR)
+		    continue;
+		else
+		    return -1;
+	    }
 	}
-      }
-      return total;
+	return total;
     }
 }
 
@@ -443,41 +443,41 @@ int conn_raw_read(void *buf, size_t count)
 
 void conn_debug(const char *name, const char*buf, size_t count)
 {
-	int i;
+    int i;
 
-	if ( csync_debug_level < 3 ) return;
+    if ( csync_debug_level < 3 ) return;
 
-	fprintf(csync_debug_out, "%s> ", name);
-	for (i=0; i<count; i++) {
-		switch (buf[i]) {
-			case '\n':
-				fprintf(csync_debug_out, "\\n");
-				break;
-			case '\r':
-				fprintf(csync_debug_out, "\\r");
-				break;
-			default:
-				if (buf[i] < 32 || buf[i] >= 127)
-					fprintf(csync_debug_out, "\\%03o", buf[i]);
-				else
-					fprintf(csync_debug_out, "%c", buf[i]);
-				break;
-		}
+    fprintf(csync_debug_out, "%s> ", name);
+    for (i=0; i<count; i++) {
+	switch (buf[i]) {
+	case '\n':
+	    fprintf(csync_debug_out, "\\n");
+	    break;
+	case '\r':
+	    fprintf(csync_debug_out, "\\r");
+	    break;
+	default:
+	    if (buf[i] < 32 || buf[i] >= 127)
+		fprintf(csync_debug_out, "\\%03o", buf[i]);
+	    else
+		fprintf(csync_debug_out, "%c", buf[i]);
+	    break;
 	}
-	fprintf(csync_debug_out, "\n");
+    }
+    fprintf(csync_debug_out, "\n");
 }
 
 int conn_read_get_content_length(long *size) 
 {
-   char buffer[100];
-   *size = 0;
-   int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
-   csync_debug(2, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
-   if (!strcmp(buffer, "ERROR\n")) {
-      errno=EIO;
-      return -1;
-   }
-   return rc;
+    char buffer[100];
+    *size = 0;
+    int rc = !conn_gets(buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
+    csync_debug(2, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
+    if (!strcmp(buffer, "ERROR\n")) {
+	errno=EIO;
+	return -1;
+    }
+    return rc;
 }
 
 /* Rewritten not to mask errors */ 
@@ -529,7 +529,7 @@ void  conn_remove_key(char *buf) {
       Good for removing time for log compare. Should be configurable though
     */
     while (*(--ptr) != ' ')
-       *ptr = 0;
+	*ptr = 0;
 }
 
 void conn_printf(const char *fmt, ...)
@@ -600,6 +600,6 @@ size_t conn_gets_newline(char *s, size_t size, int remove_newline)
 
 
 size_t conn_gets(char *s, size_t size) {
-  return conn_gets_newline(s, size, 1);
+    return conn_gets_newline(s, size, 1);
 }
 

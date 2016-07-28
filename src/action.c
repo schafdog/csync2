@@ -71,83 +71,83 @@ void csync_schedule_commands(const char *filename, int islocal)
 
 void csync_run_single_command(const char *command, const char *logfile)
 {
-	char *command_clr = strdup(db_decode(command));
-	char *logfile_clr = strdup(db_decode(logfile));
-	char *real_command, *mark;
-	struct textlist *tl = 0, *t;
-	pid_t pid;
+    char *command_clr = strdup(db_decode(command));
+    char *logfile_clr = strdup(db_decode(logfile));
+    char *real_command, *mark;
+    struct textlist *tl = 0, *t;
+    pid_t pid;
 
-	SQL_BEGIN("Checking for removed files",
-			"SELECT filename from action WHERE command = '%s' "
-			"and logfile = '%s'", command, logfile)
-	{
-		textlist_add(&tl, SQL_V(0), 0);
-	} SQL_END;
+    SQL_BEGIN("Checking for removed files",
+	      "SELECT filename from action WHERE command = '%s' "
+	      "and logfile = '%s'", command, logfile)
+    {
+	textlist_add(&tl, SQL_V(0), 0);
+    } SQL_END;
 
-	mark = strstr(command_clr, "%%");
-	if ( !mark ) {
-		real_command = strdup(command_clr);
-	} else {
-		int len = strlen(command_clr) + 10;
-		char *pos;
-
-		for (t = tl; t != 0; t = t->next)
-			len += strlen(t->value) + 1;
-
-		pos = real_command = malloc(len);
-		memcpy(real_command, command_clr, mark-command_clr);
-		real_command[mark-command_clr] = 0;
-
-		for (t = tl; t != 0; t = t->next) {
-			pos += strlen(pos);
-			if ( t != tl ) *(pos++) = ' ';
-			strcpy(pos, t->value);
-		}
-
-		pos += strlen(pos);
-		strcpy(pos, mark+2);
-
-		assert(strlen(real_command)+1 < len);
-	}
-
-	csync_debug(1, "Running '%s' ...\n", real_command);
-
-	pid = fork();
-	if ( !pid ) {
-		close(0); close(1); close(2);
-		/* 0 */ open("/dev/null", O_RDONLY);
-		/* 1 */ open(logfile_clr, O_WRONLY|O_CREAT|O_APPEND, 0666);
-		/* 2 */ open(logfile_clr, O_WRONLY|O_CREAT|O_APPEND, 0666);
-
-		execl("/bin/sh", "sh", "-c", real_command, NULL);
-		_exit(127);
-	}
-
-	if ( waitpid(pid, 0, 0) < 0 )
-		csync_fatal("ERROR: Waitpid returned error %s.\n", strerror(errno));
+    mark = strstr(command_clr, "%%");
+    if ( !mark ) {
+	real_command = strdup(command_clr);
+    } else {
+	int len = strlen(command_clr) + 10;
+	char *pos;
 
 	for (t = tl; t != 0; t = t->next)
-		SQL("Remove action entry",
-				"DELETE FROM action WHERE command = '%s' "
-				"and logfile = '%s' and filename = '%s'",
-				command, logfile, t->value);
+	    len += strlen(t->value) + 1;
 
-	textlist_free(tl);
+	pos = real_command = malloc(len);
+	memcpy(real_command, command_clr, mark-command_clr);
+	real_command[mark-command_clr] = 0;
+
+	for (t = tl; t != 0; t = t->next) {
+	    pos += strlen(pos);
+	    if ( t != tl ) *(pos++) = ' ';
+	    strcpy(pos, t->value);
+	}
+
+	pos += strlen(pos);
+	strcpy(pos, mark+2);
+
+	assert(strlen(real_command)+1 < len);
+    }
+
+    csync_debug(1, "Running '%s' ...\n", real_command);
+
+    pid = fork();
+    if ( !pid ) {
+	close(0); close(1); close(2);
+	/* 0 */ open("/dev/null", O_RDONLY);
+	/* 1 */ open(logfile_clr, O_WRONLY|O_CREAT|O_APPEND, 0666);
+	/* 2 */ open(logfile_clr, O_WRONLY|O_CREAT|O_APPEND, 0666);
+
+	execl("/bin/sh", "sh", "-c", real_command, NULL);
+	_exit(127);
+    }
+
+    if ( waitpid(pid, 0, 0) < 0 )
+	csync_fatal("ERROR: Waitpid returned error %s.\n", strerror(errno));
+
+    for (t = tl; t != 0; t = t->next)
+	SQL("Remove action entry",
+	    "DELETE FROM action WHERE command = '%s' "
+	    "and logfile = '%s' and filename = '%s'",
+	    command, logfile, t->value);
+
+    textlist_free(tl);
 }
 
 void csync_run_commands()
 {
-	struct textlist *tl = 0, *t;
+    struct textlist *tl = 0, *t;
 
-	SQL_BEGIN("Checking for sceduled commands",
-			"SELECT command, logfile FROM action GROUP BY command, logfile")
-	{
-		textlist_add2(&tl, SQL_V(0), SQL_V(1), 0);
-	} SQL_END;
+    SQL_BEGIN("Checking for sceduled commands",
+	      "SELECT command, logfile FROM action GROUP BY command, logfile")
+    {
+	textlist_add2(&tl, SQL_V(0), SQL_V(1), 0);
+    } SQL_END;
 
-	for (t = tl; t != 0; t = t->next)
-		csync_run_single_command(t->value, t->value2);
+    for (t = tl; t != 0; t = t->next)
+	csync_run_single_command(t->value, t->value2);
 
-	textlist_free(tl);
+    textlist_free(tl);
 }
 

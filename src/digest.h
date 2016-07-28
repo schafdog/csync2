@@ -2,9 +2,9 @@
 #define DIGEST_H
 
 /* #if __DARWIN_C_LEVEL
-#include <CommonCrypto/CommonDigest.h>
-##define DIGEST_MAX_SIZE 64
-#else
+   #include <CommonCrypto/CommonDigest.h>
+   ##define DIGEST_MAX_SIZE 64
+   #else
 */
 #include <openssl/evp.h>
 #define DIGEST_MAX_SIZE EVP_MAX_MD_SIZE

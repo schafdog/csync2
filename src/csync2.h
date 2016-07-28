@@ -60,52 +60,52 @@
 #define DB_SCHEMA_VERSION 0
 
 enum {
-	MODE_NONE = 0,
-	MODE_HINT = 1,
-	MODE_CHECK = 2,
-	MODE_UPDATE = 4,
-	MODE_CHECK_AND_UPDATE = MODE_CHECK+MODE_UPDATE,
-	MODE_INETD =  8,
-	MODE_SERVER = 16,
-	MODE_SINGLE = 32,
-	MODE_NOFORK = 64,
-	MODE_STANDALONE = MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
-	MODE_DAEMON  = MODE_INETD|MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
-	MODE_FORCE = 256,
-	MODE_LIST_HINT = 512,
-	MODE_LIST_FILE = 1024,
-	MODE_LIST_SYNC = 2048,
-	MODE_TEST_SYNC = 4096,
-	MODE_LIST_DIRTY = 8192,
-	MODE_REMOVE_OLD = 16384,
-	MODE_COMPARE = 32768,
-	MODE_SIMPLE =  65536,
-	MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
-	MODE_MARK = 2*MODE_UPGRADE_DB,
-	MODE_EQUAL = 2*MODE_MARK
+    MODE_NONE = 0,
+    MODE_HINT = 1,
+    MODE_CHECK = 2,
+    MODE_UPDATE = 4,
+    MODE_CHECK_AND_UPDATE = MODE_CHECK+MODE_UPDATE,
+    MODE_INETD =  8,
+    MODE_SERVER = 16,
+    MODE_SINGLE = 32,
+    MODE_NOFORK = 64,
+    MODE_STANDALONE = MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
+    MODE_DAEMON  = MODE_INETD|MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
+    MODE_FORCE = 256,
+    MODE_LIST_HINT = 512,
+    MODE_LIST_FILE = 1024,
+    MODE_LIST_SYNC = 2048,
+    MODE_TEST_SYNC = 4096,
+    MODE_LIST_DIRTY = 8192,
+    MODE_REMOVE_OLD = 16384,
+    MODE_COMPARE = 32768,
+    MODE_SIMPLE =  65536,
+    MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
+    MODE_MARK = 2*MODE_UPGRADE_DB,
+    MODE_EQUAL = 2*MODE_MARK
 };
 
 #define DEFAULT_PORT "30865" 
 #define ERROR_DIRTY_STR "File is also marked dirty here!"
 #define ERROR_DIRTY_LEN ((int)sizeof ERROR_DIRTY_STR - 1)
 
-#define csync_fatal(fmt, ...) {\
-  csync_debug(0,fmt, ##__VA_ARGS__);\
-  exit(1);\
-} while(0)
+#define csync_fatal(fmt, ...) {			\
+	csync_debug(0,fmt, ##__VA_ARGS__);	\
+	exit(1);				\
+    } while(0)
 
 /* asprintf with test for no memory */
-#define ASPRINTF(s, fmt, ...) do {\
-	int __ret = asprintf(s, fmt, ##__VA_ARGS__);\
-	if (__ret < 0) \
-	  csync_fatal("Out of memory in asprintf at %s:%d\n", __FILE__, __LINE__); \
-} while (0)
+#define ASPRINTF(s, fmt, ...) do {					\
+	int __ret = asprintf(s, fmt, ##__VA_ARGS__);			\
+	if (__ret < 0)							\
+	    csync_fatal("Out of memory in asprintf at %s:%d\n", __FILE__, __LINE__); \
+    } while (0)
 
-#define VASPRINTF(s, fmt, args...) do {\
-	int __ret = vasprintf(s, fmt, ##args);\
-	if (__ret < 0) \
-	  csync_debug(-1,"Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__); \
-} while (0)
+#define VASPRINTF(s, fmt, args...) do {					\
+	int __ret = vasprintf(s, fmt, ##args);				\
+	if (__ret < 0)							\
+	    csync_debug(-1,"Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__); \
+    } while (0)
 
 
 /* action.c */
@@ -116,20 +116,20 @@ extern void  csync_run_commands();
 /* groups.c */
 
 struct peer {
-	const char *myname;
-	const char *peername;
+    const char *myname;
+    const char *peername;
 };
 
 typedef struct  peer *peer_t; 
 typedef int operation_t;
 
 struct file_info {
-  const char *filename;
-  const char *filename_enc;
-  const char *operation;
-  const char *key_enc;
-  const struct stat *stat;
-  const int rc_stat;
+    const char *filename;
+    const char *filename_enc;
+    const char *operation;
+    const char *key_enc;
+    const struct stat *stat;
+    const int rc_stat;
 };
 
 typedef struct file_info *file_info_t; 
@@ -149,8 +149,8 @@ extern void csync_printtime();
 extern void csync_printtotaltime();
 extern void csync_debug(int lv, const char *fmt, ...);
 
-#define csync_debug_ping(N) \
-csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
+#define csync_debug_ping(N)				\
+    csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 
 
 /* conn.c */
@@ -180,7 +180,7 @@ extern void csync_db_close();
 extern void csync_db_sql(const char *err, const char *fmt, ...);
 extern void* csync_db_begin(const char *err, const char *fmt, ...);
 extern int csync_db_next(void *vmx, const char *err,
-		int *pN, const char ***pazValue, const char ***pazColName);
+			 int *pN, const char ***pazValue, const char ***pazColName);
 extern void csync_db_fin(void *vmx, const char *err);
 extern const void * csync_db_colblob(void *stmtx,int col);
 extern long  csync_db_long(void *stmtx,int col, long *result);
@@ -196,33 +196,33 @@ extern const char *csync_db_escape_quote(const char *filename);
 extern const char* (*db_decode) (const char *value); 
 extern const char* (*db_encode) (const char *value); 
 
-#define SQL_BEGIN(e, s, ...) \
-{ \
-	char *SQL_ERR = e; \
-	void *SQL_VM = csync_db_begin(SQL_ERR, s, ##__VA_ARGS__); \
-	int SQL_COUNT = 0; \
-\
-	if (SQL_VM) { \
-		while (1) { \
-			const char **dataSQL_V, **dataSQL_N; \
-			int SQL_C; \
-			if ( !csync_db_next(SQL_VM, SQL_ERR, \
-						&SQL_C, &dataSQL_V, &dataSQL_N) ) break; \
-			SQL_COUNT++;
+#define SQL_BEGIN(e, s, ...)						\
+    {									\
+	char *SQL_ERR = e;						\
+	void *SQL_VM = csync_db_begin(SQL_ERR, s, ##__VA_ARGS__);	\
+	int SQL_COUNT = 0;						\
+									\
+	if (SQL_VM) {							\
+	    while (1) {							\
+		const char **dataSQL_V, **dataSQL_N;			\
+		int SQL_C;						\
+		if ( !csync_db_next(SQL_VM, SQL_ERR,			\
+				    &SQL_C, &dataSQL_V, &dataSQL_N) ) break; \
+		SQL_COUNT++;
 
-#define SQL_V(col) \
-	(csync_db_colblob(SQL_VM,(col)))
+#define SQL_V(col)					\
+		(csync_db_colblob(SQL_VM,(col)))
 
-#define SQL_V_long(col, result)			\
-    (csync_db_long(SQL_VM,(col), (result)))
+#define SQL_V_long(col, result)				\
+		(csync_db_long(SQL_VM,(col), (result)))
 
 #define SQL_FIN }{
 
-#define SQL_END \
-		} \
-		csync_db_fin(SQL_VM, SQL_ERR); \
-	} \
-}
+#define SQL_END					\
+		}				\
+	    csync_db_fin(SQL_VM, SQL_ERR);	\
+	}					\
+    }
 
 extern int db_blocking_mode;
 extern int db_sync_mode;
@@ -274,7 +274,7 @@ extern int   csync_check_pure(const char *filename);
 typedef struct textlist *(*textlist_loop_t)(const char *filename, struct stat *st, struct textlist *tl);
 struct textlist *csync_check_move(const char *peername, const char *filename, const char* checktxt, const char *digest, struct stat *st);
 struct textlist *csync_check_link_move(const char *peername, const char *filename, const char* checktxt, operation_t op, const char *digest,
-				  struct stat *st, textlist_loop_t loop);
+				       struct stat *st, textlist_loop_t loop);
 
 extern int csync_check_dir(const char* file, int recursive, int init_run, int version, int dirdump_this, int flags);
 
@@ -402,16 +402,16 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 				 const char *item3, const char *item4, const char *item5,
 				 int intitem, int operation)
 {
-	struct textlist *tmp = *listhandle;
-	*listhandle = malloc(sizeof(struct textlist));
-	(*listhandle)->intvalue = intitem;
-	(*listhandle)->operation = operation;
-	(*listhandle)->value  = (item  ? strdup(item)  : 0);
-	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
-	(*listhandle)->value3 = (item3 ? strdup(item3) : 0);
-	(*listhandle)->value4 = (item4 ? strdup(item4) : 0);
-	(*listhandle)->value5 = (item5 ? strdup(item5) : 0);
-	(*listhandle)->next = tmp;
+    struct textlist *tmp = *listhandle;
+    *listhandle = malloc(sizeof(struct textlist));
+    (*listhandle)->intvalue = intitem;
+    (*listhandle)->operation = operation;
+    (*listhandle)->value  = (item  ? strdup(item)  : 0);
+    (*listhandle)->value2 = (item2 ? strdup(item2) : 0);
+    (*listhandle)->value3 = (item3 ? strdup(item3) : 0);
+    (*listhandle)->value4 = (item4 ? strdup(item4) : 0);
+    (*listhandle)->value5 = (item5 ? strdup(item5) : 0);
+    (*listhandle)->next = tmp;
 }
 
 static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, 
@@ -422,18 +422,18 @@ static inline void textlist_add4(struct textlist **listhandle, const char *item,
 
 static inline void textlist_add(struct textlist **listhandle, const char *item, int intitem)
 {
-  textlist_add4(listhandle, item, 0, 0, 0, intitem);
+    textlist_add4(listhandle, item, 0, 0, 0, intitem);
 }
 
 static inline int textlist_in_list(struct textlist *listhandle, const char *item, int intitem) {
-  while (listhandle) {
-    if (!strcmp(listhandle->value, item)) {
-      listhandle->intvalue = intitem;
-      return 1;
-    }
-    listhandle = listhandle->next;
-  };
-  return 0;
+    while (listhandle) {
+	if (!strcmp(listhandle->value, item)) {
+	    listhandle->intvalue = intitem;
+	    return 1;
+	}
+	listhandle = listhandle->next;
+    };
+    return 0;
 }
 
 static inline void textlist_add_new2(struct textlist **listhandle,
@@ -445,8 +445,8 @@ static inline void textlist_add_new2(struct textlist **listhandle,
 	csync_debug(3, "Adding textlist_add_new: %s\n", item);
     }
     else {
-      csync_debug(3, "Skipping textlist_add_new: %s\n", item);
-  }
+	csync_debug(3, "Skipping textlist_add_new: %s\n", item);
+    }
 }
 
 static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
@@ -456,12 +456,12 @@ static inline void textlist_add_new(struct textlist **listhandle, const char *it
 
 static inline void textlist_add2(struct textlist **listhandle, const char *item, const char *item2, int intitem)
 {
-  textlist_add4(listhandle, item, item2, 0, 0, intitem);
+    textlist_add4(listhandle, item, item2, 0, 0, intitem);
 }
 
 static inline void textlist_add3(struct textlist **listhandle, const char *item, const char *item2, const char *item3, int intitem)
 {
-  textlist_add4(listhandle, item, item2, item3, 0, intitem);
+    textlist_add4(listhandle, item, item2, item3, 0, intitem);
 }
 
 static inline void textlist_add_new3(struct textlist **listhandle, const char *filename, const char *checktxt, const char *operation)
@@ -471,25 +471,25 @@ static inline void textlist_add_new3(struct textlist **listhandle, const char *f
 	csync_debug(3, "Adding textlist_add_new3: %s\n", filename);
     }
     else {
-      csync_debug(3, "Skipping textlist_add_new3: %s\n", filename);
-  }
+	csync_debug(3, "Skipping textlist_add_new3: %s\n", filename);
+    }
 }
 
 static inline void textlist_free(struct textlist *listhandle)
 {
-	struct textlist *next;
-	while (listhandle != 0) {
-		next = listhandle->next;
-		free(listhandle->value);
-		if (listhandle->value2)
-			free(listhandle->value2);
-		if ( listhandle->value3 )
-			free(listhandle->value3);
-		if ( listhandle->value4 )
-			free(listhandle->value4);
-		free(listhandle);
-		listhandle = next;
-	}
+    struct textlist *next;
+    while (listhandle != 0) {
+	next = listhandle->next;
+	free(listhandle->value);
+	if (listhandle->value2)
+	    free(listhandle->value2);
+	if ( listhandle->value3 )
+	    free(listhandle->value3);
+	if ( listhandle->value4 )
+	    free(listhandle->value4);
+	free(listhandle);
+	listhandle = next;
+    }
 }
 
 static inline void textlist_free_struct(struct textlist *listhandle)
@@ -522,76 +522,76 @@ struct csync_hostinfo {
 };
 
 struct csync_group_host {
-	struct csync_group_host *next;
-        char *hostname;
-        int port;
-	int on_left_side;
-	int slave;
+    struct csync_group_host *next;
+    char *hostname;
+    int port;
+    int on_left_side;
+    int slave;
 };
 
 struct csync_group_pattern {
-	struct csync_group_pattern *next;
-	int isinclude, iscompare, star_matches_slashes;
-	char *pattern;
+    struct csync_group_pattern *next;
+    int isinclude, iscompare, star_matches_slashes;
+    char *pattern;
 };
 
 struct csync_group_action_pattern {
-	struct csync_group_action_pattern *next;
-	int star_matches_slashes;
-	char *pattern;
+    struct csync_group_action_pattern *next;
+    int star_matches_slashes;
+    char *pattern;
 };
 
 struct csync_group_action_command {
-	struct csync_group_action_command *next;
-	const char *command;
+    struct csync_group_action_command *next;
+    const char *command;
 };
 
 struct csync_group_action {
-	struct csync_group_action *next;
-	struct csync_group_action_pattern *pattern;
-	struct csync_group_action_command *command;
-	const char *logfile;
-	int do_local;
-	int do_local_only;
+    struct csync_group_action *next;
+    struct csync_group_action_pattern *pattern;
+    struct csync_group_action_command *command;
+    const char *logfile;
+    int do_local;
+    int do_local_only;
 };
 
 struct csync_group {
-	struct csync_group *next;
-	struct csync_group_host *host;
-	struct csync_group_pattern *pattern;
-	struct csync_group_action *action;
-	const char *key, *myname, *gname;
-	int auto_method, local_slave;
-	const char *backup_directory;
-	int backup_generations;
-	int hasactivepeers;
+    struct csync_group *next;
+    struct csync_group_host *host;
+    struct csync_group_pattern *pattern;
+    struct csync_group_action *action;
+    const char *key, *myname, *gname;
+    int auto_method, local_slave;
+    const char *backup_directory;
+    int backup_generations;
+    int hasactivepeers;
 };
 
 struct csync_prefix {
-	const char *name, *path;
-	struct csync_prefix *next;
+    const char *name, *path;
+    struct csync_prefix *next;
 };
 
 struct csync_nossl {
-	struct csync_nossl *next;
-	const char *pattern_from;
-	const char *pattern_to;
+    struct csync_nossl *next;
+    const char *pattern_from;
+    const char *pattern_to;
 };
 
 enum CSYNC_AUTO_METHOD {
-	CSYNC_AUTO_METHOD_NONE,
-	CSYNC_AUTO_METHOD_FIRST,
+    CSYNC_AUTO_METHOD_NONE,
+    CSYNC_AUTO_METHOD_FIRST,
 
-	CSYNC_AUTO_METHOD_YOUNGER,
-	CSYNC_AUTO_METHOD_OLDER,
+    CSYNC_AUTO_METHOD_YOUNGER,
+    CSYNC_AUTO_METHOD_OLDER,
 
-	CSYNC_AUTO_METHOD_BIGGER,
-	CSYNC_AUTO_METHOD_SMALLER,
+    CSYNC_AUTO_METHOD_BIGGER,
+    CSYNC_AUTO_METHOD_SMALLER,
 
-	CSYNC_AUTO_METHOD_LEFT,
-	CSYNC_AUTO_METHOD_RIGHT,
+    CSYNC_AUTO_METHOD_LEFT,
+    CSYNC_AUTO_METHOD_RIGHT,
 
-	CSYNC_AUTO_METHOD_LEFT_RIGHT_LOST
+    CSYNC_AUTO_METHOD_LEFT_RIGHT_LOST
 };
 
 /* global variables */
@@ -648,24 +648,24 @@ extern int csync_cygwin_case_check(const char *filename);
 
 static inline int lstat_strict(const char *filename, struct stat *buf) {
 #ifdef __CYGWIN__
-	if (csync_lowercyg_disable && !csync_cygwin_case_check(filename)) {
-		errno = ENOENT;
-		return -1;
-	}
+    if (csync_lowercyg_disable && !csync_cygwin_case_check(filename)) {
+	errno = ENOENT;
+	return -1;
+    }
 #endif
-	return lstat(filename, buf);
+    return lstat(filename, buf);
 }
 
 static inline char *on_cygwin_lowercase(char *s) {
 #ifdef __CYGWIN__
-	if (!csync_lowercyg_disable) {
-		int i;
-		for (i=0; s[i]; i++)
-			s[i] = tolower(s[i]);
-	}
-	csync_lowercyg_used = 1;
+    if (!csync_lowercyg_disable) {
+	int i;
+	for (i=0; s[i]; i++)
+	    s[i] = tolower(s[i]);
+    }
+    csync_lowercyg_used = 1;
 #endif
-	return s;
+    return s;
 }
 
 #endif /* CSYNC2_H */

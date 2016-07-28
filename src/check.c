@@ -43,41 +43,41 @@
  */
 int csync_cygwin_case_check(const char *filename)
 {
-	if (!strcmp(filename, "/cygdrive"))
-		goto check_ok;
-	if (!strncmp(filename, "/cygdrive/", 10) && strlen(filename) == 11)
-		goto check_ok;
+    if (!strcmp(filename, "/cygdrive"))
+	goto check_ok;
+    if (!strncmp(filename, "/cygdrive/", 10) && strlen(filename) == 11)
+	goto check_ok;
 
-	char winfilename[MAX_PATH];
-	cygwin_conv_to_win32_path(filename, winfilename);
+    char winfilename[MAX_PATH];
+    cygwin_conv_to_win32_path(filename, winfilename);
 
-	int winfilename_len = strlen(winfilename);
-	int found_file_len;
-	HANDLE found_file_handle;
-	WIN32_FIND_DATA fd;
+    int winfilename_len = strlen(winfilename);
+    int found_file_len;
+    HANDLE found_file_handle;
+    WIN32_FIND_DATA fd;
 
-	/* See if we can find this file. */
-	found_file_handle = FindFirstFile(winfilename, &fd);
-	if (found_file_handle == INVALID_HANDLE_VALUE)
-		goto check_failed;
-	FindClose(found_file_handle);
+    /* See if we can find this file. */
+    found_file_handle = FindFirstFile(winfilename, &fd);
+    if (found_file_handle == INVALID_HANDLE_VALUE)
+	goto check_failed;
+    FindClose(found_file_handle);
 
-	found_file_len = strlen(fd.cFileName);
+    found_file_len = strlen(fd.cFileName);
 
-	/* This should never happen. */
-	if (found_file_len > winfilename_len)
-		goto check_failed;
+    /* This should never happen. */
+    if (found_file_len > winfilename_len)
+	goto check_failed;
 
-	if (strcmp(winfilename + winfilename_len - found_file_len, fd.cFileName))
-		goto check_failed;
+    if (strcmp(winfilename + winfilename_len - found_file_len, fd.cFileName))
+	goto check_failed;
 
 check_ok:
-	csync_debug(3, "Cygwin/Win32 filename case check ok: %s (%s)\n", winfilename, filename);
-	return 1;
+    csync_debug(3, "Cygwin/Win32 filename case check ok: %s (%s)\n", winfilename, filename);
+    return 1;
 
 check_failed:
-	csync_debug(2, "Cygwin/Win32 filename case check failed: %s (%s)\n", winfilename, filename);
-	return 0;
+    csync_debug(2, "Cygwin/Win32 filename case check failed: %s (%s)\n", winfilename, filename);
+    return 0;
 }
 
 #endif /* __CYGWIN__ */
@@ -123,31 +123,31 @@ const char *csync_mode_op_str(int st_mode, int op)
 
 void csync_hint(const char *file, int recursive)
 {
-	SQL("Adding Hint",
-		"INSERT INTO hint (filename, recursive) "
-		"VALUES ('%s', %d)", db_encode(file), recursive);
+    SQL("Adding Hint",
+	"INSERT INTO hint (filename, recursive) "
+	"VALUES ('%s', %d)", db_encode(file), recursive);
 }
 
 int csync_same_file(const char *file1, const char *file2) {
-  struct stat st1, st2;
-  int rc1 = stat(file1, &st1);
-  int rc2 = stat(file2, &st2);
-  if (rc1 == 0 && rc2 == 0 && st1.st_ino == st2.st_ino && st1.st_dev == st2.st_dev)
-    return 1;
-  return 0;
+    struct stat st1, st2;
+    int rc1 = stat(file1, &st1);
+    int rc2 = stat(file2, &st2);
+    if (rc1 == 0 && rc2 == 0 && st1.st_ino == st2.st_ino && st1.st_dev == st2.st_dev)
+	return 1;
+    return 0;
 }
 int csync_same_stat_file(struct stat *st1, const char *file2) {
-  struct stat st2;
-  int rc2 = stat(file2, &st2);
-  if (rc2 == 0 && st1->st_ino == st2.st_ino && st1->st_dev == st2.st_dev)
-    return 1;
-  return 0;
+    struct stat st2;
+    int rc2 = stat(file2, &st2);
+    if (rc2 == 0 && st1->st_ino == st2.st_ino && st1->st_dev == st2.st_dev)
+	return 1;
+    return 0;
 }
 
 int csync_same_stat(struct stat *st1, struct stat *st2) {
-  if (st1->st_ino == st2->st_ino && st1->st_dev == st2->st_dev)
-    return 1;
-  return 0;
+    if (st1->st_ino == st2->st_ino && st1->st_dev == st2->st_dev)
+	return 1;
+    return 0;
 }
 
 void csync_mark_other(const char *file, const char *thispeer, const char *peerfilter,
@@ -298,7 +298,7 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter,
 		int operation, const char *checktxt,
 		const char *dev, const char *ino, int mode)
 {
-  csync_mark_other(file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode);
+    csync_mark_other(file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode);
 }
 
 
@@ -306,132 +306,132 @@ void csync_mark(const char *file, const char *thispeer, const char *peerfilter,
 /* Pre-cond: a non-existing file   */
 char *csync_check_path(char *filename)
 {
-  struct stat st;
-  int missing = 0;
-  int index = strlen(filename);
-  for (; index > 0; index--) {
-    if (filename[index-1] == '/') {
-      filename[index-1] = 0;
-      /* Check for existence */
-      if (lstat_strict(filename, &st) == 0) {
-	/* check file status */
-	if (S_ISDIR(st.st_mode)) {
-	    filename[index-1] = '/';
-	    if (!missing)
-	      return 0;
+    struct stat st;
+    int missing = 0;
+    int index = strlen(filename);
+    for (; index > 0; index--) {
+	if (filename[index-1] == '/') {
+	    filename[index-1] = 0;
+	    /* Check for existence */
+	    if (lstat_strict(filename, &st) == 0) {
+		/* check file status */
+		if (S_ISDIR(st.st_mode)) {
+		    filename[index-1] = '/';
+		    if (!missing)
+			return 0;
+		    else
+			return filename;
+		}
+		/* This shouldn't happen. We have a non-directory */
+		csync_debug(0, "Check for directory failed with non-directory %s: %d", filename, st.st_mode);
+		return 0;
+	    }
 	    else
-	      return filename;
+		missing = 1;
 	}
-	/* This shouldn't happen. We have a non-directory */
-	csync_debug(0, "Check for directory failed with non-directory %s: %d", filename, st.st_mode);
-	return 0;
-      }
-      else
-	missing = 1;
     }
-  }
-  /* Weird. We went all to the way to the root */
-  return 0;
+    /* Weird. We went all to the way to the root */
+    return 0;
 }
 
 /* return 0 if path does not contain any symlinks */
 int csync_check_pure(const char *filename)
 {
 #ifdef __CYGWIN__
-  // For some reason or another does this function __kills__
-  // the performance when using large directories with cygwin.
-  // And there are no symlinks in windows anyways..
-  if (!csync_lowercyg_disable)
-    return 0;
+    // For some reason or another does this function __kills__
+    // the performance when using large directories with cygwin.
+    // And there are no symlinks in windows anyways..
+    if (!csync_lowercyg_disable)
+	return 0;
 #endif
-  struct stat sbuf;
-  int dir_len = 0;
-  int i;
-  int same_len;
+    struct stat sbuf;
+    int dir_len = 0;
+    int i;
+    int same_len;
 
-  /* single entry last query cache
-   * to speed up checks from deep subdirs */
-  static struct {
-    /* store inclusive trailing slash for prefix match */
-    char *path;
-    /* strlen(path) */
-    int len;
-    /* cached return value */
-    int has_symlink;
-  } cached;
+    /* single entry last query cache
+     * to speed up checks from deep subdirs */
+    static struct {
+	/* store inclusive trailing slash for prefix match */
+	char *path;
+	/* strlen(path) */
+	int len;
+	/* cached return value */
+	int has_symlink;
+    } cached;
 
-  for (i = 0; filename[i]; i++)
-    if (filename[i] == '/')
-      dir_len = i+1;
+    for (i = 0; filename[i]; i++)
+	if (filename[i] == '/')
+	    dir_len = i+1;
  
-  if (dir_len <= 1) /* '/' a symlink? hardly. */
-    return 0;
+    if (dir_len <= 1) /* '/' a symlink? hardly. */
+	return 0;
  
-  /* identical prefix part */
-  for (i = 0; i < dir_len && i < cached.len; i++)
-    if (filename[i] != cached.path[i])
-      break;
+    /* identical prefix part */
+    for (i = 0; i < dir_len && i < cached.len; i++)
+	if (filename[i] != cached.path[i])
+	    break;
  
-  /* backtrack to slash */
-  for (--i; i >= 0 && cached.path[i] != '/'; --i)
-    ;
-  same_len = i+1;
-
-  csync_debug(3, "check_pure: filename: '%s' %u, cached path: '%s' %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
-  /* exact match? */
-  if (dir_len == same_len && same_len == cached.len)
-    return cached.has_symlink;
- 
-  { /* new block for myfilename[] */
-    char myfilename[dir_len+1];
-    char *to_be_cached;
-    int has_symlink = 0;
-    memcpy(myfilename, filename, dir_len);
-    myfilename[dir_len] = '\0';
-    to_be_cached = strdup(myfilename);
-    i = dir_len-1;
-    while (i) {
-      for (; i && myfilename[i] != '/'; --i)
+    /* backtrack to slash */
+    for (--i; i >= 0 && cached.path[i] != '/'; --i)
 	;
-     
-      if (i <= 1)
-	break;
-     
-      if (i+1 == same_len) {
-	if (same_len == cached.len) {
-	  /* exact match */
-	  has_symlink = cached.has_symlink;
-	  break;
-	} else if (!cached.has_symlink)
-	  /* prefix of something 'pure' */
-	  break;
-      }
+    same_len = i+1;
 
-      myfilename[i]=0;
-      if (lstat_strict(myfilename, &sbuf) || S_ISLNK(sbuf.st_mode)) {
-	has_symlink = 1;
-	break;
-      }
+    csync_debug(3, "check_pure: filename: '%s' %u, cached path: '%s' %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
+    /* exact match? */
+    if (dir_len == same_len && same_len == cached.len)
+	return cached.has_symlink;
+ 
+    { /* new block for myfilename[] */
+	char myfilename[dir_len+1];
+	char *to_be_cached;
+	int has_symlink = 0;
+	memcpy(myfilename, filename, dir_len);
+	myfilename[dir_len] = '\0';
+	to_be_cached = strdup(myfilename);
+	i = dir_len-1;
+	while (i) {
+	    for (; i && myfilename[i] != '/'; --i)
+		;
+     
+	    if (i <= 1)
+		break;
+     
+	    if (i+1 == same_len) {
+		if (same_len == cached.len) {
+		    /* exact match */
+		    has_symlink = cached.has_symlink;
+		    break;
+		} else if (!cached.has_symlink)
+		    /* prefix of something 'pure' */
+		    break;
+	    }
+
+	    myfilename[i]=0;
+	    if (lstat_strict(myfilename, &sbuf) || S_ISLNK(sbuf.st_mode)) {
+		has_symlink = 1;
+		break;
+	    }
+	}
+	if (to_be_cached) { /* strdup can fail. So what. */
+	    free(cached.path);
+	    cached.path = to_be_cached;
+	    cached.len = dir_len;
+	    cached.has_symlink = has_symlink;
+	}
+	return has_symlink;
     }
-    if (to_be_cached) { /* strdup can fail. So what. */
-      free(cached.path);
-      cached.path = to_be_cached;
-      cached.len = dir_len;
-      cached.has_symlink = has_symlink;
-    }
-    return has_symlink;
-  }
 }
 
 void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {
-  if ( recursive ) {
-    if ( !strcmp(file_encoded, "/") )
-      ASPRINTF(where_rec, "OR 1=1");
-    else {
-      ASPRINTF(where_rec, "OR filename > '%s/' and filename < '%s0'",
-	       file_encoded, file_encoded);
+    if ( recursive ) {
+	if ( !strcmp(file_encoded, "/") )
+	    ASPRINTF(where_rec, "OR 1=1");
+	else {
+	    ASPRINTF(where_rec, "OR filename > '%s/' and filename < '%s0'",
+		     file_encoded, file_encoded);
+	}
     }
-  }
 }
 
 int csync_check_del(const char *file, int recursive, int init_run)
@@ -485,29 +485,29 @@ int csync_check_del(const char *file, int recursive, int init_run)
 
 struct textlist *csync_mark_hardlinks(const char *filename_enc, struct stat *st, struct textlist *tl)
 {
-  struct textlist *t = tl;
-  while (t) {
-    char *src  = t->value;
-    switch (t->intvalue) {
-    case OP_HARDLINK: {
-      char *operation = "MKH";
-      SQL("Update operation to move/hardlink",
-    	  "INSERT into dirty (filename, operation, op, other) values ('%s', '%s', %d, '%s')",
-		  db_encode(src), operation, OP_HARDLINK, filename_enc);
-      break;
-    }
-    /*
-    case OP_MOVE:
-      SQL("Remove delete operation (move)",
-	"DELETE from dirty where filename = '%s'", db_encode(src));
-      break;
-    */
-    }
+    struct textlist *t = tl;
+    while (t) {
+	char *src  = t->value;
+	switch (t->intvalue) {
+	case OP_HARDLINK: {
+	    char *operation = "MKH";
+	    SQL("Update operation to move/hardlink",
+		"INSERT into dirty (filename, operation, op, other) values ('%s', '%s', %d, '%s')",
+		db_encode(src), operation, OP_HARDLINK, filename_enc);
+	    break;
+	}
+	    /*
+	      case OP_MOVE:
+	      SQL("Remove delete operation (move)",
+	      "DELETE from dirty where filename = '%s'", db_encode(src));
+	      break;
+	    */
+	}
    
-    t = t->next;
-  }
-  textlist_free(tl);
-  return 0;
+	t = t->next;
+    }
+    textlist_free(tl);
+    return 0;
 }
 
 struct textlist *csync_check_all_same_dev_inode()
@@ -765,7 +765,7 @@ int csync_check_file_mod(const char *file, struct stat *file_stat, int init_run,
     	db_version = csync_get_checktxt_version(SQL_V(0));
 
     	if (db_version < 1 || db_version > 2) {
-    		csync_debug(0, "Error extracting version from checktxt: %s", SQL_V(0));
+	    csync_debug(0, "Error extracting version from checktxt: %s", SQL_V(0));
     	}
     	const char *checktxt_db = db_decode(SQL_V(0));
     	const char *checktxt_same_version = checktxt;
@@ -942,8 +942,8 @@ int csync_check_mod(const char *file, int recursive, int ignnoent, int init_run,
 }
 
 /*
-   check for dirty files, updates the DB and returns number of dirty found in this check (or total?) NOT IMPLEMENTED
- */
+  check for dirty files, updates the DB and returns number of dirty found in this check (or total?) NOT IMPLEMENTED
+*/
 int csync_check_recursive(const char *filename, int recursive, int init_run, int version, int flags)
 {
 #if __CYGWIN__
@@ -986,6 +986,6 @@ void csync_check(const char *filename, int recursive, int init_run, int version,
 
 int csync_check_single(const char *filename, int init_run, int version)
 {
-  return csync_check_recursive(filename, 0, init_run, version, 0);
+    return csync_check_recursive(filename, 0, init_run, version, 0);
 }
 

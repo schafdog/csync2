@@ -721,16 +721,16 @@ int main(int argc, char ** argv)
 	    mode = MODE_COMPARE;
 	    break;
 	case 'i':
-	   if (mode == MODE_NONE ) {
-	      mode = MODE_INETD;	      
-	   }
-	   else {
-	      mode *= 2;
-	      if (mode > MODE_NOFORK) {
+	    if (mode == MODE_NONE ) {
+		mode = MODE_INETD;	      
+	    }
+	    else {
+		mode *= 2;
+		if (mode > MODE_NOFORK) {
 		    help(argv[0]);
-	      };
-	   };
-	   break;
+		};
+	    };
+	    break;
 	case 'm':
 	    if ( mode != MODE_NONE ) help(argv[0]);
 	    mode = MODE_MARK;
@@ -848,9 +848,9 @@ nofork:
     // mode keeps its original value, but now checking on server
     int conn  = -1;
     if (server_standalone) {
-       if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK),
-				    listenfd, &conn)) 
-	  return 1; // Parent returns
+	if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK),
+				     listenfd, &conn)) 
+	    return 1; // Parent returns
     }
 
     // print time (if -t is set)

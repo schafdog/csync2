@@ -55,35 +55,35 @@ void buffer_add(BUF_P handle, const char* string)
 
 char *buffer_malloc(BUF_P handle, size_t length)
 {
-  char *out;
-  out = malloc(length);
-  out[0] = 0;
+    char *out;
+    out = malloc(length);
+    out[0] = 0;
 
-  buffer_add(handle, out);
-  return out;
+    buffer_add(handle, out);
+    return out;
 };
 
 char *buffer_strdup(BUF_P handle, const char *cpy)
 {
-  char *out = NULL;
-  if (cpy) {
-      out = strdup(cpy);
-      buffer_add(handle, out);
-  }
-  return out;
+    char *out = NULL;
+    if (cpy) {
+	out = strdup(cpy);
+	buffer_add(handle, out);
+    }
+    return out;
 };
 
 void buffer_destroy(BUF_P handle) {
-  int index;
+    int index;
   
-  for (index = 0; index < handle->current; index++) {
-    if (handle->buffer[index]) {
-      free(handle->buffer[index]);
-      handle->buffer[index] = 0;
+    for (index = 0; index < handle->current; index++) {
+	if (handle->buffer[index]) {
+	    free(handle->buffer[index]);
+	    handle->buffer[index] = 0;
+	}
     }
-  }
-  free(handle->buffer);
-  free(handle);
+    free(handle->buffer);
+    free(handle);
 };
 
 int  buffer_getcount(BUF_P handle) {

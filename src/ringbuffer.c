@@ -33,60 +33,60 @@ static int ringbuffer_counter = 0;
 
 void ringbuffer_init() 
 {
-  int i; 
-  for (i = 0; i < RINGBUFFER_LEN; i++) {
-    ringbuffer[i] = 0;
-    free_fn_buffer[i] = 0;
-  }
-  ringbuffer_counter = 0;
+    int i; 
+    for (i = 0; i < RINGBUFFER_LEN; i++) {
+	ringbuffer[i] = 0;
+	free_fn_buffer[i] = 0;
+    }
+    ringbuffer_counter = 0;
 }
 
 void ringbuffer_add(const char* string, free_fn_t free_fn)
 {
-  if (ringbuffer[ringbuffer_counter]) {
-    if (free_fn_buffer[ringbuffer_counter])
-      free_fn_buffer[ringbuffer_counter](ringbuffer[ringbuffer_counter]);
-    else
-      free(ringbuffer[ringbuffer_counter]);
-  }
-  ringbuffer[ringbuffer_counter] = (char *) string;
-  free_fn_buffer[ringbuffer_counter++] = free_fn;
-  if (ringbuffer_counter == RINGBUFFER_LEN) {
-    ringbuffer_counter=0;
-  }
+    if (ringbuffer[ringbuffer_counter]) {
+	if (free_fn_buffer[ringbuffer_counter])
+	    free_fn_buffer[ringbuffer_counter](ringbuffer[ringbuffer_counter]);
+	else
+	    free(ringbuffer[ringbuffer_counter]);
+    }
+    ringbuffer[ringbuffer_counter] = (char *) string;
+    free_fn_buffer[ringbuffer_counter++] = free_fn;
+    if (ringbuffer_counter == RINGBUFFER_LEN) {
+	ringbuffer_counter=0;
+    }
 }
 
 char *ringbuffer_malloc(size_t length)
 {
-  char *out;
-  out = malloc(length);
-  out[0] = 0;
+    char *out;
+    out = malloc(length);
+    out[0] = 0;
 
-  ringbuffer_add(out, 0);
+    ringbuffer_add(out, 0);
 
-  return out;
+    return out;
 }
 
 char *ringbuffer_strdup(const char *cpy)
 {
-  char *out;
-  out = strdup(cpy);
-  ringbuffer_add(out, free);
-  return out;
+    char *out;
+    out = strdup(cpy);
+    ringbuffer_add(out, free);
+    return out;
 }
 
 
 void ringbuffer_destroy() {
-  int index; 
-  for (index = 0; index < RINGBUFFER_LEN; index++) {
-    if (ringbuffer[index]) {
-      free(ringbuffer[index]);
-      ringbuffer[index] = 0;
+    int index; 
+    for (index = 0; index < RINGBUFFER_LEN; index++) {
+	if (ringbuffer[index]) {
+	    free(ringbuffer[index]);
+	    ringbuffer[index] = 0;
+	}
     }
-  }
-  ringbuffer_counter =0;
+    ringbuffer_counter =0;
 }
 
 int  ringbuffer_getcount() {
-  return ringbuffer_counter;
+    return ringbuffer_counter;
 }
