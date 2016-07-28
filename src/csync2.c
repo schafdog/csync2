@@ -1112,11 +1112,11 @@ nofork:
 	}
 	csync_tail(db, fileno, flags);
     };
-
     
     if (mode == MODE_LIST_SYNC) {
+	db->list_sync(db, argv[optind], argv[optind+1]);
 	retval = 2;
-	db->list_sync(db);
+	// ??? 
     };
 
     if (mode == MODE_TEST_SYNC) {

@@ -1,4 +1,3 @@
-
 #include "csync2.h" 
 #include "db_sql.h"
 #include <unistd.h>
@@ -397,11 +396,8 @@ int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {
     return 0;
 }
 
-void db_sql_list_sync(db_conn_p db)
+void db_sql_list_sync(db_conn_p db, const char *myname, const char *peername)
 {
-    //TODO Fix
-    char *myname;
-    char *peername;
     SQL_BEGIN(db, "DB Dump - File",
 	      "SELECT checktxt, filename FROM file ORDER BY filename")
     {
@@ -855,7 +851,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->get_hints  = db_sql_get_hints;
     conn->list_files = db_sql_list_files;
     conn->list_file  = db_sql_list_file;
-//    conn->list_sync  = db_sql_list_sync;
+    conn->list_sync  = db_sql_list_sync;
     conn->is_dirty   = db_sql_is_dirty;
     conn->force      =  db_sql_force;
     conn->upgrade_db = db_sql_upgrade_db;
