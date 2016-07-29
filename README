@@ -13,8 +13,9 @@ furture development without getting any feedback I decided to continue on my own
 
 Difference from LINBIT are many. Many code cleanups, but also new features: 
 
-- Attempting to track FS operations correct to elliminate redudant operations
-  for disconnected devices. 
+- Attempting to track FS operations correct to elliminate redundant operations, 
+- Extended with a MOVE operation. Detect it locally and perform it on peers
+- Supporting hardlinks
 - Implement a Storage layer so it could be extended with NoSQL storages
 - SQL Layet that implements SQL common between SQL "drivers"
 - Much fewer global variables that prevented multiple instance of connections 
@@ -25,7 +26,7 @@ Difference from LINBIT are many. Many code cleanups, but also new features:
 
 Broken stuff
 ===== 
-- Database format has change. Now un-encoded. Only url encoded over wire
+- Database format has change. Now stored un-encoded. Only url encoded over wire
 - Wire protocol: Minimal but minor things has changed. Dont use with older versions
 - Windows support via CYGWIN has not been maintained and is for sure broken.
 - Database creating is not 100% correct.
