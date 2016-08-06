@@ -1,7 +1,6 @@
 cmd x "clean up" local
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test/local ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test/local 
-check_mod: ERROR: Can't stat '/export/home/dennis/Projects/csync2/csync2/test/test/local' as expected.
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/local recursive.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' '-'.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' '-'.
