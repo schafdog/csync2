@@ -64,8 +64,6 @@ int csync_update_file_settime(int conn, peername_p peername, const char *key_enc
 			      filename_p filename, filename_p filename_enc,
 			      const struct stat *st);
 
-static int connection_closed_error = 1;
-
 operation_t csync_operation(const char *operation)
 {
     if (!operation) {
@@ -124,7 +122,6 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 	if (!strncmp(line, "IDENT (", 7))
 	    return IDENTICAL;
     } else {
-	connection_closed_error = 1;
 	strcpy(line, "ERROR: Read conn status: Connection closed.\n");
 	csync_debug(0, line);
 	return CONN_CLOSE;
@@ -164,8 +161,6 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
   int use_ssl = 1;
   struct csync_nossl *t;
 
-  connection_closed_error = 0;
-
   for (t = csync_nossl; t; t=t->next) {
     if ( !fnmatch(t->pattern_from, myhostname, 0) &&
 	 !fnmatch(t->pattern_to, peername, 0) ) {
@@ -181,13 +176,14 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
   if (conn < 0 )
       return conn;
 
+  int rc = 0;
   if ( use_ssl ) {
 #if HAVE_LIBGNUTLS
       conn_printf(conn, "SSL\n");
-      if ( read_conn_status(conn, 0, peername) < OK) {
+      if ((rc = read_conn_status(conn, 0, peername)) < OK) {
 	  csync_debug(1, "SSL command failed.\n");
-      conn_close(conn);
-      return -1;
+	  conn_close(conn);
+	  return rc;
       }
       conn_activate_ssl(0, conn, conn);
       conn_check_peer_cert(db, peername, 1);
@@ -197,27 +193,26 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
       return -1;
 #endif
   }
-
   conn_printf(conn, "CONFIG %s\n", url_encode(cfgname));
-  if ( read_conn_status(conn, 0, peername) != OK) {
+  if ((rc = read_conn_status(conn, 0, peername)) != OK) {
     csync_debug(0, "Config command failed.\n");
     conn_close(conn);
-    return -1;
+    return rc;
   }
 
   conn_printf(conn, "DEBUG %d\n", csync_debug_level);
-  if (read_conn_status(conn, 0, peername) != OK) {
+  if ((rc = read_conn_status(conn, 0, peername)) != OK) {
       csync_debug(0, "DEBUG command failed.\n");
       conn_close(conn);
-      return -1; 
+      return rc; 
   }
   
   if (active_grouplist) {
     conn_printf(conn, "GROUP %s\n", url_encode(active_grouplist));
-    if ( read_conn_status(conn, 0, peername) != OK) {
+    if ((rc = read_conn_status(conn, 0, peername)) != OK) {
       csync_debug(0, "GROUP command failed.\n");
       conn_close(conn);
-      return -1;
+      return rc;
     }
   }
   return conn;
@@ -457,8 +452,9 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    csync_debug(2, "File is different on peer (rsync sig).\n");
 	    found_diff=1;
 	}
-	if ( read_conn_status(conn, filename, peername) )
-	    return ERROR;
+	int rc;
+	if ((rc = read_conn_status(conn, filename, peername)))
+	    return rc;
 
 	if ( !found_diff ) {
 	    csync_debug(1, "%s:%s is already up to date on peer. \n", peername, filename);
@@ -469,7 +465,6 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    csync_debug(1, "?D: %-15s %s\n", peername, filename);
 	    return OK_DRY;
 	}
-	int rc;
 	conn_printf(conn, "DEL %s %s \n", key_enc, filename_enc);
 	rc = read_conn_status(conn, filename, peername);
 	if (rc == ERROR_DIRTY)
@@ -551,8 +546,8 @@ int csync_update_reg_file(int conn, peername_p peername, filename_p filename,
     }
 
     if (csync_rs_delta(conn, filename)) {
-	read_conn_status(conn, filename, peername);
-	return ERROR;
+	int rc = read_conn_status(conn, filename, peername);
+	return rc;
     }
     return read_conn_status(conn, filename, peername);
 }
@@ -756,8 +751,12 @@ int csync_update_file_sig_rs_diff(int conn,
 	csync_debug(2, "File is different on peer (rsync sig).\n");
 	rc |= DIFF_FILE;
     }
-    if ( read_conn_status(conn, filename, peername) )
-	rc = ERROR;
+    int rc_status;
+    if ((rc_status = read_conn_status(conn, filename, peername)) < OK) {
+	if (rc_status == CONN_CLOSE)
+	    return rc_status;
+	csync_debug(0, "Error while reading status: %d ", rc_status);
+    }
 
     // Only when both file and meta data is same (differs from earlier behavior)
     if (! (rc & DIFF_BOTH) || rc == IDENTICAL) {
@@ -904,6 +903,10 @@ int csync_update_file_mod(int conn, db_conn_p db,
 		    csync_clear_dirty(db, peername, filename, auto_resolve_run);
 		    csync_clear_dirty(db, peername, other, auto_resolve_run);
 		    // return? 
+		}
+		if (rc == CONN_CLOSE) {
+		    csync_debug(0, "Connection closed while moving  %s:%s", peername, filename);
+		    return rc;
 		}
 	    }
 	}
@@ -1285,13 +1288,12 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
   for (t = tl; t != 0; t = next_t) {
     next_t = t->next;
     if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
-	if (!connection_closed_error)
-	    rc = csync_update_file_mod(conn, db, myname, peername,
-				       t->value, t->operation, t->value3,
-				       t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN, db_version);
-	if (rc == CONN_CLOSE || connection_closed_error) {
-	   csync_debug(0, "Connection closed on updating %s\n", t->value);
-	   break;
+	rc = csync_update_file_mod(conn, db, myname, peername,
+				   t->value, t->operation, t->value3,
+				   t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN, db_version);
+	if (rc == CONN_CLOSE) {
+	    csync_debug(0, "Connection closed on updating %s\n", t->value);
+	    break;
 	}
 	csync_directory_add(&directory_list, t->value);
 	if (t->value3) {
@@ -1320,7 +1322,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
   for (t = tl_del; t != 0; t = t->next) {
       rc = csync_update_file_del(conn, db, myname, peername,
 				 t->value, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
-      if (rc == CONN_CLOSE || connection_closed_error) {
+      if (rc == CONN_CLOSE) {
 	 csync_debug(0, "Connection closed on deleting  %s\n", t->value);
 	 break;
       }
@@ -1329,11 +1331,11 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
   textlist_free(tl_del);
 
   if (! (flags & FLAG_DRY_RUN))
-     for (t = directory_list; rc != CONN_CLOSE && !connection_closed_error && t != 0; t = t->next) {
+     for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
 	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN, db_version);
-	if (rc == CONN_CLOSE || connection_closed_error) {
-	   csync_debug(0, "Connection closed on setting time on directory %s\n", t->value);
-	   break;
+	 if (rc == CONN_CLOSE) {
+	     csync_debug(0, "Connection closed on setting time on directory %s\n", t->value);
+	     break;
 	}
      }
   else
@@ -1373,13 +1375,13 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
     }
 
     conn_printf(conn, "HELLO %s\n", myname);
-    if (read_conn_status(conn, 0, peername) ) {
+    int rc;
+    if ((rc = read_conn_status(conn, 0, peername)) < OK ) {
 	conn_printf(conn, "BYE\n");
 	read_conn_status(conn, 0, peername);
 	conn_close(conn);
 	return ;
     }
-    int rc = 0;
     char *status = "";
     if (dry_run)
 	status = "(DRY RUN)";
@@ -1399,15 +1401,19 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 	    struct stat st;
 	    char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
 	    int rc_exist = csync_stat(filename, &st, uid, gid);
-	    if (!connection_closed_error && !rc_exist) {
+	    if (!rc_exist) {
 		int last_conn_status;
-		rc = csync_update_file_sig_rs_diff(conn, peername, key_enc,
+		int rc = csync_update_file_sig_rs_diff(conn, peername, key_enc,
 						       filename, filename_enc,
 						       &st, uid, gid,
 						       chk_local, digest,
 						       &last_conn_status, 2);
+		if (rc == CONN_CLOSE) {
+		    csync_debug(0, "Error while sync_host %s:%s. Connection closed", peername, filename);
+		    break; 
+		}
 		csync_debug(2, "Check for deletion of local file '%s' not on peer '%s' : status %d\n", filename, peername, rc);
-		if (rc & OK_MISSING && !rc_exist ) {
+		if (rc >= OK && (rc & OK_MISSING) && !rc_exist ) {
 		    csync_debug(0, "Deleting local file '%s' not on peer '%s' %s\n",
 				filename, peername, status);
 		    if (!dry_run) {
@@ -1417,10 +1423,6 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 					filename, peername, status);
 		    }
 		}
-	    }
-	    if (rc == CONN_CLOSE || connection_closed_error) {
-		csync_debug(0, "Connection closed on syncing  %s\n", t->value);
-		break;
 	    }
 	}
     }
