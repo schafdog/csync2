@@ -751,10 +751,11 @@ int csync_update_file_sig_rs_diff(int conn,
 	csync_debug(2, "File is different on peer (rsync sig).\n");
 	rc |= DIFF_FILE;
     }
-    if ((rc = read_conn_status(conn, filename, peername)) < OK) {
-	if (rc == CONN_CLOSE)
-	    return rc;
-	csync_debug(0, "Error while reading status: %d ", rc);
+    int rc_status;
+    if ((rc_status = read_conn_status(conn, filename, peername)) < OK) {
+	if (rc_status == CONN_CLOSE)
+	    return rc_status;
+	csync_debug(0, "Error while reading status: %d ", rc_status);
     }
 
     // Only when both file and meta data is same (differs from earlier behavior)
@@ -902,6 +903,10 @@ int csync_update_file_mod(int conn, db_conn_p db,
 		    csync_clear_dirty(db, peername, filename, auto_resolve_run);
 		    csync_clear_dirty(db, peername, other, auto_resolve_run);
 		    // return? 
+		}
+		if (rc == CONN_CLOSE) {
+		    csync_debug(0, "Connection closed while moving  %s:%s", peername, filename);
+		    return rc;
 		}
 	    }
 	}
