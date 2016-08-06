@@ -13,8 +13,8 @@
 | other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr            | MKDIR     | NULL  |    1 |
 | other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local      | MKDIR     | NULL  |    1 |
 | other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin | MKDIR     | NULL  |    1 |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local                | ???       | NULL  |  128 |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr            | ???       | NULL  |  128 |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local      | ???       | NULL  |  128 |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin | ???       | NULL  |  128 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local                | RM?       | NULL  |  128 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr            | RM?       | NULL  |  128 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local      | RM?       | NULL  |  128 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin | RM?       | NULL  |  128 |
 +----------+---------------------------------------------------------------------------+-----------+-------+------+
