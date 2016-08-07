@@ -73,8 +73,6 @@ char *buffer_strdup(BUF_P handle, const char *cpy)
   return out;
 };
 
-void csync_debug(int level, const char *format, ...);
-
 char *buffer_quote(BUF_P handle, const char *cpy)
 {
   char *out = NULL;
