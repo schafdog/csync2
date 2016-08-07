@@ -242,7 +242,7 @@ static void print_warnings(int level, MYSQL *m)
   row = f.mysql_fetch_row_fn(res);
 
   while (row) {
-      csync_log(csync_syslog_priority(level), level, "MySql Warning: %s\n", row[2]);
+      csync_log(LOG_WARNING, level, "MySql Warning: %s\n", row[2]);
       row = f.mysql_fetch_row_fn(res);
   }
 

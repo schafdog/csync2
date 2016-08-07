@@ -146,8 +146,10 @@ int conn_set(int infd, int outfd)
 
 #ifdef HAVE_LIBGNUTLS
 
-static void ssl_log(int level, const char* msg)
-{ csync_log(csync_syslog_priority(level), level, "%s", msg); }
+static void ssl_log(int prio, const char* msg)
+{
+    csync_log(prio, 0, "%s", msg);
+}
 
 static const char *ssl_keyfile = ETCDIR "/csync2_ssl_key.pem";
 static const char *ssl_certfile = ETCDIR "/csync2_ssl_cert.pem";

@@ -92,52 +92,6 @@ void csync_printtime_prefix()
 	fprintf(csync_out_debug, "[%s] ", ftbuffer);
 }
 
-int encode_syslog_priority(int syslog) {
-    return syslog << 3;
-}
-
-int csync_syslog_priority(int level) {
-    switch (level) {
-    case -1:
-	return LOG_CRIT;
-    case 0:
-	return LOG_ERR;
-    case 1:
-	return LOG_INFO;
-    default:
-	return LOG_DEBUG;
-    }
-}
-
-void csync_fatal2(const char *fmt, ...)
-{
-  va_list ap;
-  
-  if (!csync_syslog) {
-      if (! csync_quiet) {
-	  csync_printtime();
-
-	  if (csync_timestamps)
-	      csync_printtime_prefix();
-
-	  if ( csync_server_child_pid )
-	      fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
-      }
-      va_start(ap, fmt);
-      vfprintf(csync_out_debug, fmt, ap);
-      va_end(ap);
-  }
-  else {
-    va_start(ap,fmt);
-    vsyslog(csync_syslog_priority(0), fmt, ap);
-    va_end(ap);
-  }
-  csync_messages_printed++;
-	
-  exit(1);
-
-}
-
 void csync_log(int priority, int lv, const char *fmt, ...)
 {
 	va_list ap;

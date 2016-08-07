@@ -5,8 +5,7 @@
 
 void csync_printtime();
 void csync_printtotaltime();
-int  csync_syslog_priority(int level);
-void csync_log(int priority, int lv, const char *fmt, ...);
+void csync_log(int syslog_priority, int lv, const char *fmt, ...);
 
 #define csync_debug_ping(N) \
 csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
