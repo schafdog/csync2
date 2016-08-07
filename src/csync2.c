@@ -424,7 +424,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
 		csync_info(1, "New connection from %s:%s.\n", hbuf, sbuf);
 	    }
 	    else {
-		//Stupid this is not using csync_debug(..)
+		//Stupid this is not using csync_log(..)
 		fprintf(stdout, "<%d> New connection from %s:%s.\n",
 			csync_server_child_pid, hbuf, sbuf);
 		fflush(stdout);
@@ -481,9 +481,9 @@ char ** parse_peerlist(char *peerlist)
     peers = calloc(sizeof(peers), 100);
     int i = 0;
     char *saveptr = NULL;
-    csync_debug(2, "parse_peerlist %s\n", peerlist);
+    csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
     while ((peers[i] = strtok_r(peerlist, ",", &saveptr))) {
-	csync_debug(2, "New peer: %s\n", peers[i]);
+	csync_log(LOG_DEBUG, 2, "New peer: %s\n", peers[i]);
 	peerlist = NULL;
 	++i;
     };
@@ -526,7 +526,7 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
 	    csync_check_usefullness(realnames[count], flags);
 	    if (flags & FLAG_DO_CHECK) {
 		csync_check(db, realnames[count], db_version, flags);
-		csync_debug(2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+		csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
 	    }
 	    count++;
 	}
@@ -560,7 +560,7 @@ int main(int argc, char ** argv)
 
     ringbuffer_init();
 
-    csync_debug_out = stderr;
+    csync_out_debug = stderr;
 	
     if ( argc==3 && !strcmp(argv[1], "-k") ) {
 	return create_keyfile(argv[2]);
@@ -665,7 +665,7 @@ int main(int argc, char ** argv)
 	    snprintf(myhostname, 256, "%s", optarg);
 	    break;
 	case 'v':
-	    csync_debug_level++;
+	    csync_level_debug++;
 	    break;
 	case 'l':
 	    csync_syslog = 1;
@@ -803,7 +803,7 @@ int main(int argc, char ** argv)
 
     /* Some inetd connect stderr to stdout.  The debug level messages on
      * stderr would confuse the csync2 protocol. Log to syslog instead. */
-    if ( mode == MODE_INETD && csync_debug_level && !csync_syslog ) {
+    if ( mode == MODE_INETD && csync_level_debug && !csync_syslog ) {
 	csync_syslog = 1;
     }
 
@@ -912,7 +912,7 @@ nofork:
 	ASPRINTF(&file_config, ETCDIR "/csync2_%s.cfg", cfgname);
     }
 
-    csync_debug(2, "Config-File:   %s\n", file_config);
+    csync_info(2, "Config-File:   %s\n", file_config);
     yyin = fopen(file_config, "r");
     if ( !yyin )
 	csync_fatal("Can not open config file `%s': %s\n",
@@ -1106,11 +1106,11 @@ nofork:
 	int fileno = 0;
 	if (optind < argc) {
 	    fileno = open(argv[optind], O_RDONLY);
-	    csync_debug(1, "Opening %s %d \n", argv[optind], fileno);
+	    csync_log(LOG_DEBUG, 1, "Opening %s %d \n", argv[optind], fileno);
 	    lseek(fileno, 0, SEEK_END);
 	}
 	else {
-	    csync_debug(1, "tailing stdin \n");
+	    csync_log(LOG_DEBUG, 1, "tailing stdin \n");
 	}
 	csync_tail(db, fileno, flags);
     };
@@ -1185,15 +1185,15 @@ nofork:
 	free(active_peers);
     }
     if (csync_server_child_pid ) {
-	csync_debug(1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+	csync_log(LOG_INFO, 1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
-	    csync_debug(1, "goto nofork");
+	    csync_log(LOG_DEBUG, 1, "goto nofork");
 	    goto nofork;
 	}
     }
 
-    if ( csync_error_count != 0 || (csync_messages_printed && csync_debug_level) ) {
+    if ( csync_error_count != 0 || (csync_messages_printed && csync_level_debug) ) {
 	if (csync_error_count > 0)
 	    csync_warn(1, "Finished with %d errors.\n", csync_error_count);
 	else

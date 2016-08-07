@@ -68,13 +68,13 @@ static void *dl_handle;
 
 static void db_postgres_dlopen(void)
 {
-    csync_debug(3, "Opening shared library %s\n", SO_FILE);
+    csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
 
     dl_handle = dlopen(SO_FILE, RTLD_LAZY);
     if (dl_handle == NULL) {
 	csync_fatal("Could not open libpq.so: %s\nPlease install postgres client library (libpg) or use other database (sqlite, mysql)\n", dlerror());
     }
-    csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+    csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
 
     LOOKUP_SYMBOL(dl_handle, PQconnectdb);
     LOOKUP_SYMBOL(dl_handle, PQstatus);
@@ -168,7 +168,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
       csync_fatal("No memory for postgress connection handle\n");
 
     if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-      csync_debug(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
+	csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
       f.PQfinish_fn(pg_conn);
       free(pg_conn_info);
       return DB_ERROR;
@@ -176,7 +176,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
       char *create_database_statement;
       PGresult *res;
 
-      csync_debug(1, "Database %s not found, trying to create it ...", database);
+      csync_warn(1, "Database %s not found, trying to create it ...", database);
       ASPRINTF(&create_database_statement, "create database %s", database);
       res = f.PQexec_fn(pg_conn, create_database_statement);
 
@@ -188,7 +188,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
           break;
 
         default:
-          csync_debug(0, "Could not create database %s: %s", database, f.PQerrorMessage_fn(pg_conn));
+          csync_error(0, "Could not create database %s: %s", database, f.PQerrorMessage_fn(pg_conn));
           return DB_ERROR;
       }
 
@@ -203,7 +203,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
         csync_fatal("No memory for postgress connection handle\n");
 
       if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-        csync_debug(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
+        csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
         f.PQfinish_fn(pg_conn);
         free(pg_conn_info);
         return DB_ERROR;
@@ -299,7 +299,7 @@ int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
     break;
 
   default:
-    csync_debug(1, "Error in PQexec: %s", f.PQresultErrorMessage_fn(result));
+    csync_error(1, "Error in PQexec: %s", f.PQresultErrorMessage_fn(result));
     f.PQclear_fn(result);
     return DB_ERROR;
   }
@@ -339,7 +339,7 @@ const void* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column)
   row_p = (int*)stmt->private2;
 
   if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
-    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n",
+    csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n",
                 *row_p, f.PQntuples_fn(result));
     return NULL;
   }
@@ -358,7 +358,7 @@ const char *db_postgres_stmt_get_column_text(db_stmt_p stmt, int column)
   row_p = (int*)stmt->private2;
 
   if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
-    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n",
+    csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n",
                 *row_p, f.PQntuples_fn(result));
     return NULL;
   }
@@ -377,7 +377,7 @@ int db_postgres_stmt_get_column_int(db_stmt_p stmt, int column)
   row_p = (int*)stmt->private2;
 
   if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
-    csync_debug(1, "row index out of range (should be between 0 and %d, is %d)\n",
+    csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n",
                 *row_p, f.PQntuples_fn(result));
     return 0;
   }
@@ -423,7 +423,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 	if (version > 0)
 		return DB_ERROR;
 
-	csync_debug(2, "Upgrading database schema to version %d.\n", version);
+	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
 	csync_db_sql(conn, "Creating action table",
 		     "CREATE TABLE action ("

@@ -79,7 +79,7 @@ char *buffer_quote(BUF_P handle, const char *cpy)
   if (cpy) {
       out = malloc(strlen(cpy)+3);
       sprintf(out, "'%s'", cpy);
-      csync_debug(2, "QUOTE: %s => %s\n", cpy, out);
+      csync_log(LOG_DEBUG, 2, "QUOTE: %s => %s\n", cpy, out);
       buffer_add(handle, out);
       return out;
   }

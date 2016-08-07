@@ -68,7 +68,7 @@ int conn_connect(peername_p peername, int ip_version)
 
 	s = getaddrinfo(peername, port, &hints, &result);
 	if (s != 0) {
-		csync_debug(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
+		csync_warn(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
 		return -1;
 	}
 
@@ -102,12 +102,12 @@ int conn_open(peername_p peername, int ip_version)
     int on = 1;
     int conn_fd_in = conn_connect(peername, ip_version);
     if (conn_fd_in < 0) {
-	csync_debug(1, "Can't create socket.\n");
+	csync_error(1, "Can't create socket.\n");
 	return -1;
     }
 
     if (setsockopt(conn_fd_in, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on) ) < 0) {
-	csync_debug(1, "conn_open: Can't set TCP_NODELAY option on TCP socket.\n");
+	csync_error(1, "conn_open: Can't set TCP_NODELAY option on TCP socket.\n");
 	close(conn_fd_in);
 	conn_fd_in = -1;
 	return -1;
@@ -118,7 +118,7 @@ int conn_open(peername_p peername, int ip_version)
 #endif
     if (active_peer) { 
 	free(active_peer);
-	csync_debug(0, "Connection not closed on open?");
+	csync_error(0, "Connection not closed on open?");
     }
     active_peer = strdup(peername);
     return conn_fd_in;
@@ -138,7 +138,7 @@ int conn_set(int infd, int outfd)
 	// in csync2.c with more restrictive error handling..
 	// FIXME don't even try in "ssh" mode
 	if ( setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0 )
-	    csync_debug(1, "Can't set TCP_NODELAY option on TCP socket (outfd): %d.\n", outfd);
+	    csync_error(1, "Can't set TCP_NODELAY option on TCP socket (outfd): %d.\n", outfd);
 
 	return 0;
 }
@@ -147,7 +147,7 @@ int conn_set(int infd, int outfd)
 #ifdef HAVE_LIBGNUTLS
 
 static void ssl_log(int level, const char* msg)
-{ csync_debug(level, "%s", msg); }
+{ csync_log(csync_syslog_priority(level), level, "%s", msg); }
 
 static const char *ssl_keyfile = ETCDIR "/csync2_ssl_key.pem";
 static const char *ssl_certfile = ETCDIR "/csync2_ssl_cert.pem";
@@ -218,7 +218,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out)
 	case GNUTLS_E_WARNING_ALERT_RECEIVED:
 		alrt = gnutls_alert_get(conn_tls_session);
 		fprintf(
-			csync_debug_out,
+			csync_out_debug,
 			"SSL: warning alert received from peer: %d (%s).\n",
 			alrt, gnutls_alert_get_name(alrt)
 		);
@@ -227,7 +227,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out)
 	case GNUTLS_E_FATAL_ALERT_RECEIVED:
 		alrt = gnutls_alert_get(conn_tls_session);
 		fprintf(
-			csync_debug_out,
+			csync_out_debug,
 			"SSL: fatal alert received from peer: %d (%s).\n",
 			alrt, gnutls_alert_get_name(alrt)
 		);
@@ -263,7 +263,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 	if(peercerts == NULL || npeercerts == 0) {
 		if (callfatal)
 			csync_fatal("Peer did not provide an SSL X509 cetrificate.\n");
-		csync_debug(1, "Peer did not provide an SSL X509 cetrificate.\n");
+		csync_error(1, "Peer did not provide an SSL X509 cetrificate.\n");
 		return 0;
 	}
 
@@ -285,19 +285,19 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 		} SQL_END;
 
 		if (cert_is_ok < 0) {
-		    csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
+		    csync_log(LOG_DEBUG, 1, "Adding peer x509 certificate to db: %s\n", certdata);
 		    SQL(db, "Adding peer x509 sha1 hash to database.",
 			"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
 			url_encode(peername), url_encode(certdata));
 		    return 1;
 		}
 
-		csync_debug(2, "Peer x509 certificate is: %s\n", certdata);
+		csync_info(2, "Peer x509 certificate is: %s\n", certdata);
 
 		if (!cert_is_ok) {
 			if (callfatal)
 				csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
-			csync_debug(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
+			csync_error(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
 			return 0;
 		}
 	}
@@ -354,17 +354,17 @@ static inline int READ(int filedesc, void *buf, size_t count)
 	return -2;
     }
     if (rc < 0) {
-	csync_debug(0, "Error in READ: %d %s\n", errno, strerror(errno));
+	csync_error(0, "Error in READ: %d %s\n", errno, strerror(errno));
 	return rc;
     }
     int length = 0; 
     while (1) {
 	length = read(filedesc, buf, count);
 	if (length == -1 && errno == EINTR)
-	    csync_debug(2, "Interupted while reading\n");
+	    csync_error(2, "Interupted while reading\n");
 	else {
 	    if (length < 0)
-		csync_debug(3, "Error in READ: %d %s\n", errno, strerror(errno));	    
+		csync_error(3, "Error in READ: %d %s\n", errno, strerror(errno));	    
 	    return length;
 	}
     }
@@ -406,26 +406,26 @@ void conn_debug(const char *name, const char*buf, size_t count)
 {
 	int i;
 
-	if ( csync_debug_level < 3 ) return;
+	if ( csync_level_debug < 3 ) return;
 
-	fprintf(csync_debug_out, "%s> ", name);
+	fprintf(csync_out_debug, "%s> ", name);
 	for (i=0; i<count; i++) {
 		switch (buf[i]) {
 			case '\n':
-				fprintf(csync_debug_out, "\\n");
+				fprintf(csync_out_debug, "\\n");
 				break;
 			case '\r':
-				fprintf(csync_debug_out, "\\r");
+				fprintf(csync_out_debug, "\\r");
 				break;
 			default:
 				if (buf[i] < 32 || buf[i] >= 127)
-					fprintf(csync_debug_out, "\\%03o", buf[i]);
+					fprintf(csync_out_debug, "\\%03o", buf[i]);
 				else
-					fprintf(csync_debug_out, "%c", buf[i]);
+					fprintf(csync_out_debug, "%c", buf[i]);
 				break;
 		}
 	}
-	fprintf(csync_debug_out, "\n");
+	fprintf(csync_out_debug, "\n");
 }
 
 int conn_read_get_content_length(int fd, long *size) 
@@ -433,7 +433,7 @@ int conn_read_get_content_length(int fd, long *size)
    char buffer[100];
    *size = 0;
    int rc = !conn_gets(fd, buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
-   csync_debug(2, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
+   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
    if (!strcmp(buffer, "ERROR\n")) {
       errno=EIO;
       return -1;
@@ -512,7 +512,7 @@ void conn_printf(int fd, const char *fmt, ...)
     buffer[size] = 0;
     conn_write(fd, buffer, size);
     conn_remove_key(buffer);
-    csync_debug(2, "CONN %s < %s\n", active_peer, buffer);
+    csync_info(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
 void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...)
@@ -533,7 +533,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const c
     buffer[size] = 0;
     conn_write(fd, buffer, size);
     conn_remove_key(buffer);
-    csync_debug(2, "CONN %s < %s\n", active_peer, buffer);
+    csync_info(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
 size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
@@ -558,11 +558,11 @@ size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 {
     int rc = gets_newline(filedesc, s, size, remove_newline);
     if (rc == -1) {
-	csync_debug(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
+	csync_error(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
 	return rc; 
     }
     //	conn_debug(active_peer, s, i);
-    csync_debug(2, "CONN %s > '%s'\n", active_peer, s);
+    csync_error(2, "CONN %s > '%s'\n", active_peer, s);
     return rc;
 }
 

@@ -72,11 +72,11 @@ int csync_cygwin_case_check(filename_p filename)
 		goto check_failed;
 
 check_ok:
-	csync_debug(3, "Cygwin/Win32 filename case check ok: %s (%s)\n", winfilename, filename);
+	csync_log(LOG_DEBUG, 3, "Cygwin/Win32 filename case check ok: %s (%s)\n", winfilename, filename);
 	return 1;
 
 check_failed:
-	csync_debug(2, "Cygwin/Win32 filename case check failed: %s (%s)\n", winfilename, filename);
+	csync_log(LOG_DEBUG, 2, "Cygwin/Win32 filename case check failed: %s (%s)\n", winfilename, filename);
 	return 0;
 }
 
@@ -100,7 +100,7 @@ const char *csync_mode_op_str(int st_mode, int op)
     if (op == OP_HARDLINK)
 	return "HARDLINK";
     if (st_mode == 0) {	
-	csync_debug(1, "WARN: stat failed. op: %d\n", op);
+	csync_warn( 1, "WARN: stat failed. op: %d\n", op);
 	return "RM?";
     }
     if (S_ISREG(st_mode))
@@ -120,7 +120,7 @@ const char *csync_mode_op_str(int st_mode, int op)
     else if (S_ISFIFO(st_mode))
 	return "MKFIFO";
     else
-	csync_debug(1, "WARN: Unknown mode op: %d %d\n", st_mode, op);
+	csync_warn(1, "WARN: Unknown mode op: %d %d\n", st_mode, op);
     return "???";
 }
 
@@ -156,16 +156,16 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     char *clean_other = NULL;
     int dirty = 1; // Assume dirty
     textlist_p tl = NULL; 
-    csync_debug(1, "mark other: Old operation: %s '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_filename, old_other);
+    csync_info( 1, "mark other: Old operation: %s '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_filename, old_other);
     if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
-	csync_debug(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
+	csync_info(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
 	operation = OP_HARDLINK;
 	result_other = buffer_strdup(buffer,old_filename);
 	dirty = 1;
     }
     // NEW/MK A -> RM A => remove from dirty, as it newer happened if it is same filename
     else if (CHECK_NEW_RM && operation == OP_RM && (old_operation == OP_NEW || old_operation == OP_HARDLINK) && !strcmp(file,old_filename)) {
-	csync_debug(1, "mark operation %s -> RM %s:%s deleted before syncing. Removing from dirty.\n",
+	csync_info(1, "mark operation %s -> RM %s:%s deleted before syncing. Removing from dirty.\n",
 		    csync_operation_str(old_operation),
 		    peername, file);
 	dirty = 0;
@@ -173,7 +173,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     }
     // NEW/MK A -> MOD (still NEW)
     else if (CHECK_NEW_MOD && operation == OP_MOD && old_operation == OP_NEW) {
-	csync_debug(1, "mark operation NEW -> MOD => NEW %s:%s (not synced) .\n",
+	csync_info(1, "mark operation NEW -> MOD => NEW %s:%s (not synced) .\n",
 		    peername, file);
 	operation = old_operation;
 	dirty = 1;
@@ -182,20 +182,20 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 			     && OP_NEW == operation) && strstr(old_checktxt, "type=dir") == 0) {
 	// TODO verify logic
 	result_other = buffer_strdup(buffer, old_filename);
-	csync_debug(1, "mark operation RM -> NEW => MOVE %s '%s' '%s'.\n", peername, file, result_other);
+	csync_info(1, "mark operation RM -> NEW => MOVE %s '%s' '%s'.\n", peername, file, result_other);
 	operation = OP_MOVE;
     }
     else if (CHECK_MV_RM && OP_MOVE == old_operation && OP_RM == operation) {
 	operation = OP_RM;
 	file_new = buffer_strdup(buffer, old_other);
 	clean_other = buffer_strdup(buffer, old_filename);
-	csync_debug(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
+	csync_info(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
     }
     else if (CHECK_NEW_MV && OP_NEW == old_operation && OP_MOVE == operation) {
 	operation = OP_NEW;
 	file_new = buffer_strdup(buffer, file);
 	clean_other = buffer_strdup(buffer, old_filename);
-	csync_debug(1, "mark operation NEW->MV => NEW %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
+	csync_info(1, "mark operation NEW->MV => NEW %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
 	result_other = NULL;
     }
     textlist_add4(&tl, file_new, clean_other, result_other, (dirty ? "YES": NULL),  operation);
@@ -215,7 +215,7 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
     csync_schedule_commands(db, file, thispeer == 0);
 
     if ( ! pl ) {
-	csync_debug(2, "Not in one of my groups: %s (%s)\n",
+	csync_info(2, "Not in one of my groups: %s (%s)\n",
 		    file, thispeer ? thispeer : "NULL");
 	return;
     }
@@ -229,11 +229,11 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 	operation = operation_org;
 	other = org_other;
 	if (!peerfilter || !strcmp(peerfilter, peername)) {
-	    csync_debug(1, "mark other operation: '%s' '%s:%s' '%s'.\n",
+	    csync_info(1, "mark other operation: '%s' '%s:%s' '%s'.\n",
 			csync_mode_op_str(rc_file ? 0 : st_file.st_mode, operation),
 			peername, file, (other ? other : "-"));
 	    if (operation == OP_MOVE && other == NULL) {
-		csync_debug(1, "mark other MV operation missing other %s %s \n", peername, file);
+		csync_info(1, "mark other MV operation missing other %s %s \n", peername, file);
 		operation = OP_UNDEF;
 	    }
 	    short dirty = 1;
@@ -262,11 +262,11 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 			dirty = (t->value4 != NULL);
 			operation = t->intvalue;
 			textlist_free(t);
-			csync_debug(3, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
+			csync_info(3, "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
 				    file_new, clean_other, result_other, dirty, operation);
 		    }
 		    else {
-			csync_debug(0, "ERROR: check_old_operation MUST always return row\n");
+			csync_error(0, "ERROR: check_old_operation MUST always return row\n");
 		    }
 		}
 	    }
@@ -317,7 +317,7 @@ char *csync_check_path(char *filename)
 	      return filename;
 	}
 	/* This shouldn't happen. We have a non-directory */
-	csync_debug(0, "Check for directory failed with non-directory %s: %d", filename, st.st_mode);
+	csync_error(0, "ERROR: Check for directory failed with non-directory %s: %d", filename, st.st_mode);
 	return 0;
       }
       else
@@ -371,7 +371,7 @@ int csync_check_pure(filename_p filename)
     ;
   same_len = i+1;
 
-  csync_debug(3, "check_pure: filename: '%s' %u, cached path: '%s' %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
+  csync_info(3, "check_pure: filename: '%s' %u, cached path: '%s' %u, %u.\n", filename, dir_len, cached.path, cached.len, same_len);
   /* exact match? */
   if (dir_len == same_len && same_len == cached.len)
     return cached.has_symlink;
@@ -426,7 +426,7 @@ int csync_check_del(db_conn_p db, const char *file, int flags)
 textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char* checktxt, const char *digest, struct stat *st)
 {
     textlist_p tl = 0;
-    csync_debug(2, "csync_check_file_same_dev_inode %s %s\n", filename, db_escape(db,filename));
+    csync_info(2, "csync_check_file_same_dev_inode %s %s\n", filename, db_escape(db,filename));
     tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st);
     return tl;
 }
@@ -442,9 +442,9 @@ textlist_p csync_check_move(db_conn_p db, peername_p peername, filename_p filena
 	int rc = stat(db_filename, &file_stat);
 	int i = 0;
 	if (rc) {
-	    csync_debug(1, "Other file not found. Posible MOVE operation: %s\n", db_filename);
+	    csync_info(1, "Other file not found. Posible MOVE operation: %s\n", db_filename);
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-		csync_debug(1, "OPERATION: MOVE %s to %s\n", filename, db_filename);
+		csync_info(1, "OPERATION: MOVE %s to %s\n", filename, db_filename);
 		t->intvalue = OP_MOVE;
 	    }
 	}
@@ -464,37 +464,37 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
     	const char *db_filename = t->value;
     	const char *db_checktxt = t->value2;
     	const char *db_operation = t->value3;
-	csync_debug(2, "check_link_move:  DB file: %s %s: %d\n", db_filename, db_operation, operation);
+	csync_info(2, "check_link_move:  DB file: %s %s: %d\n", db_filename, db_operation, operation);
     	int rc = stat(db_filename, &file_stat);
     	int db_version = csync_get_checktxt_version(db_checktxt);
     	int i = 0;
 	if (db_operation && !strcmp(db_operation, "NEW")) {
-	    csync_debug(1, "Unable to MOVE/LINK: both NEW\n");
+	    csync_info(1, "Unable to MOVE/LINK: both NEW\n");
 	    continue;
 	}
     	if (rc) {
-	    csync_debug(1, "check_link_move: Other file not found. Possible MOVE operation: %s\n", db_filename);
+	    csync_info(1, "check_link_move: Other file not found. Possible MOVE operation: %s\n", db_filename);
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt)))
 	    {
-		csync_debug(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
+		csync_info(1, "OPERATION: MOVE %s to %s\n", db_filename, filename);
 		textlist_add(&tl, db_filename, OP_MOVE);
 	    }
     	} else { // LINK, not MV
 	    db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
 	    int i;
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-		csync_debug(1, "csync_check_link_move: OPERATION MHARDLINK %s to %s\n", db_filename, filename);
+		csync_info(1, "csync_check_link_move: OPERATION MHARDLINK %s to %s\n", db_filename, filename);
 		textlist_add(&tl, db_filename, OP_HARDLINK);
 	    } else
 	    { // LINK not verified
-		csync_debug(1, "check_link: other file with same dev/inode, but different checktxt.");
-		csync_debug(1, "File is different on peer (cktxt char #%d).\n", i);
-		csync_debug(1, ">>> %s: %s\n", db_checktxt, db_filename);
-		csync_debug(1, ">>> %s: %s\n", checktxt, filename);
+		csync_info(1, "check_link: other file with same dev/inode, but different checktxt.");
+		csync_info(1, "File is different on peer (cktxt char #%d).\n", i);
+		csync_info(1, ">>> %s: %s\n", db_checktxt, db_filename);
+		csync_info(1, ">>> %s: %s\n", checktxt, filename);
 		
 		if (count > 1) {
-		    csync_debug(0, "Multiple files with same inode: %s %s", filename, db_filename);
-		    csync_debug(0, "Different checktxt %s %s", checktxt, db_checktxt);
+		    csync_warn(0, "Multiple files with same inode: %s %s", filename, db_filename);
+		    csync_warn(0, "Different checktxt %s %s", checktxt, db_checktxt);
 		}
 		count++;
 	    }
@@ -510,10 +510,10 @@ int csync_check_dir(db_conn_p db, const char* file, int version, int flags)
     int dirdump_this = flags & FLAG_DIRDUMP;
     int n = 0;
     int count_dirty = 0;
-    csync_debug(2, "Checking %s%s* ..\n", file, !strcmp(file, "/") ? "" : "/");
+    csync_info(2, "Checking %s%s* ..\n", file, !strcmp(file, "/") ? "" : "/");
     n = scandir(file, &namelist, 0, alphasort);
     if (n < 0) {
-	csync_debug(0, "%s in scandir: %s (%s)\n", strerror(errno), file, file);
+	csync_error(0, "%s in scandir: %s (%s)\n", strerror(errno), file, file);
 	csync_error_count++;
     } else {
 	while(n--) {
@@ -581,13 +581,15 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     int calc_digest   = db_flags & CALC_DIGEST;
     int this_is_dirty = db_flags & IS_DIRTY;
     int is_upgrade    = db_flags & IS_UPGRADE;
-    csync_debug(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d \n", calc_digest, this_is_dirty, is_upgrade);
+    csync_info(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d \n", calc_digest, this_is_dirty, is_upgrade);
     if (calc_digest) {
     	int size = 2*DIGEST_MAX_SIZE+1;
     	digest = buffer_malloc(buffer, size);
     	int rc = dsync_digest_path_hex(file, "sha1", digest, size);
-    	if (rc)
-	    csync_debug(0, "Error generating digest: %s %d", digest, rc);
+    	if (rc) {
+	    csync_error(0, "ERROR: generating digest: %s %d", digest, rc);
+	    // TODO ???
+	}
     }
     if (csync_compare_mode) {
 	printf("%40s %s\n", digest ? digest : "-", file);
@@ -597,18 +599,18 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat);
 	    textlist_p ptr = tl;
 	    while (ptr != NULL) {
-		csync_debug(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
+		csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, file);
 		if (ptr->intvalue == OP_RM) {
 		    operation = OP_MOVE;
 		    db->delete_file(db, ptr->value, 0);
 		    other = buffer_strdup(buffer, ptr->value);
-		    csync_debug(1, "Found MOVE %s -> %s \n", ptr->value, file);
+		    csync_info(1, "Found MOVE %s -> %s \n", ptr->value, file);
 		    break;
 		}
 		else if (ptr->intvalue == OP_HARDLINK) {
 		    operation = OP_HARDLINK;
 		    other = buffer_strdup(buffer, ptr->value);
-		    csync_debug(1, "Found HARDLINK %s -> %s \n", ptr->value, file);
+		    csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, file);
 		}
 		ptr = ptr->next;
 	    }
@@ -622,7 +624,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	const char *checktxt_encoded = db_escape(db, checktxt);
 	// Insert into dirty first due to new clean up method. With this there could be a race condition
 	if (!init_run && this_is_dirty) {
-	    //      csync_debug(0, "check_dirty (mod): before mark (all) \n");
+	    //      csync_log(LOG_DEBUG, 0, "check_dirty (mod): before mark (all) \n");
 	    char dev_str[100];
 	    char ino_str[100];
 	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
@@ -648,14 +650,14 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
     struct stat st;
 
     if (check_type == MATCH_NONE) {
-	csync_debug(2, "No match. Don't check at all: %s\n", file);
+	csync_log(LOG_DEBUG, 2, "No match. Don't check at all: %s\n", file);
 	return MATCH_NONE; 
     }
 	
     if (lstat_strict(file, &st) != 0 ) {
 	if ( flags & FLAG_IGN_NOENT )
 	    return MATCH_NONE;
-	csync_debug(2, "check_mod: No such file '%s' .\n", file);
+	csync_log(LOG_DEBUG, 2, "check_mod: No such file '%s' .\n", file);
 	return  MATCH_NONE;
     }
 
@@ -671,11 +673,11 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
 	    break;
 	if ( !S_ISDIR(st.st_mode) )
 	    break;
-	csync_debug(2, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
+	csync_log(LOG_DEBUG, 2, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
 	*count += csync_check_dir(db, file, version, flags | dirdump_this);
 	break;
     default:
-	csync_debug(2, "Don't check at all: %s\n", file);
+	csync_log(LOG_DEBUG, 2, "Don't check at all: %s\n", file);
 	break;
     }
     return dirdump_parent;
@@ -691,11 +693,11 @@ int csync_check_recursive(db_conn_p db, filename_p filename, int version, int fl
 	filename = "/cygdrive";
     }
 #endif
-    csync_debug(1, "Running%s check for %s ...\n", flags & FLAG_RECURSIVE ? " recursive" : "", filename);
+    csync_log(LOG_INFO, 1, "Running%s check for %s ...\n", flags & FLAG_RECURSIVE ? " recursive" : "", filename);
 	
     // TODO How about swapping deletes and updates?
     int count_dirty = 0;
-    csync_debug(1, "Checking%s for modified files %s \n", (flags & FLAG_RECURSIVE ? " recursive" : ""), filename);
+    csync_log(LOG_INFO, 1, "Checking%s for modified files %s \n", (flags & FLAG_RECURSIVE ? " recursive" : ""), filename);
     csync_check_mod(db, filename, version, flags, &count_dirty);
 
     if (!csync_compare_mode)

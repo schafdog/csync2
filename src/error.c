@@ -54,8 +54,8 @@ void csync_printtime()
 
 	if (csync_timestamps) {
 	  if (csync_server_child_pid)
-	    fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
-	  fprintf(csync_debug_out, "TIMESTAMP: %s\n", ftbuffer);
+	    fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
+	  fprintf(csync_out_debug, "TIMESTAMP: %s\n", ftbuffer);
 	}
       }
     }
@@ -77,8 +77,8 @@ void csync_printtotaltime()
 
 		if (csync_timestamps) {
 			if (csync_server_child_pid)
-				fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
-			fprintf(csync_debug_out, "TOTALTIME: %d:%02d:%02d\n",
+				fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
+			fprintf(csync_out_debug, "TOTALTIME: %d:%02d:%02d\n",
 				seconds / (60*60), (seconds/60) % 60, seconds % 60);
 		}
 	}
@@ -89,7 +89,7 @@ void csync_printtime_prefix()
 	time_t now = time(0);
 	char ftbuffer[32];
 	strftime(ftbuffer, 32, "%H:%M:%S", localtime(&now));
-	fprintf(csync_debug_out, "[%s] ", ftbuffer);
+	fprintf(csync_out_debug, "[%s] ", ftbuffer);
 }
 
 int encode_syslog_priority(int syslog) {
@@ -121,10 +121,10 @@ void csync_fatal2(const char *fmt, ...)
 	      csync_printtime_prefix();
 
 	  if ( csync_server_child_pid )
-	      fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
+	      fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
       }
       va_start(ap, fmt);
-      vfprintf(csync_debug_out, fmt, ap);
+      vfprintf(csync_out_debug, fmt, ap);
       va_end(ap);
   }
   else {
@@ -141,7 +141,7 @@ void csync_fatal2(const char *fmt, ...)
 void csync_log(int priority, int lv, const char *fmt, ...)
 {
 	va_list ap;
-	if ( csync_debug_level < lv )
+	if ( csync_level_debug < lv )
 	   return;
 	sigset_t x, old;
  	sigemptyset (&x);
@@ -154,10 +154,10 @@ void csync_log(int priority, int lv, const char *fmt, ...)
 	    csync_printtime_prefix();
 
 	  if ( csync_server_child_pid )
-	    fprintf(csync_debug_out, "<%d> ", csync_server_child_pid);
+	    fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
 
 	  va_start(ap, fmt);
-	  vfprintf(csync_debug_out, fmt, ap);
+	  vfprintf(csync_out_debug, fmt, ap);
 	  va_end(ap);
 	}
 	else {

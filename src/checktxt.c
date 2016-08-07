@@ -140,17 +140,16 @@ const char *csync_genchecktxt_version(const struct stat *st, filename_p filename
  */
 int csync_cmpchecktxt(const char *a, const char *b)
 {
-  csync_debug(3, "csync_cmpchecktxt A: %s \n", a);
-  csync_debug(3, "csync_cmpchecktxt B: %s \n", a);
-  return strcmp(a, b);
-  int i;
-  for (i=0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++)
-    if ( a[i] != b[i] ) {
-      csync_debug(3, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
-      return i;
-    }
-    
-  return 0;
+    csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt A: %s \n", a);
+    csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", a);
+    return strcmp(a, b);
+    int i;
+    for (i=0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++)
+	if ( a[i] != b[i] ) {
+	    csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
+	    return i;
+	}
+    return 0;
 }
 
 
@@ -166,13 +165,13 @@ int csync_cmpchecktxt_component(const char *a, const char *b)
   //  printf("components: %s %s", a_ptr, b_ptr);
 
   while (a_ptr && b_ptr) {
-    if (strcmp(a_ptr,b_ptr)) {
-	csync_debug(0, "%s!=%s:", a_ptr, b_ptr);
-	differs = 1;
-    }
-    a_ptr = strtok_r(NULL, ":", &a_save);
-    b_ptr = strtok_r(NULL, ":", &b_save);
-    //printf("components: %s %s", a_ptr, b_ptr);
+      if (strcmp(a_ptr,b_ptr)) {
+	  csync_log(LOG_DEBUG, 3, "%s!=%s:", a_ptr, b_ptr);
+	  differs = 1;
+      }
+      a_ptr = strtok_r(NULL, ":", &a_save);
+      b_ptr = strtok_r(NULL, ":", &b_save);
+      //printf("components: %s %s", a_ptr, b_ptr);
   }
   // TODO should write rest of both a and b out, but assuming same number of tokens
   free(a_new);

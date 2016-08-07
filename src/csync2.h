@@ -121,7 +121,7 @@ enum {
 #define VASPRINTF(s, fmt, args...) do {\
 	int __ret = vasprintf(s, fmt, ##args);\
 	if (__ret < 0) \
-	  csync_debug(-1,"Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__); \
+	  csync_fatal("Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__); \
 } while (0)
 
 
@@ -460,10 +460,10 @@ static inline void textlist_add_new2(struct textlist **listhandle,
     if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem)) {
 	textlist_add(listhandle, item, intitem);
 	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
-	csync_debug(3, "Adding textlist_add_new: %s\n", item);
+	csync_log(LOG_DEBUG, 3, "Adding textlist_add_new: %s\n", item);
     }
     else {
-      csync_debug(3, "Skipping textlist_add_new: %s\n", item);
+	csync_log(LOG_DEBUG, 3, "Skipping textlist_add_new: %s\n", item);
   }
 }
 
@@ -486,10 +486,10 @@ static inline void textlist_add_new3(struct textlist **listhandle, filename_p fi
 {
     if (!(*listhandle) || !textlist_in_list(*listhandle, filename, 0)) {
 	textlist_add3(listhandle, filename, checktxt, operation, 0);
-	csync_debug(3, "Adding textlist_add_new3: %s\n", filename);
+	csync_log(LOG_DEBUG, 3, "Adding textlist_add_new3: %s\n", filename);
     }
     else {
-      csync_debug(3, "Skipping textlist_add_new3: %s\n", filename);
+	csync_log(LOG_DEBUG, 3, "Skipping textlist_add_new3: %s\n", filename);
   }
 }
 
@@ -625,9 +625,9 @@ extern char *csync_tempdir;
 extern char *csync_database;
 
 extern int csync_error_count;
-extern int csync_debug_level;
+extern int csync_level_debug;
 extern int csync_syslog;
-extern FILE *csync_debug_out;
+extern FILE *csync_out_debug;
 
 extern long csync_last_printtime;
 extern FILE *csync_timestamp_out;

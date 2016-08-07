@@ -60,13 +60,13 @@ static void *dl_handle;
 
 static void db_sqlite3_dlopen(void)
 {
-    csync_debug(3, "Opening shared library %s\n", SO_FILE);
+    csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
 
     dl_handle = dlopen(SO_FILE, RTLD_LAZY);
     if (dl_handle == NULL) {
 	csync_fatal("Could not open %s: %s\nPlease install sqlite3 client library (libsqlite3) or use other database (postgres, mysql)\n", SO_FILE, dlerror());
     }
-    csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+    csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
 
     LOOKUP_SYMBOL(dl_handle, sqlite3_open);
     LOOKUP_SYMBOL(dl_handle, sqlite3_close);
@@ -254,7 +254,7 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 	if (version > 0)
 		return DB_ERROR;
 
-	csync_debug(2, "Upgrading database schema to version %d.\n", version);
+	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
 	csync_db_sql(db, "Creating file table",
 		"CREATE TABLE file ("

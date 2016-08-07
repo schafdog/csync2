@@ -59,7 +59,7 @@ void csync_db_alarmhandler(int signum)
 
 	begin_commit_recursion++;
 
-	// csync_debug(3, "Database idle in transaction. Forcing COMMIT.\n");
+	// csync_info(3, "Database idle in transaction. Forcing COMMIT.\n");
 	SQL(global_db, "COMMIT (alarmhandler)", "COMMIT ");
 	tqueries_counter = -10;
 
@@ -107,7 +107,7 @@ void csync_db_maycommit(db_conn_p db)
     if (wait_length && (now - last_wait_cycle) > 10) {
 	SQL(db, "COMMIT", "COMMIT ");
 	if (wait_length) {
-	    csync_debug(3, "Waiting %d secs so others can lock the database (%d - %d)...\n",
+	    csync_info(3, "Waiting %d secs so others can lock the database (%d - %d)...\n",
 			wait_length, (int)now, (int)last_wait_cycle);
 	    sleep(wait_length);
 	}
@@ -164,9 +164,9 @@ void csync_db_close(db_conn_p db)
 	SQL(db, "COMMIT (close)", "COMMIT ");
 	tqueries_counter = -10;
     }
-    csync_debug(3, "Closing db: %p\n", db);    
+    csync_info(3, "Closing db: %p\n", db);    
     db_conn_close(db);
-    csync_debug(3, "Closed db: %p\n", db);
+    csync_info(3, "Closed db: %p\n", db);
     begin_commit_recursion--;
     global_db = 0;
     free(db);
@@ -185,13 +185,13 @@ void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 	in_sql_query++;
 	csync_db_maybegin(db);
 
-	csync_debug(3, "%s SQL: %s\n", err, sql);
+	csync_info(3, "%s SQL: %s\n", err, sql);
 
 	while (1) {
 	  rc = db_exec(db, sql);
 	  if ( rc != DB_BUSY ) break;
 	  if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
-	  csync_debug(3, "Database is busy, sleeping a sec.\n");
+	  csync_warn(3, "Database is busy, sleeping a sec.\n");
 	  sleep(1);
 	}
 
@@ -217,12 +217,12 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...)
 	in_sql_query++;
 	csync_db_maybegin(db);
 
-	csync_debug(3, "SQL: %s\n", sql);
+	csync_log(LOG_DEBUG, 3, "SQL: %s\n", sql);
 	while (1) {
 	        rc = db_prepare_stmt(db, sql, &stmt, &ppTail);
 		if ( rc != DB_BUSY ) break;
 		if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
-		csync_debug(3, "Database is busy, sleeping a sec.\n");
+		csync_warn(3, "Database is busy, sleeping a sec.\n");
 		sleep(1);
 	}
 
@@ -247,7 +247,7 @@ int csync_db_next(void *vmx, const char *err,
 	db_stmt_p stmt = vmx;
 	int rc, busyc = 0;
 
-	csync_debug(4, "Trying to fetch a row from the database.\n");
+	csync_info(4, "Trying to fetch a row from the database.\n");
 
 	while (1) {
 		rc = db_stmt_next(stmt);
@@ -257,7 +257,7 @@ int csync_db_next(void *vmx, const char *err,
 		  global_db = 0; 
 		  csync_fatal(DEADLOCK_MESSAGE); 
 		}
-		csync_debug(3, "Database is busy, sleeping a sec.\n");
+		csync_warn(3, "Database is busy, sleeping a sec.\n");
 		sleep(1);
 	}
 
@@ -296,14 +296,14 @@ void csync_db_fin(void *vmx, const char *err)
 	if (vmx == NULL)
 	   return;
 
-	csync_debug(3, "SQL Query finished.\n");
+	csync_warn(3, "SQL Query finished.\n");
 
 	while (1) {
 	  rc = db_stmt_close(stmt);
 	  if ( rc != DB_BUSY ) 
 	    break;
 	  if (busyc++ > get_dblock_timeout()) { global_db = 0; csync_fatal(DEADLOCK_MESSAGE); }
-	  csync_debug(3, "Database is busy, sleeping a sec.\n");
+	  csync_warn(3, "Database is busy, sleeping a sec.\n");
 	  sleep(1);
 	}
 

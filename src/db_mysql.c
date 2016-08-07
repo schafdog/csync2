@@ -62,14 +62,14 @@ static void *dl_handle;
 
 static void db_mysql_dlopen(void)
 {
-    csync_debug(3, "Opening shared library %s\n", SO_FILE);
+    csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
     dl_handle = dlopen(SO_FILE, RTLD_LAZY);
     if (dl_handle == NULL) {
 	csync_fatal("Could not open libmysqlclient.so: %s\nPlease install Mysql client library (libmysqlclient) or use other database (sqlite, postgres)\n",
 		    dlerror());
     }
 
-    csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+    csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
 
     LOOKUP_SYMBOL(dl_handle, mysql_init);
     LOOKUP_SYMBOL(dl_handle, mysql_real_connect);
@@ -152,7 +152,7 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
       if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
 	ASPRINTF(&create_database_statement, "create database %s", database);
 
-	csync_debug(2, "creating database %s\n", database);
+	csync_log(LOG_DEBUG, 2, "creating database %s\n", database);
         if (f.mysql_query_fn(db, create_database_statement) != 0)
           csync_fatal("Cannot create database %s: Error: %s\n", database, f.mysql_error_fn(db));
 	free(create_database_statement);
@@ -202,7 +202,7 @@ void db_mysql_close(db_conn_p conn)
     return;
   f.mysql_close_fn(conn->private);
   conn->private = 0;
-//  csync_debug("freeing db_conn_p %p");
+//  csync_log(LOG_DEBUG, "freeing db_conn_p %p");
 //  free(conn);
   // TODO wrong place
   //f.mysql_library_end_fn();
@@ -242,8 +242,8 @@ static void print_warnings(int level, MYSQL *m)
   row = f.mysql_fetch_row_fn(res);
 
   while (row) {
-    csync_debug(level, "MySql Warning: %s\n", row[2]);
-    row = f.mysql_fetch_row_fn(res);
+      csync_log(csync_syslog_priority(level), level, "MySql Warning: %s\n", row[2]);
+      row = f.mysql_fetch_row_fn(res);
   }
 
   f.mysql_free_result_fn(res);
@@ -300,7 +300,7 @@ int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
 
   MYSQL_RES *mysql_stmt = f.mysql_store_result_fn(conn->private);
   if (mysql_stmt == NULL) {
-    csync_debug(2, "Error in mysql_store_result: %s", f.mysql_error_fn(conn->private));
+    csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(conn->private));
     return DB_ERROR;
   }
 
@@ -377,7 +377,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
     if (version > 0)
 	return DB_ERROR;
 
-    csync_debug(2, "Upgrading database schema to version %d.\n", version);
+    csync_log(LOG_DEBUG, 2, "Upgrading database schema to version %d.\n", version);
 
 /* We want proper logging, so use the csync sql function instead
  * of that from the database layer.

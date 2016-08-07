@@ -51,13 +51,13 @@ int db_open(const char *file, int type, db_conn_p *db)
     rc = db_sqlite2_open(db_str, db);
 
     if (rc != DB_OK && db_str[0] != '/')
-      fprintf(csync_debug_out, "Cannot open database file: %s, maybe you need three slashes (like sqlite:///var/lib/csync2/csync2.db)\n", db_str);
+      fprintf(csync_out_debug, "Cannot open database file: %s, maybe you need three slashes (like sqlite:///var/lib/csync2/csync2.db)\n", db_str);
     break;
   case DB_SQLITE3:
     rc = db_sqlite_open(db_str, db);
 
     if (rc != DB_OK && db_str[0] != '/')
-      fprintf(csync_debug_out, "Cannot open database file: %s, maybe you need three slashes (like sqlite:///var/lib/csync2/csync2.db)\n", db_str);
+      fprintf(csync_out_debug, "Cannot open database file: %s, maybe you need three slashes (like sqlite:///var/lib/csync2/csync2.db)\n", db_str);
     break;
 #ifdef HAVE_MYSQL
   case DB_MYSQL:
@@ -117,7 +117,7 @@ const char *db_escape(db_conn_p conn, const char *string)
     return string;
   if (conn && conn->escape)
     return conn->escape(conn, string);
-  csync_debug(0, "No Connection (%p) or escape method configured.", conn, (conn? conn->escape : 0));
+  csync_error(0, "No Connection (%p) or escape method configured.", conn, (conn? conn->escape : 0));
   return string;
 }
 
@@ -125,7 +125,7 @@ int db_exec(db_conn_p conn, const char *sql) {
   if (conn && conn->exec)
     return conn->exec(conn, sql);
 
-  csync_debug(0, "No exec function in db_exec.\n");
+  csync_error(0, "No exec function in db_exec.\n");
   return DB_ERROR;
 }
 
@@ -133,7 +133,7 @@ int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt, char **ppt
   if (conn && conn->prepare)
     return conn->prepare(conn, sql, stmt, pptail);
 
-  csync_debug(0, "No prepare function in db_prepare_stmt %p %p %s.\n", conn, (conn ? conn->prepare : NULL), sql);
+  csync_error(0, "No prepare function in db_prepare_stmt %p %p %s.\n", conn, (conn ? conn->prepare : NULL), sql);
   return DB_ERROR;
 }
 
@@ -141,7 +141,7 @@ const char *db_stmt_get_column_text(db_stmt_p stmt, int column) {
   if (stmt && stmt->get_column_text)
     return stmt->get_column_text(stmt, column);
 
-  csync_debug(0, "No stmt in db_stmt_get_column_text / no function.\n");
+  csync_error(0, "No stmt in db_stmt_get_column_text / no function.\n");
   return NULL;
 }
 
@@ -149,7 +149,7 @@ int db_stmt_get_column_int(db_stmt_p stmt, int column) {
   if (stmt && stmt->get_column_int)
     return stmt->get_column_int(stmt, column);
 
-  csync_debug(0, "No stmt in db_stmt_get_column_int / no function.\n");
+  csync_error(0, "No stmt in db_stmt_get_column_int / no function.\n");
   return 0;
 }
 
@@ -158,7 +158,7 @@ int db_stmt_next(db_stmt_p stmt)
   if (stmt && stmt->next)
     return stmt->next(stmt);
 
-  csync_debug(0, "No stmt in db_stmt_next / no function.\n");
+  csync_error(0, "No stmt in db_stmt_next / no function.\n");
   return DB_ERROR;
 }
 
@@ -167,7 +167,7 @@ int db_stmt_close(db_stmt_p stmt)
   if (stmt && stmt->close)
     return stmt->close(stmt);
 
-  csync_debug(0, "No stmt in db_stmt_close / no function.\n");
+  csync_error(0, "No stmt in db_stmt_close / no function.\n");
   return DB_ERROR;
 }
 
@@ -189,7 +189,7 @@ int db_schema_version(db_conn_p db)
 
 int db_upgrade_to_schema(db_conn_p db, int version)
 {
-    csync_debug(0, "db_upgrade_to_schema: %d\n", version);
+    csync_log(LOG_DEBUG, 0, "db_upgrade_to_schema: %d\n", version);
     if (db && db->upgrade_to_schema)
 	return db->upgrade_to_schema(db, version);
     return DB_ERROR;

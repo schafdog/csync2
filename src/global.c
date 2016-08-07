@@ -2,8 +2,8 @@
 #include "csync2.h"
 
 int csync_error_count = 0;
-int csync_debug_level = 0;
-FILE *csync_debug_out = 0;
+int csync_level_debug = 0;
+FILE *csync_out_debug = 0;
 int csync_syslog = 0;
 
 int csync_server_child_pid = 0;
