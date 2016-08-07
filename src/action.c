@@ -46,7 +46,7 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal)
 		goto found_matching_pattern;
 	    for (p=a->pattern; p; p=p->next) {
 		const char *prefix = prefixsubst(p->pattern);
-		csync_debug(1, "File pattern: %s => %s ", p->pattern, prefix);
+		csync_log(LOG_DEBUG, 1, "File pattern: %s => %s ", p->pattern, prefix);
 		int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
 		if ( !fnmatch(prefix, filename,
 			      FNM_LEADING_DIR|fnm_pathname) )
@@ -98,7 +98,7 @@ void csync_run_single_command(db_conn_p db, const char *command, const char *log
 	assert(strlen(real_command)+1 < len);
     }
 
-    csync_debug(1, "Running '%s' ...\n", real_command);
+    csync_log(LOG_INFO, 1, "Running '%s' ...\n", real_command);
 
     pid = fork();
     if ( !pid ) {
