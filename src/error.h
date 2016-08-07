@@ -22,7 +22,8 @@ csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 
 #define csync_info(level, fmt, ...)  csync_log(LOG_INFO, level,fmt, ##__VA_ARGS__)
 
-#define csync_warn(level, fmt, ...)  csync_log(LOG_WARN, level,fmt, ##__VA_ARGS__)
+#define csync_warn(level, fmt, ...)  csync_log(LOG_WARNING, level,fmt, ##__VA_ARGS__)
+#define csync_error(level, fmt, ...)  csync_log(LOG_ERR, level,fmt, ##__VA_ARGS__)
 
 /* asprintf with test for no memory */
 

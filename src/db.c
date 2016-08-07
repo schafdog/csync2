@@ -272,7 +272,7 @@ const void * csync_db_colblob(void *stmtx, int col) {
        db_stmt_p stmt = stmtx;
        const void *ptr = stmt->get_column_blob(stmt, col);
        if (stmt->db && stmt->db->logger) {
-	 stmt->db->logger(4, "DB get blob: %s ", (char *) ptr);
+	   stmt->db->logger(LOG_DEBUG, 4, "DB get blob: %s ", (char *) ptr);
        }
        return ptr;
 }

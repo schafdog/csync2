@@ -255,7 +255,7 @@ int csync_read_buffer(char *buffer, char *value) {
 	strncpy(value, buffer, match);
 	value[match] = 0;
 	if (buffer[match] == 0) {
-	    csync_debug(0, "Line too short %s", buffer);
+	    csync_error(0, "Line too short %s", buffer);
 	    return ERROR;
 	}
     }
@@ -275,7 +275,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    continue;
 	}
 	if (rc < 0) {
-	    csync_debug(0, "Got error from read %d\n", rc);
+	    csync_error(0, "Got error from read %d\n", rc);
 	    return ERROR;
 	}
 	int match = csync_read_buffer(buffer, time);
@@ -290,7 +290,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	if (buffer[len] == '\n')
 	    buffer[len] = 0;
 	strcpy(file, buffer);
-	csync_debug(0, "tail '%s' '%s' '%s' \n", time, operation, file);
+	csync_info(1, "tail '%s' '%s' '%s' \n", time, operation, file);
 	csync_check(db, file, db_version, flags);
 	const char *patlist[1];
 	patlist[0] = file;
@@ -313,8 +313,8 @@ static int csync_bind(int ip_version)
 
     s = getaddrinfo(NULL, csync_port, &hints, &result);
     if (s != 0) {
-	csync_debug(1, "Cannot prepare local socket, getaddrinfo: %s\n", gai_strerror(s));
-	return -1;
+	csync_error(0, "Cannot prepare local socket, getaddrinfo: %s\n", gai_strerror(s));
+	return ERROR;
     }
 
     /* getaddrinfo() returns a list of address structures.
@@ -351,7 +351,7 @@ error:
     save_errno = errno;
     close(sfd);
     errno = save_errno;
-    return -1;
+    return ERROR;
 }
 
 static char program_pid[256];
@@ -404,7 +404,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
 	tv.tv_usec = 0 ;
 	/* Not working for inet, but conn now uses select to detect data */
 	if (setsockopt(*conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof tv))
-	    csync_debug(0, "Failed to set socket rcv timeout");
+	    csync_error(0, "Failed to set socket rcv timeout");
 
 	fflush(stdout); fflush(stderr);
 
@@ -421,7 +421,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
       
 	    if (csync_syslog) {
 		csync_openlog();
-		csync_debug(1, "New connection from %s:%s.\n", hbuf, sbuf);
+		csync_info(1, "New connection from %s:%s.\n", hbuf, sbuf);
 	    }
 	    else {
 		//Stupid this is not using csync_debug(..)
@@ -519,7 +519,7 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
     for (int i = 0; i < file_count; i++) {
 	const char *real_name = getrealfn(files[i]);
 	if (real_name == NULL) {
-	    csync_debug(0, "%s did not match a real path. Skipping", files[i]);
+	    csync_warn(0, "%s did not match a real path. Skipping", files[i]);
 	}
 	else {
 	    realnames[count] = strdup(real_name);
@@ -923,7 +923,7 @@ nofork:
     // Move configuration versions into place, if configured.
     if (cfg_db_version != -1) {
 	if (cmd_db_version) 
-	    csync_debug(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version, cmd_db_version);
+	    csync_info(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version, cmd_db_version);
 	else
 	    db_version = cfg_db_version;
     }
@@ -937,13 +937,13 @@ nofork:
 
     if (cfg_ip_version != -1) {
 	if (cmd_ip_version) 
-	    csync_debug(0, "Command line overrides configuration ip protocol version: %d -> %d\n", cfg_ip_version, ip_version);
+	    csync_info(0, "Command line overrides configuration ip protocol version: %d -> %d\n", cfg_ip_version, ip_version);
 	else if (cfg_ip_version == 4)
 	    ip_version = AF_INET;
 	else if (cfg_ip_version == 6)
 	    ip_version = AF_INET6;
 	else {
-	    csync_debug(0, "Unknown IP version: %d\n", cfg_ip_version);
+	    csync_error(0, "Unknown IP version: %d\n", cfg_ip_version);
 	    exit(1);
 	}
     } 
@@ -952,10 +952,12 @@ nofork:
     if (!csync_database)
 	csync_database = db_default_database(dbdir, myhostname, cfgname);
 
-    csync_debug(2, "My hostname is %s.\n",   myhostname);
-    csync_debug(2, "Database File: %s\n",    csync_database);
-    csync_debug(2, "DB Version:    %d\n",    db_version);
-    csync_debug(2, "IP Version:    %s\n",    (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
+    csync_info(2, "My hostname is %s.\n",   myhostname);
+    csync_info(2, "Database File: %s\n",    csync_database);
+    csync_info(2, "DB Version:    %d\n",    db_version);
+    csync_info(2, "IP Version:    %s\n",    (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
+    csync_info(2, "GIT:           %s\n",    CSYNC_GIT_VERSION);
+    
 
     {
 	int found = 0;
@@ -1017,7 +1019,7 @@ nofork:
 		db->add_hint(db, realname, flags & FLAG_RECURSIVE);
 	    }
 	    else {
-		csync_debug(0, "%s did not match a real path. Skipping.", argv[i]); 
+		csync_warn(0, "%s did not match a real path. Skipping.", argv[i]); 
 	    };
 	};
     };
@@ -1072,7 +1074,7 @@ nofork:
 		csync_check(db, realname, db_version, flags);
 	    }
 	    else {
-		csync_debug(0, "%s is not a real path", argv[i]);
+		csync_warn(0, "%s is not a real path", argv[i]);
 	    }
 	}
     };
@@ -1104,11 +1106,11 @@ nofork:
 	int fileno = 0;
 	if (optind < argc) {
 	    fileno = open(argv[optind], O_RDONLY);
-	    csync_debug(0, "Opening %s %d \n", argv[optind], fileno);
+	    csync_debug(1, "Opening %s %d \n", argv[optind], fileno);
 	    lseek(fileno, 0, SEEK_END);
 	}
 	else {
-	    csync_debug(0, "tailing stdin \n");
+	    csync_debug(1, "tailing stdin \n");
 	}
 	csync_tail(db, fileno, flags);
     };
@@ -1186,16 +1188,16 @@ nofork:
 	csync_debug(1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
-	    csync_debug(0, "goto nofork");
+	    csync_debug(1, "goto nofork");
 	    goto nofork;
 	}
     }
 
     if ( csync_error_count != 0 || (csync_messages_printed && csync_debug_level) ) {
 	if (csync_error_count > 0)
-	    csync_debug(0, "Finished with %d errors.\n", csync_error_count);
+	    csync_warn(1, "Finished with %d errors.\n", csync_error_count);
 	else
-	    csync_debug(0, "Finished succesfully.\n");
+	    csync_info(1, "Finished succesfully.\n");
     }
     csync_printtotaltime();
 
