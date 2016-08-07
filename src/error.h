@@ -18,7 +18,7 @@ csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 
 #define csync_crit(level, fmt, ...)  csync_log(LOG_CRIT, level,fmt, ##__VA_ARGS__)
 
-#define csync_debug(level, fmt, ...) csync_log(csync_syslog_priority(level), level,fmt, ##__VA_ARGS__)
+#define csync_debug(level, fmt, ...) csync_log(LOG_DEBUG, level,fmt, ##__VA_ARGS__)
 
 #define csync_info(level, fmt, ...)  csync_log(LOG_INFO, level,fmt, ##__VA_ARGS__)
 
