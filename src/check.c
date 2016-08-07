@@ -100,7 +100,7 @@ const char *csync_mode_op_str(int st_mode, int op)
     if (op == OP_HARDLINK)
 	return "HARDLINK";
     if (st_mode == 0) {	
-	csync_debug(1, "WARN: stat failed. op: %d %d\n", op);
+	csync_debug(1, "WARN: stat failed. op: %d\n", op);
 	return "RM?";
     }
     if (S_ISREG(st_mode))

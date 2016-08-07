@@ -89,7 +89,7 @@ int db_open(const char *file, int type, db_conn_p *db)
   return rc;
 }
 
-void db_set_logger(db_conn_p conn, void (*logger)(int lv, const char *fmt, ...)) {
+void db_set_logger(db_conn_p conn, void (*logger)(int priority, int lv, const char *fmt, ...)) {
   if (conn == NULL)
     csync_fatal("No connection in set_logger.\n");
 

@@ -92,6 +92,10 @@ void csync_printtime_prefix()
 	fprintf(csync_debug_out, "[%s] ", ftbuffer);
 }
 
+int encode_syslog_priority(int syslog) {
+    return syslog << 3;
+}
+
 int csync_syslog_priority(int level) {
     switch (level) {
     case -1:
@@ -134,7 +138,7 @@ void csync_fatal2(const char *fmt, ...)
 
 }
 
-void csync_debug(int lv, const char *fmt, ...)
+void csync_log(int priority, int lv, const char *fmt, ...)
 {
 	va_list ap;
 	if ( csync_debug_level < lv )
@@ -158,7 +162,7 @@ void csync_debug(int lv, const char *fmt, ...)
 	}
 	else {
 	  va_start(ap,fmt);
-	  vsyslog(csync_syslog_priority(lv), fmt, ap);
+	  vsyslog(priority, fmt, ap);
 	  va_end(ap);
 	}
 	csync_messages_printed++;

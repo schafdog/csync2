@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
+#include <syslog.h>
 
 typedef int operation_t;
 typedef const char * filename_p;
@@ -109,12 +110,8 @@ enum {
 #define ERROR_DIRTY_STR "File is also marked dirty here!"
 #define ERROR_DIRTY_LEN ((int)sizeof ERROR_DIRTY_STR - 1)
 
-#define csync_fatal(fmt, ...) {\
-  csync_debug(0,fmt, ##__VA_ARGS__);\
-  exit(1);\
-} while(0)
+#include "error.h"
 
-/* asprintf with test for no memory */
 #define ASPRINTF(s, fmt, ...) do {\
 	int __ret = asprintf(s, fmt, ##__VA_ARGS__);\
 	if (__ret < 0) \
@@ -164,16 +161,6 @@ extern int csync_match_file_host(const char *file, const char *myname, peername_
 extern struct peer *csync_find_peers(const char *file, const char *thispeer);
 extern const char *csync_key(const char *hostname, filename_p filename);
 extern int csync_perm(filename_p filename, const char *key, const char *hostname);
-
-
-/* error.c */
-
-extern void csync_printtime();
-extern void csync_printtotaltime();
-extern void csync_debug(int lv, const char *fmt, ...);
-
-#define csync_debug_ping(N) \
-csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 
 
 /* conn.c */
