@@ -23,7 +23,8 @@ sbin_SCRIPTS = csync2-compare
 man_MANS = csync2.1
 CC = clang
 csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
-                 checktxt.c csync2.c global.c daemon.c db.c error.c getrealfn.c	\
+                 checktxt.c csync2.c global.c daemon.c db.c \
+		 error.c error.h getrealfn.c	\
                  groups.c rsync.c update.c urlencode.c conn.c prefixsubst.c \
 		 db_api.c db_sql.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c \
 		 ringbuffer.c buffer.c uidgid.c uidgid.h \
