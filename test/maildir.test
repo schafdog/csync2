@@ -24,7 +24,7 @@ cmd x "New Maildir/new/${FILE} with transit in tmp "
 sleep 1
 mv test/$NAME/Maildir/new/${FILE} test/$NAME/Maildir/cur/${CURFILE}
 cmd x "move Maildir/new/${FILE} Maildir/cur/${CURFILE}"
-sleep 1
+sleep 2
 mv test/$NAME/Maildir/cur/${CURFILE} test/$NAME/Maildir/cur/${CURFILE}S
 cmd x "move Maildir/cur/${CURFILE} Maildir/cur/${CURFILE}S (mark read)"
 sleep 1
