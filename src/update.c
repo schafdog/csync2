@@ -863,7 +863,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 	    csync_error(0, "ERROR: Cannot stat %s %s.\n", filename,
 			operation_str);
 	}
-	db->clear_operation(db, myname, peername, filename, 0);
+	db->clear_operation(db, myname, peername, filename);
 	csync_error_count++;
 	return ERROR;
     }

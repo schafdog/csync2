@@ -529,9 +529,9 @@ void db_sql_add_dirty_simple(db_conn_p db, const char *myname, peername_p peerna
 	"INSERT INTO dirty (myname, peername, filename) values ('%s', '%s', '%s')",
 	db_escape(db, myname), db_escape(db, peername), db_escape(db, filename));
 }
-
-void db_sql_clear_operation(db_conn_p db, const char *myname, peername_p peername, filename_p filename)
+void db_sql_clear_operation(db_conn_p db, const char *myname, peername_p peername, filename_p filename /* , int recursive */)
 {
+    
     SQL(db, "Clear operation",
 	"UPDATE dirty set operation = '-' where myname = '%s' and peername = '%s' and filename = '%s'",
 	db_escape(db, myname), db_escape(db, peername), db_escape(db, filename));
@@ -865,10 +865,8 @@ int  db_sql_init(db_conn_p conn) {
     conn->find_file = db_sql_find_file;
     conn->add_dirty  = db_sql_add_dirty;
     conn->remove_dirty  = db_sql_remove_dirty;
-//    conn->get_dirty_by_peer = db_sql_get_dirty_by_peer;
     conn->get_dirty_by_peer_match  = db_sql_get_dirty_by_peer_match;
-//    conn->clear_dirty = db_sql_clear_dirty;
-//    conn->clear_operation = db_sql_clear_operation;
+    conn->clear_operation = db_sql_clear_operation;
     conn->get_commands = db_sql_get_commands;
     conn->get_command_filename = db_sql_get_command_filename;
     conn->update_file = db_sql_update_file;
