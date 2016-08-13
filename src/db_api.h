@@ -47,12 +47,13 @@ struct db_conn_t {
     void        (*close)  (db_conn_p conn);
     void        (*logger) (int priority, int lv, const char *fmt, ...);
     const char* (*errmsg) (db_conn_p conn);
-    int         (*upgrade_to_schema) (db_conn_p db, int version);
     const char* (*escape) (db_conn_p conn, const char *string);
     void        (*free)   (db_conn_p conn, const char *escaped);
     void        (*shutdown) ();
     void        (*mark)(db_conn_p conn, char *active_peerlist, const char *realname, int recursive);
 
+    // Update functions (deprecated)
+    int         (*upgrade_to_schema) (db_conn_p db, int version);
     // query functions 
     int         (*list_dirty) (db_conn_p conn, char **active_peers, const char *realname, int recursive);
     void        (*list_hint)  (db_conn_p conn);
