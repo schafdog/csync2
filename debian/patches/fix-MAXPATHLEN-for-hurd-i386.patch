@@ -1,0 +1,13 @@
+--- a/rsync.c
++++ b/rsync.c
+@@ -33,6 +33,10 @@
+ /* for MAXPATHLEN */
+ #include <sys/param.h>
+ 
++/* fix MAXPATHLEN for Hurd */
++#ifndef MAXPATHLEN
++    #define MAXPATHLEN 4096
++#endif
+ 
+ #ifdef __CYGWIN__
+ #include <w32api/windows.h>

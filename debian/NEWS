@@ -1,0 +1,15 @@
+csync2 (2.0+73d3293-1) unstable; urgency=medium
+
+  csync2 changed the default database backend from SQLite2 to SQLite3. A new
+  and empty SQLite3 db will be created in /var/lib/csync2 on the first run.
+  The old SQLite2 database content is not automatically migrated.
+
+  Nodes will automatically be added to the new database based on the preshared
+  secret key configured, so no admin intervention is required to reconstruct
+  the cluster.
+
+  If the cluster is not fully synchronized before upgrading, synchronization
+  conflicts might occur that require manual intervention. Use the "csync2 -x"
+  and "csync2 -f /this/file/is/uptodate" commands to resolve these.
+
+ -- Alexander Sosna <alexander.sosna@credativ.de>  Tue, 04 Aug 2015 12:09:45 +0200

@@ -1,0 +1,2 @@
+fix-MAXPATHLEN-for-hurd-i386.patch
+fix-libsqlite3-name.patch
