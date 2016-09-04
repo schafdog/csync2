@@ -47,12 +47,13 @@ struct db_conn_t {
     void        (*close)  (db_conn_p conn);
     void        (*logger) (int priority, int lv, const char *fmt, ...);
     const char* (*errmsg) (db_conn_p conn);
-    int         (*upgrade_to_schema) (db_conn_p db, int version);
     const char* (*escape) (db_conn_p conn, const char *string);
     void        (*free)   (db_conn_p conn, const char *escaped);
     void        (*shutdown) ();
     void        (*mark)(db_conn_p conn, char *active_peerlist, const char *realname, int recursive);
 
+    // Update functions (deprecated)
+    int         (*upgrade_to_schema) (db_conn_p db, int version);
     // query functions 
     int         (*list_dirty) (db_conn_p conn, char **active_peers, const char *realname, int recursive);
     void        (*list_hint)  (db_conn_p conn);
@@ -77,12 +78,11 @@ struct db_conn_t {
     
     void        (*remove_dirty)    (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
     
-//    textlist_p  (*get_dirty_by_peer) (db_conn_p db, const char *myname, peername_p peername);
     textlist_p  (*get_dirty_by_peer_match) (db_conn_p db, const char *myname, peername_p peername, int recursive, const char *patlist[], int num,
 					    int (*match_func) (const char *file, filename_p pattern, int recursive));
 
-    void        (*clear_dirty)     (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
-    void        (*clear_operation) (db_conn_p conn, const char *myname, peername_p peername, filename_p filename, int recursive);
+//    void        (*clear_dirty)     (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
+    void        (*clear_operation) (db_conn_p conn, const char *myname, peername_p peername, filename_p filename /*, int recursive */);
 
     textlist_p  (*get_old_operation) (db_conn_p db, const char *checktxt,
 				      peername_p peername, filename_p filename, 

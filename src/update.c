@@ -623,7 +623,7 @@ int csync_update_hardlink(int conn, peername_p peername, const char *key_encoded
     csync_info(1, "Hardlinking %s %s -> %s\n", peername, filename, newpath);
     conn_printf(conn, "%s %s %s %s \n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
     if ((*last_conn_status = read_conn_status(conn, filename, peername))) {
-    	csync_error(0, "Failed to hard link %s %s\n", filename, newpath);
+    	csync_error(0, "Failed to hard link %s %s %s\n", peername, filename, newpath);
     	if (*last_conn_status == CONN_CLOSE)
     		return *last_conn_status;
     	return ERROR_HARDLINK;
@@ -795,7 +795,7 @@ int csync_update_file_move(int conn, db_conn_p db, const char* myname, peername_
 	db->remove_dirty(db, peername, other, 0); 
 	return rc;
     }
-    csync_error(0, "Failed to MV %s %s \n", other, filename);
+    csync_error(0, "Failed to MV %s: %s %s \n", peername, other, filename);
     return DIFF_FILE;
 }
 
@@ -863,7 +863,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 	    csync_error(0, "ERROR: Cannot stat %s %s.\n", filename,
 			operation_str);
 	}
-	db->clear_operation(db, myname, peername, filename, 0);
+	db->clear_operation(db, myname, peername, filename);
 	csync_error_count++;
 	return ERROR;
     }

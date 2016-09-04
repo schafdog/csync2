@@ -84,7 +84,7 @@ check_failed:
 
 #define CHECK_NEW_RM 1
 #define CHECK_NEW_MOD 1
-#define CHECK_MV_RM  0
+#define CHECK_MV_RM  1
 #define CHECK_RM_MV  0
 #define CHECK_HARDLINK 0
 #define CHECK_NEW_MV 1
@@ -188,8 +188,8 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     else if (CHECK_MV_RM && OP_MOVE == old_operation && OP_RM == operation) {
 	operation = OP_RM;
 	file_new = buffer_strdup(buffer, old_other);
-	clean_other = buffer_strdup(buffer, old_filename);
-	csync_info(1, "mark operation MV->RM %s '%s' '%s' '%s'.\n", peername, file, old_filename, other);
+	clean_other = buffer_strdup(buffer, file);
+	csync_info(1, "mark operation MV->RM %s '%s' '%s' file: '%s' old_filename: '%s' .\n", peername, file_new, clean_other, file, old_filename);
     }
     else if (CHECK_NEW_MV && OP_NEW == old_operation && OP_MOVE == operation) {
 	operation = OP_NEW;
