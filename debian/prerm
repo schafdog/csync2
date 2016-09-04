@@ -3,7 +3,7 @@
 #
 # see: dh_installdeb(1)
 
-# set -e
+set -e
 
 # summary of how this script can be called:
 #        * <prerm> `remove'
@@ -20,13 +20,9 @@
 case "$1" in
     remove|upgrade|deconfigure)
 
-        if grep -q "^csync2" /etc/services ; then
-	    grep -v "^csync2" /etc/services >/etc/services.new
-	    mv -f /etc/services.new /etc/services
-	fi
 	update-inetd --remove '^csync2'
         if [ -f /var/run/inetd.pid ] ; then
-            kill -s HUP cat /var/run/inetd.pid 2>/dev/null
+            kill -s HUP $(cat /var/run/inetd.pid)
 	fi
         ;;
     failed-upgrade)
@@ -43,5 +39,3 @@ esac
 #DEBHELPER#
 
 exit 0
-
-

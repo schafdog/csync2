@@ -1,219 +1,155 @@
-csync2 (2.0~0rc1) unstable; urgency=low
+csync2 (2.0-8-g175a01c-2) unstable; urgency=medium
 
-  * Preparing new Upstream Version
+  * Make date in pdf title reproducible
 
- -- Lars Ellenberg <lars@linbit.com>  Mon, 06 Dec 2010 20:02:25 +0100
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 13 Jul 2016 11:55:40 +0200
+
+csync2 (2.0-8-g175a01c-1) unstable; urgency=medium
+
+  * New upstream release (git snapshot)
+  * Fix postinst error when inetd.conf is missing
+  * Use syslog (-l) for logging in inetd mode
+  * Update Uploaders: add Valentin Vidic
+  * Update Standards-Version: no changes required
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 15 Jun 2016 20:58:26 +0200
+
+csync2 (2.0+73d3293-2) unstable; urgency=medium
+
+  [ Alexander Sosna ]
+  * Add patch for GNU Hurd compatibility: fix-MAXPATHLEN-for-hurd-i386.patch
+
+  [ Christoph Berg ]
+  * Add texlive-latex-extra to B-D to get the pdf docs built.
+
+ -- Christoph Berg <christoph.berg@credativ.de>  Tue, 11 Aug 2015 11:45:06 +0200
+
+csync2 (2.0+73d3293-1) unstable; urgency=medium
+
+  [ Alexander Sosna ]
+  * New upstream release (git snapshot)
+    + No longer provides /usr/share/csync2/csync2_locheck.sh (Closes: #530062)
+    + uses sqlite3 (Closes: #639551)
+  * Update / fix dependency: gnutls
+  * Add myself to uploaders
+  * Update: compat, debhelper, Standards-Version
+  * fix: typo (Closes: #585127)
+  * Add patch: fix-libsqlite3-name.patch
+  * Removed empty dir /usr/share/csync2
+  * Add NEWS file to inform about incompatibility 1.X <> 2.X
+  * Install upstream example configuration file to etc
+
+  [ Christoph Berg ]
+  * Add Vcs headers.
+  * Convert rules to dh.
+  * Remove redundant docs.
+  * Use autotools-dev to update config.guess/sub.
+  * Don't manually try to HUP inetd (Closes: #399036, #507076)
+  * B-D on libgnutls-openssl-dev | libgnutls-dev to enable wheezy builds.
+    (Thanks for the NMU, Closes: #744234)
+
+ -- Alexander Sosna <alexander.sosna@credativ.de>  Tue, 04 Aug 2015 12:09:45 +0200
+
+csync2 (1.34-2.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Build-Depend on libgnutls-openssl-dev instead of libgnutls-dev
+    Closes: #731373
+
+ -- Andreas Metzler <ametzler@debian.org>  Sun, 06 Apr 2014 14:31:51 +0200
+
+csync2 (1.34-2.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix erroneous distribution tag in changelog.
+
+ -- Kumar Appaiah <akumar@debian.org>  Mon, 31 Aug 2009 11:29:12 -0500
+
+csync2 (1.34-2.1) UNRELEASED; urgency=low
+
+  * Non-maintainer upload.
+  * Alter configure script and control to use pkg-config
+    to find the gnutls version. (Closes: #529819)
+
+ -- Kumar Appaiah <akumar@debian.org>  Sat, 22 Aug 2009 23:58:17 -0500
 
 csync2 (1.34-2) unstable; urgency=low
 
-  * sqlite3 integration
+  * New maintainers. (closes: #500351)
+  * Add inetd dependencies. (closes: #488279)
 
- -- Ard van Breemen <ard@telegraafnet.nl>  Wed, 18 Jun 2008 13:13:22 +0200
+ -- Norbert Tretkowski <nobse@debian.org>  Thu, 09 Apr 2009 12:37:36 +0200
 
 csync2 (1.34-1) unstable; urgency=low
 
-  * New Upstream Version.
+  * New upstream release
 
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 24 Jul 2007 23:04:14 +0200
+ -- Cyril Bouthors <cyril@bouthors.org>  Sun, 12 Aug 2007 12:16:35 +0200
+
+csync2 (1.33-2) unstable; urgency=low
+
+  * put paper.pdf into /usr/share/doc/csync2/ (closes: 359260).
+
+ -- Cyril Bouthors <cyril@bouthors.org>  Sun, 20 Aug 2006 20:27:27 +0300
 
 csync2 (1.33-1) unstable; urgency=low
 
-  * New Upstream Version.
+  * New upstream release
 
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 08 Aug 2006 19:46:49 +0200
+ -- Cyril Bouthors <cyril@bouthors.org>  Mon, 14 Aug 2006 15:00:26 +0300
 
 csync2 (1.32-1) unstable; urgency=low
 
-  * New Upstream Version.
+  * New upstream release
 
- -- Clifford Wolf <clifford.wolf@linbit.com>  Wed, 19 Apr 2006 12:49:28 +0200
+ -- Cyril Bouthors <cyril@bouthors.org>  Wed, 26 Apr 2006 10:55:29 +0200
 
 csync2 (1.31-1) unstable; urgency=low
 
-  * New Upstream Version.
+  * New upstream release
 
- -- Clifford Wolf <clifford.wolf@linbit.com>  Mon, 03 Apr 2006 16:07:42 +0200
+ -- Cyril Bouthors <cyril@bouthors.org>  Mon,  3 Apr 2006 23:40:41 +0200
+
+csync2 (1.30-3) unstable; urgency=low
+
+  * typo in debian/control
+
+ -- Cyril Bouthors <cyril@bouthors.org>  Tue, 28 Mar 2006 16:05:52 +0200
+
+csync2 (1.30-2) unstable; urgency=low
+
+  * Added dep on netbase>=4.25 to avoid spoiling /etc/services (closes:
+    351942).
+
+ -- Cyril Bouthors <cyril@bouthors.org>  Tue, 28 Mar 2006 15:15:06 +0200
 
 csync2 (1.30-1) unstable; urgency=low
 
-  * New Upstream Version.
+  * New upstream release
 
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 02 Feb 2006 13:47:54 +0100
+ -- Cyril Bouthors <cyril@bouthors.org>  Sat,  4 Feb 2006 09:37:37 +0300
+
+csync2 (1.29-3) unstable; urgency=low
+
+  * debian/control: removed Build-Depends to libc6-dev (closes: #346025).
+
+ -- Cyril Bouthors <cyril@bouthors.org>  Thu,  5 Jan 2006 09:14:32 +0300
+
+csync2 (1.29-2) unstable; urgency=low
+
+  * debian/control: added missing Build-Depends to flex (closes: 345965).
+
+ -- Cyril Bouthors <cyril@bouthors.org>  Wed,  4 Jan 2006 18:15:59 +0300
 
 csync2 (1.29-1) unstable; urgency=low
 
-  * New Upstream Version.
+  * New upstream release : replaced OpenSSL library with GNU TLS library
+    in order to fix legal issues.
 
- -- Clifford Wolf <clifford.wolf@linbit.com>  Mon, 02 Jan 2006 16:31:01 +0100
+ -- Cyril Bouthors <cyril@bouthors.org>  Mon,  2 Jan 2006 18:50:35 +0300
 
 csync2 (1.28-1) unstable; urgency=low
 
-  * New Upstream Version.
+  * Initial release (closes: #344532).
 
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 22 Nov 2005 15:01:56 +0100
-
-csync2 (1.27-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Fri, 18 Nov 2005 15:16:16 +0100
-
-csync2 (1.26-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 15 Nov 2005 20:29:52 +0100
-
-csync2 (1.25-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Fri, 11 Nov 2005 15:26:07 +0100
-
-csync2 (1.24-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 18 Oct 2005 14:12:50 +0200
-
-csync2 (1.23-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 11 Oct 2005 17:42:10 +0200
-
-csync2 (1.22-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Mon, 19 Sep 2005 13:17:43 +0200
-
-csync2 (1.21-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 23 Aug 2005 15:43:47 +0200
-
-csync2 (1.20-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 04 Aug 2005 11:44:01 +0200
-
-csync2 (1.19-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 14 Jun 2005 11:28:00 +0200
-
-csync2 (1.18-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Fri, 03 Jun 2005 18:01:06 +0200
-
-csync2 (1.17-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Mon, 30 May 2005 19:07:13 +0200
-
-csync2 (1.16-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Wed, 13 Oct 2004 12:04:18 +0200
-
-csync2 (1.15-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Tue, 06 Jul 2004 17:33:36 +0200
-
-csync2 (1.14-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Mon, 14 Jun 2004 11:58:18 +0200
-
-csync2 (1.13-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 13 May 2004 12:50:36 +0100
-
-csync2 (1.12-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 27 Apr 2004 12:50:36 +0100
-
-csync2 (1.11-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 22 Apr 2004 16:31:51 +0100
-
-csync2 (1.10-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 22 Apr 2004 16:18:31 +0100
-
-csync2 (1.9-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 21 Apr 2004 15:35:22 +0100
-
-csync2 (1.8-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 21 Apr 2004 14:07:34 +0100
-
-csync2 (1.7-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 8 Apr 2004 12:29:17 +0100
-
-csync2 (1.6-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Wed, 7 Apr 2004 14:38:30 +0100
-
-csync2 (1.5-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Mon, 5 Apr 2004 18:27:10 +0100
-
-csync2 (1.4-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Fri, 2 Apr 2004 15:34:50 +0100
-
-csync2 (1.3-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Clifford Wolf <clifford.wolf@linbit.com>  Thu, 1 Apr 2004 14:44:45 +0100
-
-csync2 (1.2-1) unstable; urgency=low
-
-  * New Upstream Version.
-
- -- Philipp Richter <philipp.richter@linbit.com>  Tue, 30 Mar 2004 13:20:45 +0100
-
-csync2 (1.1) unstable; urgency=low
-
-  * Initial Release.
-
- -- Philipp Richter <philipp.richter@linbit.com>  Fri, 26 Mar 2004 15:03:45 +0100
-
-Local variables:
-mode: debian-changelog
-End:
+ -- Cyril Bouthors <cyril@bouthors.org>  Sat, 24 Dec 2005 15:46:13 +0300

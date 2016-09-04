@@ -1,23 +1,19 @@
-This is csync2, written by Cliffor Wolf <clifford.wolf@linbit.com>,
-Debian Package maintained by Philipp Richter <philipp.richter@linbit.com>
-on Fri, 26 Mar 2004, 2005 15:03:45 +0100.
+This package was debianized by Cyril Bouthors <cyril@bouthors.org> on
+Sat, 24 Dec 2005 15:46:13 +0300.
 
-Copyright (C) 2004, 2005 Clifford Wolf
+It was downloaded from http://oss.linbit.com/csync2/
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
+Copyright 2004 - 2015 LINBIT Information Technologies GmbH <http://www.linbit.com>
+Original author: Cliffor Wolf   <clifford.wolf@linbit.com>
+Additional work: Johannes Thoma <johannes@linbit.com>
+                 Lars Ellenberg <lars@linbit.com>
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+License:
 
-  You should have received a copy of the GNU General Public License
-  along with this package; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-  02111-1307, USA.
+Csync2 is free software; you can redistribute them and/or modify them
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
 
-On Debian systems, the complete text of the GNU General
-Public License can be found in `/usr/share/common-licenses/GPL'.
+On Debian systems, the complete text of the GNU General Public
+License can be found in /usr/share/common-licenses/GPL file.
