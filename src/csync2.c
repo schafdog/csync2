@@ -985,7 +985,7 @@ nofork:
 	}
 	else {
 	    printf("Update format %s unknown\n", update_format);
-	    int rc = db->upgrade_db(db);
+	    db->upgrade_db(db);
 	    csync_db_close(db);
 	    exit(1);
 	}
