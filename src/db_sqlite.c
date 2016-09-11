@@ -116,6 +116,7 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p)
   conn->prepare = db_sqlite_prepare;
   conn->errmsg  = db_sqlite_errmsg;
   conn->upgrade_to_schema = db_sqlite_upgrade_to_schema;
+  conn->schema_version = db_sqlite_schema_version;
   conn->escape  = db_sqlite_escape;
   return db_sqlite_error_map(rc);
 }
@@ -244,6 +245,11 @@ const char *db_sqlite_escape(db_conn_p conn, const char *string) {
   const char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
   ringbuffer_add(string, free);
   return escaped;
+}
+
+int db_sqlite_schema_version(db_conn_p conn)
+{
+    return -1;
 }
 
 int db_sqlite_upgrade_to_schema(db_conn_p db, int version)

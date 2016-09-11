@@ -126,110 +126,6 @@ static int db_pgsql_parse_url(char *url, char **host, char **user, char **pass, 
   return DB_OK;
 }
 
-int db_postgres_open(const char *file, db_conn_p *conn_p)
-{
-  PGconn *pg_conn;
-  char *host, *user, *pass, *database;
-  unsigned int port = 5432;  /* default postgres port */
-  char *db_url = malloc(strlen(file)+1);
-  char *pg_conn_info;
-
-  db_postgres_dlopen();
-
-  if (db_url == NULL)
-    csync_fatal("No memory for db_url\n");
-
-  user = "postgres";
-  pass = "";
-  host = "localhost";
-  database = "csync2";
-
-  strcpy(db_url, file);
-  int rc = db_pgsql_parse_url(db_url, &host, &user, &pass, &database, &port);
-  if (rc != DB_OK)
-    return rc;
-
-  ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='%s' port=%d",
-	host, user, pass, database, port);
-
-  pg_conn = f.PQconnectdb_fn(pg_conn_info);
-  if (pg_conn == NULL)
-    csync_fatal("No memory for postgress connection handle\n");
-
-  if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-    f.PQfinish_fn(pg_conn);
-    free(pg_conn_info);
-
-    ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='postgres' port=%d",
-	  host, user, pass, port);
-
-    pg_conn = f.PQconnectdb_fn(pg_conn_info);
-    if (pg_conn == NULL)
-      csync_fatal("No memory for postgress connection handle\n");
-
-    if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-	csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
-      f.PQfinish_fn(pg_conn);
-      free(pg_conn_info);
-      return DB_ERROR;
-    } else {
-      char *create_database_statement;
-      PGresult *res;
-
-      csync_warn(1, "Database %s not found, trying to create it ...", database);
-      ASPRINTF(&create_database_statement, "create database %s", database);
-      res = f.PQexec_fn(pg_conn, create_database_statement);
-
-      free(create_database_statement);
-
-      switch (f.PQresultStatus_fn(res)) {
-        case PGRES_COMMAND_OK:
-        case PGRES_TUPLES_OK:
-          break;
-
-        default:
-          csync_error(0, "Could not create database %s: %s", database, f.PQerrorMessage_fn(pg_conn));
-          return DB_ERROR;
-      }
-
-      f.PQfinish_fn(pg_conn);
-      free(pg_conn_info);
-
-      ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='%s' port=%d",
-	    host, user, pass, database, port);
-
-      pg_conn = f.PQconnectdb_fn(pg_conn_info);
-      if (pg_conn == NULL)
-        csync_fatal("No memory for postgress connection handle\n");
-
-      if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-        csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
-        f.PQfinish_fn(pg_conn);
-        free(pg_conn_info);
-        return DB_ERROR;
-      }
-    }
-  }
-
-  db_conn_p conn = calloc(1, sizeof(*conn));
-
-  if (conn == NULL)
-    csync_fatal("No memory for conn\n");
-
-  *conn_p = conn;
-  conn->private = pg_conn;
-  conn->close = db_postgres_close;
-  conn->exec = db_postgres_exec;
-  conn->errmsg = db_postgres_errmsg;
-  conn->prepare = db_postgres_prepare;
-  conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
-  conn->escape = db_postgres_escape;
-  free(pg_conn_info);
-
-  return DB_OK;
-}
-
-
 void db_postgres_close(db_conn_p conn)
 {
   if (!conn)
@@ -413,6 +309,10 @@ int db_postgres_stmt_close(db_stmt_p stmt)
   return DB_OK;
 }
 
+int db_postgres_schema_version(db_conn_p conn)
+{
+    return -1;
+}
 
 #define FILE_LENGTH 275
 int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
@@ -502,6 +402,112 @@ const char* db_postgres_escape(db_conn_p conn, const char *string)
 
   return escaped_buffer;
 }
+
+int db_postgres_open(const char *file, db_conn_p *conn_p)
+{
+  PGconn *pg_conn;
+  char *host, *user, *pass, *database;
+  unsigned int port = 5432;  /* default postgres port */
+  char *db_url = malloc(strlen(file)+1);
+  char *pg_conn_info;
+
+  db_postgres_dlopen();
+
+  if (db_url == NULL)
+    csync_fatal("No memory for db_url\n");
+
+  user = "postgres";
+  pass = "";
+  host = "localhost";
+  database = "csync2";
+
+  strcpy(db_url, file);
+  int rc = db_pgsql_parse_url(db_url, &host, &user, &pass, &database, &port);
+  if (rc != DB_OK)
+    return rc;
+
+  ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='%s' port=%d",
+	host, user, pass, database, port);
+
+  pg_conn = f.PQconnectdb_fn(pg_conn_info);
+  if (pg_conn == NULL)
+    csync_fatal("No memory for postgress connection handle\n");
+
+  if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
+    f.PQfinish_fn(pg_conn);
+    free(pg_conn_info);
+
+    ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='postgres' port=%d",
+	  host, user, pass, port);
+
+    pg_conn = f.PQconnectdb_fn(pg_conn_info);
+    if (pg_conn == NULL)
+      csync_fatal("No memory for postgress connection handle\n");
+
+    if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
+	csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
+      f.PQfinish_fn(pg_conn);
+      free(pg_conn_info);
+      return DB_ERROR;
+    } else {
+      char *create_database_statement;
+      PGresult *res;
+
+      csync_warn(1, "Database %s not found, trying to create it ...", database);
+      ASPRINTF(&create_database_statement, "create database %s", database);
+      res = f.PQexec_fn(pg_conn, create_database_statement);
+
+      free(create_database_statement);
+
+      switch (f.PQresultStatus_fn(res)) {
+        case PGRES_COMMAND_OK:
+        case PGRES_TUPLES_OK:
+          break;
+
+        default:
+          csync_error(0, "Could not create database %s: %s", database, f.PQerrorMessage_fn(pg_conn));
+          return DB_ERROR;
+      }
+
+      f.PQfinish_fn(pg_conn);
+      free(pg_conn_info);
+
+      ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='%s' port=%d",
+	    host, user, pass, database, port);
+
+      pg_conn = f.PQconnectdb_fn(pg_conn_info);
+      if (pg_conn == NULL)
+        csync_fatal("No memory for postgress connection handle\n");
+
+      if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
+        csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
+        f.PQfinish_fn(pg_conn);
+        free(pg_conn_info);
+        return DB_ERROR;
+      }
+    }
+  }
+
+  db_conn_p conn = calloc(1, sizeof(*conn));
+
+  if (conn == NULL)
+    csync_fatal("No memory for conn\n");
+
+  *conn_p = conn;
+  conn->private = pg_conn;
+  conn->close = db_postgres_close;
+  conn->exec = db_postgres_exec;
+  conn->errmsg = db_postgres_errmsg;
+  conn->prepare = db_postgres_prepare;
+  conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
+  conn->schema_version = db_postgres_schema_version;
+  conn->escape = db_postgres_escape;
+  free(pg_conn_info);
+
+  return DB_OK;
+}
+
+
 
 
 #endif   /* HAVE_POSTGRES */

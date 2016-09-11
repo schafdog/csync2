@@ -4,6 +4,7 @@
 
 /* public */
 int   db_postgres_open(const char *file, db_conn_p *conn_p);
+
 /* Private */
 void  db_postgres_close(db_conn_p db_conn);
 int   db_postgres_exec(db_conn_p conn, const char *sql);
@@ -17,5 +18,6 @@ int   db_postgres_stmt_get_column_int(db_stmt_p stmt, int column);
 int   db_postgres_stmt_close(db_stmt_p stmt);
 int   db_postgres_upgrade_to_schema(db_conn_p conn, int version);
 const char* db_postgres_escape(db_conn_p conn, const char *string);
+
 
 #endif

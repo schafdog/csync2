@@ -130,68 +130,6 @@ int db_mysql_parse_url(char *url, char **host, char **user, char **pass, char **
 
 #endif
 
-int db_mysql_open(const char *file, db_conn_p *conn_p)
-{
-#ifdef HAVE_MYSQL
-  db_mysql_dlopen();
-
-  MYSQL *db = f.mysql_init_fn(0);
-  char *host = 0, *user = 0, *pass = 0, *database = 0, *unix_socket = 0;
-  unsigned int port = 0;
-  char db_url[strlen(file)+1];
-  char *create_database_statement = 0;
-
-  strcpy(db_url, file);
-  int rc = db_mysql_parse_url(db_url, &host, &user, &pass, &database, &port, &unix_socket);
-  if (rc != DB_OK) {
-    return rc;
-  }
-
-  if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL) {
-    if (f.mysql_errno_fn(db) == ER_BAD_DB_ERROR) {
-      if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
-	ASPRINTF(&create_database_statement, "create database %s", database);
-
-	csync_log(LOG_DEBUG, 2, "creating database %s\n", database);
-        if (f.mysql_query_fn(db, create_database_statement) != 0)
-          csync_fatal("Cannot create database %s: Error: %s\n", database, f.mysql_error_fn(db));
-	free(create_database_statement);
-
-	f.mysql_close_fn(db);
-	db = f.mysql_init_fn(0);
-
-        if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL)
-          goto fatal;
-      }
-    } else
-fatal:
-      csync_fatal("Failed to connect to database: Error: %s\n", f.mysql_error_fn(db));
-  }
-
-  db_conn_p conn = calloc(1, sizeof(*conn));
-  if (conn == NULL) {
-    return DB_ERROR;
-  }
-  *conn_p = conn;
-  // Setup common SQL statements. Override where needed
-  db_sql_init(conn);
-
-  conn->private = db;
-  conn->close   = db_mysql_close;
-  conn->exec    = db_mysql_exec;
-  conn->prepare = db_mysql_prepare;
-  conn->errmsg  = db_mysql_errmsg;
-  conn->upgrade_to_schema = db_mysql_upgrade_to_schema;
-  conn->escape  = db_mysql_escape;
-  //  conn->free    = db_mysql_free;
-  conn->shutdown = f.mysql_library_end_fn;
-
-  return rc;
-#else
-  return DB_ERROR;
-#endif
-}
-
 #ifdef HAVE_MYSQL
 
 void db_mysql_close(db_conn_p conn)
@@ -367,6 +305,18 @@ int db_mysql_stmt_close(db_stmt_p stmt)
   return DB_OK; 
 }
 
+int db_mysql_schema_version(db_conn_p db)
+{
+    int version = -1;
+    SQL_BEGIN(db, "Failed to show table",  /* ignore errors */
+	      "show tables like 'file'")
+    {
+	version = 0;
+    } SQL_END {
+
+    };
+    return version;
+}
 
 #define FILE_LENGTH 275
 int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
@@ -388,7 +338,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  `command`  varchar(%u),"
 		 "  `logfile` text,"
 		 "  UNIQUE KEY `filename` (`filename`(%u),`command`(20))"
-		     ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
     csync_db_sql(conn, "Creating dirty table",
 		 "CREATE TABLE `dirty` ("
@@ -398,7 +348,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  myname    varchar(50)   DEFAULT NULL,"
 		 "  peername  varchar(50)   DEFAULT NULL,"
 		 "  operation varchar(100)  DEFAULT NULL,"
-		 "  op 	     int	  	   DEFAULT NULL,"
+		 "  op 	      int	    DEFAULT NULL,"
 		 "  checktxt  varchar(200)  DEFAULT NULL,"
 		 "  device    bigint        DEFAULT NULL,"
 		 "  inode     bigint        DEFAULT NULL,"
@@ -410,7 +360,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  type      int    	   DEFAULT NULL,"
 		 "  UNIQUE KEY `filename` (`filename`(%u),`peername`)"
 		 //		"  KEY `dirty_host` (`peername`(10))"
-		 ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
     csync_db_sql(conn, "Creating file table",
 		 "CREATE TABLE `file` ("
@@ -427,20 +377,20 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  type     int    		 DEFAULT NULL,"
 		 "  digest   varchar(130) DEFAULT NULL,"
 		 "  UNIQUE KEY `filename` (`filename`(%u))"
-		 ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
     csync_db_sql(conn, "Creating hint table",
 		     "CREATE TABLE `hint` ("
 		 "  `filename` varchar(%u) DEFAULT NULL,"
 		 "  `recursive` int(11)     DEFAULT NULL"
-		 ") ENGINE=MyISAM CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
 
     csync_db_sql(conn, "Creating x509_cert table",
 		 "CREATE TABLE `x509_cert` ("
 		 "  `peername` varchar(50)  DEFAULT NULL,"
 		 "  `certdata` varchar(255) DEFAULT NULL,"
 		 "  UNIQUE KEY `peername` (`peername`)"
-		 ") ENGINE=MyISAM");
+		 ") ENGINE=InnoDB");
 
 /* csync_db_sql does a csync_fatal on error, so we always return DB_OK here. */
     return DB_OK;
@@ -462,6 +412,69 @@ const char* db_mysql_escape(db_conn_p conn, const char *string)
   rc = f.mysql_real_escape_string_fn(conn->private, escaped_buffer, string, length);
 
   return escaped_buffer;
+}
+
+int db_mysql_open(const char *file, db_conn_p *conn_p)
+{
+#ifdef HAVE_MYSQL
+  db_mysql_dlopen();
+
+  MYSQL *db = f.mysql_init_fn(0);
+  char *host = 0, *user = 0, *pass = 0, *database = 0, *unix_socket = 0;
+  unsigned int port = 0;
+  char db_url[strlen(file)+1];
+  char *create_database_statement = 0;
+
+  strcpy(db_url, file);
+  int rc = db_mysql_parse_url(db_url, &host, &user, &pass, &database, &port, &unix_socket);
+  if (rc != DB_OK) {
+    return rc;
+  }
+
+  if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL) {
+    if (f.mysql_errno_fn(db) == ER_BAD_DB_ERROR) {
+      if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
+	ASPRINTF(&create_database_statement, "create database %s", database);
+
+	csync_log(LOG_DEBUG, 2, "creating database %s\n", database);
+        if (f.mysql_query_fn(db, create_database_statement) != 0)
+          csync_fatal("Cannot create database %s: Error: %s\n", database, f.mysql_error_fn(db));
+	free(create_database_statement);
+
+	f.mysql_close_fn(db);
+	db = f.mysql_init_fn(0);
+
+        if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL)
+          goto fatal;
+      }
+    } else
+fatal:
+      csync_fatal("Failed to connect to database: Error: %s\n", f.mysql_error_fn(db));
+  }
+
+  db_conn_p conn = calloc(1, sizeof(*conn));
+  if (conn == NULL) {
+    return DB_ERROR;
+  }
+  *conn_p = conn;
+  // Setup common SQL statements. Override where needed
+  db_sql_init(conn);
+
+  conn->private = db;
+  conn->close   = db_mysql_close;
+  conn->exec    = db_mysql_exec;
+  conn->prepare = db_mysql_prepare;
+  conn->errmsg  = db_mysql_errmsg;
+  conn->schema_version = db_mysql_schema_version;
+  conn->upgrade_to_schema = db_mysql_upgrade_to_schema;
+  conn->escape  = db_mysql_escape;
+  //  conn->free    = db_mysql_free;
+  conn->shutdown = f.mysql_library_end_fn;
+
+  return rc;
+#else
+  return DB_ERROR;
+#endif
 }
 
 
