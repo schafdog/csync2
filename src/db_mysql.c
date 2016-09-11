@@ -318,7 +318,7 @@ int db_mysql_schema_version(db_conn_p db)
     return version;
 }
 
-#define FILE_LENGTH 275
+#define FILE_LENGTH 250
 int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 {
     if (version < 0)
@@ -332,15 +332,15 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 /* We want proper logging, so use the csync sql function instead
  * of that from the database layer.
  */
-    csync_db_sql(conn, "Creating action table",
+    csync_db_sql(conn, NULL, /*"Creating action table" */
 		 "CREATE TABLE `action` ("
 		 "  `filename` varchar(%u) DEFAULT NULL,"
-		 "  `command`  varchar(%u),"
+		 "  `command`  text,"
 		 "  `logfile` text,"
-		 "  UNIQUE KEY `filename` (`filename`(%u),`command`(20))"
+		 "  KEY `filename` (`filename`(%u),`command`(%u))"
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
-    csync_db_sql(conn, "Creating dirty table",
+    csync_db_sql(conn, NULL, /* "Creating dirty table" */ 
 		 "CREATE TABLE `dirty` ("
 		 //		"  `id`        bigint        AUTO_INCREMENT,"
 		 "  filename  varchar(%u)   DEFAULT NULL,"
@@ -362,7 +362,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 //		"  KEY `dirty_host` (`peername`(10))"
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
-    csync_db_sql(conn, "Creating file table",
+    csync_db_sql(conn, NULL, /* "Creating file table", */
 		 "CREATE TABLE `file` ("
 		 //		"  `id`       bigint AUTO_INCREMENT,"
 		 //		"  `parent`   bigint DEFAULT NULL,"
@@ -379,13 +379,13 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  UNIQUE KEY `filename` (`filename`(%u))"
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
-    csync_db_sql(conn, "Creating hint table",
+    csync_db_sql(conn, NULL, /* "Creating hint table", */
 		     "CREATE TABLE `hint` ("
 		 "  `filename` varchar(%u) DEFAULT NULL,"
 		 "  `recursive` int(11)     DEFAULT NULL"
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
 
-    csync_db_sql(conn, "Creating x509_cert table",
+    csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
 		 "CREATE TABLE `x509_cert` ("
 		 "  `peername` varchar(50)  DEFAULT NULL,"
 		 "  `certdata` varchar(255) DEFAULT NULL,"
