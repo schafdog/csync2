@@ -54,6 +54,7 @@ struct db_conn_t {
 
     // Update functions (deprecated)
     int         (*upgrade_to_schema) (db_conn_p db, int version);
+    int         (*schema_version)    (db_conn_p db);
     // query functions 
     int         (*list_dirty) (db_conn_p conn, char **active_peers, const char *realname, int recursive);
     void        (*list_hint)  (db_conn_p conn);
