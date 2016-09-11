@@ -173,17 +173,9 @@ int db_stmt_close(db_stmt_p stmt)
 
 int db_schema_version(db_conn_p db)
 {
-	int version = -1;
-
-        SQL_BEGIN(db, NULL,  /* ignore errors */
-                "SELECT checktxt from file limit 1")
-        {
-		version = 0;
-        } SQL_END {
-	    version = 0;
-	};
-
-	return version;
+    int version = db->schema_version(db);
+    csync_log(LOG_DEBUG, 0, "db_schema_version: %d\n", version);
+    return version;
 }
 
 
