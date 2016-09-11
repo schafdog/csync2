@@ -553,7 +553,6 @@ int main(int argc, char ** argv)
     int mode = MODE_NONE;
     int flags = 0;
     int retval = -1;
-    int dry_run = 0;
     int opt, i;
     // Default db_decodes (version 1 scheme)
     db_decode = url_decode;
@@ -574,7 +573,6 @@ int main(int argc, char ** argv)
     csync_confdir = ETCDIR;
     int cmd_db_version = 0;
     int cmd_ip_version = 0;
-    int do_all = 0;          // do all host or "only" dirty ones. Do all is required for csync_sync_host
     update_func update_func;
     
     while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VqeE")) != -1 ) {
