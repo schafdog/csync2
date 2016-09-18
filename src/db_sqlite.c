@@ -109,6 +109,7 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p)
   if (conn == NULL) {
     return DB_ERROR;
   }
+  db_sql_init(conn);
   *conn_p = conn;
   conn->private = db;
   conn->close   = db_sqlite_close;
@@ -262,31 +263,33 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 
 	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
-	csync_db_sql(db, "Creating file table",
+	csync_db_sql(db, NULL, /* "Creating file table", */
 		"CREATE TABLE file ("
-		"	filename, checktxt, device, inode, size, digest, mode, mtime, type"
+		"	filename, checktxt, device, inode, size, digest, mode, mtime, type, "
+		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP"
 		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
 		")");
 
-	csync_db_sql(db, "Creating dirty table",
+	csync_db_sql(db, NULL /* "Creating dirty table", */
 		"CREATE TABLE dirty ("
-		"	filename, forced, myname, peername, operation, device, inode, other, digest, mode, mtime, type"
+		"	filename, forced, myname, peername, operation, device, inode, other, digest, mode, mtime, type, "
+		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP"
 		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql(db, "Creating hint table",
+	csync_db_sql(db, NULL /* "Creating hint table", */
 		"CREATE TABLE hint ("
 		"	filename, recursive,"
 		"	UNIQUE ( filename, recursive ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql(db, "Creating action table",
+	csync_db_sql(db, NULL /* "Creating action table", */
 		"CREATE TABLE action ("
 		"	filename, command, logfile,"
 		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql(db, "Creating x509_cert table",
+	csync_db_sql(db, NULL, /* "Creating x509_cert table", */
 		"CREATE TABLE x509_cert ("
 		"	peername, certdata,"
 		"	UNIQUE ( peername ) ON CONFLICT IGNORE"
