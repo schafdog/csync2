@@ -32,7 +32,6 @@
 #include "dl.h"
 #include "db_sql.h"
 
-
 #ifndef HAVE_SQLITE3
 int db_sqlite_open(const char *file, db_conn_p *conn_p) {
   return DB_ERROR;
