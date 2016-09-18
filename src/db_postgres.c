@@ -28,6 +28,7 @@
 #include "db_api.h"
 #include "db_postgres.h"
 #include "dl.h"
+#include "db_sql.h"
 
 #ifdef HAVE_POSTGRESQL_LIBPQ_FE_H
 #include <postgresql/libpq-fe.h>
@@ -325,14 +326,14 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 
 	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
-	csync_db_sql(conn, "Creating action table",
+	csync_db_sql(conn, NULL, /* "Creating action table", */
 		     "CREATE TABLE action ("
 		     "  filename varchar(%u) DEFAULT NULL,"
 		     "  command varchar(1000),"
 		     "  logfile varchar(1000),"
 		     "  UNIQUE (filename,command));", FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating dirty table",
+	csync_db_sql(conn, NULL, /* "Creating dirty table", */
 		     "CREATE TABLE dirty ("
 		     "  filename  varchar(%u)   DEFAULT NULL,"
 		     "  forced    int           DEFAULT NULL,"
@@ -348,10 +349,11 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  mtime  int    	        DEFAULT NULL,"
 		     "  type   int    	        DEFAULT NULL,"
 		     "  file_id   bigint        DEFAULT NULL,"
+		     "  timestamp timestamp     DEFAULT current_timestamp,"
 		     "  UNIQUE (filename,peername)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating file table",
+	csync_db_sql(conn, NULL, /* "Creating file table", */
 		     "CREATE TABLE file ("
 //		     "  id     serial                      ,"
 		     "  parent bigint          DEFAULT NULL,"
@@ -366,17 +368,18 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  mtime  int    	       DEFAULT NULL,"
 		     "  type   int    	       DEFAULT NULL,"
 		     "  digest varchar(130)    DEFAULT NULL,"
+		     "  timestamp timestamp    DEFAULT CURRENT_TIMESTAMP,"
 		     //		     "  UNIQUE (id),"
 		     "  UNIQUE (filename)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating hint table",
+	csync_db_sql(conn, NULL, /* "Creating hint table", */
 		     "CREATE TABLE hint ("
 		     "  filename varchar(%u)   DEFAULT NULL,"
 		     "  recursive int          DEFAULT NULL"
 		     ");", FILE_LENGTH);
 
-	csync_db_sql(conn, "Creating x509_cert table",
+	csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
 		     "CREATE TABLE x509_cert ("
 		     "  peername varchar(50) DEFAULT NULL,"
 		     "  certdata varchar(255) DEFAULT NULL,"
@@ -489,10 +492,10 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   }
 
   db_conn_p conn = calloc(1, sizeof(*conn));
-
   if (conn == NULL)
     csync_fatal("No memory for conn\n");
 
+  db_sql_init(conn);
   *conn_p = conn;
   conn->private = pg_conn;
   conn->close = db_postgres_close;
