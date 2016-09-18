@@ -30,6 +30,8 @@
 #include "db_api.h"
 #include "db_sqlite.h"
 #include "dl.h"
+#include "db_sql.h"
+
 
 #ifndef HAVE_SQLITE3
 int db_sqlite_open(const char *file, db_conn_p *conn_p) {
@@ -270,20 +272,20 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
 		")");
 
-	csync_db_sql(db, NULL /* "Creating dirty table", */
+	csync_db_sql(db, NULL, /* "Creating dirty table", */
 		"CREATE TABLE dirty ("
 		"	filename, forced, myname, peername, operation, device, inode, other, digest, mode, mtime, type, "
 		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP"
 		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql(db, NULL /* "Creating hint table", */
+	csync_db_sql(db, NULL, /* "Creating hint table", */
 		"CREATE TABLE hint ("
 		"	filename, recursive,"
 		"	UNIQUE ( filename, recursive ) ON CONFLICT IGNORE"
 		")");
 
-	csync_db_sql(db, NULL /* "Creating action table", */
+	csync_db_sql(db, NULL, /* "Creating action table", */
 		"CREATE TABLE action ("
 		"	filename, command, logfile,"
 		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
