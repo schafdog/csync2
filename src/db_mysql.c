@@ -41,19 +41,20 @@
 
 
 static struct db_mysql_fns {
-	MYSQL *(*mysql_init_fn)(MYSQL*);
-	MYSQL *(*mysql_real_connect_fn)(MYSQL *, const char *, const char *, const char *, const char *, unsigned int, const char *, unsigned long);
-	int (*mysql_errno_fn)(MYSQL*);
-	int (*mysql_query_fn)(MYSQL*, const char*);
-	void (*mysql_close_fn)(MYSQL*);
-	const char *(*mysql_error_fn)(MYSQL *);
-	MYSQL_RES *(*mysql_store_result_fn)(MYSQL *);
-	unsigned int (*mysql_num_fields_fn)(MYSQL_RES *);
-	MYSQL_ROW (*mysql_fetch_row_fn)(MYSQL_RES *);
-	void (*mysql_free_result_fn)(MYSQL_RES *);
-	unsigned int (*mysql_warning_count_fn)(MYSQL *);
-        unsigned long (*mysql_real_escape_string_fn)(MYSQL *mysql, char *to, const char *from, unsigned long length);
-        void (*mysql_library_end_fn)();
+    MYSQL *(*mysql_init_fn)(MYSQL*);
+    MYSQL *(*mysql_real_connect_fn)(MYSQL *, const char *, const char *, const char *, const char *, unsigned int, const char *, unsigned long);
+    int (*mysql_errno_fn)(MYSQL*);
+    int (*mysql_query_fn)(MYSQL*, const char*);
+    void (*mysql_close_fn)(MYSQL*);
+    const char *(*mysql_error_fn)(MYSQL *);
+    MYSQL_RES *(*mysql_store_result_fn)(MYSQL *);
+    unsigned int (*mysql_num_fields_fn)(MYSQL_RES *);
+    MYSQL_ROW (*mysql_fetch_row_fn)(MYSQL_RES *);
+    void (*mysql_free_result_fn)(MYSQL_RES *);
+    unsigned int (*mysql_warning_count_fn)(MYSQL *);
+    unsigned long (*mysql_real_escape_string_fn)(MYSQL *mysql, char *to, const char *from, unsigned long length);
+    void (*mysql_library_end_fn)();
+    long (*mysql_affected_rows_fn)(MYSQL*);
 } f;
 
 static void *dl_handle;
@@ -83,6 +84,7 @@ static void db_mysql_dlopen(void)
     LOOKUP_SYMBOL(dl_handle, mysql_free_result);
     LOOKUP_SYMBOL(dl_handle, mysql_warning_count);
     LOOKUP_SYMBOL(dl_handle, mysql_real_escape_string);
+    LOOKUP_SYMBOL(dl_handle, mysql_affected_rows);
     //LOOKUP_SYMBOL(dl_handle, mysql_library_end);
 }
 
@@ -198,15 +200,14 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
     return DB_NO_CONNECTION_REAL;
   }
   rc = f.mysql_query_fn(conn->private, sql);
-
-/* Treat warnings as errors. For example when a column is too short this should
-   be an error. */
+  /* Treat warnings as errors. For example when a column is too short this should
+     be an error. */
 
   if (f.mysql_warning_count_fn(conn->private) > 0) {
     print_warnings(1, conn->private);
     return DB_ERROR;
   }
-
+  conn->affected_rows = f.mysql_affected_rows_fn(conn->private);
   /* On error parse, create DB ERROR element */
   return rc;
 }
@@ -227,7 +228,7 @@ int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
   db_stmt_p stmt = malloc(sizeof(*stmt));
   /* TODO avoid strlen, use configurable limit? */
   rc = f.mysql_query_fn(conn->private, sql);
-
+  
 /* Treat warnings as errors. For example when a column is too short this should
    be an error. */
 
