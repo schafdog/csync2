@@ -662,21 +662,21 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 		       const char *digest)
 {
     BUF_P buf = buffer_init();
-    SQL(db,
-	"Adding new file entry",
-	"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
-	"VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu)",
-	encoded,
-	checktxt_encoded,
-	fstat_dev(file_stat),
-	file_stat->st_ino,
-	buffer_quote(buf, digest),
-	file_stat->st_mode,
-	file_stat->st_size,
-	file_stat->st_mtime
+    int count = SQL(db,
+		    NULL, /* DO not fail:  "Adding new file entry", */
+		    "INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
+		    "VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu)",
+		    encoded,
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    buffer_quote(buf, digest),
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime
 	);
     buffer_destroy(buf);
-    return 0;
+    return count;
 }
 
 void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {
