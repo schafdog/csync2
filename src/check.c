@@ -632,12 +632,14 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode);
 	    count = 1;
 	}
+	long count;
 	if (is_upgrade|| operation == OP_MOD) {
-	    db->update_file(db, encoded, checktxt_encoded, file_stat, digest);
+	    count = db->update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
 	else {
-	    db->insert_file(db, encoded, checktxt_encoded, file_stat, digest);
+	    count = db->insert_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
+	csync_log(LOG_INFO, 1, "Inserted/updated %s rows affected: %ld\n", file, count);
     }
     buffer_destroy(buffer);
     return count;
