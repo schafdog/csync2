@@ -140,10 +140,13 @@ void csync_file_update(db_conn_p db, filename_p filename, peername_p peername, i
       if (rc)
 	  csync_error(0, "ERROR: generating digest for '%s': %s %d", filename, digest, rc);
     }
-    csync_log(LOG_DEBUG, 2, "daemon_check_update: INSERT into file filename: %s", filename);
-    db->remove_file(db, filename, 0);
-    //db->insert_file(db, filename, checktxt, &st, digest);
-    db->insert_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
+    csync_log(LOG_DEBUG, 2, "daemon_check_update: UPDATE/INSERT into file filename: %s", filename);
+    // db->remove_file(db, filename, 0);
+    long count = db->update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
+    if (count == 0)
+	count = db->insert_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
+    if (count == 0)
+	csync_log(LOG_WARNING, 2, "Failed to update or insert %s", filename);
     if (digest)
       free(digest);
   }

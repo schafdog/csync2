@@ -647,7 +647,7 @@ int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 		       const char *digest)
 {
     BUF_P buf = buffer_init();
-    SQL(db,
+    int count = SQL(db,
 	"Update file entry",
 	"UPDATE file set checktxt='%s', device=%lu, inode=%llu, "
 	"                digest=%s, mode=%u, mtime=%lu, size=%lu where filename = '%s'",
@@ -655,28 +655,31 @@ int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 	(07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, encoded);
 
     buffer_destroy(buf);
-    return 0;
+    return count;
 }
 		       
 int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 		       const char *digest)
 {
     BUF_P buf = buffer_init();
-    SQL(db,
-	"Adding new file entry",
-	"INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
-	"VALUES ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu)",
-	encoded,
-	checktxt_encoded,
-	fstat_dev(file_stat),
-	file_stat->st_ino,
-	buffer_quote(buf, digest),
-	file_stat->st_mode,
-	file_stat->st_size,
-	file_stat->st_mtime
+    int count = SQL(db,
+		    "Adding new file entry",
+		    "INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
+		    "SELECT '%s', '%s', %lu, %llu, %s, %u, %lu, %lu "
+		    "FROM (SELECT 1 As Value) AS Z "
+		    "WHERE NOT EXISTS (SELECT 1 FROM file WHERE filename = '%s')",
+		    encoded,
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    buffer_quote(buf, digest),
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    encoded
 	);
     buffer_destroy(buf);
-    return 0;
+    return count;
 }
 
 void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {
@@ -854,17 +857,17 @@ int  db_sql_init(db_conn_p conn) {
     conn->list_file  = db_sql_list_file;
     conn->list_sync  = db_sql_list_sync;
     conn->is_dirty   = db_sql_is_dirty;
-    conn->force      =  db_sql_force;
+    conn->force      = db_sql_force;
     conn->upgrade_db = db_sql_upgrade_db;
     conn->add_hint   = db_sql_add_hint;
     conn->remove_hint= db_sql_remove_hint;
     conn->remove_file= db_sql_remove_file;
     conn->get_old_operation = db_sql_get_old_operation;
-    conn->delete_file= db_sql_remove_file;
-    conn->find_dirty = db_sql_find_dirty;
-    conn->find_file = db_sql_find_file;
-    conn->add_dirty  = db_sql_add_dirty;
-    conn->remove_dirty  = db_sql_remove_dirty;
+    conn->delete_file = db_sql_remove_file;
+    conn->find_dirty  = db_sql_find_dirty;
+    conn->find_file   = db_sql_find_file;
+    conn->add_dirty   = db_sql_add_dirty;
+    conn->remove_dirty= db_sql_remove_dirty;
     conn->get_dirty_by_peer_match  = db_sql_get_dirty_by_peer_match;
     conn->clear_operation = db_sql_clear_operation;
     conn->get_commands = db_sql_get_commands;

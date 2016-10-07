@@ -16,5 +16,6 @@ int   db_sqlite_stmt_close(db_stmt_p stmt);
 const char *db_sqlite_errmsg(db_conn_p conn);
 const char *db_sqlite_escape(db_conn_p conn, const char *from);
 int db_sqlite_upgrade_to_schema(db_conn_p conn, int version);
+int db_sqlite_schema_version(db_conn_p conn);
 
 #endif

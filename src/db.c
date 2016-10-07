@@ -172,7 +172,7 @@ void csync_db_close(db_conn_p db)
     free(db);
 }
 
-void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
+long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 {
 	char *sql;
 	va_list ap;
@@ -194,13 +194,18 @@ void csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 	  csync_warn(3, "Database is busy, sleeping a sec.\n");
 	  sleep(1);
 	}
-
-	if ( rc != DB_OK && err )
+	long count = 0;
+	if ( rc != DB_OK && err ) {
 	    csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
+	}
+	else {
+	    count = db->affected_rows;
+	}
 	free(sql);
 
 	csync_db_maycommit(db);
 	in_sql_query--;
+	return count;
 }
 
 void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...)

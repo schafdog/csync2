@@ -54,6 +54,7 @@ struct db_conn_t {
 
     // Update functions (deprecated)
     int         (*upgrade_to_schema) (db_conn_p db, int version);
+    int         (*schema_version)    (db_conn_p db);
     // query functions 
     int         (*list_dirty) (db_conn_p conn, char **active_peers, const char *realname, int recursive);
     void        (*list_hint)  (db_conn_p conn);
@@ -116,17 +117,21 @@ struct db_conn_t {
     textlist_p (*get_dirty_hosts) (db_conn_p db);
     int (*dir_count) (db_conn_p db, const char *dirname);
     int (*move_file) (db_conn_p db, const char *oldfile, const char *newfile);
+
+    long (*get_affected_rows)(db_conn_p db);
+    long affected_rows;
 };
 
 struct db_stmt_t {
-  void *private;
-  void *private2;
-  db_conn_p db;
-  const char *    (*get_column_text) (db_stmt_p vmx, int column);
-  const void*     (*get_column_blob) (db_stmt_p vmx, int column);
-  int             (*get_column_int)  (db_stmt_p vmx, int column);
-  int       (*next) (db_stmt_p stmt);
-  int       (*close)(db_stmt_p stmt);
+    void *private;
+    void *private2;
+    db_conn_p db;
+    const char *    (*get_column_text) (db_stmt_p vmx, int column);
+    const void*     (*get_column_blob) (db_stmt_p vmx, int column);
+    int             (*get_column_int)  (db_stmt_p vmx, int column);
+    int       (*next) (db_stmt_p stmt);
+    int       (*close)(db_stmt_p stmt);
+    int affected_rows;
 };
 
 //struct db_conn *db_conn;
