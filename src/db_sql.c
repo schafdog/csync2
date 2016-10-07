@@ -647,7 +647,7 @@ int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 		       const char *digest)
 {
     BUF_P buf = buffer_init();
-    SQL(db,
+    int count = SQL(db,
 	"Update file entry",
 	"UPDATE file set checktxt='%s', device=%lu, inode=%llu, "
 	"                digest=%s, mode=%u, mtime=%lu, size=%lu where filename = '%s'",
@@ -655,7 +655,7 @@ int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 	(07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, encoded);
 
     buffer_destroy(buf);
-    return 0;
+    return count;
 }
 		       
 int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
