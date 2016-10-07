@@ -1351,7 +1351,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 		     const char **patlist, int patnum, 
 		     int ip_version, int db_version, int flags)
 {
-    textlist_p tl = 0, tl_tmp = 0, t = 0;
+    textlist_p tl = 0, t = 0;
     int i, use_this = patnum == 0;
     int dry_run = flags & FLAG_DRY_RUN;
     
