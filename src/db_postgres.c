@@ -50,17 +50,17 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
 #else
 
 static struct db_postgres_fns {
-        PGconn *(*PQconnectdb_fn)(char *);
-        ConnStatusType (*PQstatus_fn)(const PGconn *);
-        char *(*PQerrorMessage_fn)(const PGconn *);
-	void (*PQfinish_fn)(PGconn *);
-	PGresult *(*PQexec_fn)(PGconn *, const char *);
-	ExecStatusType (*PQresultStatus_fn)(const PGresult *);
-	char*  (*PQresultErrorMessage_fn)(const PGresult *);
-	void   (*PQclear_fn)(PGresult *);
-	int    (*PQntuples_fn)(const PGresult *);
-	char*  (*PQgetvalue_fn)(const PGresult *, int, int);
-        size_t (*PQescapeStringConn_fn)(const PGconn *, char *, const char*, size_t, int *);
+    PGconn *(*PQconnectdb_fn)(char *);
+    ConnStatusType (*PQstatus_fn)(const PGconn *);
+    char *(*PQerrorMessage_fn)(const PGconn *);
+    void (*PQfinish_fn)(PGconn *);
+    PGresult *(*PQexec_fn)(PGconn *, const char *);
+    ExecStatusType (*PQresultStatus_fn)(const PGresult *);
+    char*  (*PQresultErrorMessage_fn)(const PGresult *);
+    void   (*PQclear_fn)(PGresult *);
+    int    (*PQntuples_fn)(const PGresult *);
+    char*  (*PQgetvalue_fn)(const PGresult *, int, int);
+    size_t (*PQescapeStringConn_fn)(const PGconn *, char *, const char*, size_t, int *);
 } f;
 
 static void *dl_handle;
@@ -88,6 +88,7 @@ static void db_postgres_dlopen(void)
     LOOKUP_SYMBOL(dl_handle, PQntuples);
     LOOKUP_SYMBOL(dl_handle, PQgetvalue);
     LOOKUP_SYMBOL(dl_handle, PQescapeStringConn);
+    LOOKUP_SYMBOL(dl_handle, PQntuples);
 }
 
 
@@ -149,24 +150,26 @@ const char *db_postgres_errmsg(db_conn_p conn)
 
 int db_postgres_exec(db_conn_p conn, const char *sql)
 {
-  PGresult *res;
+    PGresult *res;
 
-  if (!conn)
-    return DB_NO_CONNECTION;
+    if (!conn)
+	return DB_NO_CONNECTION;
 
-  if (!conn->private) {
-    /* added error element */
-    return DB_NO_CONNECTION_REAL;
-  }
-  res = f.PQexec_fn(conn->private, sql);
-  switch (f.PQresultStatus_fn(res)) {
-  case PGRES_COMMAND_OK:
-  case PGRES_TUPLES_OK:
-    return DB_OK;
+    if (!conn->private) {
+	/* added error element */
+	return DB_NO_CONNECTION_REAL;
+    }
+    res = f.PQexec_fn(conn->private, sql);
+    conn->affected_rows = 0;
 
-  default:
-    return DB_ERROR;
-  }
+    switch (f.PQresultStatus_fn(res)) {
+    case PGRES_TUPLES_OK:
+	conn->affected_rows = f.PQntuples_fn(res);
+    case PGRES_COMMAND_OK:
+	return DB_OK;
+    default:
+	return DB_ERROR;
+    }
 }
 
 
