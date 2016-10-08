@@ -1186,7 +1186,7 @@ nofork:
 	csync_log(LOG_INFO, 1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
-	    csync_log(LOG_DEBUG, 1, "goto nofork");
+	    csync_log(LOG_DEBUG, 1, "goto nofork.\n");
 	    goto nofork;
 	}
     }
