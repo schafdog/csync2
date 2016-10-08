@@ -108,7 +108,7 @@ struct db_conn_t {
 			      const char *enc, int version, char **other,
 			      char *checktxt, struct stat *file_stat,
 			      BUF_P buffer, int *operation,
-			      char **digest);
+			      char **digest, int flags);
 		
     textlist_p (*check_file_same_dev_inode) (db_conn_p db, filename_p filename, const char *checktxt, const char *digest, struct stat *st);
     textlist_p (*check_dirty_file_same_dev_inode) (db_conn_p db, peername_p peername, filename_p filename,

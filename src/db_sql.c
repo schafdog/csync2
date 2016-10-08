@@ -2,15 +2,14 @@
 #include "db_sql.h"
 #include <unistd.h>
 
-
 int db_sql_check_file(db_conn_p db, const char *file,
 		      const char *encoded,
 		      int version, char **other,
 		      char *checktxt, struct stat *file_stat,
 		      BUF_P buffer, int *operation,
-		      char **digest)
+		      char **digest, int ignore_flags)
 {
-    int flags = 0;
+    int db_flags = 0;
     int db_version = version;
     SQL_BEGIN(db, "Checking File",
 	      "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE "
@@ -31,39 +30,44 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	long size;
 	long mtime;
 	// Missing any value then upgrade
-	flags |= ( SQL_V_long(4, &mode) || SQL_V_long(5, &size) || SQL_V_long(6, &mtime) ? IS_UPGRADE : 0);
-    	int flag = 0;
+	db_flags |= ( SQL_V_long(4, &mode) || SQL_V_long(5, &size) || SQL_V_long(6, &mtime) ? IS_UPGRADE : 0);
+
+    	int ug_flag = 0;
     	if (strstr(checktxt_db, ":user=") != NULL)
-	    flag |= SET_USER;
+	    ug_flag |= SET_USER;
     	if (strstr(checktxt_db, ":group=") != NULL)
-	    flag |= SET_GROUP;
+	    ug_flag |= SET_GROUP;
 
     	if (update_dev_inode(file_stat, device, inode) ) {
-	    csync_info(1, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
+	    csync_info(2, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
 			file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
-	    flags |= IS_UPGRADE;
+	    db_flags |= IS_UPGRADE;
     	}
     	if (!*digest && strstr(checktxt, "type=reg")) {
-	    flags |= CALC_DIGEST;
-	    flags |= IS_UPGRADE;
+	    db_flags |= CALC_DIGEST;
+	    db_flags |= IS_UPGRADE;
     	}
-    	if (db_version != version || flag != (SET_USER|SET_GROUP)) {
-	    checktxt_same_version = csync_genchecktxt_version(file_stat, file, flag, db_version);
+    	if (db_version != version || ug_flag != (SET_USER|SET_GROUP)) {
+	    checktxt_same_version = csync_genchecktxt_version(file_stat, file, ug_flag, db_version);
 	    if (csync_cmpchecktxt(checktxt, checktxt_same_version))
-	    flags |= IS_UPGRADE;
+	    db_flags |= IS_UPGRADE;
     	}
     	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	    *operation = OP_MOD;
 	    csync_info(2, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
-	    flags |= IS_DIRTY;
+	    csync_info(2, "ignore flags: %d\n", ignore_flags);
+	    if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
+		db_flags |= IS_UPGRADE;
+	    else
+		db_flags |= IS_DIRTY;
     	}
     } SQL_FIN {
 	if ( SQL_COUNT == 0 ) {
 	    csync_info(2, "New file: %s\n", file);
 	    *operation = OP_NEW;
 	    if (S_ISREG(file_stat->st_mode)) {
-		flags |= CALC_DIGEST;
+		db_flags |= CALC_DIGEST;
 	    }
 	    else if ( S_ISLNK(file_stat->st_mode) )
 	    {
@@ -78,10 +82,10 @@ int db_sql_check_file(db_conn_p db, const char *file,
 		else
 		    csync_error(0, "Failed to read link on %s\n", file);
 	    }
-	    flags |= IS_DIRTY;
+	    db_flags |= IS_DIRTY;
 	}
     } SQL_END;
-    return flags; 
+    return db_flags; 
 }
 
 int db_sql_is_dirty(db_conn_p db, peername_p peername, filename_p filename,
@@ -261,6 +265,21 @@ textlist_p db_sql_get_hints(db_conn_p db) {
     return tl; 
 };
 
+void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec)
+{
+    if ( recursive ) {
+	if ( !strcmp(file_encoded, "/") )
+	    ASPRINTF(where_rec, "");
+	else {
+	    ASPRINTF(where_rec, "WHERE filename = '%s' OR filename LIKE '%s/%%' ",
+		     file_encoded, file_encoded);
+	}
+    }
+    else {
+	ASPRINTF(where_rec, " WHERE filename = '%s' ", file_encoded);
+    }
+}
+
 void db_sql_remove_hint(db_conn_p db, filename_p filename, int recursive)
 {
     SQL(db,"Remove processed hint.",
@@ -271,24 +290,13 @@ void db_sql_remove_hint(db_conn_p db, filename_p filename, int recursive)
 
 void db_sql_force(db_conn_p db, const char *realname, int recursive)
 {
-    char *pfname = strdup(prefixencode(realname));
     char *where_rec = "";
-
-    if ( recursive ) {
-	if ( !strcmp(realname, "/") )
-	    ASPRINTF(&where_rec, "or 1=1");
-	else
-	    ASPRINTF(&where_rec, "or (filename > '%s/' "
-		     "and filename < '%s0')",
-		     db_escape(db, realname), db_escape(db, realname));
-    };
+    csync_generate_recursive_sql(db_escape(db, realname), recursive, &where_rec);
     SQL(db, "Mark file as to be forced",
-	"UPDATE dirty SET forced = 1 WHERE filename = '%s' %s",
-	db_escape(db, realname), where_rec);
+	"UPDATE dirty SET forced = 1 %s ", where_rec);
 
     if ( recursive )
 	free(where_rec);
-    free(pfname);
 }
 
 void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
@@ -301,19 +309,9 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 		    
     if ( recursive ) {
 	char *where_rec = "";
-		      
-	if ( !strcmp(realname, "/") )
-	    ASPRINTF(&where_rec, "or 1=1");
-	else
-	    ASPRINTF(&where_rec, 
-		     "UNION ALL SELECT filename from file"
-		     " where filename > '%s/' "
-		     " and filename < '%s0'",
-		     db_encoded, db_encoded);
-
+	csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
 	SQL_BEGIN(db, "Adding dirty entries recursively",
-		  "SELECT filename FROM file WHERE filename = '%s' %s",
-		  db_encoded, where_rec)
+		  "SELECT filename FROM file %s", where_rec)
 	{
 	    char *filename = strdup(db_decode(SQL_V(0)));
 	    csync_mark(db, filename, 0, active_peerlist, OP_MOD,
@@ -482,13 +480,14 @@ textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, c
 textlist_p db_sql_find_file(db_conn_p db, filename_p pattern,
 			    int (*filter_file) (filename_p filename))
 {
-    textlist_p tl = 0;    
+    textlist_p tl = 0;
     SQL_BEGIN(db, "Query file DB",
-	      "SELECT filename FROM file where filename like '%s%%' ",
-	      pattern) {
+	      "SELECT filename, mode FROM file where filename = '%s' or filename like '%s/%%' ",
+	      pattern, pattern) {
 	filename_p filename  = db_decode(SQL_V(0));
-	if (!filter_file(filename)) {
-	    textlist_add(&tl, filename, 0);
+	int mode    = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
+	if (!filter_file || !filter_file(filename)) {
+	    textlist_add(&tl, filename, mode);
 	}
     } SQL_END;
     return tl;
@@ -682,23 +681,13 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
     return count;
 }
 
-void csync_generate_recursive_sql(const char *file_encoded, int recursive, char **where_rec) {
-  if ( recursive ) {
-    if ( !strcmp(file_encoded, "/") )
-      ASPRINTF(where_rec, "OR 1=1");
-    else {
-      ASPRINTF(where_rec, "OR filename > '%s/' and filename < '%s0'",
-	       file_encoded, file_encoded);
-    }
-  }
-}
-
 int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_run)
 {
     char *where_rec = "";
     textlist_p tl = 0, t;
     struct stat st;
-    const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode from file ";
+
+    const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode FROM file ";
     csync_info(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
     const char *file_encoded = db_escape(db, file);
     csync_log(LOG_DEBUG, 3,"file %s encoded %s \n", file, file_encoded);
@@ -706,8 +695,8 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
     csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 
     SQL_BEGIN(db, "Checking for removed files",
-	      "%s where (filename = '%s' %s) ORDER BY filename",
-	      SELECT_SQL, db_escape(db, file), where_rec)
+	      "%s ORDER BY filename",
+	      SELECT_SQL, where_rec)
     {
 	filename_p filename  = db_decode(SQL_V(0));
 	const char *checktxt = db_decode(SQL_V(1));
