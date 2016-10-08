@@ -1,0 +1,16 @@
+#
+#
+daemon d PEER
+clean local
+clean peer
+FILENAME="new_file 'N' all"
+mkdir -p "test/$NAME/$NAME/$NAME"
+echo "far" > "test/$NAME/$FILENAME"
+cmd x "New $NAME/$FILENAME"
+cmd T test/$NAME "List daemon" 
+rm -rf test/$NAME
+echo "far" > "test/$NAME"
+cmd x "Directory to file $NAME"
+rm -rf test/$NAME
+cmd x "clean up"
+killdaemon d PEER
