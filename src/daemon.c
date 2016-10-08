@@ -165,7 +165,7 @@ int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_fl
 	if ( lstat_strict(filename, &st) != 0 )
 	    return 0; /* Already gone */
 
-	/* SET* operations should not unlink */
+	/* TODO NOT working. Unlink is not set to two */
 	if ( unlink_flag == 2 && S_ISREG(st.st_mode) )
 	    return 0;
 
@@ -678,7 +678,7 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	int recursive = 0;
 	if (S_ISDIR(st.st_mode))
 	    recursive = 1;
-	//csync_unlink(db, filename, recursive);
+	// ALREADY done before patch csync_unlink(db, filename, recursive);
     }
     // Only try to backup if the file exists already.
     if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
@@ -1145,7 +1145,7 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
 	break;
     case A_DEL:
 	if (!csync_file_backup(filename, cmd_error))
-	    return csync_unlink(db, filename, cmd->unlink, 0, cmd_error, db_version);
+	    return csync_unlink(db, filename, 1, cmd->unlink, cmd_error, db_version);
 
 	break;
     case A_PATCH:
