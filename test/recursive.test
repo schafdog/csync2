@@ -11,11 +11,9 @@ echo "not ignore" > "test/$NAME/$DIRNAME/1/2/3/4/5/file.c"
 cmd x "New $NAME/$DIRNAME/$FILENAME"
 echo "ignored" > "test/$PEER/$DIRNAME/1/2/3/4/5/ignored.o"
 echo "ignored" > "test/$PEER/$DIRNAME/1/2/3/4/5/ignored.c~"
-rm -rf test/$NAME/$DIRNAME
 sleep 2
-echo "now file" > "test/$NAME/$DIRNAME"
-cmd x "File 2 directory (type change)"
-
+rm -rf test/$NAME/$DIRNAME
+cmd x "rm directory with ignore files"
 #
 rm -rf test/$NAME
 cmd x "clean up"
