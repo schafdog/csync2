@@ -47,14 +47,15 @@ typedef const char * peername_p;
 #define MATCH_INTO 1
 #define MATCH_NONE 0
 
-#define IGNORE_MTIME 1 
-#define IGNORE_INODE 2 
+#define IGNORE_MTIME 1
+#define IGNORE_INODE 2
 #define IGNORE_USER  4
 #define IGNORE_GROUP 8
 #define SET_USER    16
 #define SET_GROUP   32
 #define IGNORE_LINK 64
-#define IGNORE_    128
+#define IGNORE_DIR 128
+#define IGNORE_    256
 
 #define FLAG_RECURSIVE          1
 #define FLAG_DRY_RUN            2
@@ -65,7 +66,8 @@ typedef const char * peername_p;
 #define FLAG_DO_CHECK          64
 #define FLAG_DIRDUMP          128
 #define FLAG_IGN_NOENT        256
-#define FLAG_DO_ALL           512
+#define FLAG_IGN_DIR          512
+#define FLAG_DO_ALL          1024
 
 
 
