@@ -6,18 +6,16 @@ clean peer
 FILENAME="new_file 'N' all"
 DIRNAME=type_change
 mkdir -p "test/$NAME/$DIRNAME"
-echo "far" > "test/$NAME/$DIRNAME/$FILENAME"
+mkdir -p "test/$NAME/$DIRNAME/1/2/3/4/5"
+echo "not ignore" > "test/$NAME/$DIRNAME/1/2/3/4/5/file.c"
 cmd x "New $NAME/$DIRNAME/$FILENAME"
-cmd T test/$NAME "List daemon" 
+echo "ignored" > "test/$PEER/$DIRNAME/1/2/3/4/5/ignored.o"
+echo "ignored" > "test/$PEER/$DIRNAME/1/2/3/4/5/ignored.c~"
 rm -rf test/$NAME/$DIRNAME
 sleep 2
 echo "now file" > "test/$NAME/$DIRNAME"
-cmd x "Directory to file (type change)"
-rm  test/$NAME/$DIRNAME
-sleep 1
-mkdir -p "test/$NAME/$DIRNAME"
-echo "far" > "test/$NAME/$DIRNAME/$FILENAME"
 cmd x "File 2 directory (type change)"
+
 #
 rm -rf test/$NAME
 cmd x "clean up"
