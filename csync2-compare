@@ -1,0 +1,107 @@
+#!/bin/bash
+
+verbose=0
+
+if [ "$1" = "-v" ]; then
+	verbose=1
+	shift
+fi
+
+if [ $# != 3 ]; then
+	echo "Usage: $0 [-v] host1[@host1] host2[@host2] basedir" >&2
+	exit 1
+fi
+
+left1="${1%@*}"
+left2="${1#*@}"
+
+right1="${2%@*}"
+right2="${2#*@}"
+
+basedir="$3"
+
+left_cmd="ssh $left1 'csync2 -or $basedir -P $right2 | sort | xargs md5sum'"
+right_cmd="ssh $right1 'csync2 -or $basedir -P $left2 | sort | xargs md5sum'"
+
+if [ $verbose -eq 1 ]; then
+	echo
+	echo "L: $left_cmd"
+	echo "R: $right_cmd"
+	echo
+fi
+
+my_md5sum='perl -w -e '\''
+	use strict;
+	use Digest::MD5;
+
+	foreach my $f (@ARGV) {
+		if (-l $f) {
+			print "LINK:", Digest::MD5->new->add(readlink($f))->hexdigest, " $f\n";
+			next;
+		}
+		if (-f $f) {
+			open(FILE, $f) or die "Can not open >>$f<<: $!";
+			binmode(FILE);
+			print "DATA:", Digest::MD5->new->addfile(*FILE)->hexdigest, " $f\n";
+			close(FILE);
+			next;
+		}
+		print "SPECIALFILE:0 $f\n";
+	}
+'\'
+
+tic="'"
+my_md5sum="${my_md5sum//$tic/$tic\\$tic$tic}"
+
+left_cmd="${left_cmd/md5sum/$my_md5sum}"
+right_cmd="${right_cmd/md5sum/$my_md5sum}"
+
+diff -u <( eval "$left_cmd" ) <( eval "$right_cmd" ) | awk '
+
+function isort(A, n,
+		i, j, hold)
+{
+	for (i=1; i<n; i++)
+	{
+		hold = A[j = i];
+		while (A[j-1] > hold)
+			{ j--; A[j+1] = A[j]; }
+		A[j] = hold;
+	}
+}
+
+/^-[a-zA-Z0-9]/  { gotsomething=1; if ('$verbose') print; sub(/^./, ""); all[$2] = 1; left[$2]  = $1; }
+/^\+[a-zA-Z0-9]/ { gotsomething=1; if ('$verbose') print; sub(/^./, ""); all[$2] = 1; right[$2] = $1; }
+
+END {
+	outcount = 0;
+
+	for (filename in all) {
+		outlines[filename] = sprintf("%s %s %s",
+			(left[filename]  == "" ? "-" : "X"),
+			(right[filename] == "" ? "-" : "X"),
+			filename);
+		sortindex[outcount] = filename;
+		outcount++;
+	}
+
+	if ('$verbose' && gotsomething)
+		printf "\n";
+
+	isort(sortindex, outcount);
+	for (i=0; i<outcount; i++)
+		print outlines[sortindex[i]];
+
+	if ('$verbose')
+		printf "Found %d differences.\n", outcount;
+}
+'
+
+if [ $verbose -eq 1 ]; then
+	echo
+	echo "X - ... Found this file on left host ($1) only."
+	echo "- X ... Found this file on right host ($2) only."
+	echo "X X ... Found file on both hosts but content is different."
+	echo
+fi
+

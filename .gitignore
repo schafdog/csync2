@@ -38,3 +38,4 @@ version.h
 version.h.new
 digest
 Debug/
+debian/csync2/
