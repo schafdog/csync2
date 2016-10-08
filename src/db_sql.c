@@ -664,9 +664,9 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
     int count = SQL(db,
 		    "Adding new file entry",
 		    "INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
-		    "SELECT '%s', '%s', %lu, %llu, %s, %u, %lu, %lu "
-		    "FROM (SELECT 1 As Value) AS Z "
-		    "WHERE NOT EXISTS (SELECT 1 FROM file WHERE filename = '%s')",
+		    "values ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu) ",
+//		    "FROM (SELECT 1 As Value) AS Z "
+//		    "WHERE NOT EXISTS (SELECT 1 FROM file WHERE filename = '%s')",
 		    encoded,
 		    checktxt_encoded,
 		    fstat_dev(file_stat),
