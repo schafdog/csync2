@@ -578,7 +578,6 @@ int csync_update_file_sig(int conn, peername_p peername, filename_p filename,
     int peer_version = csync_get_checktxt_version(chk_peer);
 
     int flag = IGNORE_LINK;
-    // DS We should prob. only ignore MTIME for regular files if at all.
     const char *chk_peer_decoded = url_decode(chk_peer);
     // TODO generate chk text that matches remote usage of uid/user and gid/gid
     char *has_user = strstr(chk_peer_decoded, ":user=");
