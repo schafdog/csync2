@@ -695,7 +695,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
     csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 
     SQL_BEGIN(db, "Checking for removed files",
-	      "%s ORDER BY filename",
+	      "%s %s ORDER BY filename",
 	      SELECT_SQL, where_rec)
     {
 	filename_p filename  = db_decode(SQL_V(0));
