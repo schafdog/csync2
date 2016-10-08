@@ -483,9 +483,10 @@ struct csync_command cmdtab[] = {
 	{ "create",	1, 1, S_IFREG, 1, 1, A_CREATE	},
 	{ "mkdir",	1, 1, S_IFDIR, 1, 1, A_MKDIR	},
 	{ "mod",	1, 1, 0,       1, 1, A_MOD	},
-	{ "mkchr",	1, 1, S_IFCHR, 1, 1, A_MKCHR	},
-	{ "mkblk",	1, 1, S_IFBLK, 1, 1, A_MKBLK	},
-	{ "mkfifo",	1, 1, S_IFIFO, 1, 1, A_MKFIFO	},
+	// TODO add/use  mod operations for these
+	{ "mkchr",	1, 1, -1, 1, 1, A_MKCHR	},
+	{ "mkblk",	1, 1, -1, 1, 1, A_MKBLK	},
+	{ "mkfifo",	1, 1, -1, 1, 1, A_MKFIFO	},
 	{ "mklink",	1, 1, S_IFLNK, 1, 1, A_MKLINK	},
 	{ "mkhardlink",	1, 1, 0, 1, 1, A_MKHLINK},
 	{ "mksock",	1, 1, S_IFSOCK,1, 1, A_MKSOCK	},
@@ -1097,10 +1098,28 @@ int csync_daemon_mv(db_conn_p db, filename_p filename, const char *newname, cons
 }
 
 int csync_daemon_symlink(filename_p filename, const char *target, const char **cmd_error) {
-  if (!symlink(target, filename))
-    return OK;
-  *cmd_error = strerror(errno);
-  return ABORT_CMD;
+    struct stat st;
+    int rc = lstat(filename, &st);
+    if (rc == 0) {
+	if (S_ISLNK(st.st_mode)) {
+	    char tmp[st.st_size+1];
+	    int r = readlink(filename, tmp, st.st_size+1);
+	    tmp[r] = 0;
+	    if (!strcmp(target, tmp)) {
+		csync_debug(0, "daemon_symlink: same target %s ", target);
+		return OK;
+	    }
+	    csync_debug(0, "daemon_symlink: new  target %s differs from %s", target, tmp);
+	}
+	csync_debug(0, "daemon_symlink: unlink %d before symlink to %s", filename, target);
+	rc = unlink(filename);
+	if (rc)
+	    csync_debug(0, "daemon_symlink: Failed to unlink %s. Symlink will fail", filename);
+    }
+    if (!symlink(target, filename))
+	return OK;
+    *cmd_error = strerror(errno);
+    return ABORT_CMD;
 }
 
 int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
