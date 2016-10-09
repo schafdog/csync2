@@ -203,11 +203,12 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
   /* Treat warnings as errors. For example when a column is too short this should
      be an error. */
 
+  conn->affected_rows = f.mysql_affected_rows_fn(conn->private);
+
   if (f.mysql_warning_count_fn(conn->private) > 0) {
     print_warnings(1, conn->private);
     return DB_ERROR;
   }
-  conn->affected_rows = f.mysql_affected_rows_fn(conn->private);
   /* On error parse, create DB ERROR element */
   return rc;
 }
