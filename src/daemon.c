@@ -113,6 +113,12 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file)
     }
     int rc = rmdir(file);
     csync_info(0, "Removing directory %s %d\n", file, rc);
+    if (rc == -1) {
+	/* Accept if we already deleted it */
+	if (errno == ENOTDIR || errno == ENOENT) {
+	    rc = 0;
+	}
+    }
     return rc;
 }
 
@@ -123,11 +129,12 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive, int db_version
 
     int dir_count = csync_dir_count(db, filename);
     int dirty_count = csync_check_dir(db, filename, db_version, (recursive ? FLAG_RECURSIVE : 0) | FLAG_IGN_DIR);
-    int rc;
+    int rc = 0;
     if (dirty_count != 0) {
 	csync_error(0, "Directory %s has dirty files: %d ", filename, dirty_count);
 	return ERROR;
     }
+    int errors = 0;
     if (recursive) {
 	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
 	textlist_p tl, t, dl = 0;
@@ -136,16 +143,20 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive, int db_version
 	    csync_debug(0, "rm: Checking %s %d\n", t->value, t->intvalue);
 	    if (S_ISDIR(t->intvalue)) {
 		textlist_add(&dl, t->value, t->intvalue);
-		rc = rmdir(t->value);
+		errors += rmdir(t->value);
 		csync_debug(0, "rmdir %s %d\n", t->value, rc);
 	    }
 	    else {
 		csync_remove_file(db, t->value);
 	    }
 	}
+	if (errors) {
+	    rc = ERROR;
+	}
 	textlist_free(tl);
-	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
+	/* Above could fail due to ignore files. Do recursive on scandir  */
 	rc = csync_rmdir_recursive(db, filename);
+	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
 	for (t = dl; t != 0; t = t->next) {
 	    csync_debug(1, "PRINT: remove directory: %s \n", t->value);
 	}
@@ -183,23 +194,23 @@ int csync_dir_count(db_conn_p db, filename_p filename)
     return count;
 }
 
-int csync_check_dirty(db_conn_p db, filename_p filename, peername_p peername, int isflush, int version, const char **cmd_error)
+int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, int isflush, int version, const char **cmd_error)
 {
     int rc = 0;
     int operation = 0;
     int mode = 0;
-    csync_log(LOG_DEBUG, 2, "check_dirty_daemon: %s\n", filename);
+    csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s\n", filename);
 
     // Returns newly marked dirty, so we cannot use it bail out.
-    int markedDirty = csync_check_single(db, filename, version, FLAG_DO_CHECK);
-    csync_log(LOG_DEBUG, 2, "check_dirty_daemon: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
+    int markedDirty = csync_check_single(db, filename, version, FLAG_IGN_DIR);
+    csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
 
     if (isflush)
     	return 0;
     rc = db->is_dirty(db, peername, filename, &operation, &mode);
     // Found dirty
     if (rc == 1) {
-	csync_log(LOG_DEBUG, 2, "check_dirty_daemon: peer operation  %s %s %s\n",
+	csync_log(LOG_DEBUG, 2, "daemon_check_dirty: peer operation  %s %s %s\n",
 				peername, filename, csync_operation_str(operation));
 	
 	if (operation == OP_MOD && S_ISDIR(mode)) {
@@ -239,12 +250,12 @@ void csync_file_update(db_conn_p db, filename_p filename, peername_p peername, i
 	  csync_error(0, "ERROR: generating digest for '%s': %s %d", filename, digest, rc);
     }
     csync_log(LOG_DEBUG, 2, "daemon_check_update: UPDATE/INSERT into file filename: %s", filename);
-    // db->remove_file(db, filename, 0);
-    long count = db->update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
+    db->remove_file(db, filename, 0);
+    //long count = db->update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
+    ///if (count == 0)
+    long count = db->insert_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
     if (count == 0)
-	count = db->insert_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
-    if (count == 0)
-	csync_log(LOG_WARNING, 2, "Failed to update or insert %s", filename);
+	csync_warn(1, "Failed to update or insert %s", filename);
     if (digest)
       free(digest);
   }
@@ -1359,9 +1370,9 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int db_versio
       rc = ABORT_CMD;
 
     if (rc == OK && cmd->check_dirty &&
-	csync_check_dirty(db, filename, peername,
-			  cmd->action == A_FLUSH,
-			  db_version, &cmd_error)) {
+	csync_daemon_check_dirty(db, filename, peername,
+				 cmd->action == A_FLUSH,
+				 db_version, &cmd_error)) {
 	rc  = ABORT_CMD;
 	//	  csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
 	isDirty  = 1;
