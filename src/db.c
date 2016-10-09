@@ -189,8 +189,12 @@ long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 
 	while (1) {
 	  rc = db_exec(db, sql);
-	  if ( rc != DB_BUSY ) break;
-	  if (busyc++ > get_dblock_timeout()) { db = 0; csync_fatal(DEADLOCK_MESSAGE); }
+	  if ( rc != DB_BUSY )
+	      break;
+	  if (busyc++ > get_dblock_timeout()) {
+	      db = 0;
+	      csync_fatal(DEADLOCK_MESSAGE);
+	  }
 	  csync_warn(3, "Database is busy, sleeping a sec.\n");
 	  sleep(1);
 	}
