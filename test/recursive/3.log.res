@@ -41,18 +41,8 @@ Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/lo
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2/3/4/5/file.c
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2/3/4/5
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2/3/4
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2/3/4
-ERROR from peer: No such file or directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/1/2/3/4) rc: -12 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2/3
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2/3
-ERROR from peer: No such file or directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/1/2/3) rc: -12 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1/2
-ERROR from peer: No such file or directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/1/2) rc: -12 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/1
-ERROR from peer: No such file or directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/1) rc: -12 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
-ERROR from peer: No such file or directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change) rc: -12 
-Finished with 5 errors.
+Finished succesfully.
