@@ -279,7 +279,7 @@ int csync_backup_rename(filename_p filename, int length, int generations)
 	if (rc != 0)
 	  continue; // File does not exists
 	if (i == generations) {
-	    if (S_ISDIR(st.st_mode))
+	    if (!S_ISDIR(st.st_mode))
 		csync_rmdir_recursive(NULL, backup_name);
 	    else
 		unlink(backup_name);
@@ -334,8 +334,10 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       if (fd_in < 0)
 	return 0;
 
+      // Copy the combined string into backup_filename.
       memcpy(backup_filename, g->backup_directory, back_dir_len);
-      backup_filename[back_dir_len] = 0;
+      memcpy(backup_filename+back_dir_len, filename, filename_len);
+      backup_filename[back_dir_len + filename_len] = 0;
       mode = 0777;
 
       for (i=filename_len; i> 0; i--)
@@ -347,7 +349,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       /* Create directory. Do not rename part of backup_directory, so start at 1 */
       for (i=1; i < filename_len; i++) {
 
-	if (filename[i] == '/' && i <= lastSlash) {
+	  if (filename[i] == '/' && i <= lastSlash) {
 	
 	  backup_filename[back_dir_len+i] = 0;
 	
@@ -355,7 +357,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	  rc = lstat(backup_filename, &st);
 	  if (rc == 0) {
 	      if (!S_ISDIR(st.st_mode)) {
-		  csync_debug(0, "mv %s \n", backup_filename);
+		  csync_debug(0, "backup_rename: %s filename: %s i: \n", backup_filename, filename, i);
 		  csync_backup_rename(backup_filename, back_dir_len+i, g->backup_generations);
 		  rc = 1;
 	      }
@@ -368,8 +370,9 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	  if (i!= 0)
 	    csync_set_backup_file_status(backup_filename, back_dir_len);
 	
+	  backup_filename[back_dir_len+i] = filename[i];
 	}
-	backup_filename[back_dir_len+i] = filename[i];
+
       }
 
       backup_filename[back_dir_len + filename_len] = 0;
