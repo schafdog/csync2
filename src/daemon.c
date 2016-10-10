@@ -295,6 +295,11 @@ int csync_backup_rename(filename_p filename, int length, int generations)
     return rc;
 }
 
+/*
+   Backup regular files into backup directory
+   in a number of generations
+
+ */
 int csync_file_backup(filename_p filename, const char **cmd_error)
 {
   static char error_buffer[1024];
@@ -311,10 +316,10 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       int fd_in, fd_out, i;
       int lastSlash = 0;
       mode_t mode;
-      csync_log(LOG_DEBUG, 4, "backup %s \n", filename);
+      csync_debug(2, "backup %s \n", filename);
       // Skip generation of directories
       rc =  stat(filename, &buf);
-      csync_log(LOG_DEBUG, 4, "backup %s %d \n", filename, rc);
+      csync_debug(2, "backup %s %d \n", filename, rc);
       if (rc != 0) {
 	  csync_warn(0, "Nothing to backup: %s. New file?\n", filename);
 	  return 0;
@@ -333,16 +338,15 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       backup_filename[back_dir_len] = 0;
       mode = 0777;
 
-
       for (i=filename_len; i> 0; i--)
 	if (filename[i] == '/')  {
 	  lastSlash = i;
 	  break;
 	}
 
-      for (i=0; i < filename_len; i++) {
-	// Create directories in filename
-	// TODO: Get the mode from the orig. dir
+      /* Create directory. Do not rename part of backup_directory, so start at 1 */
+      for (i=1; i < filename_len; i++) {
+
 	if (filename[i] == '/' && i <= lastSlash) {
 	
 	  backup_filename[back_dir_len+i] = 0;
