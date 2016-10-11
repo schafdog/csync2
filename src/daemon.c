@@ -279,14 +279,14 @@ int csync_backup_rename(filename_p filename, int length, int generations)
 	if (rc != 0)
 	  continue; // File does not exists
 	if (i == generations) {
-	    if (!S_ISDIR(st.st_mode))
+	    if (S_ISDIR(st.st_mode))
 		csync_rmdir_recursive(NULL, backup_name);
 	    else
 		unlink(backup_name);
 	}
 	else {
 	    rc = rename(backup_name, backup_other);
-	    csync_log(LOG_DEBUG, 3, "renaming backup files '%s' to '%s'. rc = %d\n",
+	    csync_info(2, "renaming backup files '%s' to '%s'. rc = %d\n",
 		      backup_name, backup_other, rc);
 	}
     }
@@ -316,9 +316,8 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       int fd_in, fd_out, i;
       int lastSlash = 0;
       mode_t mode;
-      csync_debug(2, "backup %s \n", filename);
       // Skip generation of directories
-      rc =  stat(filename, &buf);
+      rc = lstat(filename, &buf);
       csync_debug(2, "backup %s %d \n", filename, rc);
       if (rc != 0) {
 	  csync_warn(0, "Nothing to backup: %s. New file?\n", filename);
@@ -326,7 +325,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       }
 	
       if (S_ISDIR(buf.st_mode)) {
-	  csync_log(LOG_DEBUG, 4, "directory. Skip generation \n");
+	  csync_log(LOG_DEBUG, 2, "Directory. Skip\n");
 	  return 0;
       }
 
@@ -350,28 +349,27 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       for (i=1; i < filename_len; i++) {
 
 	  if (filename[i] == '/' && i <= lastSlash) {
+	      backup_filename[back_dir_len+i] = 0;
 	
-	  backup_filename[back_dir_len+i] = 0;
-	
-	  struct stat st;
-	  rc = lstat(backup_filename, &st);
-	  if (rc == 0) {
-	      if (!S_ISDIR(st.st_mode)) {
-		  csync_debug(0, "backup_rename: %s filename: %s i: \n", backup_filename, filename, i);
-		  csync_backup_rename(backup_filename, back_dir_len+i, g->backup_generations);
-		  rc = 1;
+	      struct stat st;
+	      rc = lstat(backup_filename, &st);
+	      if (rc == 0) {
+		  if (!S_ISDIR(st.st_mode)) {
+		      csync_info(3, "backup_rename: %s filename: %s i: \n", backup_filename, filename, i);
+		      csync_backup_rename(backup_filename, back_dir_len+i, g->backup_generations);
+		      rc = 1;
+		  }
 	      }
-	  }
-	  if (rc) {
-	      csync_log(LOG_DEBUG, 4, "mkdir %s \n", backup_filename);
-	      rc = mkdir(backup_filename, mode);
-	  }
-	  // Dont check the empty string.
-	  if (i!= 0)
-	    csync_set_backup_file_status(backup_filename, back_dir_len);
+	      if (rc) {
+		  csync_log(LOG_INFO, 3, "mkdir %s \n", backup_filename);
+		  rc = mkdir(backup_filename, mode);
+	      }
+	      // Dont check the empty string.
+	      if (i!= 0)
+		  csync_set_backup_file_status(backup_filename, back_dir_len);
 	
-	  backup_filename[back_dir_len+i] = filename[i];
-	}
+	      backup_filename[back_dir_len+i] = filename[i];
+	  }
 
       }
 
