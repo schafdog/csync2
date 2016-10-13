@@ -1,1 +1,3 @@
-./local.sh recursive.test 
+#/bin/bash
+./local.sh recursive.test
+

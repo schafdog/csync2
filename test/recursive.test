@@ -1,10 +1,13 @@
 #
 #
+rm -rf /tmp/csync2.real/*
+rm -rf /tmp/csync2.res
 daemon d PEER
 clean local
 clean peer
 FILENAME="new_file 'N' all"
 DIRNAME=recursive
+TESTDIR=`pwd`/test/$PEER
 mkdir -p "test/$NAME/$DIRNAME"
 mkdir -p "test/$NAME/$DIRNAME/1/2/3/4/5"
 echo "not ignore" > "test/$NAME/$DIRNAME/1/2/3/4/5/file.c"
@@ -12,9 +15,11 @@ cmd x "New $NAME/$DIRNAME/$FILENAME"
 echo "ignored" > "test/$PEER/$DIRNAME/1/2/3/4/5/ignored.o"
 echo "ignored" > "test/$PEER/$DIRNAME/1/2/3/4/5/ignored.c~"
 sleep 2
-rm -rf test/$NAME/$DIRNAME
+mkdir -p /tmp/csync2.res/$TESTDIR
+mv  test/$NAME/$DIRNAME /tmp/csync2.res/$TESTDIR/
 cmd x "rm directory with ignore files"
 #
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon d PEER
+diff -r /tmp/csync2/ /tmp/csync2.res/

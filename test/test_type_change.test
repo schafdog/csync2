@@ -1,5 +1,6 @@
 #
 #
+#rm -rf /tmp/csync2.real/*
 daemon d PEER
 clean local
 clean peer
@@ -13,12 +14,19 @@ rm -rf test/$NAME/$DIRNAME
 sleep 2
 echo "now file" > "test/$NAME/$DIRNAME"
 cmd x "Directory to file (type change)"
+#
 rm  test/$NAME/$DIRNAME
 sleep 1
 mkdir -p "test/$NAME/$DIRNAME"
 echo "far" > "test/$NAME/$DIRNAME/$FILENAME"
 cmd x "File 2 directory (type change)"
 #
+rm -rf test/$NAME/$DIRNAME
+sleep 2
+echo "file again" > "test/$NAME/$DIRNAME"
+cmd x "Directory to file (type change)"
+#
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon d PEER
+diff -r /tmp/csync2.real/ test_type_change/backup.res/
