@@ -249,7 +249,7 @@ void csync_file_update(db_conn_p db, filename_p filename, peername_p peername, i
       if (rc)
 	  csync_error(0, "ERROR: generating digest for '%s': %s %d", filename, digest, rc);
     }
-    csync_log(LOG_DEBUG, 2, "daemon_check_update: UPDATE/INSERT into file filename: %s", filename);
+    csync_log(LOG_DEBUG, 2, "daemon_check_update: UPDATE/INSERT into file filename: %s\n", filename);
     db->remove_file(db, filename, 0);
     //long count = db->update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
     ///if (count == 0)
@@ -271,18 +271,20 @@ int csync_backup_rename(filename_p filename, int length, int generations)
     int rc, i;
     for (i= generations; i; i--) {
 	if (i != 1)
-	  snprintf(backup_name+length, 10, ".%d", i-1);
+	    snprintf(backup_name+length, 10, ".%d", i-1);
 	else
 	    backup_name[length] = '\0';
 	snprintf(backup_other+length, 10, ".%d", i);
 	rc = stat(backup_name, &st);
 	if (rc != 0)
-	  continue; // File does not exists
+	    continue; // File does not exists
 	if (i == generations) {
 	    if (S_ISDIR(st.st_mode))
 		csync_rmdir_recursive(NULL, backup_name);
-	    else
+	    else {
+		csync_debug(2, "Remove backup %s due to generation %d \n", filename, generations);
 		unlink(backup_name);
+	    }
 	}
 	else {
 	    rc = rename(backup_name, backup_other);
@@ -1389,6 +1391,8 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int db_versio
 	    if (lstat_strict(filename, &st) == 0 && (abs(cmd->unlink) != (st.st_mode & S_IFMT) || cmd->unlink == -1)) {
  		if (cmd->unlink != -1) // -1: alway unlink and no logging
 		    csync_log(LOG_INFO, 1, "Unlinking entry due to different type: %d %d \n", cmd->unlink, st.st_mode & S_IFMT);
+		if(csync_file_backup(filename, &cmd_error))
+		    csync_warn(2, "Failed to backup file %s. Unlinking anyway\n", filename);
 		csync_unlink(db, filename, 1, cmd->unlink, &cmd_error, db_version);
 	    }
 	}
