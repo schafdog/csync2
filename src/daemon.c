@@ -275,18 +275,22 @@ int csync_backup_rename(filename_p filename, int length, int generations)
 	else
 	    backup_name[length] = '\0';
 	snprintf(backup_other+length, 10, ".%d", i);
-	rc = stat(backup_name, &st);
-	if (rc != 0)
-	    continue; // File does not exists
 	if (i == generations) {
-	    if (S_ISDIR(st.st_mode))
-		csync_rmdir_recursive(NULL, backup_name);
-	    else {
-		csync_debug(2, "Remove backup %s due to generation %d \n", filename, generations);
-		unlink(backup_name);
+	    rc = lstat(backup_other, &st);
+	    if (rc == 0)
+	    {
+		if (S_ISDIR(st.st_mode))
+		    csync_rmdir_recursive(NULL, backup_name);
+		else {
+		    csync_debug(2, "Remove backup %s due to generation %d \n", filename, generations);
+		    unlink(backup_name);
+		}
 	    }
 	}
 	else {
+	    rc = lstat(backup_name, &st);
+	    if (rc != 0)
+		continue; // File does not exists
 	    rc = rename(backup_name, backup_other);
 	    csync_info(2, "renaming backup files '%s' to '%s'. rc = %d\n",
 		      backup_name, backup_other, rc);
