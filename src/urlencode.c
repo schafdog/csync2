@@ -70,6 +70,9 @@ const char *url_decode(const char *in)
 	char *out, num[3]="XX";
 	int i, k, len;
 
+	if (in == NULL)
+	    return strdup("");
+
 	for (i=len=0; in[i]; i++, len++)
 		if ( in[i] == '%' && in[i+1] && in[i+2] ) i+=2;
 
