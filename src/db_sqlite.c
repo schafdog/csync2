@@ -267,14 +267,14 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 	csync_db_sql(db, NULL, /* "Creating file table", */
 		"CREATE TABLE file ("
 		"	filename, checktxt, device, inode, size, digest, mode, mtime, type, "
-		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP"
+		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
 		")");
 
 	csync_db_sql(db, NULL, /* "Creating dirty table", */
 		"CREATE TABLE dirty ("
-		"	filename, forced, myname, peername, operation, device, inode, other, digest, mode, mtime, type, "
-		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP"
+		"	filename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
+		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
 		")");
 
@@ -286,13 +286,13 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 
 	csync_db_sql(db, NULL, /* "Creating action table", */
 		"CREATE TABLE action ("
-		"	filename, command, logfile,"
+		"	filename, command, logfile, "
 		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
 		")");
 
 	csync_db_sql(db, NULL, /* "Creating x509_cert table", */
 		"CREATE TABLE x509_cert ("
-		"	peername, certdata,"
+		"	peername, certdata, "
 		"	UNIQUE ( peername ) ON CONFLICT IGNORE"
 		")");
 
