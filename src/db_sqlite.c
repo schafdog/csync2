@@ -225,27 +225,30 @@ int db_sqlite_stmt_close(db_stmt_p stmt)
   return db_sqlite_error_map(rc);
 }
 
-const char *db_my_escape(const char *string) {
-  
-  char *escaped = malloc(strlen(string)*2 +1);
-  const char *p = string; 
-  char *e = escaped;
-  while (*p != 0) {
-    switch (*p) {
-    case '\'': 
-    case '\\': 
-      *(e++) = '\'';
-    default:
-      *(e++) = *(p++);
-    }
-    *e = 0;
-  };
-  return escaped;
+const char *db_my_escape(const char *string)
+{
+    if (string == NULL)
+	return string;
+    char *escaped = malloc(strlen(string)*2 +1);
+    const char *p = string; 
+    char *e = escaped;
+    while (*p != 0) {
+	switch (*p) {
+	case '\'': 
+	case '\\': 
+	    *(e++) = '\'';
+	default:
+	    *(e++) = *(p++);
+	}
+	*e = 0;
+    };
+    return escaped;
 };
 
 const char *db_sqlite_escape(db_conn_p conn, const char *string) {
   const char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
-  ringbuffer_add(string, free);
+  if (escaped)
+      ringbuffer_add(escaped, free);
   return escaped;
 }
 
