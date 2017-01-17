@@ -18,10 +18,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
 #include "csync2.h"
 #include "digest.h"
 #include "uidgid.h"
+#include "resolv.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -155,11 +156,15 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive, int db_version
 	}
 	textlist_free(tl);
 	/* Above could fail due to ignore files. Do recursive on scandir  */
-	rc = csync_rmdir_recursive(db, filename);
-	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
+	if (rc == ERROR) {
+	    rc = csync_rmdir_recursive(db, filename);
+	}
+	csync_info(0, "Deleted recursive from clean directory (%s): %d \n", filename, dir_count);
+/*
 	for (t = dl; t != 0; t = t->next) {
 	    csync_debug(1, "PRINT: remove directory: %s \n", t->value);
 	}
+*/
 	textlist_free(dl);
     }
     else {
@@ -276,25 +281,24 @@ int csync_backup_rename(filename_p filename, int length, int generations)
 	    backup_name[length] = '\0';
 	snprintf(backup_other+length, 10, ".%d", i);
 	if (i == generations) {
+	    csync_debug(2, "check backup generation %s due  %d \n", backup_other, generations);
 	    rc = lstat(backup_other, &st);
 	    if (rc == 0)
 	    {
+		csync_debug(2, "Remove backup %s due to generation %d \n", backup_other, generations);
 		if (S_ISDIR(st.st_mode))
-		    csync_rmdir_recursive(NULL, backup_name);
+		    csync_rmdir_recursive(NULL, backup_other);
 		else {
-		    csync_debug(2, "Remove backup %s due to generation %d \n", filename, generations);
-		    unlink(backup_name);
+		    unlink(backup_other);
 		}
 	    }
 	}
-	else {
-	    rc = lstat(backup_name, &st);
-	    if (rc != 0)
-		continue; // File does not exists
-	    rc = rename(backup_name, backup_other);
-	    csync_info(2, "renaming backup files '%s' to '%s'. rc = %d\n",
-		      backup_name, backup_other, rc);
-	}
+	rc = lstat(backup_name, &st);
+	if (rc != 0)
+	    continue; // File does not exists
+	rc = rename(backup_name, backup_other);
+	csync_info(2, "renaming backup files '%s' to '%s'. rc = %d\n",
+		   backup_name, backup_other, rc);
     }
     free(backup_name);
     free(backup_other);
@@ -361,7 +365,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	      rc = lstat(backup_filename, &st);
 	      if (rc == 0) {
 		  if (!S_ISDIR(st.st_mode)) {
-		      csync_info(3, "backup_rename: %s filename: %s i: \n", backup_filename, filename, i);
+		      csync_info(3, "backup_rename PATH: %s filename: %s i: \n", backup_filename, filename, i);
 		      csync_backup_rename(backup_filename, back_dir_len+i, g->backup_generations);
 		      rc = 1;
 		  }
@@ -381,6 +385,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 
       backup_filename[back_dir_len + filename_len] = 0;
       backup_filename[back_dir_len] = '/';
+      csync_info(3, "backup_rename FILE: %s filename: %s i: \n", backup_filename, filename, i);
       csync_backup_rename(backup_filename, back_dir_len + filename_len, g->backup_generations);
       
       fd_out = open(backup_filename, O_WRONLY|O_CREAT, 0600);
@@ -526,22 +531,6 @@ struct csync_command cmdtab[] = {
 	{ "bye",	0, 0, 0, 0, 0, A_BYE	},
 	{ 0,		0, 0, 0, 0, 0, 0	}
 };
-
-typedef union address {
-	struct sockaddr sa;
-	struct sockaddr_in sa_in;
-	struct sockaddr_in6 sa_in6;
-	struct sockaddr_storage ss;
-} address_t;
-
-const char *csync_inet_ntop(address_t *addr, char *buf, size_t size)
-{
-	sa_family_t af = addr->sa.sa_family;
-	return inet_ntop(af,
-			 af == AF_INET  ? (void*)&addr->sa_in.sin_addr :
-			 af == AF_INET6 ? (void*)&addr->sa_in6.sin6_addr : NULL,
-			 buf, size);
-}
 
 /*
  * Loops (to cater for multihomed peers) through the address list returned by
