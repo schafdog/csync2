@@ -69,6 +69,9 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    if (S_ISREG(file_stat->st_mode)) {
 		db_flags |= CALC_DIGEST;
 	    }
+	    else if (S_ISDIR(file_stat->st_mode)) {
+		*operation = OP_MKDIR;
+	    }
 	    else if ( S_ISLNK(file_stat->st_mode) )
 	    {
 		// TODO get max path
