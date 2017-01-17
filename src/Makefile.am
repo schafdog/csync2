@@ -27,7 +27,7 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 		 error.c error.h getrealfn.c	\
                  groups.c rsync.c update.c urlencode.c conn.c prefixsubst.c \
 		 db_api.c db_sql.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c \
-		 ringbuffer.c buffer.c uidgid.c uidgid.h \
+		 ringbuffer.c buffer.c uidgid.c uidgid.h resolv.c resolv.h \
 		 csync2.h db_api.h db_sql.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
 		 csync2-compare \
 		 digest.c digest.h version.h \
@@ -41,7 +41,7 @@ AM_YFLAGS = -d
 BUILT_SOURCES = cfgfile_parser.h check_version
 LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
-             private_librsync private_libsqlite config.log		
+             config.log		
 
 # csync2_LDADD =
 
@@ -52,14 +52,7 @@ dist-clean-local:
 	rm -rf autom4te.cache
 
 AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) -std=c99 -O0 -Wno-deprecated-declarations
-AM_LDFLAGS=$(LIBGNUTLS_LIBS)
-
-if PRIVATE_LIBRSYNC
-  BUILT_SOURCES += private_librsync
-  AM_CFLAGS += -I$(shell test -f librsync.dir && cat librsync.dir || echo ==librsync==)
-  AM_LDFLAGS += -L$(shell test -f librsync.dir && cat librsync.dir || echo ==librsync==)
-  LIBS += -lprivatersync
-endif
+AM_LDFLAGS= -Wl,-Bstatic $(LIBGNUTLS_LIBS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
