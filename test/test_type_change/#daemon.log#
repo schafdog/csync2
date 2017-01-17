@@ -1,94 +1,126 @@
 Csync2 daemon running. Waiting for connections.
-<17386> New connection from 127.0.0.1:59112.
-<17386> Command: HELLO local
-<17386> HELLO from local. Response: OK
-<17386> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
-<17386> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
-<17386> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-<17386> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
-<17386> IDENT (cmd_finished).
-<17386> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/local ...
-<17386> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/local 
-<17386> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/local.
-<17386> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/local  
-<17386> IDENT (cmd_finished).
-<17386> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local ...
-<17386> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local 
-<17386> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local.
-<17386> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local  
-<17386> IDENT (cmd_finished).
-<17386> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all ...
-<17386> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all 
-<17386> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.
-<17386> Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all  
-<17386> IDENT (cmd_finished).
-<17386> Connection closed. Pid 17386 mode 64 
-<17386> goto noforkCsync2 daemon running. Waiting for connections.
-<17386> New connection from 127.0.0.1:59118.
-<17386> Command: HELLO local
-<17386> HELLO from local. Response: OK
-<17386> peername: local file: /export/home/dennis/Projects/csync2/csync2/test/test/peer key: 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV recursive 1
-<17386> Connection closed. Pid 17386 mode 64 
-<17386> goto noforkCsync2 daemon running. Waiting for connections.
-<17386> New connection from 127.0.0.1:59124.
-<17386> Command: HELLO local
-<17386> HELLO from local. Response: OK
-<17386> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
-<17386> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
-<17386> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-<17386> Unlinking entry due to different type: 32768 16384 
-<17386> Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 
-<17386> rm -r: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all 33188
-<17386> csync_remove_file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all 
-<17386> Changing owner of /tmp/export to user 0 and group 0, rc= -1 
-<17386> Changing owner of /tmp/export/home to user 0 and group 0, rc= -1 
-<17386> Changing owner of /tmp/export/home/dennis/Projects to user 1000 and group 33, rc= -1 
-<17386> mv /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer 
-<17386> Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all from file db.
-<17386> rm -r: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local 16877
-<17386> rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local 0
-<17386> rm -r: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/local 16877
-<17386> rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/local 0
-<17386> rm -r: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer 16877
-<17386> rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
-<17386> Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 
-<17386> Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
- <17386> No such file or directory in scandir: /export/home/dennis/Projects/csync2/csync2/test/test/peer (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-<17386> Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer -1
-<17386> remove directory: /export/home/dennis/Projects/csync2/csync2/test/test/peer 
-<17386> remove directory: /export/home/dennis/Projects/csync2/csync2/test/test/peer/local 
-<17386> remove directory: /export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local 
-<17386> Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
-<17386> IDENT (cmd_finished).
-<17386> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer: 33188<17386> ERROR: Not a directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-<17386> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer: 33188<17386> ERROR: Not a directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-<17386> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer: 33188<17386> ERROR: Not a directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-<17386> Connection closed. Pid 17386 mode 64 
-<17386> goto noforkCsync2 daemon running. Waiting for connections.
-<17386> New connection from 127.0.0.1:59128.
-<17386> Command: HELLO local
-<17386> HELLO from local. Response: OK
-<17386> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer: 33188<17386> ERROR: Not a directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-<17386> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer: 33188<17386> ERROR: Not a directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-<17386> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer: 33188<17386> ERROR: Not a directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-<17386> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
-<17386> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
-<17386> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-<17386> mark other operation: 'RM' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local' '-'.
-<17386> mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/local/local' '-'.
-<17386> mark other operation: 'RM' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/local' '-'.
-<17386> mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/local' '-'.
-<17386> Changing owner of /tmp/export to user 0 and group 0, rc= -1 
-<17386> Changing owner of /tmp/export/home to user 0 and group 0, rc= -1 
-<17386> Changing owner of /tmp/export/home/dennis/Projects to user 1000 and group 33, rc= -1 
-<17386> Removing  /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2/* ..
-<17386> Removing file /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2/new_file 'N' all.2 37654227 
-<17386> csync_remove_file: /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2/new_file 'N' all.2 
-<17386> Removing file /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2/new_file 'N' all.1 37648707 
-<17386> csync_remove_file: /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2/new_file 'N' all.1 
-<17386> Removing file /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2/new_file 'N' all 37648131 
-<17386> csync_remove_file: /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2/new_file 'N' all 
-<17386> Removing directory /tmp/export/home/dennis/Projects/csync2/csync2/test/test/peer.2 0
-<17386> Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
-<17386> Connection closed. Pid 17386 mode 64 
-<17386> goto nofork
+<26176> New connection from 127.0.0.1:54340.
+<26176> Command: HELLO local
+<26176> HELLO from local. Response: OK
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
+<26176> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+<26176> IDENT (cmd_finished).
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
+<26176> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
+<26176> IDENT (cmd_finished).
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
+<26176> Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
+<26176> IDENT (cmd_finished).
+<26176> Connection closed. Pid 26176 mode 64 
+<26176> goto nofork.
+Csync2 daemon running. Waiting for connections.
+<26176> New connection from 127.0.0.1:54348.
+<26176> Command: HELLO local
+<26176> HELLO from local. Response: OK
+<26176> peername: local file: /export/home/dennis/Projects/csync2/csync2/test/test/peer key: 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV recursive 1
+<26176> Connection closed. Pid 26176 mode 64 
+<26176> goto nofork.
+Csync2 daemon running. Waiting for connections.
+<26176> New connection from 127.0.0.1:54364.
+<26176> Command: HELLO local
+<26176> HELLO from local. Response: OK
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
+<26176> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+<26176> IDENT (cmd_finished).
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
+<26176> Unlinking entry due to different type: 32768 16384 
+<26176> Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 
+<26176> rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 33188
+<26176> csync_remove_file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
+<26176> Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
+<26176> Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+<26176> Changing owner of /tmp/csync2/export/home/dennis/Projects to user 1000 and group 33, rc= -1 
+<26176> Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all from file db.
+<26176> rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 16877
+<26176> rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
+<26176> Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/* ..
+<26176> No such file or directory in scandir: /export/home/dennis/Projects/csync2/csync2/tesqt/test/peer/type_change (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change)
+<26176> Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change -1
+<26176> Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 
+<26176> PRINT: remove directory: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
+<26176> Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
+<26176> IDENT (cmd_finished).
+<26176> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change: 33188
+<26176> Connection closed. Pid 26176 mode 64 
+<26176> goto nofork.
+Csync2 daemon running. Waiting for connections.
+<26176> New connection from 127.0.0.1:54374.
+<26176> Command: HELLO local
+<26176> HELLO from local. Response: OK
+<26176> ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change: 33188
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
+<26176> ERROR: Could not open result from tempnam(/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/.new_file 'N' all.XXXXXX)!
+<26176> I/O Error 'Not a directory' while creating new data temp file in rsync-patch: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
+<26176> ERROR: Not a directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all)
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
+<26176> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+<26176> IDENT (cmd_finished).
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
+<26176> Unlinking entry due to different type: 16384 32768 
+<26176> Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
+<26176> Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+<26176> Changing owner of /tmp/csync2/export/home/dennis/Projects to user 1000 and group 33, rc= -1 
+<26176> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
+<26176> IDENT (cmd_finished).
+<26176> Connection closed. Pid 26176 mode 64 
+<26176> goto nofork.
+Csync2 daemon running. Waiting for connections.
+<26176> New connection from 127.0.0.1:54386.
+<26176> Command: HELLO local
+<26176> HELLO from local. Response: OK
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
+<26176> Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+<26176> IDENT (cmd_finished).
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
+<26176> Unlinking entry due to different type: 32768 16384 
+<26176> Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 0 
+<26176> rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 16877
+<26176> rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
+<26176> Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/* ..
+<26176> No such file or directory in scandir: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change)
+<26176> Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change -1
+<26176> Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 0 
+<26176> PRINT: remove directory: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
+<26176> Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
+<26176> IDENT (cmd_finished).
+<26176> Connection closed. Pid 26176 mode 64 
+<26176> goto nofork.
+Csync2 daemon running. Waiting for connections.
+<26176> New connection from 127.0.0.1:54392.
+<26176> Command: HELLO local
+<26176> HELLO from local. Response: OK
+<26176> Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
+<26176> Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
+<26176> Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
+<26176> Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
+<26176> Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+<26176> Changing owner of /tmp/csync2/export/home/dennis/Projects to user 1000 and group 33, rc= -1 
+<26176> ERROR: Open error while backing up '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change': Is a directory
+ (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change)
+<26176> Connection closed. Pid 26176 mode 64 
+<26176> goto nofork.
