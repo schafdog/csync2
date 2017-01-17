@@ -601,7 +601,7 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 	const char *old_digest   = SQL_V(4);
 	operation_t op = SQL_V(5) ? atoi(SQL_V(5)) : 0;
 	if (op != old_operation)
-	    csync_error(0, "ERROR: operation differs: %s != %d %s\n", SQL_V(0), op, csync_operation_str(op));
+	    csync_error(0, "ERROR: operation differs: %s(%d) != %s(%d)\n", SQL_V(0), old_operation, csync_operation_str(op), op);
 	textlist_add4(&tl, old_filename, old_other, old_checktxt, old_digest, old_operation);
 	break; 
     } SQL_FIN {
