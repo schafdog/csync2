@@ -271,7 +271,7 @@ struct textlist;
 #define OP_RM       64
 #define OP_MOD	    128
 #define OP_MARK	    256
-#define OP_UNDEF    512
+#define OP_UNDEF    0
 
 #define IS_UPGRADE 1
 #define IS_DIRTY   2
