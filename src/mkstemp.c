@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#if defined(MKTEMP_STANDALONE)
 int main(int argc, char *argv[]) 
 {
    
@@ -9,3 +10,4 @@ int main(int argc, char *argv[])
    printf("'%s' rc: %d\n" ,argv[1], rc); 
    return rc;
 }
+#endif
