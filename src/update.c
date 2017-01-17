@@ -98,6 +98,8 @@ const char *csync_operation_str(operation_t op) {
 	switch (op) {
 	case OP_NEW:
 		return "NEW";
+	case OP_MKDIR:
+		return "MKDIR";
 	case OP_MOD:
 		return "MOD";
 	case OP_RM:
