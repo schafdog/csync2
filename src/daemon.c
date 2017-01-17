@@ -360,9 +360,10 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 
 	  if (filename[i] == '/' && i <= lastSlash) {
 	      backup_filename[back_dir_len+i] = 0;
-	
+
 	      struct stat st;
 	      rc = lstat(backup_filename, &st);
+	      csync_log(LOG_INFO, 3, "backupdir stat: %s %d %d\n", backup_filename, rc, st.st_mode);
 	      if (rc == 0) {
 		  if (!S_ISDIR(st.st_mode)) {
 		      csync_info(3, "backup_rename PATH: %s filename: %s i: \n", backup_filename, filename, i);
