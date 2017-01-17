@@ -110,7 +110,7 @@ const char *csync_mode_op_str(int st_mode, int op)
 	else
 	    return "MOD";
     else if (S_ISDIR(st_mode))
-	if (op == OP_NEW)
+	if (op == OP_NEW || op == OP_MKDIR)
 	    return "MKDIR";
 	else
 	    return "MOD_DIR";
@@ -173,7 +173,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 	operation = OP_UNDEF;
     }
     // NEW/MK A -> MOD (still NEW)
-    else if (CHECK_NEW_MOD && operation == OP_MOD && old_operation == OP_NEW) {
+    else if (CHECK_NEW_MOD && operation == OP_MOD && (old_operation == OP_NEW || old_operation == OP_MKDIR)) {
 	csync_info(1, "mark operation NEW -> MOD => NEW %s:%s (not synced) .\n",
 		    peername, file);
 	operation = old_operation;
