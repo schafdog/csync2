@@ -165,10 +165,12 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 	dirty = 1;
     }
     // NEW/MK A -> RM A => remove from dirty, as it newer happened if it is same filename
-    else if (CHECK_NEW_RM && operation == OP_RM && (old_operation == OP_NEW || old_operation == OP_HARDLINK) && !strcmp(file,old_filename)) {
+    else if (CHECK_NEW_RM && operation == OP_RM && (old_operation == OP_NEW ||
+						    old_operation == OP_HARDLINK ||
+						    old_operation == OP_MKDIR) && !strcmp(file,old_filename)) {
 	csync_info(1, "mark operation %s -> RM %s:%s deleted before syncing. Removing from dirty.\n",
 		    csync_operation_str(old_operation),
-		    peername, file);
+		    peername, file_new);
 	dirty = 0;
 	operation = OP_UNDEF;
     }
