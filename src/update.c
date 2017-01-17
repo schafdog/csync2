@@ -73,7 +73,7 @@ operation_t csync_operation(const char *operation)
 	if (!strcmp(operation, "NEW"))
 		return OP_NEW;
 	if (!strcmp(operation, "MKDIR"))
-		return OP_NEW;
+		return OP_MKDIR;
 	if (!strcmp(operation, "MKINFO"))
 		return OP_NEW;
 	if (!strcmp(operation, "MKCHR"))
