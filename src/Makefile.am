@@ -52,7 +52,7 @@ dist-clean-local:
 	rm -rf autom4te.cache
 
 AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) -std=c99 -O0 -Wno-deprecated-declarations
-AM_LDFLAGS= -Wl,-Bstatic $(LIBGNUTLS_LIBS)
+AM_LDFLAGS= $(LIBGNUTLS_LIBS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
