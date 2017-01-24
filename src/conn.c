@@ -309,7 +309,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 
 #else
 
-int conn_check_peer_cert(peername_p peername, int callfatal)
+int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 {
 	return 1;
 }
