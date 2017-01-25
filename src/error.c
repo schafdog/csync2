@@ -92,7 +92,18 @@ void csync_printtime_prefix()
 	fprintf(csync_out_debug, "[%s] ", ftbuffer);
 }
 
-void csync_log(int priority, int lv, const char *fmt, ...)
+char *syslog_prio[] = { 
+    "EMERG ",
+    "ALERT ",
+    "CRIT  ",
+    "ERROR ",
+    "WARN  ",
+    "NOTICE",
+    "INFO  ",
+    "DEBUG "
+};
+
+    void csync_log(int priority, int lv, const char *fmt, ...)
 {
 	va_list ap;
 	if ( csync_level_debug < lv )
@@ -110,6 +121,12 @@ void csync_log(int priority, int lv, const char *fmt, ...)
 	  if ( csync_server_child_pid )
 	    fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
 
+	  /*
+	  if (LOG_EMERG <= priority && priority <= LOG_DEBUG)
+	      fprintf(csync_out_debug, " %s ", syslog_prio[priority]);
+	  else
+	      fprintf(csync_out_debug, "%d: ", priority);
+	  */
 	  va_start(ap, fmt);
 	  vfprintf(csync_out_debug, fmt, ap);
 	  va_end(ap);

@@ -8,15 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define BUF_SIZE 500
-
-typedef union address {
-	struct sockaddr sa;
-	struct sockaddr_in sa_in;
-	struct sockaddr_in6 sa_in6;
-	struct sockaddr_storage ss;
-} address_t;
-
+#include "resolv.h"
 
 const char *csync_inet_ntop(address_t *addr, char *buf, size_t size)
 {
@@ -26,6 +18,9 @@ const char *csync_inet_ntop(address_t *addr, char *buf, size_t size)
 			 af == AF_INET6 ? (void*)&addr->sa_in6.sin6_addr : NULL,
 			 buf, size);
 }
+
+#ifdef RESOLV_STANDALONE
+#define BUF_SIZE 500
 
 int
 main(int argc, char *argv[])
@@ -67,4 +62,4 @@ main(int argc, char *argv[])
 	  
    }
 }
-
+#endif

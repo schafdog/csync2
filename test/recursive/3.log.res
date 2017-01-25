@@ -14,27 +14,27 @@ mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/t
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' '-'.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' '(null)'
-mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5 deleted before syncing. Removing from dirty.
+mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5 deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4' '-'.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4' '(null)'
-mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4 deleted before syncing. Removing from dirty.
+mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4 deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3' '-'.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3' '(null)'
-mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3 deleted before syncing. Removing from dirty.
+mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3 deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2' '-'.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2' '(null)'
-mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2 deleted before syncing. Removing from dirty.
+mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2 deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1' '-'.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1' '(null)'
-mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1 deleted before syncing. Removing from dirty.
+mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1 deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive' '-'.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive' '-'.
 mark other: Old operation: MKDIR '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive' '(null)'
-mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive deleted before syncing. Removing from dirty.
+mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive deleted before syncing. Removing from dirty.
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local

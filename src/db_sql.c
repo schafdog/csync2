@@ -69,6 +69,9 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    if (S_ISREG(file_stat->st_mode)) {
 		db_flags |= CALC_DIGEST;
 	    }
+	    else if (S_ISDIR(file_stat->st_mode)) {
+		*operation = OP_MKDIR;
+	    }
 	    else if ( S_ISLNK(file_stat->st_mode) )
 	    {
 		// TODO get max path
@@ -598,7 +601,7 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 	const char *old_digest   = SQL_V(4);
 	operation_t op = SQL_V(5) ? atoi(SQL_V(5)) : 0;
 	if (op != old_operation)
-	    csync_error(0, "ERROR: operation differs: %s != %d %s\n", SQL_V(0), op, csync_operation_str(op));
+	    csync_error(0, "ERROR: operation differs: %s(%d) != %s(%d)\n", SQL_V(0), old_operation, csync_operation_str(op), op);
 	textlist_add4(&tl, old_filename, old_other, old_checktxt, old_digest, old_operation);
 	break; 
     } SQL_FIN {

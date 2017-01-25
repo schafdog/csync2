@@ -73,7 +73,7 @@ operation_t csync_operation(const char *operation)
 	if (!strcmp(operation, "NEW"))
 		return OP_NEW;
 	if (!strcmp(operation, "MKDIR"))
-		return OP_NEW;
+		return OP_MKDIR;
 	if (!strcmp(operation, "MKINFO"))
 		return OP_NEW;
 	if (!strcmp(operation, "MKCHR"))
@@ -98,6 +98,8 @@ const char *csync_operation_str(operation_t op) {
 	switch (op) {
 	case OP_NEW:
 		return "NEW";
+	case OP_MKDIR:
+		return "MKDIR";
 	case OP_MOD:
 		return "MOD";
 	case OP_RM:
@@ -834,7 +836,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
     struct stat st;
     char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
     int last_conn_status = 0, auto_resolve_run = 0;
-    const char *operation_str = "?";
+    const char *operation_str = csync_operation_str(operation);
     const char *key = csync_key(peername, filename);
     if (!key) {
 	csync_info(2, "Skipping file update %s on %s - not in my groups.\n",
@@ -857,7 +859,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 	    sprintf(ino_str, INO_FORMAT, st.st_ino);
 	    char *result_other = NULL;
 	    db->add_dirty(db, other, force, myname, peername,
-			  csync_operation_str(operation), checktxt, dev_str, ino_str, result_other, operation, st.st_mode);
+			  operation_str, checktxt, dev_str, ino_str, result_other, operation, st.st_mode);
 	} else {
 	    csync_error(0, "ERROR: Cannot stat %s %s.\n", filename,
 			operation_str);
