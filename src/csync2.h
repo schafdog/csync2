@@ -156,13 +156,13 @@ struct file_info {
 
 typedef struct file_info *file_info_t; 
 
-extern const struct csync_group *csync_find_next(const struct csync_group *g, const char *file);
-extern int csync_match_file(const char *file);
+extern const struct csync_group *csync_find_next(const struct csync_group *g, const char *file, int compare_mode);
+extern int csync_match_file(const char *file, int compare_mode);
 extern void csync_check_usefullness(const char *file, int recursive);
 extern int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys);
 extern struct peer *csync_find_peers(const char *file, const char *thispeer);
 extern const char *csync_key(const char *hostname, filename_p filename);
-extern int csync_perm(filename_p filename, const char *key, const char *hostname);
+extern int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode);
 
 
 /* conn.c */
@@ -302,7 +302,7 @@ extern int csync_check_dir(db_conn_p db, const char* file, int flags);
 
 void cmd_printf(int conn, const char *cmd, const char *key, 
 		filename_p filename, const char *secondname,
-		const struct stat *st, const char *uidptr, const char* gidptr);
+		const struct stat *st, const char *uidptr, const char* gidptr, const char *digest);
 
 int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty);
 

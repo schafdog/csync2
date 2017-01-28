@@ -127,7 +127,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     {
 	peername_p peername = db_decode(SQL_V(2));
 	filename_p filename = db_decode(SQL_V(3));
-	if (csync_find_next(0, filename)) {
+	if (csync_find_next(0, filename, 0)) {
 	    const char *force_str = SQL_V(0);
 	    if (match_peer(active_peers, peername)) {
 		int force = 0;
@@ -340,7 +340,7 @@ void db_sql_list_files(db_conn_p db)
     SQL_BEGIN(db, "DB Dump - File",
 	      "SELECT checktxt, filename FROM file ORDER BY filename")
     {
-	if (csync_find_next(0, db_decode(SQL_V(1)))) {
+	if (csync_find_next(0, db_decode(SQL_V(1)), 0)) {
 	    printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
 	}
     } SQL_END;
@@ -707,7 +707,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	const char *inode    = db_decode(SQL_V(3));
 	int mode    = (SQL_V(4) ? atoi(SQL_V(4)) : 0);
      
-	if (!csync_match_file(filename))
+	if (!csync_match_file(filename, 0))
 	    continue;
 
 	// Not found

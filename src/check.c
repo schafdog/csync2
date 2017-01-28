@@ -651,7 +651,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 
 int csync_check_mod(db_conn_p db, const char *file, int flags, int *count)
 {
-    int check_type = csync_match_file(file);
+    int check_type = csync_match_file(file, 0);
     int dirdump_this = 0, dirdump_parent = MATCH_NONE;
     struct stat st;
 
