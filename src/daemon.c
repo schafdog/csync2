@@ -888,7 +888,7 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, cons
     if (db->version == 1)
 	conn_printf(conn, "%s %s\n", checktxt, (digest ? digest : ""));
     else if (db->version == 2)
-	conn_printf(conn, "%s %s\n", url_encode(checktxt), (digest ? digest : ""));
+	conn_printf(conn, "%s\n", url_encode(checktxt), (digest ? digest : ""));
     else
 	conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
 
