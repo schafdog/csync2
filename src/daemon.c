@@ -232,6 +232,12 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 	    db->remove_dirty(db, "%", filename, 0);
 	    return 0;
 	}
+	else if (operation == OP_RM && cmd == A_DEL) {
+	    // Delete both places
+	    csync_info(1, "Deleted both places: %s\n", filename);
+	    db->remove_dirty(db, "%", filename, 0);
+	    return 0;
+	}
 	else {
 	    csync_info(1, "File %s is dirty here: %s %d\n", filename, csync_operation_str(operation), operation);
 	}
@@ -324,7 +330,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
   const struct csync_group *g = NULL;
   struct stat buf;
   int rc;
-  while ( (g=csync_find_next(g, filename)) ) {
+  while ( (g=csync_find_next(g, filename, 0)) ) {
     if (g->backup_directory && g->backup_generations > 1) {
       //	    filename_p filename = prefixsubst(prefixed_filename);
 
@@ -484,13 +490,25 @@ int csync_set_backup_file_status(char *filename, int backupDirLength) {
   return 0;
 };
 
+enum cmd_update {
+    NOP, UPD, NOLOG
+};
+
+enum cmd_perm {
+    NO_PERM, DO_PERM, COMPARE_MODE
+};
+
+enum cmd_ident {
+    NO, YES, 
+};
+
 struct csync_command {
     char *text;
-    int check_perm;
+    enum cmd_perm check_perm;
     int check_dirty;
     int unlink;
-    int update;
-    int need_ident;
+    enum cmd_update update;
+    enum cmd_ident need_ident;
     enum action_t action;
 };
 
@@ -501,37 +519,37 @@ struct csync_command cmdtab[] = {
 			         update,
 				    need_ident,
 				       action */
-	{ "sig",	1, 0, 0, 0, 1, A_SIG	},
-	{ "mark",	1, 0, 0, 0, 1, A_MARK	},
-	{ "type",	2, 0, 0, 0, 1, A_TYPE	},
-	{ "gettm",	1, 0, 0, 0, 1, A_GETTM	},
-	{ "getsz",	1, 0, 0, 0, 1, A_GETSZ	},
-	{ "flush",	1, 1, 0, 0, 1, A_FLUSH	},
-	{ "del",	1, 1, 0, 1, 1, A_DEL	},
-	{ "patch",	1, 1, S_IFREG, 1, 1, A_PATCH	},
-	{ "create",	1, 1, S_IFREG, 1, 1, A_CREATE	},
-	{ "mkdir",	1, 1, S_IFDIR, 1, 1, A_MKDIR	},
-	{ "mod",	1, 1, 0,       1, 1, A_MOD	},
+	{ "sig",	1, 0, 0, NOP, YES, A_SIG  },
+	{ "mark",	1, 0, 0, NOP, YES, A_MARK },
+	{ "type",	2, 0, 0, NOP, YES, A_TYPE },
+	{ "gettm",	1, 0, 0, NOP, YES, A_GETTM },
+	{ "getsz",	1, 0, 0, NOP, YES, A_GETSZ },
+	{ "flush",	1, 1, 0, NOP, YES, A_FLUSH },
+	{ "del",	1, 1, 0, UPD, YES, A_DEL   },
+	{ "patch",	1, 1, S_IFREG, UPD, YES, A_PATCH },
+	{ "create",	1, 1, S_IFREG, UPD, YES, A_CREATE },
+	{ "mkdir",	1, 1, S_IFDIR, UPD, YES, A_MKDIR },
+	{ "mod",	1, 1, 0,       UPD, YES, A_MOD },
 	// TODO add/use  mod operations for these
-	{ "mkchr",	1, 1, -1, 1, 1, A_MKCHR	},
-	{ "mkblk",	1, 1, -1, 1, 1, A_MKBLK	},
-	{ "mkfifo",	1, 1, -1, 1, 1, A_MKFIFO	},
-	{ "mklink",	1, 1, S_IFLNK, 1, 1, A_MKLINK	},
-	{ "mkhardlink",	1, 1, 0, 1, 1, A_MKHLINK},
-	{ "mksock",	1, 1, S_IFSOCK,1, 1, A_MKSOCK	},
-	{ "mv",	        1, 0, 0, 1, 1, A_MV	},
-	{ "setown",	1, 1, 0, 2, 1, A_SETOWN	},
-	{ "setmod",	1, 1, 0, 2, 1, A_SETMOD	},
-	{ "setime",	1, 0, 0, 2, 1, A_SETTIME},
-	{ "settime",	1, 0, 0, 2, 1, A_SETTIME},
-	{ "list",	0, 0, 0, 0, 1, A_LIST	},
+	{ "mkchr",	1, 1, -1, UPD, YES, A_MKCHR },
+	{ "mkblk",	1, 1, -1, UPD, YES, A_MKBLK },
+	{ "mkfifo",	1, 1, -1, UPD, YES, A_MKFIFO },
+	{ "mklink",	1, 1, S_IFLNK, UPD, YES, A_MKLINK },
+	{ "mkhardlink",	1, 1, 0, UPD, YES, A_MKHLINK },
+	{ "mksock",	1, 1, S_IFSOCK, UPD, YES, A_MKSOCK },
+	{ "mv",	        1, 0, 0, UPD,  YES, A_MV },
+	{ "setown",	1, 1, 0, UPD,  YES, A_SETOWN },
+	{ "setmod",	1, 1, 0, NOLOG, YES, A_SETMOD },
+	{ "setime",	1, 0, 0, NOLOG, YES, A_SETTIME},
+	{ "settime",	1, 0, 0, NOLOG, YES, A_SETTIME},
+	{ "list",	0, 0, 0, NOP,  YES, A_LIST },
 #if 1
-	{ "debug",	0, 0, 0, 0, 0, A_DEBUG	},
+	{ "debug",	0, 0, 0, NOP, NO, A_DEBUG },
 #endif
-	{ "group",	0, 0, 0, 0, 0, A_GROUP	},
-	{ "hello",	0, 0, 0, 0, 0, A_HELLO	},
-	{ "bye",	0, 0, 0, 0, 0, A_BYE	},
-	{ 0,		0, 0, 0, 0, 0, 0	}
+	{ "group",	0, 0, 0, NOP, NO, A_GROUP },
+	{ "hello",	0, 0, 0, NOP, NO, A_HELLO },
+	{ "bye",	0, 0, 0, NOP, NO, A_BYE	},
+	{ 0,		0, 0, 0, 0, 0, 0 }
 };
 
 /*
@@ -782,7 +800,7 @@ struct csync_command *find_command(const char *cmd) {
 
 int csync_daemon_check_identify(int conn, struct csync_command *cmd, peername_p peername, address_t *peeraddr) {
   char buf[INET6_ADDRSTRLEN];
-  if ( cmd->need_ident && !peername ) {
+  if ( cmd->need_ident == YES && !peername ) {
       conn_printf(conn, "Dear %s, please identify first.\n",
 		csync_inet_ntop(peeraddr, buf, sizeof(buf)) ?: "stranger");
     return -1;
@@ -796,19 +814,15 @@ const char *csync_daemon_check_perm(db_conn_p db,
 				    char* key) {
   const char *cmd_error = 0;
   if ( cmd->check_perm ) {
-    if ( cmd->check_perm == 2 )
-      csync_compare_mode = 1;
-    int perm = csync_perm(filename, key, peername);
-    if ( cmd->check_perm == 2 )
-      csync_compare_mode = 0;
-    if ( perm ) {
-      if ( perm == 2 ) {
-    	  csync_mark(db, filename, peername, 0, OP_MOD, NULL,NULL,NULL, 0);
-	cmd_error = "Permission denied for slave!";
-      } else
-	cmd_error = "Permission denied!";
-      return cmd_error;
-    }
+      int perm = csync_perm(filename, key, peername, cmd->check_perm == COMPARE_MODE);
+      if ( perm ) {
+	  if ( perm == 2 ) {
+	      csync_mark(db, filename, peername, 0, OP_MOD, NULL,NULL,NULL, 0);
+	      cmd_error = "Permission denied for slave!";
+	  } else
+	      cmd_error = "Permission denied!";
+	  return cmd_error;
+      }
   }
   return 0;
 }
@@ -870,11 +884,11 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, cons
     csync_log(LOG_DEBUG, 2, "Flags for gencheck: %d \n", flags);
     const char *checktxt = csync_genchecktxt_version(&st, filename,
 						   flags, db->version);
-    char *digest /* db->get_digest(filename); */;
+    char *digest /* db->get_digest(filename); */ = NULL;
     if (db->version == 1)
-	conn_printf(conn, "%s %s\n", checktxt, digest);
+	conn_printf(conn, "%s %s\n", checktxt, (digest ? digest : ""));
     else if (db->version == 2)
-	conn_printf(conn, "%s %s\n", url_encode(checktxt), digest);
+	conn_printf(conn, "%s %s\n", url_encode(checktxt), (digest ? digest : ""));
     else
 	conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
 
@@ -1008,12 +1022,12 @@ int csync_daemon_group(char **active_grouplist, char *newgroup,
 
 void csync_daemon_check_update(db_conn_p db, filename_p filename, const char *otherfile, struct csync_command *cmd, char *peer)
 {
-    if ( cmd->update)
+    if ( cmd->update != NOP)
 	csync_file_update(db, filename, peer);
 
     if (otherfile)
 	csync_file_update(db, otherfile, peer);
-    if ( cmd->update == 1 ) {
+    if ( cmd->update == UPD ) {
 	csync_info(1, "Updated(%s) %s:%s %s \n",
 		    cmd->text,
 		    peer ? peer : "???",
@@ -1156,6 +1170,7 @@ int csync_daemon_dispatch(int conn,
     char *group      = tag[7];
     char *mod        = tag[8];
     char *time       = tag[9];
+    char *digest     = tag[10];
 
     switch ( cmd->action) {
 
