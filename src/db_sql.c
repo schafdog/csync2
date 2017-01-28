@@ -4,19 +4,19 @@
 
 int db_sql_check_file(db_conn_p db, const char *file,
 		      const char *encoded,
-		      int version, char **other,
+		      char **other,
 		      char *checktxt, struct stat *file_stat,
 		      BUF_P buffer, int *operation,
 		      char **digest, int ignore_flags)
 {
     int db_flags = 0;
-    int db_version = version;
+    int db_version = db->version;
     SQL_BEGIN(db, "Checking File",
 	      "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE "
 	      "filename = '%s' ", encoded)
     {
+	
     	db_version = csync_get_checktxt_version(SQL_V(0));
-
     	if (db_version < 1 || db_version > 2) {
 	    csync_error(0, "Error extracting version from checktxt: %s", SQL_V(0));
     	}
@@ -47,7 +47,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    db_flags |= CALC_DIGEST;
 	    db_flags |= IS_UPGRADE;
     	}
-    	if (db_version != version || ug_flag != (SET_USER|SET_GROUP)) {
+    	if (db_version != db->version || ug_flag != (SET_USER|SET_GROUP)) {
 	    checktxt_same_version = csync_genchecktxt_version(file_stat, file, ug_flag, db_version);
 	    if (csync_cmpchecktxt(checktxt, checktxt_same_version))
 	    db_flags |= IS_UPGRADE;

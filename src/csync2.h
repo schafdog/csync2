@@ -283,9 +283,9 @@ extern operation_t csync_operation(const char *operation);
 extern const char *csync_operation_str(operation_t op);
 
 extern void csync_hint(db_conn_p db, const char *file, int recursive);
-extern void csync_check(db_conn_p db, filename_p filename, int version, int flags);
+extern void csync_check(db_conn_p db, filename_p filename, int flags);
 /* Single file checking but returns possible operation */ 
-extern int  csync_check_single(db_conn_p db, filename_p filename, int version, int flags); 
+extern int  csync_check_single(db_conn_p db, filename_p filename, int flags); 
 extern void csync_mark(db_conn_p db, const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino, int mode);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(char *filename); 
@@ -296,7 +296,7 @@ struct textlist *csync_check_link_move(db_conn_p db, peername_p peername, filena
 				       const char* checktxt, operation_t op, const char *digest,
 				       struct stat *st, textlist_loop_t loop);
 
-extern int csync_check_dir(db_conn_p db, const char* file, int version, int flags);
+extern int csync_check_dir(db_conn_p db, const char* file, int flags);
 
 /* update.c */
 
@@ -304,19 +304,19 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr);
 
-int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int *count_dirty);
+int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty);
 
 typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
-			    const char **patlist, int patnum, int ip_version, int db_version, int flags);
+			    const char **patlist, int patnum, int ip_version, int flags);
 
 extern void csync_update(db_conn_p db, const char *myname, char **peers,
-			 const char **patlist, int patnum, int ip_version, int db_version, update_func func, int flags);
+			 const char **patlist, int patnum, int ip_version, update_func func, int flags);
 
 extern void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-			      const char **patlist, int patnum, int ip_version, int db_version, int flags);
+			      const char **patlist, int patnum, int ip_version, int flags);
 
 extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
-			    const char **patlist, int patnum, int ip_version, int db_version, int flags);
+			    const char **patlist, int patnum, int ip_version, int flags);
 
 extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
 extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version, int flags);
@@ -335,7 +335,7 @@ int csync_update_file_sig_rs_diff(int conn,
 
 /* daemon.c */
 
-extern void csync_daemon_session(int conn, int conn_out, db_conn_p db, int db_version, int protocol_version, int mode);
+extern void csync_daemon_session(int conn, int conn_out, db_conn_p db, int protocol_version, int mode);
 extern int csync_copy_file(int fd_in, int fd_out);
 extern int csync_dir_count(db_conn_p db, filename_p filename);
 

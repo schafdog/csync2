@@ -456,8 +456,9 @@ textlist_p csync_check_move(db_conn_p db, peername_p peername, filename_p filena
 }
 
 
-textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename, const char* checktxt, int operation, const char *digest,
-				       struct stat *st, textlist_loop_t loop)
+textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
+				 const char* checktxt, int operation, const char *digest,
+				 struct stat *st, textlist_loop_t loop)
 {
     textlist_p t, tl = NULL;
     textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
@@ -483,7 +484,7 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
 		textlist_add(&tl, db_filename, OP_MOVE);
 	    }
     	} else { // LINK, not MV
-	    db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db_version);
+	    db_checktxt = csync_genchecktxt_version(&file_stat, db_filename, SET_USER|SET_GROUP, db->version);
 	    int i;
 	    if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 		csync_info(1, "csync_check_link_move: OPERATION MHARDLINK %s to %s\n", db_filename, filename);
@@ -507,7 +508,7 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
     return tl;
 }
 
-int csync_check_dir(db_conn_p db, const char* file, int version, int flags)
+int csync_check_dir(db_conn_p db, const char* file, int flags)
 {
     struct dirent **namelist;
     int dirdump_this = flags & FLAG_DIRDUMP;
@@ -528,7 +529,7 @@ int csync_check_dir(db_conn_p db, const char* file, int version, int flags)
 		sprintf(fn, "%s/%s",
 			!strcmp(file, "/") ? "" : file,
 			namelist[n]->d_name);
-		if (csync_check_mod(db, fn, version, flags, &count_dirty))
+		if (csync_check_mod(db, fn, flags, &count_dirty))
 		    dirdump_this = FLAG_DIRDUMP;
 	    }
 	    free(namelist[n]);
@@ -569,18 +570,18 @@ int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
     return 0;
 }
 
-int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat, int version,  int flags)
+int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,  int flags)
 {
     BUF_P buffer = buffer_init();
     int count = 0;
     int init_run = flags & FLAG_INIT_RUN;
-    char *checktxt = buffer_strdup(buffer, csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, version));
+    char *checktxt = buffer_strdup(buffer, csync_genchecktxt_version(file_stat, file, SET_USER|SET_GROUP, db->version));
     // Assume that this isn't a upgrade and thus same version
     const char *encoded = db_escape(db, file);
     operation_t operation = 0;
     char *other = 0;
     char *digest = NULL;
-    int db_flags = db->check_file(db, file, encoded, version, &other, checktxt, file_stat, buffer, &operation, &digest, flags);
+    int db_flags = db->check_file(db, file, encoded, &other, checktxt, file_stat, buffer, &operation, &digest, flags);
     int calc_digest   = db_flags & CALC_DIGEST;
     int this_is_dirty = db_flags & IS_DIRTY;
     int is_upgrade    = db_flags & IS_UPGRADE;
@@ -648,7 +649,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     return count;
 }
 
-int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int *count)
+int csync_check_mod(db_conn_p db, const char *file, int flags, int *count)
 {
     int check_type = csync_match_file(file);
     int dirdump_this = 0, dirdump_parent = MATCH_NONE;
@@ -669,7 +670,7 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
     switch ( check_type )
     {
     case MATCH_NEXT:
-	*count += csync_check_file_mod(db, file, &st, version, flags);
+	*count += csync_check_file_mod(db, file, &st, flags);
 	dirdump_this = FLAG_DIRDUMP;
 	dirdump_parent = FLAG_DIRDUMP;
 	//no break
@@ -679,7 +680,7 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
 	if ( !S_ISDIR(st.st_mode) )
 	    break;
 	csync_log(LOG_DEBUG, 2, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
-	*count += csync_check_dir(db, file, version, flags | dirdump_this);
+	*count += csync_check_dir(db, file, flags | dirdump_this);
 	break;
     default:
 	csync_log(LOG_DEBUG, 2, "Don't check at all: %s\n", file);
@@ -691,7 +692,7 @@ int csync_check_mod(db_conn_p db, const char *file, int version, int flags, int 
 /*
    check for dirty files, updates the DB and returns number of dirty found in this check (or total?) NOT IMPLEMENTED
  */
-int csync_check_recursive(db_conn_p db, filename_p filename, int version, int flags)
+int csync_check_recursive(db_conn_p db, filename_p filename, int flags)
 {
 #if __CYGWIN__
     if (!strcmp(filename, "/")) {
@@ -703,7 +704,7 @@ int csync_check_recursive(db_conn_p db, filename_p filename, int version, int fl
     // TODO How about swapping deletes and updates?
     int count_dirty = 0;
     csync_log(LOG_INFO, 1, "Checking%s for modified files %s \n", (flags & FLAG_RECURSIVE ? " recursive" : ""), filename);
-    csync_check_mod(db, filename, version, flags, &count_dirty);
+    csync_check_mod(db, filename, flags, &count_dirty);
 
     if (!csync_compare_mode)
 	count_dirty += csync_check_del(db, filename, flags);
@@ -716,10 +717,10 @@ void csync_combined_operation(peername_p peername, const char *dev, const char *
 
 }
 
-void csync_check(db_conn_p db, filename_p filename, int version, int flags)
+void csync_check(db_conn_p db, filename_p filename, int flags)
 {
     /*int hasDirty = */
-    csync_check_recursive(db, filename, version, flags);
+    csync_check_recursive(db, filename, flags);
 /*    
     textlist_p dub_entries = csync_check_all_same_dev_inode(db);
     textlist_p ptr = dub_entries;
@@ -732,8 +733,8 @@ void csync_check(db_conn_p db, filename_p filename, int version, int flags)
 }
 
 
-int csync_check_single(db_conn_p db, filename_p filename, int version, int flags)
+int csync_check_single(db_conn_p db, filename_p filename, int flags)
 {
-    return csync_check_recursive(db, filename, version, flags & ~FLAG_RECURSIVE);
+    return csync_check_recursive(db, filename, flags & ~FLAG_RECURSIVE);
 }
 
