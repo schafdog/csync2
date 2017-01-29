@@ -4,19 +4,19 @@
 
 int db_sql_check_file(db_conn_p db, const char *file,
 		      const char *encoded,
-		      int version, char **other,
+		      char **other,
 		      char *checktxt, struct stat *file_stat,
 		      BUF_P buffer, int *operation,
 		      char **digest, int ignore_flags)
 {
     int db_flags = 0;
-    int db_version = version;
+    int db_version = db->version;
     SQL_BEGIN(db, "Checking File",
 	      "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE "
 	      "filename = '%s' ", encoded)
     {
+	
     	db_version = csync_get_checktxt_version(SQL_V(0));
-
     	if (db_version < 1 || db_version > 2) {
 	    csync_error(0, "Error extracting version from checktxt: %s", SQL_V(0));
     	}
@@ -47,13 +47,23 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    db_flags |= CALC_DIGEST;
 	    db_flags |= IS_UPGRADE;
     	}
-    	if (db_version != version || ug_flag != (SET_USER|SET_GROUP)) {
+    	if (db_version != db->version || ug_flag != (SET_USER|SET_GROUP)) {
 	    checktxt_same_version = csync_genchecktxt_version(file_stat, file, ug_flag, db_version);
 	    if (csync_cmpchecktxt(checktxt, checktxt_same_version))
 	    db_flags |= IS_UPGRADE;
     	}
     	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
-	    *operation = OP_MOD;
+	    int file_mode = file_stat->st_mode & S_IFMT;
+	    if (file_mode  != (mode & S_IFMT)) {
+		csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
+		// TODO Fix. Will not get deleted remotely
+		if (S_ISDIR(file_mode))
+		    *operation = OP_MKDIR; 
+		else
+		    *operation = OP_NEW; 
+	    }
+	    else
+		*operation = OP_MOD;
 	    csync_info(2, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
 	    csync_info(2, "ignore flags: %d\n", ignore_flags);
@@ -127,7 +137,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     {
 	peername_p peername = db_decode(SQL_V(2));
 	filename_p filename = db_decode(SQL_V(3));
-	if (csync_find_next(0, filename)) {
+	if (csync_find_next(0, filename, 0)) {
 	    const char *force_str = SQL_V(0);
 	    if (match_peer(active_peers, peername)) {
 		int force = 0;
@@ -340,7 +350,7 @@ void db_sql_list_files(db_conn_p db)
     SQL_BEGIN(db, "DB Dump - File",
 	      "SELECT checktxt, filename FROM file ORDER BY filename")
     {
-	if (csync_find_next(0, db_decode(SQL_V(1)))) {
+	if (csync_find_next(0, db_decode(SQL_V(1)), 0)) {
 	    printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
 	}
     } SQL_END;
@@ -707,7 +717,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	const char *inode    = db_decode(SQL_V(3));
 	int mode    = (SQL_V(4) ? atoi(SQL_V(4)) : 0);
      
-	if (!csync_match_file(filename))
+	if (!csync_match_file(filename, 0))
 	    continue;
 
 	// Not found

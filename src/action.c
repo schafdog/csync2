@@ -36,7 +36,7 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal)
     const struct csync_group_action_pattern *p = NULL;
     const struct csync_group_action_command *c = NULL;
 
-    while ( (g=csync_find_next(g, filename)) ) {
+    while ( (g=csync_find_next(g, filename, 0)) ) {
 	for (a=g->action; a; a=a->next) {
 	    if ( !islocal && a->do_local_only )
 		continue;

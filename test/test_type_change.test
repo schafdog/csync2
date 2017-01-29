@@ -8,23 +8,23 @@ FILENAME="new_file 'N' all"
 DIRNAME=type_change
 mkdir -p "test/$NAME/$DIRNAME"
 echo "far" > "test/$NAME/$DIRNAME/$FILENAME"
-cmd x "New $NAME/$DIRNAME/$FILENAME"
-cmd T test/$NAME "List daemon" 
+cmd x "2 New $NAME/$DIRNAME/$FILENAME"
+cmd T test/$NAME "3 List daemon" 
 rm -rf test/$NAME/$DIRNAME
 sleep 2
 echo "now file" > "test/$NAME/$DIRNAME"
-cmd x "Directory to file (type change)"
+cmd x "4 Directory to file (type change)"
 #
 rm  test/$NAME/$DIRNAME
 sleep 1
 mkdir -p "test/$NAME/$DIRNAME"
 echo "far" > "test/$NAME/$DIRNAME/$FILENAME"
-cmd x "File 2 directory (type change)"
+cmd x "5 File to directory (type change)"
 #
 rm -rf test/$NAME/$DIRNAME
 sleep 2
 echo "file again" > "test/$NAME/$DIRNAME"
-cmd x "Directory to file (type change)"
+cmd x "6 Directory to file (type change)"
 #
 rm -rf test/$NAME
 cmd x "clean up"

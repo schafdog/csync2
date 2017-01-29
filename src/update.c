@@ -70,6 +70,10 @@ operation_t csync_operation(const char *operation)
 	csync_warn(0, "Called with null operation");
 	return OP_UNDEF;
     }
+	if (!strcmp(operation, "DIRC"))
+		return OP_DIRC;
+	if (!strcmp(operation, "NEWC"))
+		return OP_NEWC;
 	if (!strcmp(operation, "NEW"))
 		return OP_NEW;
 	if (!strcmp(operation, "MKDIR"))
@@ -96,8 +100,12 @@ operation_t csync_operation(const char *operation)
 
 const char *csync_operation_str(operation_t op) {
 	switch (op) {
+	case OP_DIRC:
+		return "DIRC";
 	case OP_NEW:
 		return "NEW";
+	case OP_NEWC:
+		return "REGC";
 	case OP_MKDIR:
 		return "MKDIR";
 	case OP_MOD:
@@ -225,7 +233,7 @@ static int get_auto_method(peername_p peername, filename_p filename)
     const struct csync_group *g = 0;
     const struct csync_group_host *h;
 
-    while ( (g=csync_find_next(g, filename)) ) {
+    while ( (g=csync_find_next(g, filename, 0)) ) {
 	for (h = g->host; h; h = h->next) {
 	    if (!strcmp(h->hostname, peername)) {
 		if (g->auto_method == CSYNC_AUTO_METHOD_LEFT && h->on_left_side)
@@ -244,7 +252,7 @@ static int get_master_slave_status(peername_p peername, filename_p filename)
 	const struct csync_group *g = 0;
 	const struct csync_group_host *h;
 
-	while ( (g=csync_find_next(g, filename)) ) {
+	while ( (g=csync_find_next(g, filename, 0)) ) {
 		if (g->local_slave)
 			continue;
 		for (h = g->host; h; h = h->next) {
@@ -437,10 +445,16 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    else
 		return status;
 	}
-	if ( !conn_gets_newline(conn, chk_peer, 4096, 1) )
+	int buf_size = 100;
+	char buffer[buf_size];
+	char digest_peer[buf_size];
+	if ( !conn_gets_newline(conn, buffer, buf_size, 1) )
 	    return ERROR;
+	int n = sscanf(buffer, "%s %s", chk_peer, digest_peer);
 	const char *chk_peer_decoded = url_decode(chk_peer);
-
+	if (n == 2) {
+	    csync_log(LOG_INFO, 2, "Got digest from remote: %s\n", digest_peer);
+	}
 	if ((i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
 	    csync_info(2, "File is different on peer (cktxt char #%d).\n", i);
 	    csync_info(2, ">>> PEER:  %s\n>>> LOCAL: %s\n",
@@ -513,13 +527,13 @@ int get_file_type(int st_mode) {
  */
 void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
-		const struct stat *st, const char *uid, const char* gid) {
+		const struct stat *st, const char *uid, const char* gid, const char *digest) {
     if (st) {
-	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %Ld\n",
+	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %Ld %s\n",
 		    cmd, key, filename, secondname,
 		    st->st_uid, st->st_gid,
 		    uid, gid,
-		    st->st_mode, (long long) st->st_mtime);
+		    st->st_mode, (long long) st->st_mtime, (digest ? digest : ""));
     }
     else {
 	conn_printf(conn, "%s %s %s %s\n",
@@ -702,9 +716,10 @@ int csync_update_file_patch(int conn,
 			    const struct stat *st,
 			    const char *uid,
 			    const char *gid,
+			    const char *digest,
 			    int *last_conn_status)
 {
-    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid);
+    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, digest);
     int rc = csync_update_reg_file(conn, peername, filename, last_conn_status);
     return rc;
 }
@@ -740,7 +755,7 @@ int csync_update_file_sig_rs_diff(int conn,
 				  int *last_conn_status, int log_level)
 {
     csync_log(LOG_DEBUG, 3, "csync_update_file_sig_rs_diff %s:%s\n", peername, filename);
-    cmd_printf(conn, "SIG", key_enc, filename_enc, "user/group", st, uid, gid);
+    cmd_printf(conn, "SIG", key_enc, filename_enc, "user/group", st, uid, gid, digest);
     int rc = csync_update_file_sig(conn, peername, filename, st, chk_local, digest, log_level);
     if (rc < OK || rc & OK_MISSING)
 	return rc;
@@ -802,7 +817,7 @@ int csync_update_file_move(int conn, db_conn_p db, const char* myname, peername_
 
 int csync_update_directory(int conn,
 			   const char *myname, peername_p peername,
-			   const char *dirname, int force, int dry_run, int db_version) {
+			   const char *dirname, int force, int dry_run) {
 
   struct stat dir_st;
   const char *key = csync_key(peername, dirname);
@@ -831,7 +846,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
 			  filename_p filename, operation_t operation, const char *other,
 			  const char *checktxt, const char *digest,
-			  int force, int dry_run, int db_version)
+			  int force, int dry_run)
 {
     struct stat st;
     char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
@@ -1088,7 +1103,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 */
 	    if (sig_rc & (OK_MISSING|DIFF_FILE))
 		rc = csync_update_file_patch(conn, key_enc, peername, filename,
-					     filename_enc, &st, uid, gid, &last_conn_status);
+					     filename_enc, &st, uid, gid, digest, &last_conn_status);
 	    else
 		csync_info(2, "Skipping file patch '%s' (same)", filename);
 
@@ -1110,7 +1125,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 */
 	    break;
 	case DIR_TYPE:
-	    cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid);
+	    cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid, NULL);
 	    rc = csync_update_file_dir(conn, peername, filename, &last_conn_status);
 	    break;
 	case CHR_TYPE:
@@ -1257,7 +1272,7 @@ int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char *op_st
 
 void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 		       const char **patlist, int patnum, 
-		       int ip_version, int db_version, int flags)
+		       int ip_version, int flags)
 {
     textlist_p tl = 0, t, next_t;
     textlist_p tl_del = 0, *last_tn=&tl;
@@ -1291,7 +1306,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	rc = csync_update_file_mod(conn, db, myname, peername,
 				   t->value, t->operation, t->value3,
-				   t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN, db_version);
+				   t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
 	if (rc == CONN_CLOSE) {
 	    csync_error(0, "Connection closed on updating %s\n", t->value);
 	    break;
@@ -1333,7 +1348,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 
   if (! (flags & FLAG_DRY_RUN))
      for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
-	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN, db_version);
+	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
 	 if (rc == CONN_CLOSE) {
 	     csync_error(0, "Connection closed on setting time on directory %s\n", t->value);
 	     break;
@@ -1350,7 +1365,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 
 void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 		     const char **patlist, int patnum, 
-		     int ip_version, int db_version, int flags)
+		     int ip_version, int flags)
 {
     textlist_p tl = 0, t = 0;
     int i, use_this = patnum == 0;
@@ -1445,7 +1460,7 @@ int csync_match(const char*filename, const char *patlist[], int patnum, int recu
 }
 
 void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
-		  const char ** patlist, int patnum, int ip_version, int db_version, update_func func,
+		  const char ** patlist, int patnum, int ip_version, update_func func,
 		  int flags)
 {
     textlist_p tl = 0, t;
@@ -1455,7 +1470,7 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    while (active_peers[i]) {
 		func(db, myhostname, active_peers[i],
 		     patlist, patnum,
-		     ip_version, db_version, flags);
+		     ip_version, flags);
 		i++;
 	    }
 	else
@@ -1481,7 +1496,7 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    }
 	    if (found)
 		func(db, myhostname, t->value, patlist, patnum,
-		     ip_version, db_version, flags);
+		     ip_version, flags);
 	}
 	textlist_free(tl);
     }
@@ -1529,7 +1544,7 @@ int csync_diff(db_conn_p db,
     int last_conn_status = 0;
     char buffer[512];
     int found = 0;
-    while (!found && (g=csync_find_next(g, filename)) ) {
+    while (!found && (g=csync_find_next(g, filename, 0)) ) {
 	if ( !g->myname || strcmp(g->myname, myname) )
 	    continue;
 	for (h = g->host; h; h = h->next)
@@ -1837,7 +1852,7 @@ int filter_missing_dirty(filename_p filename, const char *localname, peername_p 
     const struct csync_group *g = 0;
     const struct csync_group_host *h;
     int found = 0;
-    while (!found && (g=csync_find_next(g, filename)) != 0) {
+    while (!found && (g=csync_find_next(g, filename, 0)) != 0) {
 	if (!strcmp(g->myname, localname))
 	    for (h = g->host; h; h = h->next) {
 		if (!strcmp(h->hostname, peername)) {
@@ -1851,7 +1866,7 @@ int filter_missing_dirty(filename_p filename, const char *localname, peername_p 
 
 int filter_missing_file(filename_p filename)
 {
-    return csync_find_next(0, filename) != NULL;
+    return csync_find_next(0, filename, 0) != NULL;
 
 };
 

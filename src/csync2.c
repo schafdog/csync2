@@ -291,10 +291,10 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    buffer[len] = 0;
 	strcpy(file, buffer);
 	csync_info(1, "tail '%s' '%s' '%s' \n", time, operation, file);
-	csync_check(db, file, db_version, flags);
+	csync_check(db, file, flags);
 	const char *patlist[1];
 	patlist[0] = file;
-	csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
+	csync_update(db, myhostname, active_peers, (const char **) patlist,
 		     ip_version, db_version, csync_update_host, flags);
     }
 }
@@ -525,7 +525,7 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
 	    realnames[count] = strdup(real_name);
 	    csync_check_usefullness(realnames[count], flags);
 	    if (flags & FLAG_DO_CHECK) {
-		csync_check(db, realnames[count], db_version, flags);
+		csync_check(db, realnames[count], flags);
 		csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
 	    }
 	    count++;
@@ -970,6 +970,7 @@ nofork:
     }
 
     db_conn_p db = csync_db_open(csync_database);
+    db->version = db_version;
 
     if (mode == MODE_UPGRADE_DB) {
 	int rc = db->upgrade_db(db);
@@ -997,15 +998,15 @@ nofork:
     if (mode == MODE_SIMPLE) {
 	if ( argc == optind )
 	{
-	    csync_check(db, "/", db_version, flags);
-	    csync_update(db, myhostname, active_peers, 0, 0, ip_version, db_version, csync_update_host, flags);
+	    csync_check(db, "/", flags);
+	    csync_update(db, myhostname, active_peers, 0, 0, ip_version, csync_update_host, flags);
 	}
 	else
 	{
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind, realnames, flags | FLAG_DO_CHECK);
 	    csync_update(db, myhostname, active_peers, (const char**)realnames, count,
-			 ip_version, db_version, csync_update_host, flags);
+			 ip_version, csync_update_host, flags);
 	    csync_realnames_free(realnames, count);
 	}
     }
@@ -1027,7 +1028,7 @@ nofork:
 	{
 	    tl = db->get_hints(db);
 	    for (t = tl; t != 0; t = t->next) {
-		csync_check(db, t->value, db_version, (t->intvalue ? flags | FLAG_RECURSIVE : flags));
+		csync_check(db, t->value, (t->intvalue ? flags | FLAG_RECURSIVE : flags));
 		db->remove_hint(db, t->value, t->intvalue);
 	    }
 	    textlist_free(tl);
@@ -1051,7 +1052,7 @@ nofork:
 	if ( argc == optind )
 	{
 	    csync_update(db, myhostname, active_peers, 0, 0, 
-			 ip_version, db_version, update_func, flags);
+			 ip_version, update_func, flags);
 	}
 	else {
 	    char *realnames[argc-optind];
@@ -1059,7 +1060,7 @@ nofork:
 					realnames, flags);
 	    csync_update(db, myhostname, active_peers, (const char**) realnames,
 			 argc-optind, ip_version,
-			 db_version, update_func, flags);
+			 update_func, flags);
 	    csync_realnames_free(realnames, count);
 	}
     };
@@ -1069,7 +1070,7 @@ nofork:
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
 		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
-		csync_check(db, realname, db_version, flags);
+		csync_check(db, realname, flags);
 	    }
 	    else {
 		csync_warn(0, "%s is not a real path", argv[i]);
@@ -1079,7 +1080,7 @@ nofork:
 
     if (server) {
 	conn_printf(conn, "OK (cmd_finished).\n");
-	csync_daemon_session(conn, conn_out, db, db_version, protocol_version, mode);
+	csync_daemon_session(conn, conn_out, db, protocol_version, mode);
     };
 
     if (mode ==  MODE_MARK) {
