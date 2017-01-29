@@ -70,6 +70,10 @@ operation_t csync_operation(const char *operation)
 	csync_warn(0, "Called with null operation");
 	return OP_UNDEF;
     }
+	if (!strcmp(operation, "DIRC"))
+		return OP_DIRC;
+	if (!strcmp(operation, "NEWC"))
+		return OP_NEWC;
 	if (!strcmp(operation, "NEW"))
 		return OP_NEW;
 	if (!strcmp(operation, "MKDIR"))
@@ -96,8 +100,12 @@ operation_t csync_operation(const char *operation)
 
 const char *csync_operation_str(operation_t op) {
 	switch (op) {
+	case OP_DIRC:
+		return "DIRC";
 	case OP_NEW:
 		return "NEW";
+	case OP_NEWC:
+		return "REGC";
 	case OP_MKDIR:
 		return "MKDIR";
 	case OP_MOD:
