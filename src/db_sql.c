@@ -312,6 +312,7 @@ void db_sql_force(db_conn_p db, const char *realname, int recursive)
 	free(where_rec);
 }
 
+// TODO: rewrite or drop! Does not work with csync_mark inside SQL
 void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 		 int recursive)
 {
