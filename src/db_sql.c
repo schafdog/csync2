@@ -53,7 +53,17 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    db_flags |= IS_UPGRADE;
     	}
     	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
-	    *operation = OP_MOD;
+	    int file_mode = file_stat->st_mode & S_IFMT;
+	    if (file_mode  != (mode & S_IFMT)) {
+		csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
+		// TODO Fix. Will not get deleted remotely
+		if (S_ISDIR(file_mode))
+		    *operation = OP_MKDIR; 
+		else
+		    *operation = OP_NEW; 
+	    }
+	    else
+		*operation = OP_MOD;
 	    csync_info(2, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
 	    csync_info(2, "ignore flags: %d\n", ignore_flags);
