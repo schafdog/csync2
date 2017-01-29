@@ -637,6 +637,8 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    count = 1;
 	}
 	long count;
+	// operation does not reflect result/change in mark_other (which marks dirty)
+	// But only whether it was found in File. This is a race-condition
 	if (is_upgrade|| operation == OP_MOD) {
 	    count = db->update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
