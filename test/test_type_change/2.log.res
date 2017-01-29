@@ -1,4 +1,4 @@
-cmd x "New local/type_change/new_file 'N' all" local
+cmd x "2 New local/type_change/new_file 'N' all" local
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
