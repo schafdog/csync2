@@ -70,57 +70,49 @@ operation_t csync_operation(const char *operation)
 	csync_warn(0, "Called with null operation");
 	return OP_UNDEF;
     }
-	if (!strcmp(operation, "DIRC"))
-		return OP_DIRC;
-	if (!strcmp(operation, "NEWC"))
-		return OP_NEWC;
-	if (!strcmp(operation, "NEW"))
-		return OP_NEW;
-	if (!strcmp(operation, "MKDIR"))
-		return OP_MKDIR;
-	if (!strcmp(operation, "MKINFO"))
-		return OP_NEW;
-	if (!strcmp(operation, "MKCHR"))
-		return OP_NEW;
-	if (!strcmp(operation, "MOVE"))
-		return OP_MOVE;
-	if (!strcmp(operation, "MV"))
-		return OP_MOVE;
-	if (!strcmp(operation, "HARDLINK"))
-		return OP_HARDLINK;
-	if (!strcmp(operation, "RM"))
-		return OP_RM;
-	if (!strncmp(operation, "MOD",3))
-		return OP_MOD;
-	if (!strncmp(operation, "MARK",3))
-		return OP_MARK;
-	csync_warn(0, "Called with unknown operation: %s", operation);
-	return OP_UNDEF;
+    if (!strcmp(operation, "NEW"))
+	return OP_NEW;
+    if (!strcmp(operation, "MKDIR"))
+	return OP_MKDIR;
+    if (!strcmp(operation, "MKINFO"))
+	return OP_NEW;
+    if (!strcmp(operation, "MKCHR"))
+	return OP_NEW;
+    if (!strcmp(operation, "MOVE"))
+	return OP_MOVE;
+    if (!strcmp(operation, "MV"))
+	return OP_MOVE;
+    if (!strcmp(operation, "HARDLINK"))
+	return OP_HARDLINK;
+    if (!strcmp(operation, "RM"))
+	return OP_RM;
+    if (!strncmp(operation, "MOD",3))
+	return OP_MOD;
+    if (!strncmp(operation, "MARK",4))
+	return OP_MARK;
+    csync_warn(0, "Called with unknown operation: %s", operation);
+    return OP_UNDEF;
 }
 
 const char *csync_operation_str(operation_t op) {
-	switch (op) {
-	case OP_DIRC:
-		return "DIRC";
-	case OP_NEW:
-		return "NEW";
-	case OP_NEWC:
-		return "REGC";
-	case OP_MKDIR:
-		return "MKDIR";
-	case OP_MOD:
-		return "MOD";
-	case OP_RM:
-		return "RM";
-	case OP_HARDLINK:
-		return "HARDLINK";
-	case OP_MARK:
-		return "MARK";
-	case OP_MOVE:
-		return "MV";
-	}
-	// UNDEF
-	return "?";
+    switch (op & OP_FILTER) {
+    case OP_NEW:
+	return "NEW";
+    case OP_MKDIR:
+	return "MKDIR";
+    case OP_MOD:
+	return "MOD";
+    case OP_RM:
+	return "RM";
+    case OP_HARDLINK:
+	return "HARDLINK";
+    case OP_MARK:
+	return "MARK";
+    case OP_MOVE:
+	return "MV";
+    }
+    csync_error(1, "No mapping for operation: %d %d\n", op, OP_FILTER);
+    return "?";
 }
 int read_conn_status_raw(int fd, const char *file, const char *host, char *line, int maxlength)
 {
@@ -445,7 +437,7 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    else
 		return status;
 	}
-	int buf_size = 100;
+	int buf_size = 4096;
 	char buffer[buf_size];
 	char digest_peer[buf_size];
 	if ( !conn_gets_newline(conn, buffer, buf_size, 1) )
