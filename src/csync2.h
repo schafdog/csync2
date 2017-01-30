@@ -263,9 +263,7 @@ struct textlist;
 
 /* check.c */
 #define OP_MKDIR    1
-#define OP_DIRC    -1
 #define OP_NEW      2
-#define OP_NEWC    -2
 #define OP_MKFIFO   4
 #define OP_MKCHR    8
 #define OP_MOVE     16
@@ -273,6 +271,8 @@ struct textlist;
 #define OP_RM       64
 #define OP_MOD	    128
 #define OP_MARK	    256
+#define OP_SYNC     (512)
+#define OP_FILTER   (~(OP_SYNC)) 
 #define OP_UNDEF    0
 
 #define IS_UPGRADE 1
