@@ -58,9 +58,10 @@ int db_sql_check_file(db_conn_p db, const char *file,
 		csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
 		// TODO Fix. Will not get deleted remotely
 		if (S_ISDIR(file_mode))
-		    *operation = OP_MKDIR; 
+		    *operation = OP_MKDIR;
 		else
-		    *operation = OP_NEW; 
+		    *operation = OP_NEW;
+		//*operation |= OP_SYNC;
 	    }
 	    else
 		*operation = OP_MOD;
@@ -555,8 +556,9 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peer
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Get files for host from dirty table",
-	      "SELECT filename, operation, op, other, checktxt, digest, forced  FROM dirty WHERE peername = '%s' AND myname = '%s' "
-	      "ORDER by op DESC, filename DESC",
+	      "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	      "ORDER by type DESC, filename DESC",
+	      OP_FILTER,
 	      db_escape(db, peername), db_escape(db, myname));
     {
 	filename_p filename  = db_decode(SQL_V(0));
