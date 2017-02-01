@@ -337,7 +337,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 	}
 	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, NULL, NULL, NULL, mode);
 	free(filename);
-    } SQL_END;	
+    } SQL_END;
     free(where_rec);
 }
 
