@@ -62,6 +62,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 		else
 		    *operation = OP_NEW;
 		//*operation |= OP_SYNC;
+		db_flags |= IS_UPGRADE;
 	    }
 	    else
 		*operation = OP_MOD;
@@ -318,24 +319,26 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 		 int recursive)
 {
     csync_check_usefullness(realname, recursive);
-    // TODO For each active_peer?
-    csync_mark(db, realname, 0, active_peerlist, OP_MARK, NULL, NULL, NULL, 0);
+    struct stat file_st;
     const char *db_encoded = db_escape(db, realname);
-		    
-    if ( recursive ) {
-	char *where_rec = "";
-	csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
-	SQL_BEGIN(db, "Adding dirty entries recursively",
-		  "SELECT filename FROM file %s", where_rec)
-	{
-	    char *filename = strdup(db_decode(SQL_V(0)));
-	    csync_mark(db, filename, 0, active_peerlist, OP_MOD,
-		       NULL, NULL, NULL, 0);
-	    free(filename);
-	} SQL_END;
-	free(where_rec);
-    }
-    //db->free(db, db_encoded);
+    char *where_rec = "";
+    csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
+    SQL_BEGIN(db, "Adding dirty entries recursively",
+	      "SELECT filename, mode, checktxt FROM file %s", where_rec)
+    {
+	char *filename = strdup(db_decode(SQL_V(0)));
+	int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
+	const char *checktxt = SQL_V(2);
+	int rc = stat(filename, &file_st);
+	if (!rc) {
+	    //file_st.st_dev;
+	    //file_st.st_ino;
+	    mode = file_st.st_mode;
+	}
+	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, NULL, NULL, NULL, mode);
+	free(filename);
+    } SQL_END;	
+    free(where_rec);
 }
 
 void db_sql_list_hint(db_conn_p db)
