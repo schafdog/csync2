@@ -120,6 +120,8 @@ const char *csync_mode_op_str(int st_mode, int op)
 	return "MKBLK";
     else if (S_ISFIFO(st_mode))
 	return "MKFIFO";
+    else if (S_ISLNK(st_mode))
+	return "LINK";
     else
 	csync_warn(1, "WARN: Unknown mode op: %d %d\n", st_mode, op);
     return "???";
