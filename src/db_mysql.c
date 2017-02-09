@@ -205,6 +205,9 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
 
   conn->affected_rows = f.mysql_affected_rows_fn(conn->private);
 
+  if (rc == ER_LOCK_DEADLOCK) {
+      return DB_BUSY;
+  }
   if (f.mysql_warning_count_fn(conn->private) > 0) {
     print_warnings(1, conn->private);
     return DB_ERROR;
