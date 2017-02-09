@@ -195,7 +195,7 @@ long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 	      db = 0;
 	      csync_fatal(DEADLOCK_MESSAGE);
 	  }
-	  csync_warn(3, "Database is busy, sleeping a sec.\n");
+	  csync_warn(1, "Database is busy, sleeping before retry of SQL: '%s'\n", sql);
 	  sleep(1);
 	}
 	long count = 0;
