@@ -56,16 +56,18 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    int file_mode = file_stat->st_mode & S_IFMT;
 	    if (file_mode  != (mode & S_IFMT)) {
 		csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
-		// TODO Fix. Will not get deleted remotely
+
 		if (S_ISDIR(file_mode))
-		    *operation = OP_MKDIR;
+		    *operation = OP_MKDIR|OP_MOD;
 		else
-		    *operation = OP_NEW;
+		    *operation = OP_NEW|OP_MOD;
 		//*operation |= OP_SYNC;
 		db_flags |= IS_UPGRADE;
 	    }
-	    else
-		*operation = OP_MOD;
+	    else {
+		    *operation = OP_MOD2 | OP_MKDIR;
+
+	    }
 	    csync_info(2, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
 	    csync_info(2, "ignore flags: %d\n", ignore_flags);
@@ -134,19 +136,26 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     }
 
     SQL_BEGIN(db, "DB Dump - Dirty",
-	      "SELECT forced, myname, peername, filename, operation FROM dirty %s ORDER BY filename", 
-	      where)
+	      "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty %s ORDER BY type, filename",
+	      OP_FILTER, where)
     {
+	const char *force_str = SQL_V(0);
+	peername_p myname   = db_decode(SQL_V(1));
 	peername_p peername = db_decode(SQL_V(2));
 	filename_p filename = db_decode(SQL_V(3));
+	const char *op_str  = db_decode(SQL_V(4));
+	const char *op      = db_decode(SQL_V(5));
+	const char *type    = db_decode(SQL_V(6));
+
+
 	if (csync_find_next(0, filename, 0)) {
-	    const char *force_str = SQL_V(0);
 	    if (match_peer(active_peers, peername)) {
 		int force = 0;
 		if (force_str) 
-		    force = atoi(SQL_V(0));
-		printf("%s%s\t%s\t%s\t%s\n", (force ? "F " : "  "), SQL_V(4),
-		       db_decode(SQL_V(1)), peername, filename);
+		    force = atoi(force_str);
+		printf("%s%s\t%s\t%s\t%s\t%s\t%s\n",
+		       (force ? "F " : "  "), op_str,
+		       myname, peername, filename, (op ? op : "NULL"), type);
 		retval++;
 	    }
 	}
