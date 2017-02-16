@@ -1,0 +1,42 @@
+#
+# 
+#
+daemon d PEER
+clean local
+clean peer
+mkdir -p test/$NAME/usr/local/abc
+mkdir -p test/$NAME/usr/local/def
+ln -s ../sbin/hej test/$NAME/usr/local/def/hej
+mkdir -p test/$NAME/usr/local/sbin
+echo hej > test/$NAME/usr/local/sbin/hej
+cmd c "New directory and file"
+cmd M "New directories and files (List)"
+cmd x "New directory and file"
+sleep 1
+echo hej > test/$NAME/usr/local/sbin/hej
+sleep 1
+rm test/$NAME/usr/local/sbin/hej
+cmd c "New dir timestamp due to file (check)"
+cmd M "Mark (after delete)"
+cmd u "New dir timestamp due to file (update)"
+#
+sleep 1
+touch test/$NAME/usr/local
+sleep 2
+cmd M "List dirty"
+cmd m "New dir timestamp (mark)"
+cmd M "List dirty after mark"
+cmd u "New dir timestamp (update)"
+#
+sleep 1
+echo hej > test/$NAME/usr/local/sbin/hej
+cmd c "New file"
+cmd M "List Dirty"
+sleep 1
+rm test/$NAME/usr/local/sbin/hej
+cmd M "List dirty after delete"
+cmd c "New file deleted (check)"
+cmd M "List dirty after delete"
+#rm -rf test/$NAME
+#cmd x "clean up other"
+killdaemon d PEER
