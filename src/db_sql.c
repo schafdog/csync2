@@ -392,7 +392,7 @@ textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *mynam
 	      "SELECT checktxt, filename FROM file %s ORDER BY filename",
 	      where_sql)
     {
-	if ( csync_match_file_host(db_decode(SQL_V(1)), 
+	if ( csync_match_file_host(db_decode(SQL_V(1)),
 				   myname, peername, 0) ) {
 	    textlist_add2( &tl, SQL_V(0), SQL_V(1), 0);
 	    csync_log(LOG_DEBUG, 2, "db_sql_list_file  %s:%s\n", peername, filename);
@@ -731,8 +731,8 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	const char *device   = db_decode(SQL_V(2));
 	const char *inode    = db_decode(SQL_V(3));
 	int mode    = (SQL_V(4) ? atoi(SQL_V(4)) : 0);
-     
-	if (!csync_match_file(filename, 0))
+	const struct csync_group *g = NULL;
+	if (!csync_match_file(filename, 0, &g))
 	    continue;
 
 	// Not found
