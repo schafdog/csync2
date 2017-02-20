@@ -80,6 +80,7 @@ int include_stack_ptr = 0;
 "tempdir"		{ return TK_TEMPDIR; }
 "backup-directory"	{ return TK_BAK_DIR; }
 "backup-generations"	{ return TK_BAK_GEN; }
+"flags"                 { return TK_FLAGS;   }
 
 "no-cygwin-lowercase"	{ return TK_NOCYGLOWER; }
 
