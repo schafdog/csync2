@@ -71,6 +71,7 @@ static void new_group(char *name)
 	t->backup_generations = 3;
 	t->host = 0;
 	t->pattern = 0;
+	t->flags = 0;
 	csync_group = t;
 	csync_log(LOG_DEBUG, 3, "New group: %s\n", name);
 }
@@ -220,6 +221,12 @@ static void set_bak_gen(char *gen)
 {
     csync_group->backup_generations = atoi(gen);
     free(gen);
+}
+
+static void set_flags(char *flags)
+{
+    csync_group->backup_generations = atoi(flags);
+    free(flags);
 }
 
 static void check_group()
@@ -571,6 +578,7 @@ static void disable_cygwin_lowercase_hack()
 %token TK_ACTION TK_PATTERN TK_EXEC TK_DOLOCAL TK_LOGFILE TK_NOCYGLOWER
 %token TK_PREFIX TK_ON TK_COLON TK_POPEN TK_PCLOSE
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
+%token TK_FLAGS
 %token TK_TEMPDIR
 %token TK_LOCK_TIMEOUT TK_HOSTS
 %token <txt> TK_STRING
@@ -659,6 +667,8 @@ stmt:
 		{ set_bak_dir($2); }
 |	TK_BAK_GEN TK_STRING
 		{ set_bak_gen($2); }
+|	TK_FLAGS TK_STRING
+		{ set_flags($2); }
 ;
 
 host_list:
