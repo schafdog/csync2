@@ -159,7 +159,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     char *clean_other = NULL;
     int dirty = 1; // Assume dirty
     textlist_p tl = NULL; 
-    csync_info( 1, "mark other: Old operation: %s '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_filename, old_other);
+    csync_info( 1, "mark other: Old operation: %s(%d) '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_operation,  old_filename, old_other);
     if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
 	csync_info(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
 	operation = OP_HARDLINK;
@@ -177,7 +177,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 	operation = OP_UNDEF;
     }
     // NEW/MK A -> MOD (still NEW)
-    else if (CHECK_NEW_MOD && operation == OP_MOD && (old_operation == OP_NEW || old_operation == OP_MKDIR)) {
+    else if (CHECK_NEW_MOD && (operation & OP_MOD2)  && (old_operation == OP_NEW || old_operation == OP_MKDIR)) {
 	csync_info(1, "mark operation NEW -> MOD => NEW %s:%s (not synced) .\n",
 		    peername, file);
 	operation = old_operation;
@@ -513,6 +513,7 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
 int csync_check_dir(db_conn_p db, const char* file, int flags)
 {
     struct dirent **namelist;
+    const struct csync_group *g = NULL;
     int dirdump_this = flags & FLAG_DIRDUMP;
     int n = 0;
     int count_dirty = 0;
@@ -531,7 +532,7 @@ int csync_check_dir(db_conn_p db, const char* file, int flags)
 		sprintf(fn, "%s/%s",
 			!strcmp(file, "/") ? "" : file,
 			namelist[n]->d_name);
-		if (csync_check_mod(db, fn, flags, &count_dirty))
+		if (csync_check_mod(db, fn, flags, &count_dirty, &g))
 		    dirdump_this = FLAG_DIRDUMP;
 	    }
 	    free(namelist[n]);
@@ -641,7 +642,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	long count;
 	// operation does not reflect result/change in mark_other (which marks dirty)
 	// But only whether it was found in File. This is a race-condition
-	if (is_upgrade|| operation == OP_MOD) {
+	if (is_upgrade|| operation & OP_MOD || operation & OP_MOD2) {
 	    count = db->update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
 	else {
@@ -653,9 +654,13 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     return count;
 }
 
-int csync_check_mod(db_conn_p db, const char *file, int flags, int *count)
+int csync_check_mod(db_conn_p db, const char *file, int flags, int *count, const struct csync_group **g)
 {
-    int check_type = csync_match_file(file, 0);
+    int check_type = csync_match_file(file, 0, g);
+    // Combine with flags on group like IGN_MTIME
+    if (g && *g) {
+	flags |= (*g)->flags;
+    };
     int dirdump_this = 0, dirdump_parent = MATCH_NONE;
     struct stat st;
 
@@ -667,7 +672,7 @@ int csync_check_mod(db_conn_p db, const char *file, int flags, int *count)
     if (lstat_strict(file, &st) != 0 ) {
 	if ( flags & FLAG_IGN_NOENT )
 	    return MATCH_NONE;
-	csync_log(LOG_DEBUG, 2, "check_mod: No such file '%s' .\n", file);
+	csync_log(LOG_DEBUG, 2, "check_mod: No such file '%s' .\n", file, g);
 	return  MATCH_NONE;
     }
 
@@ -696,7 +701,7 @@ int csync_check_mod(db_conn_p db, const char *file, int flags, int *count)
 /*
    check for dirty files, updates the DB and returns number of dirty found in this check (or total?) NOT IMPLEMENTED
  */
-int csync_check_recursive(db_conn_p db, filename_p filename, int flags)
+int csync_check_recursive(db_conn_p db, filename_p filename, int flags, const struct csync_group **g)
 {
 #if __CYGWIN__
     if (!strcmp(filename, "/")) {
@@ -708,7 +713,7 @@ int csync_check_recursive(db_conn_p db, filename_p filename, int flags)
     // TODO How about swapping deletes and updates?
     int count_dirty = 0;
     csync_log(LOG_INFO, 1, "Checking%s for modified files %s \n", (flags & FLAG_RECURSIVE ? " recursive" : ""), filename);
-    csync_check_mod(db, filename, flags, &count_dirty);
+    csync_check_mod(db, filename, flags, &count_dirty, g);
 
     if (!csync_compare_mode)
 	count_dirty += csync_check_del(db, filename, flags);
@@ -723,8 +728,8 @@ void csync_combined_operation(peername_p peername, const char *dev, const char *
 
 void csync_check(db_conn_p db, filename_p filename, int flags)
 {
-    /*int hasDirty = */
-    csync_check_recursive(db, filename, flags);
+    const struct csync_group *g = NULL;
+    csync_check_recursive(db, filename, flags, &g);
 /*    
     textlist_p dub_entries = csync_check_all_same_dev_inode(db);
     textlist_p ptr = dub_entries;
@@ -737,8 +742,8 @@ void csync_check(db_conn_p db, filename_p filename, int flags)
 }
 
 
-int csync_check_single(db_conn_p db, filename_p filename, int flags)
+int csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g)
 {
-    return csync_check_recursive(db, filename, flags & ~FLAG_RECURSIVE);
+    return csync_check_recursive(db, filename, flags & ~FLAG_RECURSIVE, g);
 }
 
