@@ -67,7 +67,8 @@ typedef const char * peername_p;
 #define FLAG_DIRDUMP          128
 #define FLAG_IGN_NOENT        256
 #define FLAG_IGN_DIR          512
-#define FLAG_DO_ALL          1024
+#define FLAG_IGN_MTIME       1024
+#define FLAG_DO_ALL          2048
 
 
 
@@ -157,7 +158,7 @@ struct file_info {
 typedef struct file_info *file_info_t; 
 
 extern const struct csync_group *csync_find_next(const struct csync_group *g, const char *file, int compare_mode);
-extern int csync_match_file(const char *file, int compare_mode);
+extern int csync_match_file(const char *file, int compare_mode, const struct csync_group **g);
 extern void csync_check_usefullness(const char *file, int recursive);
 extern int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys);
 extern struct peer *csync_find_peers(const char *file, const char *thispeer);
@@ -262,17 +263,17 @@ int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino);
 struct textlist;
 
 /* check.c */
-#define OP_MKDIR    1
-#define OP_NEW      OP_MKDIR << 1
-#define OP_MKFIFO   OP_NEW << 1
-#define OP_MKCHR    OP_MKFIFO << 1
-#define OP_MOVE     OP_MKCHR << 1
-#define OP_HARDLINK OP_MOVE << 1
-#define OP_RM       OP_HARDLINK << 1
-#define OP_MOD	    OP_RM << 1
-#define OP_MOD2	    OP_MOD << 1
-#define OP_MARK	    OP_MOD2 << 1
-#define OP_SYNC     (OP_MOD|OP_MARK)
+#define OP_MKDIR      1
+#define OP_NEW        2
+#define OP_MKFIFO     4
+#define OP_MKCHR      8
+#define OP_MOVE      16
+#define OP_HARDLINK  32
+#define OP_RM        64
+#define OP_MOD      128
+#define OP_MOD2     256
+#define OP_MARK     512
+#define OP_SYNC     (OP_MOD|OP_MOD2|OP_MARK)
 #define OP_FILTER   (~(OP_SYNC)) 
 #define OP_UNDEF    0
 
@@ -288,7 +289,7 @@ extern const char *csync_operation_str(operation_t op);
 extern void csync_hint(db_conn_p db, const char *file, int recursive);
 extern void csync_check(db_conn_p db, filename_p filename, int flags);
 /* Single file checking but returns possible operation */ 
-extern int  csync_check_single(db_conn_p db, filename_p filename, int flags); 
+extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g); 
 extern void csync_mark(db_conn_p db, const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino, int mode);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(char *filename); 
@@ -307,7 +308,7 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
 		const struct stat *st, const char *uidptr, const char* gidptr, const char *digest);
 
-int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty);
+int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
 
 typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
 			    const char **patlist, int patnum, int ip_version, int flags);
@@ -579,15 +580,16 @@ struct csync_group_action {
 };
 
 struct csync_group {
-	struct csync_group *next;
-	struct csync_group_host *host;
-	struct csync_group_pattern *pattern;
-	struct csync_group_action *action;
-	const char *key, *myname, *gname;
-	int auto_method, local_slave;
-	const char *backup_directory;
-	int backup_generations;
-	int hasactivepeers;
+    struct csync_group *next;
+    struct csync_group_host *host;
+    struct csync_group_pattern *pattern;
+    struct csync_group_action *action;
+    const char *key, *myname, *gname;
+    int auto_method, local_slave;
+    const char *backup_directory;
+    int backup_generations;
+    int hasactivepeers;
+    int flags;
 };
 
 struct csync_prefix {
