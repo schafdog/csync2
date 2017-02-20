@@ -215,7 +215,8 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
     csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s\n", filename);
 
     // Returns newly marked dirty, so we cannot use it bail out.
-    int markedDirty = csync_check_single(db, filename, FLAG_IGN_DIR);
+    const struct csync_group *g; 
+    int markedDirty = csync_check_single(db, filename, FLAG_IGN_DIR, &g);
     csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
 
     if (cmd == A_FLUSH)
@@ -849,6 +850,11 @@ int csync_daemon_setown(filename_p filename, const char *uidp, const char *gidp,
   return 0;
 }
 
+int response_ok_not_found(int conn) {
+    conn_printf(conn, "OK (not_found).\n");
+    return NEXT_CMD;
+}
+
 int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, const char **cmd_error)
 {
     struct stat st;
@@ -859,8 +865,7 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, cons
 	    return NEXT_CMD;
 	}
 	if ( errno == ENOENT ){
-	    conn_printf(conn, "OK (not_found).\n");
-	    return NEXT_CMD;
+	    return response_ok_not_found(conn);
 	}
 	else {
 	    *cmd_error = strerror(errno);
@@ -868,8 +873,7 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, cons
 	}
     }
     else if (csync_check_pure(filename)) {
-	conn_printf(conn, "OK (not_found).\n---\noctet-stream 0\n");
-	return OK;
+	return response_ok_not_found(conn);
     }
     // Found a file that we ca do a check text on
     conn_printf(conn, "OK (data_follows).\n");
