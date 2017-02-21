@@ -159,7 +159,8 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     char *clean_other = NULL;
     int dirty = 1; // Assume dirty
     textlist_p tl = NULL; 
-    csync_info( 1, "mark other: Old operation: %s(%d) '%s' '%s'\n", csync_mode_op_str(mode, old_operation), old_operation,  old_filename, old_other);
+    csync_info(1, "mark other: %s(%d) Old operation: %s(%d) '%s' '%s'\n", csync_mode_op_str(mode, operation), operation,
+	       csync_mode_op_str(mode, old_operation), old_operation,  old_filename, old_other);
     if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
 	csync_info(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
 	operation = OP_HARDLINK;
@@ -177,7 +178,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 	operation = OP_UNDEF;
     }
     // NEW/MK A -> MOD (still NEW)
-    else if (CHECK_NEW_MOD && (operation & OP_MOD2)  && (old_operation == OP_NEW || old_operation == OP_MKDIR)) {
+    else if (CHECK_NEW_MOD && (operation & (OP_MOD2|OP_MOD))  && (old_operation == OP_NEW || old_operation == OP_MKDIR)) {
 	csync_info(1, "mark operation NEW -> MOD => NEW %s:%s (not synced) .\n",
 		    peername, file);
 	operation = old_operation;
@@ -252,12 +253,12 @@ void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, cons
 		textlist_p tl = db->get_old_operation(db, checktxt, peername, file, dev, ino, buffer);
 		if (tl) {
 		    textlist_p t = check_old_operation(file, operation, mode, (rc_file ? NULL : &st_file), other, 
-							tl->value,  // old filename
-							tl->value2, // old other
-							tl->intvalue, // operation
-							tl->value3,   // checktxt
-							peername,
-							buffer);
+						       tl->value,    // old filename
+						       tl->value2,   // old other
+						       tl->intvalue, // operation
+						       tl->value3,   // checktxt
+						       peername,
+						       buffer);
 		    textlist_free(tl);
 		    
 		    if (t) {
