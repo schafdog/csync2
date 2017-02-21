@@ -54,20 +54,18 @@ int db_sql_check_file(db_conn_p db, const char *file,
     	}
     	if (csync_cmpchecktxt(checktxt_same_version, checktxt_db)) {
 	    int file_mode = file_stat->st_mode & S_IFMT;
+	    int flag = OP_MOD;
 	    if (file_mode  != (mode & S_IFMT)) {
 		csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
-
-		if (S_ISDIR(file_mode))
-		    *operation = OP_MKDIR|OP_MOD;
-		else
-		    *operation = OP_NEW|OP_MOD;
+		flag = OP_MOD2;
 		//*operation |= OP_SYNC;
 		db_flags |= IS_UPGRADE;
 	    }
-	    else {
-		    *operation = OP_MOD2 | OP_MKDIR;
-
-	    }
+	    if (S_ISDIR(file_mode))
+		*operation = OP_MKDIR|flag;
+	    else
+		*operation = OP_NEW|flag;
+	    
 	    csync_info(2, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
 	    csync_info(2, "ignore flags: %d\n", ignore_flags);
@@ -609,12 +607,12 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
     textlist_p tl = 0;
     SQL_BEGIN(db, "Checking old opertion(s) on dirty",
 	      "SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE "
-	      "(checktxt = '%s' OR filename = '%s') AND device = %s AND inode  = %s AND peername = '%s' "
+	      "(checktxt = '%s' AND device = %s AND inode = %s OR filename = '%s') AND peername = '%s' "
 	      "ORDER BY timestamp ",
 	      db_escape(db, checktxt),
-	      db_escape(db, filename),
 	      db_escape(db, device),
 	      db_escape(db, ino),
+	      db_escape(db, filename),
 	      db_escape(db, peername)
 	)
     {
@@ -639,7 +637,7 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 int db_sql_add_dirty(db_conn_p db, const char *file_new,
 		     int new_force,
 		     const char *myname, peername_p peername,
-		     const char *operation, const char *checktxt,
+		     const char *op_str, const char *checktxt,
 		     const char *dev, const char *ino, const char *result_other,
 		     operation_t op, int mode)
 {
@@ -653,7 +651,7 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 	new_force ? "1" : "0",
 	db_escape(db, myname),
 	db_escape(db, peername),
-	csync_mode_op_str(mode, op),
+	op_str, // csync_mode_op_str(mode, op),
 	db_escape(db, checktxt),
 	(dev ? dev : "NULL"),
 	(ino ? ino : "NULL"),
