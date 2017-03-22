@@ -1371,6 +1371,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
     }
     /* just return if there are no files to update */
     if ( !tl) {
+	csync_log(LOG_DEBUG, 0, "csync_sync_host: no files to sync\n");
 	return;
     }
     int conn = connect_to_host(db, peername, ip_version);
@@ -1452,8 +1453,8 @@ int csync_match(const char*filename, const char *patlist[], int patnum, int recu
 }
 
 void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
-		  const char ** patlist, int patnum, int ip_version, update_func func,
-		  int flags)
+		  const char ** patlist, int patnum, int ip_version,
+		  update_func func, int flags)
 {
     textlist_p tl = 0, t;
     int i = 0;
