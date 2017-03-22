@@ -294,8 +294,8 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	csync_check(db, file, flags);
 	const char *patlist[1];
 	patlist[0] = file;
-	csync_update(db, myhostname, active_peers, (const char **) patlist,
-		     ip_version, db_version, csync_update_host, flags);
+	csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
+		     ip_version, csync_update_host, flags);
     }
 }
 
