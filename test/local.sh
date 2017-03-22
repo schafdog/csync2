@@ -106,6 +106,8 @@ function daemon {
 	echo "daemon start disabled";
 	return 
     fi
+    # Create backupdir
+    mkdir -p /tmp/csync2 
     CMD="$1"
     echo $NAME $PEER
     if [ "$CMD" == "d" ] ; then 
