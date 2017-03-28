@@ -225,27 +225,30 @@ int db_sqlite_stmt_close(db_stmt_p stmt)
   return db_sqlite_error_map(rc);
 }
 
-const char *db_my_escape(const char *string) {
-  
-  char *escaped = malloc(strlen(string)*2 +1);
-  const char *p = string; 
-  char *e = escaped;
-  while (*p != 0) {
-    switch (*p) {
-    case '\'': 
-    case '\\': 
-      *(e++) = '\'';
-    default:
-      *(e++) = *(p++);
-    }
-    *e = 0;
-  };
-  return escaped;
+const char *db_my_escape(const char *string)
+{
+    if (string == NULL)
+	return string;
+    char *escaped = malloc(strlen(string)*2 +1);
+    const char *p = string; 
+    char *e = escaped;
+    while (*p != 0) {
+	switch (*p) {
+	case '\'': 
+	case '\\': 
+	    *(e++) = '\'';
+	default:
+	    *(e++) = *(p++);
+	}
+	*e = 0;
+    };
+    return escaped;
 };
 
 const char *db_sqlite_escape(db_conn_p conn, const char *string) {
   const char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
-  ringbuffer_add(string, free);
+  if (escaped)
+      ringbuffer_add(escaped, free);
   return escaped;
 }
 
@@ -267,14 +270,14 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 	csync_db_sql(db, NULL, /* "Creating file table", */
 		"CREATE TABLE file ("
 		"	filename, checktxt, device, inode, size, digest, mode, mtime, type, "
-		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP"
+		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
 		")");
 
 	csync_db_sql(db, NULL, /* "Creating dirty table", */
 		"CREATE TABLE dirty ("
-		"	filename, forced, myname, peername, operation, device, inode, other, digest, mode, mtime, type, "
-		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP"
+		"	filename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
+		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
 		")");
 
@@ -286,13 +289,13 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 
 	csync_db_sql(db, NULL, /* "Creating action table", */
 		"CREATE TABLE action ("
-		"	filename, command, logfile,"
+		"	filename, command, logfile, "
 		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
 		")");
 
 	csync_db_sql(db, NULL, /* "Creating x509_cert table", */
 		"CREATE TABLE x509_cert ("
-		"	peername, certdata,"
+		"	peername, certdata, "
 		"	UNIQUE ( peername ) ON CONFLICT IGNORE"
 		")");
 
