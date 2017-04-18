@@ -969,13 +969,22 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	    }
 	    return rc;
 	}
+
+	csync_debug(3, "has links: file %s checktxt '%s' %d %d\n", filename, checktxt, st.st_nlink, S_ISREG(st.st_mode));
 	if (operation == OP_MARK) {
 	    int has_links = (st.st_nlink > 1 && S_ISREG(st.st_mode));
 	    if (has_links) {
+		if (!checktxt) {
+		    checktxt = buffer_strdup(buffer, csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db->version));
+		}
+		if (!digest) {
+		    csync_calc_digest(filename, buffer, &digest);
+		}
 		textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
 		textlist_p ptr = tl;
 		while (ptr != NULL) {
 		    csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, filename);
+		    // NOTE move is disabled 
 		    if (0 && ptr->intvalue == OP_RM) {
 			operation = OP_MOVE;
 			db->delete_file(db, ptr->value, 0);
@@ -1356,8 +1365,8 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     next_t = t->next;
     if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	rc = csync_update_file_mod(conn, db, myname, peername,
-				   t->value, t->operation, t->value3,
-				   t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
+				   t->value /* file */, t->operation, t->value3, /* other */
+				   t->value4 /* checktxt */, t->value5 /* digest */, t->intvalue, flags & FLAG_DRY_RUN);
 	if (rc == CONN_CLOSE) {
 	    csync_error(0, "Connection closed on updating %s\n", t->value);
 	    break;
