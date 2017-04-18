@@ -19,8 +19,6 @@
 | other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked   | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file |   32 |
 | other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file |   32 |
 | other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_3 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file |   32 |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file |   32 |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file |   32 |
 | peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local                  | MARK      | NULL                                                                    |  512 |
 | peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new              | MARK      | NULL                                                                    |  512 |
 | peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked   | MARK      | NULL                                                                    |  512 |
