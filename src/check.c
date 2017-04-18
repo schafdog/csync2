@@ -210,7 +210,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 }
 
 
-void csync_mark_other(db_conn_p db, const char *file, const char *thispeer, const char *peerfilter,
+void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer, const char *peerfilter,
 		      operation_t operation_org, const char *checktxt,
 		      const char *dev, const char *ino, const char *org_other, int mode)
 {
@@ -574,6 +574,17 @@ int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
     return 0;
 }
 
+int csync_calc_digest(const char *file, BUF_P buffer, char **digest) {
+    int size = 2*DIGEST_MAX_SIZE+1;
+    *digest = buffer_malloc(buffer, size);
+    int rc = dsync_digest_path_hex(file, "sha1", *digest, size);
+    if (rc) {
+	csync_error(0, "ERROR: generating digest: %s %d", *digest, rc);
+	// TODO ???
+    }
+    return rc;
+}
+
 int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,  int flags)
 {
     BUF_P buffer = buffer_init();
@@ -591,13 +602,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     int is_upgrade    = db_flags & IS_UPGRADE;
     csync_info(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d \n", calc_digest, this_is_dirty, is_upgrade);
     if (calc_digest) {
-    	int size = 2*DIGEST_MAX_SIZE+1;
-    	digest = buffer_malloc(buffer, size);
-    	int rc = dsync_digest_path_hex(file, "sha1", digest, size);
-    	if (rc) {
-	    csync_error(0, "ERROR: generating digest: %s %d", digest, rc);
-	    // TODO ???
-	}
+	csync_calc_digest(file, buffer, &digest);
     }
     if (csync_compare_mode) {
 	printf("%40s %s\n", digest ? digest : "-", file);
