@@ -839,7 +839,7 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p peername, con
 				struct stat *st, const char *uid, const char *gid,
 				const char *digest, int *last_conn_status, int auto_resolve_run)
 {
-    csync_log(LOG_DEBUG, 1, "do hardlink OP %s %s \n", filename, other);
+    csync_log(LOG_DEBUG, 1, "do hardlink %s %s \n", filename, other);
 
     const char *other_enc = url_encode(prefixencode(other));
     struct stat st_other;
@@ -1002,8 +1002,8 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	if (operation == OP_HARDLINK) {
 	    rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, other, &st, uid, gid, digest,
 					&last_conn_status, auto_resolve_run);
-	    if (rc == CONN_CLOSE) {
-		return CONN_CLOSE;
+	    if (rc == CONN_CLOSE || rc == OK || rc == IDENTICAL ) {
+		return rc;
 	    }
 		
 	}
