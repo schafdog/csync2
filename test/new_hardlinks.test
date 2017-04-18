@@ -6,13 +6,17 @@ echo hej >  test/$NAME/new/new_file
 ln test/$NAME/new/new_file test/$NAME/new/hardlinked
 cmd c "2 two new files hardlinked (check)"
 cmd u "3 two new files hardlinked (update)"
+sleep 1
 ln test/$NAME/new/new_file test/$NAME/new/hardlinked_2
 ln test/$NAME/new/new_file test/$NAME/new/hardlinked_3
 cmd x "4 more files hardlinked (x)"
+sleep 1
 ln test/$NAME/new/new_file test/$NAME/new/hardlinked_4
 ln test/$NAME/new/new_file test/$NAME/new/hardlinked_5
-sleep 1
-cmd c "5 more files hardlinked (mark)"
+# Simulate out of sync with remote.
+# Add them but not as dirty
+cmd cI "5 more files hardlinked (mark)"
+# See if a mark can handle this
 cmd m "6 more files hardlinked (mark)"
-cmd u "7 more files hardlinked (mark)"
+cmd u "7 more files hardlinked (sync marked records)"
 killdaemon
