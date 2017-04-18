@@ -834,11 +834,47 @@ int csync_update_directory(int conn,
   return OK;
 }
 
-int csync_update_file_mod(int conn, db_conn_p db,
+int csync_check_update_hardlink(int conn, db_conn_p db, peername_p peername, const char *key_enc,
+				filename_p filename, filename_p filename_enc, filename_p other,
+				struct stat *st, const char *uid, const char *gid,
+				const char *digest, int *last_conn_status, int auto_resolve_run)
+{
+    csync_log(LOG_DEBUG, 1, "do hardlink OP %s %s \n", filename, other);
+
+    const char *other_enc = url_encode(prefixencode(other));
+    struct stat st_other;
+    int rc = stat(other, &st_other);
+    if (rc == 0) {
+	int rc = csync_update_file_sig_rs_diff(conn,
+					       peername, key_enc, other,
+					       other_enc, st, uid, gid,
+					       NULL, digest, last_conn_status, 2);
+	if (rc == CONN_CLOSE)
+	    return rc;
+	if (rc == IDENTICAL)
+	    rc = csync_update_hardlink(conn, peername, key_enc, other,
+				       other_enc, filename, filename_enc,
+				       last_conn_status);
+	else {
+	    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching.", other);
+	    rc = ERROR_HARDLINK;
+	}
+
+	if (rc == CONN_CLOSE)
+	    return rc;
+	if (rc == OK) {
+	    csync_clear_dirty(db, peername, filename, auto_resolve_run);
+	    return rc;
+	}
+    }
+    return rc;
+}
+
+int csync_update_file_mod_internal(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
 			  filename_p filename, operation_t operation, const char *other,
 			  const char *checktxt, const char *digest,
-			  int force, int dry_run)
+			  int force, int dry_run, BUF_P buffer)
 {
     struct stat st;
     char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
@@ -933,39 +969,45 @@ int csync_update_file_mod(int conn, db_conn_p db,
 	    }
 	    return rc;
 	}
-
-	if (operation == OP_HARDLINK) {
-	    csync_log(LOG_DEBUG, 1, "check hardlink OP %s %s %s \n", operation_str,
-			filename, other);
-
-	    const char *other_enc = url_encode(prefixencode(other));
-	    struct stat st_other;
-	    int rc = stat(other, &st_other);
-	    if (rc == 0) {
-		int rc = csync_update_file_sig_rs_diff(conn,
-						       peername, key_enc, other,
-						       other_enc, &st, uid, gid,
-						       NULL, digest, &last_conn_status, 2);
-		if (rc == CONN_CLOSE)
-		    return rc;
-		if (rc == IDENTICAL)
-		    rc = csync_update_hardlink(conn, peername, key_enc, other,
-					       other_enc, filename, filename_enc,
-					       &last_conn_status);
-		else {
-		    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching.", other);
-		    rc = ERROR_HARDLINK;
+	if (operation == OP_MARK) {
+	    int has_links = (st.st_nlink > 1 && S_ISREG(st.st_mode));
+	    if (has_links) {
+		textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
+		textlist_p ptr = tl;
+		while (ptr != NULL) {
+		    csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, filename);
+		    if (0 && ptr->intvalue == OP_RM) {
+			operation = OP_MOVE;
+			db->delete_file(db, ptr->value, 0);
+			other = buffer_strdup(buffer, ptr->value);
+			csync_info(1, "Found MOVE %s -> %s \n", ptr->value, filename);
+			break;
+		    }
+		    else if (ptr->intvalue == OP_HARDLINK) {
+			//operation = OP_HARDLINK;
+			//other = buffer_strdup(buffer, ptr->value);
+			csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, filename);
+			rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, ptr->value, &st, uid, gid, digest,
+					&last_conn_status, auto_resolve_run);
+			if (rc == CONN_CLOSE) {
+			    return CONN_CLOSE;
+			}
+			
+		    }
+		    ptr = ptr->next;
 		}
-
-		if (rc == CONN_CLOSE)
-		    return rc;
-		if (rc == OK) {
-		    csync_clear_dirty(db, peername, filename, auto_resolve_run);
-		    return rc;
-		}
+		textlist_free(tl);
 	    }
 	}
-
+	if (operation == OP_HARDLINK) {
+	    rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, other, &st, uid, gid, digest,
+					&last_conn_status, auto_resolve_run);
+	    if (rc == CONN_CLOSE) {
+		return CONN_CLOSE;
+	    }
+		
+	}
+	    
 	/*
 	textlist_p link_move_list = csync_check_link_move(peername,
 								filename, checktxt, operation, digest, &st, NULL);
@@ -1202,6 +1244,23 @@ int csync_update_file_mod(int conn, db_conn_p db,
     csync_fatal(0,"Failed through loop. Should have returned. rc: %d \n", rc);
     return rc;
 }
+
+int csync_update_file_mod(int conn, db_conn_p db,
+			  const char *myname, peername_p peername,
+			  filename_p filename, operation_t operation, const char *other,
+			  const char *checktxt, const char *digest,
+			  int force, int dry_run)
+{
+    BUF_P buffer = buffer_init();
+    int rc = csync_update_file_mod_internal(conn, db,
+				   myname, peername,
+				   filename, operation, other,
+				   checktxt, digest,
+				   force, dry_run, buffer);
+    buffer_destroy(buffer);
+    return rc;
+}
+
 
 int csync_update_file_settime(int conn, peername_p peername, const char *key_enc,
 			      filename_p filename, filename_p filename_enc,
