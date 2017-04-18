@@ -273,8 +273,8 @@ struct textlist;
 #define OP_MOD      128
 #define OP_MOD2     256
 #define OP_MARK     512
-#define OP_SYNC     (OP_MOD|OP_MOD2|OP_MARK)
-#define OP_FILTER   (~(OP_SYNC)) 
+#define OP_SYNC     (OP_MOD|OP_MOD2)
+#define OP_FILTER   (~(OP_SYNC) & 1023) 
 #define OP_UNDEF    0
 
 #define IS_UPGRADE 1

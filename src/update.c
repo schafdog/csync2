@@ -111,7 +111,7 @@ const char *csync_operation_str(operation_t op) {
     case OP_MOVE:
 	return "MV";
     }
-    csync_error(1, "No mapping for operation: %d %d\n", op, OP_FILTER);
+    csync_error(1, "No mapping for operation: %u %u\n", op, OP_FILTER);
     return "?";
 }
 int read_conn_status_raw(int fd, const char *file, const char *host, char *line, int maxlength)
