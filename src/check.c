@@ -158,7 +158,10 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     const char *result_other = other;
     char *clean_other = NULL;
     int dirty = 1; // Assume dirty
-    textlist_p tl = NULL; 
+    textlist_p tl = NULL;
+    if (old_operation == OP_HARDLINK && st_file->st_nlink == 1) {
+	operation = OP_MOD;
+    }
     csync_info(1, "mark other: %s(%d) Old operation: %s(%d) '%s' '%s'\n", csync_mode_op_str(mode, operation), operation,
 	       csync_mode_op_str(mode, old_operation), old_operation,  old_filename, old_other);
     if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
@@ -632,6 +635,8 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
 	if (has_links) {
 	    // TODO do something
+	}
+	else {
 	}
 
 	const char *checktxt_encoded = db_escape(db, checktxt);
