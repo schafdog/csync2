@@ -159,7 +159,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     char *clean_other = NULL;
     int dirty = 1; // Assume dirty
     textlist_p tl = NULL;
-    if (old_operation == OP_HARDLINK && st_file->st_nlink == 1) {
+    if (old_operation == OP_HARDLINK && st_file && st_file->st_nlink == 1) {
 	operation = OP_MOD;
     }
     csync_info(1, "mark other: %s(%d) Old operation: %s(%d) '%s' '%s'\n", csync_mode_op_str(mode, operation), operation,
