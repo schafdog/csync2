@@ -1014,7 +1014,11 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	if (operation == OP_HARDLINK) {
 	    rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, other, &st, uid, gid, digest,
 					&last_conn_status, auto_resolve_run);
+
 	    if (rc == CONN_CLOSE || rc == OK || rc == IDENTICAL ) {
+		if (rc == OK || rc == IDENTICAL) {
+		    csync_clear_dirty(db, peername, filename, auto_resolve_run);
+		}
 		return rc;
 	    }
 		
