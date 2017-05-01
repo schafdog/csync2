@@ -839,7 +839,7 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p peername, con
 				struct stat *st, const char *uid, const char *gid,
 				const char *digest, int *last_conn_status, int auto_resolve_run)
 {
-    csync_log(LOG_DEBUG, 1, "do hardlink %s %s \n", filename, other);
+    csync_log(LOG_DEBUG, 1, "do hardlink check %s %s \n", filename, other);
 
     const char *other_enc = url_encode(prefixencode(other));
     struct stat st_other;
