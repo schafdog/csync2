@@ -998,6 +998,9 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 			csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, filename);
 			rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, ptr->value, &st, uid, gid, digest,
 					&last_conn_status, auto_resolve_run);
+			if (rc == OK) {
+			    csync_clear_dirty(db, peername, filename, auto_resolve_run);
+			}
 			if (rc == CONN_CLOSE) {
 			    return CONN_CLOSE;
 			}
