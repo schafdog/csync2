@@ -873,7 +873,7 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p peername, con
 int csync_update_file_mod_internal(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
 			  filename_p filename, operation_t operation, const char *other,
-			  const char *checktxt, const char *digest,
+			  const char *checktxt, char *digest,
 			  int force, int dry_run, BUF_P buffer)
 {
     struct stat st;
@@ -1012,18 +1012,23 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	    }
 	}
 	if (operation == OP_HARDLINK) {
-	    rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, other, &st, uid, gid, digest,
-					&last_conn_status, auto_resolve_run);
-
-	    if (rc == CONN_CLOSE || rc == OK || rc == IDENTICAL ) {
-		if (rc == OK || rc == IDENTICAL) {
-		    csync_debug(1, "clear dirty HARDLINK\n", filename, other);
-		    csync_clear_dirty(db, peername, filename, auto_resolve_run);
-		    csync_clear_dirty(db, peername, other, auto_resolve_run);
-		}
-		return rc;
+	    if (st.st_nlink == 1) {
+		operation = OP_MOD;
+		csync_debug(1, "clear HARDLINK. No longer one\n", filename, other);
 	    }
-		
+	    else {
+		rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, other, &st, uid, gid, digest,
+						 &last_conn_status, auto_resolve_run);
+
+		if (rc == CONN_CLOSE || rc == OK || rc == IDENTICAL ) {
+		    if (rc == OK || rc == IDENTICAL) {
+			csync_debug(1, "clear dirty HARDLINK\n", filename, other);
+			csync_clear_dirty(db, peername, filename, auto_resolve_run);
+			csync_clear_dirty(db, peername, other, auto_resolve_run);
+		    }
+		    return rc;
+		}
+	    }
 	}
 	    
 	/*
@@ -1266,7 +1271,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 int csync_update_file_mod(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
 			  filename_p filename, operation_t operation, const char *other,
-			  const char *checktxt, const char *digest,
+			  const char *checktxt, char *digest,
 			  int force, int dry_run)
 {
     BUF_P buffer = buffer_init();
