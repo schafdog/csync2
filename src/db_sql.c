@@ -291,7 +291,7 @@ void csync_generate_recursive_sql(const char *file_encoded, int recursive, char 
 {
     if ( recursive ) {
 	if ( !strcmp(file_encoded, "/") )
-	    ASPRINTF(where_rec, "");
+	    ASPRINTF(where_rec, " 1=1 ");
 	else {
 	    ASPRINTF(where_rec, " (filename = '%s' OR filename LIKE '%s/%%') ",
 		     file_encoded, file_encoded);
@@ -315,7 +315,7 @@ void db_sql_force(db_conn_p db, const char *realname, int recursive)
     char *where_rec = "";
     csync_generate_recursive_sql(db_escape(db, realname), recursive, &where_rec);
     SQL(db, "Mark file as to be forced",
-	"UPDATE dirty SET forced = 1 %s WHERE ", where_rec);
+	"UPDATE dirty SET forced = 1 WHERE %s ", where_rec);
 
     if ( recursive )
 	free(where_rec);
@@ -328,7 +328,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
     csync_check_usefullness(realname, recursive);
     struct stat file_st;
     const char *db_encoded = db_escape(db, realname);
-    char *where_rec = "";
+    char *where_rec = NULL;
     csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
     SQL_BEGIN(db, "Adding dirty entries recursively",
 	      "SELECT filename, mode, checktxt, digest, device, inode FROM file WHERE %s", where_rec)
@@ -569,7 +569,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peer
 {
     textlist_p tl = 0;
     char *filter_sql = "1=1";
-    char *where_rec = "";
+    char *where_rec = NULL;
     if (numpat == 1) {
 	csync_generate_recursive_sql(patlist[0], recursive, &where_rec);
 	filter_sql = where_rec;
@@ -602,6 +602,9 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peer
 	csync_info(2, "dirty: %s:%s %d %p\n", peername, filename, found, checktxt);
     } SQL_END;
 
+    if (where_rec)
+	free(where_rec);
+	
     return tl;
 }
 
