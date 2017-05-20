@@ -293,12 +293,12 @@ void csync_generate_recursive_sql(const char *file_encoded, int recursive, char 
 	if ( !strcmp(file_encoded, "/") )
 	    ASPRINTF(where_rec, "");
 	else {
-	    ASPRINTF(where_rec, "WHERE filename = '%s' OR filename LIKE '%s/%%' ",
+	    ASPRINTF(where_rec, " (filename = '%s' OR filename LIKE '%s/%%') ",
 		     file_encoded, file_encoded);
 	}
     }
     else {
-	ASPRINTF(where_rec, " WHERE filename = '%s' ", file_encoded);
+	ASPRINTF(where_rec, " filename = '%s' ", file_encoded);
     }
 }
 
@@ -315,7 +315,7 @@ void db_sql_force(db_conn_p db, const char *realname, int recursive)
     char *where_rec = "";
     csync_generate_recursive_sql(db_escape(db, realname), recursive, &where_rec);
     SQL(db, "Mark file as to be forced",
-	"UPDATE dirty SET forced = 1 %s ", where_rec);
+	"UPDATE dirty SET forced = 1 %s WHERE ", where_rec);
 
     if ( recursive )
 	free(where_rec);
@@ -331,7 +331,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
     char *where_rec = "";
     csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
     SQL_BEGIN(db, "Adding dirty entries recursively",
-	      "SELECT filename, mode, checktxt, digest, device, inode FROM file %s", where_rec)
+	      "SELECT filename, mode, checktxt, digest, device, inode FROM file WHERE %s", where_rec)
     {
 	char *filename = strdup(db_decode(SQL_V(0)));
 	int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
@@ -568,10 +568,19 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peer
 				    int (*get_dirty_by_peer) (filename_p filename, const char *pattern, int recursive))
 {
     textlist_p tl = 0;
+    char *filter_sql = "1=1";
+    char *where_rec = "";
+    if (numpat == 1) {
+	csync_generate_recursive_sql(patlist[0], recursive, &where_rec);
+	filter_sql = where_rec;
+    }
     SQL_BEGIN(db, "Get files for host from dirty table",
-	      "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	      "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type FROM dirty WHERE "
+              " %s "
+	      "AND peername = '%s' AND myname = '%s' "
 	      "ORDER by type DESC, filename DESC",
 	      OP_FILTER,
+	      filter_sql,
 	      db_escape(db, peername), db_escape(db, myname));
     {
 	filename_p filename  = db_decode(SQL_V(0));
@@ -724,7 +733,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
     csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 
     SQL_BEGIN(db, "Checking for removed files",
-	      "%s %s ORDER BY filename",
+	      "%s WHERE %s ORDER BY filename",
 	      SELECT_SQL, where_rec)
     {
 	filename_p filename  = db_decode(SQL_V(0));
