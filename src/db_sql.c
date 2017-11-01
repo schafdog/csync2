@@ -2,6 +2,25 @@
 #include "db_sql.h"
 #include <unistd.h>
 
+int db_sql_schema_version(db_conn_p db)
+{
+    int version = -1;
+    int rows = 0;
+    if ((rows = csync_db_sql(db, NULL, // "Failed to updat table file",
+			     "update file set filename = NULL where filename = NULL ")) >= 0)
+    {
+	version = 1;
+    }
+    
+    if (csync_db_sql(db, NULL, // "Failed to show table host",
+		     "update host set host = NULL where host = NULL") >= 0)
+    {
+	version = 2;
+    }
+    return version;
+}
+
+
 int db_sql_check_file(db_conn_p db, const char *file,
 		      const char *encoded,
 		      char **other,
@@ -127,14 +146,14 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     if (realname[0] != 0) {
 	const char *db_encoded = db_escape(db, realname);
 	ASPRINTF(&where,
-		 "where filename = '%s' or "
-		 "      filename > '%s/' and " 
-		 "      filename < '%s0'",
+		 " (filename = '%s' or "
+		 "  filename > '%s/' and " 
+		 "  filename < '%s0') and ",
 		 db_encoded, db_encoded, db_encoded);
     }
-
     SQL_BEGIN(db, "DB Dump - Dirty",
-	      "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty %s ORDER BY type, filename",
+	      "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty "
+	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) ORDER BY type, filename",
 	      OP_FILTER, where)
     {
 	const char *force_str = SQL_V(0);
@@ -491,7 +510,7 @@ textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, c
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Query dirty DB",
-	      "SELECT filename, myname, peername FROM dirty") {
+	      "SELECT filename, myname, peername FROM dirty where peername not in (select host from host where status = 1) ") {
 	filename_p filename   = db_decode(SQL_V(0));
 	const char *localname = db_decode(SQL_V(1));
 	peername_p peername  = db_decode(SQL_V(2));
@@ -578,6 +597,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peer
 	      "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type FROM dirty WHERE "
               " %s "
 	      "AND peername = '%s' AND myname = '%s' "
+	      "AND peername NOT IN (SELECT host FROM host WHERE status = 1) "
 	      "ORDER by type DESC, filename DESC",
 	      OP_FILTER,
 	      filter_sql,
@@ -915,6 +935,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->get_dirty_hosts = db_sql_get_dirty_hosts;
     conn->dir_count = db_sql_dir_count;
     conn->move_file = db_sql_move_file;
+    conn->schema_version = db_sql_schema_version;
     return 0; 
 };
 
