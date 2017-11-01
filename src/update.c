@@ -603,7 +603,7 @@ int csync_update_file_sig(int conn, peername_p peername, filename_p filename,
 					      peer_version);
     if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 	csync_info(log_level, "File is different on peer (cktxt char #%d).\n", i);
-	csync_info(log_level, ">>> %s:  %s\n>>> %s: %s\n",
+	csync_info(log_level, ">>> %s:\t%s\n>>> %s:\t%s\n",
 		    peername, chk_peer_decoded, "LOCAL", chk_local);
 	return rc | DIFF_META;
     }
