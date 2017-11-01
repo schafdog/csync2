@@ -310,33 +310,22 @@ int db_mysql_stmt_close(db_stmt_p stmt)
   return DB_OK; 
 }
 
-int db_mysql_schema_version(db_conn_p db)
-{
-    int version = -1;
-    SQL_BEGIN(db, "Failed to show table",  /* ignore errors */
-	      "show tables like 'file'")
-    {
-	version = 0;
-    } SQL_END {
-
-    };
-    return version;
-}
-
 #define FILE_LENGTH 250
+#define HOST_LENGTH  50
 int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 {
-    if (version < 0)
-	return DB_OK;
-    
-    if (version > 0)
-	return DB_ERROR;
-
     csync_log(LOG_DEBUG, 2, "Upgrading database schema to version %d.\n", version);
 
 /* We want proper logging, so use the csync sql function instead
  * of that from the database layer.
  */
+    csync_db_sql(conn, "Creating host table", 
+		 "CREATE TABLE `host` ("
+		 "  `host` varchar(%u) DEFAULT NULL,"
+		 "  `status`  int,"
+		 "  KEY `host` (`host`)"
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", HOST_LENGTH);
+
     csync_db_sql(conn, NULL, /*"Creating action table" */
 		 "CREATE TABLE `action` ("
 		 "  `filename` varchar(%u) DEFAULT NULL,"
@@ -348,47 +337,47 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
     csync_db_sql(conn, NULL, /* "Creating dirty table" */ 
 		 "CREATE TABLE `dirty` ("
 		 //		"  `id`        bigint        AUTO_INCREMENT,"
-		 "  filename  varchar(%u)   DEFAULT NULL,"
-		 "  forced    int 	       DEFAULT NULL,"
-		 "  myname    varchar(50)   DEFAULT NULL,"
-		 "  peername  varchar(50)   DEFAULT NULL,"
-		 "  operation varchar(100)  DEFAULT NULL,"
-		 "  op 	      int	    DEFAULT NULL,"
-		 "  checktxt  varchar(200)  DEFAULT NULL,"
-		 "  device    bigint        DEFAULT NULL,"
-		 "  inode     bigint        DEFAULT NULL,"
-		 "  other     varchar(%u)   DEFAULT NULL,"
-		 "  file_id   bigint        DEFAULT NULL,"
-		 "  digest    varchar(130)  DEFAULT NULL,"
+		 "  filename  varchar(%u)  DEFAULT NULL,"
+		 "  forced    int 	   DEFAULT NULL,"
+		 "  myname    varchar(%u)  DEFAULT NULL,"
+		 "  peername  varchar(%u)  DEFAULT NULL,"
+		 "  operation varchar(100) DEFAULT NULL,"
+		 "  op 	      int	   DEFAULT NULL,"
+		 "  checktxt  varchar(200) DEFAULT NULL,"
+		 "  device    bigint       DEFAULT NULL,"
+		 "  inode     bigint       DEFAULT NULL,"
+		 "  other     varchar(%u)  DEFAULT NULL,"
+		 "  file_id   bigint       DEFAULT NULL,"
+		 "  digest    varchar(130) DEFAULT NULL,"
 		 "  mode      int	   DEFAULT NULL,"
 		 "  mtime     int    	   DEFAULT NULL,"
 		 "  type      int    	   DEFAULT NULL,"
 		 "  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-		 "  UNIQUE KEY `filename` (`filename`(%u),`peername`)"
+		 "  UNIQUE KEY `filename_peer` (`filename`(%u),`peername`)"
 		 //		"  KEY `dirty_host` (`peername`(10))"
-		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH, FILE_LENGTH);
 
     csync_db_sql(conn, NULL, /* "Creating file table", */
 		 "CREATE TABLE `file` ("
 		 //		"  `id`       bigint AUTO_INCREMENT,"
 		 //		"  `parent`   bigint DEFAULT NULL,"
 		 "  filename varchar(%u)  DEFAULT NULL,"
-		 "  hostname varchar(50)  DEFAULT NULL,"
+		 "  hostname varchar(%u)  DEFAULT NULL,"
 		 "  checktxt varchar(200) DEFAULT NULL,"
-		 "  device   bigint 		 DEFAULT NULL,"
-		 "  inode    bigint 		 DEFAULT NULL,"
-		 "  size     bigint 		 DEFAULT NULL,"
-		 "  mode     int    		 DEFAULT NULL,"
-		 "  mtime    int    		 DEFAULT NULL,"
-		 "  type     int    		 DEFAULT NULL,"
+		 "  device   bigint 	  DEFAULT NULL,"
+		 "  inode    bigint 	  DEFAULT NULL,"
+		 "  size     bigint 	  DEFAULT NULL,"
+		 "  mode     int    	  DEFAULT NULL,"
+		 "  mtime    int    	  DEFAULT NULL,"
+		 "  type     int    	  DEFAULT NULL,"
 		 "  digest   varchar(130) DEFAULT NULL,"
-		 "  UNIQUE KEY `filename` (`filename`(%u))"
-		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
+		 "  UNIQUE KEY `hostname_filename` (`hostname` (%u), `filename`(%u))"
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
     csync_db_sql(conn, NULL, /* "Creating hint table", */
 		     "CREATE TABLE `hint` ("
 		 "  `filename` varchar(%u) DEFAULT NULL,"
-		 "  `recursive` int(11)     DEFAULT NULL"
+		 "  `recursive` int(11)    DEFAULT NULL"
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
 
     csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
@@ -471,7 +460,6 @@ fatal:
   conn->exec    = db_mysql_exec;
   conn->prepare = db_mysql_prepare;
   conn->errmsg  = db_mysql_errmsg;
-  conn->schema_version = db_mysql_schema_version;
   conn->upgrade_to_schema = db_mysql_upgrade_to_schema;
   conn->escape  = db_mysql_escape;
   //  conn->free    = db_mysql_free;

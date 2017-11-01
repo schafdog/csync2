@@ -313,12 +313,8 @@ int db_postgres_stmt_close(db_stmt_p stmt)
   return DB_OK;
 }
 
-int db_postgres_schema_version(db_conn_p conn)
-{
-    return -1;
-}
-
 #define FILE_LENGTH 275
+#define HOST_LENGTH  50
 int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 {
 	if (version < 0)
@@ -336,12 +332,18 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  logfile varchar(1000),"
 		     "  UNIQUE (filename,command));", FILE_LENGTH);
 
+	csync_db_sql(conn, NULL, /* "Creating host table", */
+		     "CREATE TABLE host ("
+		     "  host varchar(%u),"
+		     "  status integer, " 
+		     "  UNIQUE (host));", HOST_LENGTH);
+
 	csync_db_sql(conn, NULL, /* "Creating dirty table", */
 		     "CREATE TABLE dirty ("
 		     "  filename  varchar(%u) ,"
 		     "  forced    int         ,"
-		     "  myname    varchar(50) ,"
-		     "  peername  varchar(50) ,"
+		     "  myname    varchar(%u) ,"
+		     "  peername  varchar(%u) ,"
 		     "  checktxt  varchar(255),"
 		     "  digest    varchar(130),"
 		     "  device    bigint      ,"
@@ -355,7 +357,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  file_id   bigint      ,"
 		     "  timestamp timestamp   DEFAULT current_timestamp,"
 		     "  UNIQUE (filename,peername)"
-		     ");", FILE_LENGTH, FILE_LENGTH);
+		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
 		     "CREATE TABLE file ("
@@ -507,7 +509,6 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   conn->errmsg = db_postgres_errmsg;
   conn->prepare = db_postgres_prepare;
   conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
-  conn->schema_version = db_postgres_schema_version;
   conn->escape = db_postgres_escape;
   free(pg_conn_info);
 
