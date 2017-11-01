@@ -80,7 +80,7 @@ typedef const char * peername_p;
 #define INO_FORMAT "%"PRIu64
 #endif
 
-#define DB_SCHEMA_VERSION 0
+#define DB_SCHEMA_VERSION 2
 
 enum {
 	MODE_NONE = 0,
