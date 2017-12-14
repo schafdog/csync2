@@ -456,7 +456,7 @@ textlist_p db_sql_get_commands(db_conn_p db)
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Checking for scheduled commands",
-	      "SELECT command, logfile FROM action GROUP BY command, logfile")
+	      "SELECT command, logfile FROM action")
     {
 	textlist_add2(&tl, SQL_V(0), SQL_V(1), 0);
     } SQL_END;
