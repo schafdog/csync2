@@ -66,7 +66,7 @@ static void db_mysql_dlopen(void)
     csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
     dl_handle = dlopen(SO_FILE, RTLD_LAZY);
     if (dl_handle == NULL) {
-	csync_fatal("Could not open libmysqlclient.so: %s\nPlease install Mysql client library (libmysqlclient) or use other database (sqlite, postgres)\n",
+	csync_fatal("Could not open " SO_FILE ": %s\nPlease install Mysql/Mariadb client library or use other database (sqlite, postgresql)\n",
 		    dlerror());
     }
 
