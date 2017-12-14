@@ -59,7 +59,7 @@ static struct db_mysql_fns {
 
 static void *dl_handle;
 
-#define SO_FILE "libmysqlclient" SO_FILE_EXT
+#define SO_FILE "libmariadb" SO_FILE_EXT
 
 static void db_mysql_dlopen(void)
 {
