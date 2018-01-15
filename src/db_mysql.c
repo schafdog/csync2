@@ -59,13 +59,14 @@ static struct db_mysql_fns {
 
 static void *dl_handle;
 
-#define SO_FILE "libmariadb" SO_FILE_EXT
+#define SO_FILE     "libmariadb" SO_FILE_EXT
+#define SO_FILE_ALT "libmariadbclient" SO_FILE_EXT
 
 static void db_mysql_dlopen(void)
 {
     csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
     dl_handle = dlopen(SO_FILE, RTLD_LAZY);
-    if (dl_handle == NULL) {
+    if (dl_handle == NULL && (dl_handle = dlopen(SO_FILE_ALT, RTLD_LAZY)) == NULL) {
 	csync_fatal("Could not open " SO_FILE ": %s\nPlease install Mysql/Mariadb client library or use other database (sqlite, postgresql)\n",
 		    dlerror());
     }
