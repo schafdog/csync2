@@ -80,7 +80,7 @@ typedef const char * peername_p;
 #define INO_FORMAT "%"PRIu64
 #endif
 
-#define DB_SCHEMA_VERSION 0
+#define DB_SCHEMA_VERSION 2
 
 enum {
 	MODE_NONE = 0,
@@ -259,6 +259,7 @@ int csync_get_checktxt_version(const char *value);
 
 /* check.c */
 int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino);
+int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
 
 struct textlist;
 
@@ -273,8 +274,8 @@ struct textlist;
 #define OP_MOD      128
 #define OP_MOD2     256
 #define OP_MARK     512
-#define OP_SYNC     (OP_MOD|OP_MOD2|OP_MARK)
-#define OP_FILTER   (~(OP_SYNC)) 
+#define OP_SYNC     (OP_MOD|OP_MOD2)
+#define OP_FILTER   (~(OP_SYNC) & 1023) 
 #define OP_UNDEF    0
 
 #define IS_UPGRADE 1
@@ -290,7 +291,7 @@ extern void csync_hint(db_conn_p db, const char *file, int recursive);
 extern void csync_check(db_conn_p db, filename_p filename, int flags);
 /* Single file checking but returns possible operation */ 
 extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g); 
-extern void csync_mark(db_conn_p db, const char *file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino, int mode);
+extern void csync_mark(db_conn_p db, filename_p file, const char *thispeer, const char *peerfilter, operation_t op, const char *checktxt, const char *dev, const char *ino, int mode);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(char *filename); 
 extern int   csync_check_pure(filename_p filename);
@@ -548,7 +549,7 @@ struct csync_hostinfo {
 struct csync_group_host {
 	struct csync_group_host *next;
         char *hostname;
-        int port;
+        char *port; // service or port number
 	int on_left_side;
 	int slave;
 };
@@ -646,7 +647,9 @@ extern int csync_timestamps;
 extern int csync_new_force;
 
 extern char myhostname[];
+extern char *myport;
 extern char *csync_port;
+extern int csync_port_cmdline;
 extern char *csync_confdir;
 extern char *active_grouplist;
 extern char *active_peerlist;
