@@ -299,7 +299,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
     }
 }
 
-static int csync_bind(int ip_version)
+static int csync_bind(char *service_port, int ip_version)
 {
     struct linger sl = { 1, 5 };
     struct addrinfo hints;
@@ -311,7 +311,7 @@ static int csync_bind(int ip_version)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    s = getaddrinfo(NULL, csync_port, &hints, &result);
+    s = getaddrinfo(NULL, service_port, &hints, &result);
     if (s != 0) {
 	csync_error(0, "Cannot prepare local socket, getaddrinfo: %s\n", gai_strerror(s));
 	return ERROR;
@@ -361,9 +361,10 @@ void csync_openlog() {
     openlog(program_pid, LOG_ODELAY, LOG_LOCAL0);
 }
 
-static int csync_server_bind(int ip_version) 
+static int csync_server_bind(char *service_port, int ip_version) 
 {
-    int listenfd = csync_bind(ip_version);
+    csync_log(LOG_DEBUG, 1, "Binding to %s IPv%d \n", service_port, ip_version);
+    int listenfd = csync_bind(service_port, ip_version);
     if (listenfd < 0) 
 	goto error;
     if (listen(listenfd, 5) < 0) 
@@ -547,6 +548,41 @@ void select_recursive(char *db_encoded, char **where_rec) {
 	     db_encoded, db_encoded);
 }
 
+int csync_read_config(char *cfgname, int conn, int mode)
+{
+    if (cfgfile) {
+	ASPRINTF(&file_config, "%s", cfgfile);
+    }
+    else if ( !*cfgname) {
+	ASPRINTF(&file_config, ETCDIR "/csync2.cfg");
+    } else {
+	int i;
+
+	for (i=0; cfgname[i]; i++)
+	    if ( !(cfgname[i] >= '0' && cfgname[i] <= '9') &&
+		 !(cfgname[i] >= 'a' && cfgname[i] <= 'z') ) {
+		char *error  = "Config names are limited to [a-z0-9]+.\n";
+		if (mode & MODE_INETD)
+		    conn_printf(conn, error);
+		else
+		    csync_fatal(error);
+		return -1;
+	    }
+
+	ASPRINTF(&file_config, ETCDIR "/csync2_%s.cfg", cfgname);
+    }
+
+    csync_info(2, "Config-File:   %s\n", file_config);
+    yyin = fopen(file_config, "r");
+    if ( !yyin )
+	csync_fatal("Can not open config file `%s': %s\n",
+		    file_config, strerror(errno));
+    yyparse();
+    fclose(yyin);
+    yylex_destroy();
+    return 0;
+}
+
 int main(int argc, char ** argv)
 {
     textlist_p tl = 0, t;
@@ -574,7 +610,7 @@ int main(int argc, char ** argv)
     int cmd_db_version = 0;
     int cmd_ip_version = 0;
     update_func update_func;
-    
+    int csync_port_cmdline = 0;
     while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VqeE")) != -1 ) {
 
 	switch (opt) {
@@ -626,6 +662,7 @@ int main(int argc, char ** argv)
 	    break;
 	case 'p':
 	    csync_port = strdup(optarg);
+	    csync_port_cmdline = 1;
 	    break;
 	case 'G':
 	    active_grouplist = optarg;
@@ -812,12 +849,33 @@ int main(int argc, char ** argv)
 
     for (i=0; myhostname[i]; i++)
 	myhostname[i] = tolower(myhostname[i]);
-	
+
     int listenfd;
     int server = mode & MODE_DAEMON;
     int server_standalone =  mode & MODE_STANDALONE;
+    char *myport = csync_port;
+    csync_log(LOG_DEBUG, 3, "csync_hostinfo %p \n", csync_hostinfo);
     if (server_standalone) {
-	listenfd = csync_server_bind(ip_version);
+	if (!csync_port_cmdline) {
+	    // We need to read the config file to determine a eventual port override
+	    // port override needs to be consistent over all configurations
+	    csync_read_config(cfgname, 0, MODE_NONE);
+	    struct csync_hostinfo *myhostinfo = csync_hostinfo;
+	    while (myhostinfo != NULL) {
+		if (!strcmp(myhostinfo->name, myhostname))
+		{
+		    csync_log(LOG_DEBUG, 1, "Found my alias %s %s %s \n" ,myhostinfo->name, myhostinfo->host, myhostinfo->port);
+		    //strncpy(myhostname, myhostinfo->host, 255);
+		    myport = strdup(myhostinfo->port);
+		    break;
+		}
+		myhostinfo = myhostinfo->next;
+	    }
+	    // clear the config since it is read on config command
+	    csync_config_destroy();
+	}
+    
+	listenfd = csync_server_bind(myport, ip_version);
 	if (listenfd == -1) {
 	    exit(1);
 	};
@@ -888,36 +946,8 @@ nofork:
 	if (para)
 	    cfgname = strdup(url_decode(para));
     }
-    if (cfgfile) {
-	ASPRINTF(&file_config, "%s", cfgfile);
-    }
-    else if ( !*cfgname) {
-	ASPRINTF(&file_config, ETCDIR "/csync2.cfg");
-    } else {
-	int i;
-
-	for (i=0; cfgname[i]; i++)
-	    if ( !(cfgname[i] >= '0' && cfgname[i] <= '9') &&
-		 !(cfgname[i] >= 'a' && cfgname[i] <= 'z') ) {
-		char *error  = "Config names are limited to [a-z0-9]+.\n";
-		if (mode & MODE_INETD)
-		    conn_printf(conn, error);
-		else
-		    csync_fatal(error);
-		goto handle_error;
-	    }
-
-	ASPRINTF(&file_config, ETCDIR "/csync2_%s.cfg", cfgname);
-    }
-
-    csync_info(2, "Config-File:   %s\n", file_config);
-    yyin = fopen(file_config, "r");
-    if ( !yyin )
-	csync_fatal("Can not open config file `%s': %s\n",
-		    file_config, strerror(errno));
-    yyparse();
-    fclose(yyin);
-    yylex_destroy();
+    if (csync_read_config(cfgname, conn, mode) == -1)
+	goto handle_error;
     // Move configuration versions into place, if configured.
     if (cfg_db_version != -1) {
 	if (cmd_db_version) 
