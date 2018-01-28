@@ -227,7 +227,7 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 	csync_log(LOG_DEBUG, 2, "daemon_check_dirty: peer operation  %s %s %s\n",
 				peername, filename, csync_operation_str(operation));
 	
-	if (operation == OP_MOD && S_ISDIR(mode)) {
+	if ((cmd == A_MKDIR || cmd == A_MOD) && (operation & (OP_MKDIR|OP_MOD)) && S_ISDIR(mode)) {
 	    rc = 0;
 	    csync_info(1, "Ignoring dirty directory %s\n", filename);
 	    db->remove_dirty(db, "%", filename, 0);

@@ -116,6 +116,10 @@ const char *csync_genchecktxt_version(const struct stat *st, filename_p filename
 	if ( S_ISSOCK(st->st_mode) )
 		xxprintf(":type=sock");
 
+/*	if ( st->st_nlink > 1 && !S_ISDIR(st->st_mode)) {
+	    xxprintf(":nlink=%lu", st->st_nlink);
+	}
+*/
 	/*
 	if (version > 1) {
 	    xxprintf(":inode=%lu",st->st_ino);

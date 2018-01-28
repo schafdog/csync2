@@ -1,7 +1,7 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-/* ringbuffer.c */
+/* buffer.c */
 
 struct buffer {
     char ** buffer;

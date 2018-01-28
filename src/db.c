@@ -146,7 +146,7 @@ db_conn_p csync_db_open(const char *file)
     in_sql_query++;
     
     if (db_schema_version(global_db) < DB_SCHEMA_VERSION)
-	if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) != DB_OK)
+	if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) == DB_SCHEMA_VERSION)
 	    csync_fatal("Cannot create database tables (version requested = %d): %s\n", DB_SCHEMA_VERSION, db_errmsg(global_db));
     
     if (!db_sync_mode)
@@ -185,7 +185,7 @@ long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 	in_sql_query++;
 	csync_db_maybegin(db);
 
-	csync_info(3, "%s SQL: %s\n", err, sql);
+	csync_info(3, "csync2_db_SQL: %s\n", sql);
 
 	while (1) {
 	  rc = db_exec(db, sql);

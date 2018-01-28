@@ -313,12 +313,8 @@ int db_postgres_stmt_close(db_stmt_p stmt)
   return DB_OK;
 }
 
-int db_postgres_schema_version(db_conn_p conn)
-{
-    return -1;
-}
-
 #define FILE_LENGTH 275
+#define HOST_LENGTH  50
 int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 {
 	if (version < 0)
@@ -331,61 +327,68 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 
 	csync_db_sql(conn, NULL, /* "Creating action table", */
 		     "CREATE TABLE action ("
-		     "  filename varchar(%u) DEFAULT NULL,"
+		     "  filename varchar(%u),"
 		     "  command varchar(1000),"
 		     "  logfile varchar(1000),"
 		     "  UNIQUE (filename,command));", FILE_LENGTH);
 
+	csync_db_sql(conn, NULL, /* "Creating host table", */
+		     "CREATE TABLE host ("
+		     "  host varchar(%u),"
+		     "  status integer, " 
+		     "  UNIQUE (host));", HOST_LENGTH);
+
 	csync_db_sql(conn, NULL, /* "Creating dirty table", */
 		     "CREATE TABLE dirty ("
-		     "  filename  varchar(%u)   DEFAULT NULL,"
-		     "  forced    int           DEFAULT NULL,"
-		     "  myname    varchar(50)   DEFAULT NULL,"
-		     "  peername  varchar(50)   DEFAULT NULL,"
-		     "  checktxt  varchar(255)  DEFAULT NULL,"
-		     "  device    bigint        DEFAULT NULL,"
-		     "  inode     bigint        DEFAULT NULL,"
-		     "  operation varchar(100)  DEFAULT NULL,"
-		     "  op 	  int	  	DEFAULT NULL,"
-		     "  other     varchar(%u)   DEFAULT NULL,"
-		     "  mode   int              DEFAULT NULL,"
-		     "  mtime  int    	        DEFAULT NULL,"
-		     "  type   int    	        DEFAULT NULL,"
-		     "  file_id   bigint        DEFAULT NULL,"
-		     "  timestamp timestamp     DEFAULT current_timestamp,"
+		     "  filename  varchar(%u) ,"
+		     "  forced    int         ,"
+		     "  myname    varchar(%u) ,"
+		     "  peername  varchar(%u) ,"
+		     "  checktxt  varchar(255),"
+		     "  digest    varchar(130),"
+		     "  device    bigint      ,"
+		     "  inode     bigint      ,"
+		     "  operation varchar(100),"
+		     "  op 	  int	      ,"
+		     "  other     varchar(%u) ,"
+		     "  mode   int            ,"
+		     "  mtime  int    	      ,"
+		     "  type   int    	      ,"
+		     "  file_id   bigint      ,"
+		     "  timestamp timestamp   DEFAULT current_timestamp,"
 		     "  UNIQUE (filename,peername)"
-		     ");", FILE_LENGTH, FILE_LENGTH);
+		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
 		     "CREATE TABLE file ("
-//		     "  id     serial                      ,"
-		     "  parent bigint          DEFAULT NULL,"
-		     "  filename varchar(%u)   DEFAULT NULL,"
-		     "  basename varchar(%u)   DEFAULT NULL,"
-		     "  hostname varchar(50)   DEFAULT NULL,"
-		     "  checktxt varchar(100)  DEFAULT NULL,"
-		     "  device bigint          DEFAULT NULL,"
-		     "  inode  bigint          DEFAULT NULL,"
-		     "  size   bigint          DEFAULT NULL,"
-		     "  mode   int             DEFAULT NULL,"
-		     "  mtime  int    	       DEFAULT NULL,"
-		     "  type   int    	       DEFAULT NULL,"
-		     "  digest varchar(130)    DEFAULT NULL,"
-		     "  timestamp timestamp    DEFAULT CURRENT_TIMESTAMP,"
+//		     "  id     serial        ,"
+		     "  parent bigint        ,"
+		     "  filename varchar(%u) ,"
+		     "  basename varchar(%u) ,"
+		     "  hostname varchar(50) ,"
+		     "  checktxt varchar(100),"
+		     "  device bigint        ,"
+		     "  inode  bigint        ,"
+		     "  size   bigint        ,"
+		     "  mode   int           ,"
+		     "  mtime  int    	     ,"
+		     "  type   int    	     ,"
+		     "  digest varchar(130)  ,"
+		     "  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
 		     //		     "  UNIQUE (id),"
 		     "  UNIQUE (filename)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating hint table", */
 		     "CREATE TABLE hint ("
-		     "  filename varchar(%u)   DEFAULT NULL,"
-		     "  recursive int          DEFAULT NULL"
+		     "  filename varchar(%u)   ,"
+		     "  recursive int          "
 		     ");", FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
 		     "CREATE TABLE x509_cert ("
-		     "  peername varchar(50) DEFAULT NULL,"
-		     "  certdata varchar(255) DEFAULT NULL,"
+		     "  peername varchar(50) ,"
+		     "  certdata varchar(255) ,"
 		     "  UNIQUE (peername)"
 		     ");");
 
@@ -506,7 +509,6 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   conn->errmsg = db_postgres_errmsg;
   conn->prepare = db_postgres_prepare;
   conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
-  conn->schema_version = db_postgres_schema_version;
   conn->escape = db_postgres_escape;
   free(pg_conn_info);
 
