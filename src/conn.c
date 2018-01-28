@@ -59,6 +59,7 @@ int conn_connect(peername_p peername, int ip_version)
 	    }
 	    p = p->next;
 	}
+	csync_log(LOG_DEBUG, 2, "Connecting to %s:%s \n", peername, port);
 	/* Obtain address(es) matching host/port */
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = ip_version;	/* Allow IPv4 or IPv6 */
