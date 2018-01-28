@@ -338,6 +338,16 @@ static void host_destroy(struct csync_group_host *host) {
     free(host);
 }
 
+static void csync_hostinfo_destroy(struct csync_hostinfo *hostinfo) {
+    if (!hostinfo)
+	return ; 
+    csync_hostinfo_destroy(hostinfo->next);
+    free(hostinfo->name);
+    free(hostinfo->host);
+    free(hostinfo->port);
+    free(hostinfo);
+}
+
 static void pattern_destroy(struct csync_group_pattern *pattern) {
   if (!pattern)
     return ; 
@@ -435,20 +445,15 @@ static void set_ip_version(char *version)
   free(version);
 }
 
-static void new_hostinfo_entry(char *name, char *host_service)
+static void new_hostinfo_entry(char *name, char *host, char *service)
 {
      struct csync_hostinfo *p =
 	 calloc(sizeof(struct csync_hostinfo), 1);
-     p->name = name;
-     p->host = host_service;
-     p->port = NULL;
-     char *pos_port = strchr(host_service, ':'); 
-     if (pos_port) {
-	 *pos_port = 0;
-	 p->port = pos_port+1;
-     }
-     csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
      p->next = csync_hostinfo;
+     p->name = name;
+     p->host = host;
+     p->port = service;
+     csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
      csync_hostinfo = p;
 }
 
@@ -550,6 +555,8 @@ void csync_config_destroy() {
     csync_nossl = NULL;
     csync_config_destroy_group(csync_group);
     csync_group = NULL;
+    csync_hostinfo_destroy(csync_hostinfo);
+    csync_hostinfo = NULL;
     // TOOD other struct
 }
 
@@ -633,7 +640,9 @@ prefix_list:
 alias_list:
 	/* empty */
 |	alias_list TK_STRING TK_COLON TK_STRING TK_STEND
-		{ new_hostinfo_entry($2, $4); }
+                { new_hostinfo_entry($2, $4, strdup(csync_port)); }
+|	alias_list TK_STRING TK_COLON TK_STRING TK_COLON TK_STRING TK_STEND
+                { new_hostinfo_entry($2, $4, $6); }
 ;
 
 block_header:
