@@ -527,10 +527,11 @@ textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, c
 textlist_p db_sql_find_file(db_conn_p db, filename_p pattern,
 			    int (*filter_file) (filename_p filename))
 {
+    filename_p enc_pattern = db_escape(db, pattern);
     textlist_p tl = 0;
     SQL_BEGIN(db, "Query file DB",
 	      "SELECT filename, mode FROM file where filename = '%s' or filename like '%s/%%' ",
-	      pattern, pattern) {
+	      enc_pattern, enc_pattern) {
 	filename_p filename  = db_decode(SQL_V(0));
 	int mode    = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
 	if (!filter_file || !filter_file(filename)) {
