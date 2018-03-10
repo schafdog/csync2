@@ -867,6 +867,10 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p peername, con
 	    return rc;
 	}
     }
+    else {
+	csync_warn(0, "Other (%s) does not exist. Not HARDLINK. Patching.", other);
+	rc = ERROR_HARDLINK;
+    }
     return rc;
 }
 
@@ -998,6 +1002,8 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 			csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, filename);
 			rc = csync_check_update_hardlink(conn, db, peername, key_enc, filename, filename_enc, ptr->value, &st, uid, gid, digest,
 					&last_conn_status, auto_resolve_run);
+			if (rc == ERROR_HARDLINK)
+			    csync_mark(db, ptr->value, myname, peername, OP_RM, 0, 0, 0, 0);
 			if (rc == OK) {
 			    csync_clear_dirty(db, peername, filename, auto_resolve_run);
 			}
