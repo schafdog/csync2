@@ -1,0 +1,9 @@
+[Unit]
+Description=Cluster file synchronization socket
+
+[Socket]
+ListenStream=30865
+Accept=true
+
+[Install]
+WantedBy=sockets.target

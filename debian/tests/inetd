@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -e
+
+HOSTNAME=$(hostname)
+
+# prepare configuration
+cat >/etc/csync2.cfg <<EOF
+group test
+{
+        host 127.0.0.1;
+        host 127.0.0.2;
+        host $HOSTNAME;
+        key /etc/csync2.key;
+        include /etc/shells;
+}
+EOF
+
+# prepare keys
+csync2 -k /etc/csync2.key
+
+openssl req -x509 -newkey rsa:2048 \
+  -days 300 -subj '/CN=csync2' -nodes \
+  -keyout /etc/csync2_ssl_key.pem \
+  -out    /etc/csync2_ssl_cert.pem 2>&1
+
+# sync with inetd daemon on this host
+csync2 -x -N 127.0.0.2 -P 127.0.0.1 -v 2>&1

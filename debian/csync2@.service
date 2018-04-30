@@ -1,0 +1,9 @@
+[Unit]
+Description=Cluster file synchronization daemon
+Documentation=man:csync2(1)
+
+[Service]
+ExecStart=/usr/sbin/csync2 -i -l
+StandardInput=socket
+StandardOutput=socket
+StandardError=syslog

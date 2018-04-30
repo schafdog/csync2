@@ -1,0 +1,18 @@
+Ship xinetd service in disabled state
+
+--- a/csync2.xinetd
++++ b/csync2.xinetd
+@@ -1,4 +1,4 @@
+-# default: on
++# default: off
+ # description: csync2
+ service csync2
+ {
+@@ -10,6 +10,6 @@
+ 	server		= /usr/sbin/csync2
+ 	server_args	= -i -l
+ 	#log_on_failure	+= USERID
+-	disable		= no
++	disable		= yes
+ 	# only_from	= 192.168.199.3 192.168.199.4
+ }
