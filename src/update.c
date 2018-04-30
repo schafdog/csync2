@@ -856,7 +856,7 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p peername, con
 				       other_enc, filename, filename_enc,
 				       last_conn_status);
 	else {
-	    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching.", other);
+	    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching.\n", other);
 	    rc = ERROR_HARDLINK;
 	}
 
@@ -868,7 +868,7 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p peername, con
 	}
     }
     else {
-	csync_warn(0, "Other (%s) does not exist. Not HARDLINK. Patching.", other);
+	csync_warn(0, "Other (%s) does not exist. Not HARDLINK. Patching.\n", other);
 	rc = ERROR_HARDLINK;
     }
     return rc;
