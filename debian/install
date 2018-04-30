@@ -1,1 +1,3 @@
+#!/usr/bin/dh-exec
 csync2.cfg etc
+csync2.xinetd => /etc/xinetd.d/csync2
