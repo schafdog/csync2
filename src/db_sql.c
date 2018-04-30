@@ -187,7 +187,7 @@ textlist_p db_sql_get_dirty_hosts(db_conn_p db) {
     textlist_p tl = 0;
     csync_log(LOG_DEBUG, 3, "get dirty host\n" );
     SQL_BEGIN(db, "Get hosts from dirty table",
-	      "SELECT peername FROM dirty GROUP BY peername")
+	      "SELECT peername FROM dirty WHERE peername NOT IN (SELECT host FROM host) GROUP BY peername")
     {
 	textlist_add(&tl, db_decode(SQL_V(0)), 0);
 	csync_log(LOG_DEBUG, 3, "dirty host %s \n", tl->value);
@@ -569,7 +569,8 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myname, peer
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Get files for host from dirty table",
-	      "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type  FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	      "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type FROM dirty WHERE peername = '%s' AND myname = '%s' "
+	      "AND peername NOT IN (SELECT host FROM host WHERE status = 1) "
 	      "ORDER by type DESC, filename DESC",
 	      OP_FILTER,
 	      db_escape(db, peername), db_escape(db, myname));
