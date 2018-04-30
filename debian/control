@@ -2,9 +2,7 @@ Source: csync2
 Section: admin
 Priority: optional
 Maintainer: Debian HA Maintainers <debian-ha-maintainers@lists.alioth.debian.org>
-Uploaders: Norbert Tretkowski <nobse@debian.org>,
-           Alexander Sosna <alexander.sosna@credativ.de>,
-           Christoph Berg <christoph.berg@credativ.de>,
+Uploaders: Alexander Sosna <alexander.sosna@credativ.de>,
            Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9),
                autotools-dev,
@@ -12,13 +10,15 @@ Build-Depends: debhelper (>= 9),
                bison,
                dh-autoreconf,
                flex,
-               libmysqlclient-dev,
+               default-libmysqlclient-dev,
                libpq-dev,
                librsync-dev,
                libsqlite3-dev,
                libgnutls-openssl-dev,
                texlive-latex-extra,
                pkg-config,
+               dh-systemd,
+               dh-exec
 Standards-Version: 3.9.8
 Vcs-Browser: https://anonscm.debian.org/cgit/debian-ha/csync2.git/
 Vcs-Git: https://alioth.debian.org/anonscm/git/debian-ha/csync2.git
@@ -27,9 +27,9 @@ Package: csync2
 Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         netbase (>= 4.25),
-         openbsd-inetd | inet-superserver
-Suggests: sqlite3
+         netbase (>= 4.25)
+Recommends: sqlite3, openbsd-inetd | inet-superserver
+Suggests: openssl
 Description: cluster synchronization tool
  CSYNC2 synchronizes files in a cluster using the rsync-algorithm.
  It maintains a database of modified files so it is able to handle
