@@ -39,3 +39,7 @@ version.h.new
 digest
 Debug/
 debian/csync2/
+debian/.debhelper/
+debian/autoreconf.after
+debian/autoreconf.before
+debian/debhelper-build-stamp
