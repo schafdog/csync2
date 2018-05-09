@@ -281,6 +281,8 @@ struct textlist;
 #define IS_UPGRADE 1
 #define IS_DIRTY   2
 #define CALC_DIGEST 4
+#define PATH_NOT_FOUND "ERROR (Path not found): "
+#define PATH_NOT_FOUND_LEN sizeof(PATH_NOT_FOUND)-1
 
 int compare_files(filename_p filename, const char *pattern, int recursive);
 extern const char *csync_mode_op_str(int st_mode, int op);
@@ -327,7 +329,7 @@ extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, fil
 extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version, int flags);
 extern int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags);
 extern void csync_remove_old(db_conn_p db, filename_p pattern);
-int csync_update_file_sig_rs_diff(int conn,
+int csync_update_file_sig_rs_diff(int conn, peername_p myname,
 				  peername_p peername, const char *key_enc,
 				  filename_p filename, filename_p filename_enc,
 				  const struct stat *st, 
