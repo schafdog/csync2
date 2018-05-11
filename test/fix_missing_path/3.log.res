@@ -7,7 +7,6 @@ Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recu
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Connecting to host peer (PLAIN) ...
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c' ''
-update_file-sig /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c RC -13
 PATH MISSING: '%25test%25'
 PATH MISSING (decoded): '/export/home/dennis/Projects/csync2/csync2/test/test/local'
 UPDATE_DIRECTORY: 4
