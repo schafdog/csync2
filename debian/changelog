@@ -1,3 +1,29 @@
+csync2 (2.0-8-g175a01c-4) unstable; urgency=medium
+
+  [ Christoph Berg ]
+  * Remove Norbert and myself from uploaders.
+
+  [ Valentin Vidic ]
+  * Update libmysqlclient-dev dependency
+  * Move inetd to Recommends
+  * Add systemd socket in disabled state (Closes: #807428)
+  * Update debian/tests to check inetd and systemd
+  * Add xinetd service in disabled state
+  * systemd: check csync2@.service exit code
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Sun, 23 Oct 2016 15:38:46 +0200
+
+csync2 (2.0-8-g175a01c-3) unstable; urgency=medium
+
+  * Cleanup postinst and prerm
+  * Add debian/tests
+  * Add openssl to Suggests
+  * Remove /var/lib/csync2 on purge
+  * Add manpage for csync2-compare
+  * Move sqlite3 to Recommends
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 11 Oct 2016 10:21:18 +0200
+
 csync2 (2.0-8-g175a01c-2) unstable; urgency=medium
 
   * Make date in pdf title reproducible

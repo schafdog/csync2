@@ -15,18 +15,25 @@ set -e
 #          <conflicting-package> <version>
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
-
+#
 
 case "$1" in
     remove|upgrade|deconfigure)
+        if test -x /usr/sbin/update-inetd
+        then
+            update-inetd --remove '^csync2'
 
-	update-inetd --remove '^csync2'
-        if [ -f /var/run/inetd.pid ] ; then
-            kill -s HUP $(cat /var/run/inetd.pid)
-	fi
-        ;;
+            if [ -f /var/run/inetd.pid ] ; then
+                kill -s HUP $(cat /var/run/inetd.pid)
+            fi
+        fi
+
+    ;;
+
     failed-upgrade)
-        ;;
+
+    ;;
+
     *)
         echo "prerm called with unknown argument \`$1'" >&2
         exit 1

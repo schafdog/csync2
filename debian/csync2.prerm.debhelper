@@ -1,0 +1,5 @@
+# Automatically added by dh_systemd_start
+if [ -d /run/systemd/system ]; then
+	deb-systemd-invoke stop csync2.socket >/dev/null
+fi
+# End automatically added section

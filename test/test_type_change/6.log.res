@@ -24,5 +24,5 @@ Updating (MOD) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all
 peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all is already up to date on peer.
-WARN: directory called on non-directory /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change.
+WARN: update_directory called on non-directory /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change.
 Finished succesfully.

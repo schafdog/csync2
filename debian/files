@@ -1,1 +1,2 @@
-csync2_2.0-8-g175a01c-2_amd64.deb admin optional
+csync2-dbgsym_2.0-8-g175a01c-4_amd64.deb debug extra
+csync2_2.0-8-g175a01c-4_amd64.deb admin optional

@@ -1,0 +1,11 @@
+Depends: @, openssl
+Tests: inetd
+Restrictions: needs-root, needs-recommends
+
+Depends: @, openssl, sqlite3, systemd-sysv
+Tests: systemd
+Restrictions: needs-root
+
+Depends: @, openssl, sqlite3, xinetd
+Tests: xinetd
+Restrictions: needs-root
