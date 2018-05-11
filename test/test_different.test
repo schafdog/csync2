@@ -10,6 +10,7 @@ echo "vel" > "test/$PEER/$FILENAME"
 cmd x "Both updated (peer dirty)"
 cmd u "Both updated (peer still dirty)"
 cmd fu "forced update peer"
+sleep 1
 mkdir -p test/$NAME/tmp
 mkdir -p test/$PEER/tmp
 cmd x "Both updated with new dir (both dirty)"
