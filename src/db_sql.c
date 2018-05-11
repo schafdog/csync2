@@ -206,7 +206,7 @@ textlist_p db_sql_get_dirty_hosts(db_conn_p db) {
     textlist_p tl = 0;
     csync_log(LOG_DEBUG, 3, "get dirty host\n" );
     SQL_BEGIN(db, "Get hosts from dirty table",
-	      "SELECT peername FROM dirty WHERE peername NOT IN (SELECT host FROM host) GROUP BY peername")
+	      "SELECT peername FROM dirty WHERE peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername")
     {
 	textlist_add(&tl, db_decode(SQL_V(0)), 0);
 	csync_log(LOG_DEBUG, 3, "dirty host %s \n", tl->value);
