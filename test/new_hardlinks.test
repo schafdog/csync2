@@ -20,6 +20,7 @@ cmd cI "5 more files hardlinked (mark)"
 cmd m "6 more files hardlinked (mark)"
 cmd u "7 more files hardlinked (sync marked)"
 echo hej >  test/$NAME/new/was_hardlink
+sleep 1
 ln test/$NAME/new/was_hardlink test/$NAME/new/hardlinked_6
 cmd c "8 hardlinked when checked"
 rm test/$NAME/new/hardlinked_6
