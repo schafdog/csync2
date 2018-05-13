@@ -712,9 +712,9 @@ int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_en
     int count = SQL(db,
 	"Update file entry",
 	"UPDATE file set checktxt='%s', device=%lu, inode=%llu, "
-	"                digest=%s, mode=%u, mtime=%lu, size=%lu where filename = '%s'",
+	"                digest=%s, mode=%u, mtime=%lu, size=%lu, type=%u where filename = '%s'",
 	checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, buffer_quote(buf, digest),
-	(07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, encoded);
+		    (07777777 & file_stat->st_mode), file_stat->st_mtime, file_stat->st_size, get_file_type(file_stat->st_mode), encoded);
 
     buffer_destroy(buf);
     return count;
