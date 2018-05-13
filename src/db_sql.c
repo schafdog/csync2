@@ -681,8 +681,8 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
     const char *result_enc = buffer_quote(buf, db_escape(db, result_other));
     SQL(db,
 	"Marking File Dirty",
-	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode) "
-	"VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d)",
+	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type) "
+	"VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d, %d)",
 	db_escape(db, file_new),
 	new_force ? "1" : "0",
 	db_escape(db, myname),
@@ -693,7 +693,8 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 	(ino ? ino : "NULL"),
 	result_enc,
 	op,
-	mode
+	mode,
+	get_file_type(mode)
 	);
     //db->free(db, encoded);
     buffer_destroy(buf);
@@ -725,8 +726,8 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
     BUF_P buf = buffer_init();
     int count = SQL(db,
 		    "Adding new file entry",
-		    "INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime) "
-		    "values ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu) ",
+		    "INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+		    "values ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ",
 //		    "FROM (SELECT 1 As Value) AS Z "
 //		    "WHERE NOT EXISTS (SELECT 1 FROM file WHERE filename = '%s')",
 		    encoded,
@@ -737,6 +738,7 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 		    file_stat->st_mode,
 		    file_stat->st_size,
 		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode),
 		    encoded
 	);
     buffer_destroy(buf);

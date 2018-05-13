@@ -264,6 +264,8 @@ int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
 struct textlist;
 
 /* check.c */
+#define OP_UNDEF      0
+#define OP_MARK       0
 #define OP_MKDIR      1
 #define OP_NEW        2
 #define OP_MKFIFO     4
@@ -273,10 +275,8 @@ struct textlist;
 #define OP_RM        64
 #define OP_MOD      128
 #define OP_MOD2     256
-#define OP_MARK     512
 #define OP_SYNC     (OP_MOD|OP_MOD2)
 #define OP_FILTER   (~(OP_SYNC) & 1023) 
-#define OP_UNDEF    0
 
 #define IS_UPGRADE 1
 #define IS_DIRTY   2
@@ -284,6 +284,7 @@ struct textlist;
 #define PATH_NOT_FOUND "ERROR (Path not found): "
 #define PATH_NOT_FOUND_LEN sizeof(PATH_NOT_FOUND)-1
 
+int get_file_type(int st_mode);
 int compare_files(filename_p filename, const char *pattern, int recursive);
 extern const char *csync_mode_op_str(int st_mode, int op);
 extern operation_t csync_operation(const char *operation);

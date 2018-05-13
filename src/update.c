@@ -490,8 +490,8 @@ int csync_update_file_del(int conn, db_conn_p db,
     }
 }
 
-#define REG_TYPE 1
-#define DIR_TYPE 2
+#define DIR_TYPE 1
+#define REG_TYPE 2
 #define CHR_TYPE 3
 #define BLK_TYPE 4
 #define FIFO_TYPE 5
