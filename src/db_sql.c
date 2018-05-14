@@ -350,7 +350,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
     char *where_rec = NULL;
     csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
     SQL_BEGIN(db, "Adding dirty entries recursively",
-	      "SELECT filename, mode, checktxt, digest, device, inode FROM file WHERE %s", where_rec)
+	      "SELECT filename, mode, checktxt, digest, device, inode, type FROM file WHERE %s", where_rec)
     {
 	char *filename = strdup(db_decode(SQL_V(0)));
 	int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
@@ -358,6 +358,37 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 	const char *digest   = SQL_V(3);
 	const char *device   = SQL_V(4);
 	const char *inode    = SQL_V(5);
+	const char *type     = SQL_V(6);
+	int rc = stat(filename, &file_st);
+	if (!rc) {
+	    //file_st.st_dev;
+	    //file_st.st_ino;
+	    mode = file_st.st_mode;
+	}
+	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode);
+	free(filename);
+    } SQL_END;
+    free(where_rec);
+}
+
+void db_sql_mark_new(db_conn_p db, char *active_peerlist, const char *realname,
+		 int recursive)
+{
+    csync_check_usefullness(realname, recursive);
+    struct stat file_st;
+    const char *db_encoded = db_escape(db, realname);
+    char *where_rec = NULL;
+    csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
+    SQL_BEGIN(db, "Adding dirty entries recursively",
+	      "SELECT filename, mode, checktxt, digest, device, inode, type FROM file WHERE %s", where_rec)
+    {
+	char *filename = strdup(db_decode(SQL_V(0)));
+	int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
+	const char *checktxt = SQL_V(2);
+	const char *digest   = SQL_V(3);
+	const char *device   = SQL_V(4);
+	const char *inode    = SQL_V(5);
+	const char *type     = SQL_V(6);
 	int rc = stat(filename, &file_st);
 	if (!rc) {
 	    //file_st.st_dev;
