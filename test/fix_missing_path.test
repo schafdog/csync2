@@ -17,4 +17,3 @@ cmd x "Sync with missing directories"
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon d PEER
-diff -r /tmp/csync2/ /tmp/csync2.res/
