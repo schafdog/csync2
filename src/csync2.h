@@ -106,7 +106,8 @@ enum {
 	MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
 	MODE_MARK = 2*MODE_UPGRADE_DB,
 	MODE_EQUAL = 2*MODE_MARK,
-	MODE_TAIL = 2*MODE_EQUAL
+	MODE_TAIL = 2*MODE_EQUAL,
+	MODE_PING = 2*MODE_TAIL
 };
 
 #define DEFAULT_PORT "30865" 
@@ -286,6 +287,9 @@ struct textlist;
 
 int get_file_type(int st_mode);
 int compare_files(filename_p filename, const char *pattern, int recursive);
+
+char ** parse_peerlist(char *peerlist);
+
 extern const char *csync_mode_op_str(int st_mode, int op);
 extern operation_t csync_operation(const char *operation);
 extern const char *csync_operation_str(operation_t op);
@@ -324,6 +328,9 @@ extern void csync_update_host(db_conn_p db, const char *myname, peername_p peern
 			      const char **patlist, int patnum, int ip_version, int flags);
 
 extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
+			    const char **patlist, int patnum, int ip_version, int flags);
+
+extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 			    const char **patlist, int patnum, int ip_version, int flags);
 
 extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
@@ -656,7 +663,7 @@ extern int csync_port_cmdline;
 extern char *csync_confdir;
 extern char *active_grouplist;
 extern char *active_peerlist;
-
+    
 extern char *cfgname;
 
 extern int csync_ignore_uid;
