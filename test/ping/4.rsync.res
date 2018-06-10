@@ -1,0 +1,3 @@
+deleting ping/new
+ping/
+
