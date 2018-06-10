@@ -883,14 +883,14 @@ int main(int argc, char ** argv)
 	};
     };
 
-    return csync_start(mode, csync_server_child_pid, flags, argc, argv, update_func, listenfd, cmd_db_version, cmd_ip_version);
+    return csync_start(mode, flags, argc, argv, update_func, listenfd, cmd_db_version, cmd_ip_version);
 };
 
 /* Entry point for command line and daemon callback on PING 
    Responsible for looping in server mode. Need rewrite
 */
 
-int csync_start(int mode, int server_child_pid, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version)
+int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version)
 {
     int server = mode & MODE_DAEMON;
     int server_standalone =  mode & MODE_STANDALONE;
@@ -899,8 +899,9 @@ int csync_start(int mode, int server_child_pid, int flags, int argc, char *argv[
     int first = 1;
     int i; 
 nofork:
+    csync_debug(2, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
     // init syslog if needed. 
-    if (first && csync_syslog && server_child_pid == 0) {
+    if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
 	csync_openlog();
 	first = 0;
     }
@@ -1230,8 +1231,8 @@ nofork:
     if (active_peers) {
 	free(active_peers);
     }
-    if (server_child_pid) {
-	csync_log(LOG_INFO, 1, "Connection closed. Pid %d mode %d \n", server_child_pid, mode);
+    if (mode & MODE_DAEMON) {
+	csync_log(LOG_INFO, 1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
 	    csync_log(LOG_DEBUG, 1, "goto nofork.\n");

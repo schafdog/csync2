@@ -1005,13 +1005,14 @@ const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *pe
 	 We cannot assuming that the parent wont use the database connection and it will close them (if working correctly)
 	 So we need a new db
       */
-      csync_debug(0, "PING fork: %s %s ", *peername, cfgname);
+      csync_debug(0, "PING child fork: %s %s\n", *peername, cfgname);
       char **active_peers = parse_peerlist(*peername);
-      int rc  = csync_start(MODE_UPDATE, 0, FLAG_RECURSIVE, optind, 0, csync_update_host, -1, db->version, ip_version);
+      csync_server_child_pid = getpid();
+      int rc  = csync_start(MODE_UPDATE, FLAG_RECURSIVE, optind, 0, csync_update_host, -1, db->version, ip_version);
       exit(rc);
   }
   else {
-      csync_debug(0, "DAEMON is_ping: %s fork: %s %s. pid: %d", is_ping, *peername, cfgname, pid);
+      csync_debug(0, "DAEMON is_ping: %d fork: %s %s. pid: %d\n", is_ping, *peername, cfgname, pid);
   }      
   return 0;
 }
