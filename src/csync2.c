@@ -583,9 +583,6 @@ int csync_read_config(char *cfgname, int conn, int mode)
     return 0;
 }
 
-int
-csync_start(int mode, int server_child_pid, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version);
-
 int main(int argc, char ** argv)
 {
     int mode = MODE_NONE;
@@ -612,7 +609,7 @@ int main(int argc, char ** argv)
     int cmd_ip_version = 0;
     update_func update_func;
     int csync_port_cmdline = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VqeE")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeE")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
