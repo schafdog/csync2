@@ -10,10 +10,10 @@ cmd c "3 create directories (check)"
 cmd u "4 create directories (update)"
 sleep 1
 echo "Now younger" > ${PEER_DIR}/new
-# CHECK peer command
+cmd c "5 check peer" peer local
 cmd Q "5 PING "
 cmd u "6 update and SAME"
 rm -rf test/local
 cmd x "9 clean (${TEST})"
-killdaemon peer
 killdaemon local
+killdaemon peer
