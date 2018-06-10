@@ -1436,7 +1436,38 @@ int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char *op_st
     return use_this;
 }
 
-void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
+void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
+		       const char **patlist, int patnum, 
+		       int ip_version, int flags)
+{
+    textlist_p tl = 0, t, next_t;
+    textlist_p tl_del = 0, *last_tn=&tl;
+    struct stat st;
+    tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
+
+    /* just return if there are no files to update */
+    if ( !tl) {
+	return;
+    }
+    int conn = connect_to_host(db, peername, ip_version);
+    if ( conn < 0) {
+	csync_error_count++;
+	csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
+	csync_error(1, "Host stays in dirty state. "
+		    "Try again later...\n");
+	return;
+    }
+    
+    conn_printf(conn, "PING %s %s\n", myname, cfgname);
+    int rc = read_conn_status(conn, 0, peername);
+    csync_debug(1, "Sent PING %s %s to %s: %d \n", myname, cfgname, peername, rc);
+    conn_printf(conn, "BYE\n");
+    read_conn_status(conn, 0, peername);
+    conn_close(conn);
+    return;
+}
+
+  void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 		       const char **patlist, int patnum, 
 		       int ip_version, int flags)
 {
