@@ -47,7 +47,7 @@
 #define NEXT_CMD  2
 #define ERROR     3
 #define ABORT_CMD 3
-#define BYEBYE    4
+#define BYEBYE    5
 
 
 //static char *cmd_error;
@@ -60,7 +60,7 @@ enum action_t {
   A_SIG, A_FLUSH, A_MARK, A_TYPE, A_GETTM, A_GETSZ, A_DEL, A_PATCH, A_CREATE,
   A_MKDIR, A_MOD, A_MKCHR, A_MKBLK, A_MKFIFO, A_MKLINK, A_MKHLINK, A_MKSOCK, A_MV,
   A_SETOWN, A_SETMOD, A_SETTIME, A_LIST, A_GROUP,
-  A_DEBUG, A_HELLO, A_BYE
+  A_DEBUG, A_PING, A_HELLO, A_BYE
 };
 
 
@@ -548,6 +548,7 @@ struct csync_command cmdtab[] = {
 	{ "debug",	0, 0, 0, NOP, NO, A_DEBUG },
 #endif
 	{ "group",	0, 0, 0, NOP, NO, A_GROUP },
+	{ "ping",	0, 0, 0, NOP, NO, A_PING }, 
 	{ "hello",	0, 0, 0, NOP, NO, A_HELLO },
 	{ "bye",	0, 0, 0, NOP, NO, A_BYE	},
 	{ 0,		0, 0, 0, 0, 0, 0 }
@@ -964,7 +965,7 @@ void csync_daemon_list(int conn, db_conn_p db, char *filename, char *myname, cha
     textlist_free(tl);
 }
 
-const char *csync_daemon_hello(db_conn_p db, char **peername, address_t *peeraddr, char *newpeername) {
+const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *peeraddr, char *newpeername, char *config, int is_ping, int ip_version) {
   if (*peername) {
     free(*peername);
     *peername = NULL;
@@ -989,6 +990,15 @@ const char *csync_daemon_hello(db_conn_p db, char **peername, address_t *peeradd
     return "SSL encrypted connection expected!";
   }
 #endif
+  if (is_ping && fork() == 0) {
+      /* Now in child 
+	 We cannot assuming that the parent wont use the database connection and it will close them (if working correctly)
+	 So we need a new db
+      */
+      char **active_peers = parse_peerlist(*peername);
+      int rc  = csync_start(MODE_UPDATE, 0, FLAG_RECURSIVE, optind, 0, db->version, ip_version);
+      exit(rc);
+  }
   return 0;
 }
 
@@ -1304,8 +1314,12 @@ int csync_daemon_dispatch(int conn,
 	    csync_level_debug = client_debug_level;
 	}
 	break;
+    case A_PING:
+	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, tag[1], tag[2], 1, protocol_version);
+	csync_info(1, "PING from %s. Response: %s\n", *peername, (*cmd_error ? *cmd_error : "OK"));
+	return ABORT_CMD;
     case A_HELLO:
-	*cmd_error = csync_daemon_hello(db, peername, peeraddr, tag[1]);
+	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, tag[1], tag[2], 0, protocol_version);
 	csync_info(1, "HELLO from %s. Response: %s\n", *peername, (*cmd_error ? *cmd_error : "OK"));
 	return ABORT_CMD;
     case A_GROUP:
@@ -1329,7 +1343,7 @@ void csync_end_command(int conn, filename_p filename, char *tag[32], const char 
   else {
     switch (rc) {
     case OK:
-    case ABORT_CMD:  // HELLO
+    case ABORT_CMD:  // Rename to OK_RESPONSE
 	conn_printf(conn, "OK (cmd_finished).\n");
       break;
     case IDENTICAL:
