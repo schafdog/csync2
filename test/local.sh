@@ -53,14 +53,18 @@ function cmd {
     echo "${COUNT}. CMD $CMD $DESC"
     if [ "$3" == "" ] ; then
 	HOST=$NAME
+	PEER=peer
 	# TODO Fix peername somehow
+    else
+	HOST=$3
+	PEER=$4
     fi
     if [ "$CMD" == "daemon" ] ; then
 	daemon $1 $2 $3
 	return 
     fi
     if [ "$CMD" == "killdaemon" ] && [ "$DAEMON" != "NO" ] ; then
-	killdaemon
+	killdaemon $1
 	return 
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
@@ -69,7 +73,7 @@ function cmd {
     elif [ "$GDB" != "" ] ; then 
 	$GDB $PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
-	$PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
+	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
     echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
@@ -117,7 +121,7 @@ function daemon {
     echo $DCFG $DNAME
     if [ "$CMD" == "d" ] ; then 
 	${PROG} -q -K csync2_$DCFG.cfg -N $DCFG -z $DNAME -iiii$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
-	echo "$!" > $DCFG.pid
+	echo "$!" > ${DCFG}.pid
     elif [ "$CMD" == "i" ] ; then 
 	if [ "LLDB" != "" ]; then
 	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG
@@ -139,8 +143,11 @@ function killdaemon {
 	echo "daemon stop disabled";
 	return 
     fi
-    kill `cat daemon.pid`
-    rm daemon.pid
+    if [ "$1" != "" ] ; then
+	HOST=$1
+    fi
+    kill `cat ${HOST}.pid`
+    rm ${HOST}.pid
 }
 
 function check {
