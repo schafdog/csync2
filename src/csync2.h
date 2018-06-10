@@ -129,9 +129,14 @@ enum {
 } while (0)
 
 
+typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
+			    const char **patlist, int patnum, int ip_version, int flags);
+
 /* csync2.c */
 
 extern int match_peer(char **active_peers, const char *peer);
+
+int csync_start(int mode, int server_child_pid, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version);
 
 /* action.c */
 
@@ -317,9 +322,6 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 		const struct stat *st, const char *uidptr, const char* gidptr, const char *digest);
 
 int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
-
-typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
-			    const char **patlist, int patnum, int ip_version, int flags);
 
 extern void csync_update(db_conn_p db, const char *myname, char **peers,
 			 const char **patlist, int patnum, int ip_version, update_func func, int flags);
