@@ -136,7 +136,7 @@ typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
 
 extern int match_peer(char **active_peers, const char *peer);
 
-int csync_start(int mode, int server_child_pid, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version);
+int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version);
 
 /* action.c */
 
