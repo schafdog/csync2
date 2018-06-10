@@ -965,6 +965,23 @@ void csync_daemon_list(int conn, db_conn_p db, char *filename, char *myname, cha
     textlist_free(tl);
 }
 
+const char *check_ssl(char *peername) {
+#ifdef HAVE_LIBGNUTLS
+  if (!csync_conn_usessl) {
+    struct csync_nossl *t;
+    for (t = csync_nossl; t; t=t->next) {
+      if ( !fnmatch(t->pattern_from, myhostname, 0) &&
+	   !fnmatch(t->pattern_to, peername, 0) ) {
+	  // conn_without_ssl_ok;
+	  return 0;
+      }
+    }
+    return "SSL encrypted connection expected!";
+  }
+#endif
+  return 0;
+}
+
 const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *peeraddr, char *newpeername, char *config, int is_ping, int ip_version) {
   if (*peername) {
     free(*peername);
@@ -978,27 +995,24 @@ const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *pe
     peername = NULL;
     return "Identification failed!";
   }
-#ifdef HAVE_LIBGNUTLS
-  if (!csync_conn_usessl) {
-    struct csync_nossl *t;
-    for (t = csync_nossl; t; t=t->next) {
-      if ( !fnmatch(t->pattern_from, myhostname, 0) &&
-	   !fnmatch(t->pattern_to, *peername, 0) )
-	// conn_without_ssl_ok;
-	return 0;
-    }
-    return "SSL encrypted connection expected!";
-  }
-#endif
-  if (is_ping && fork() == 0) {
+  const char *ssl_error; 
+  if ( (ssl_error = check_ssl(*peername)) )
+      return ssl_error;
+  
+  int pid = -1;
+  if (is_ping && (pid = fork()) == 0) {
       /* Now in child 
 	 We cannot assuming that the parent wont use the database connection and it will close them (if working correctly)
 	 So we need a new db
       */
+      csync_debug(0, "PING fork: %s %s ", *peername, cfgname);
       char **active_peers = parse_peerlist(*peername);
-      int rc  = csync_start(MODE_UPDATE, 0, FLAG_RECURSIVE, optind, 0, db->version, ip_version);
+      int rc  = csync_start(MODE_UPDATE, 0, FLAG_RECURSIVE, optind, 0, csync_update_host, -1, db->version, ip_version);
       exit(rc);
   }
+  else {
+      csync_debug(0, "DAEMON is_ping: %s fork: %s %s. pid: %d", is_ping, *peername, cfgname, pid);
+  }      
   return 0;
 }
 
@@ -1316,7 +1330,7 @@ int csync_daemon_dispatch(int conn,
 	break;
     case A_PING:
 	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, tag[1], tag[2], 1, protocol_version);
-	csync_info(1, "PING from %s. Response: %s\n", *peername, (*cmd_error ? *cmd_error : "OK"));
+	csync_info(1, "PING from %s %s. Response: %s\n", *peername, tag[2], (*cmd_error ? *cmd_error : "OK"));
 	return ABORT_CMD;
     case A_HELLO:
 	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, tag[1], tag[2], 0, protocol_version);
