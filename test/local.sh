@@ -56,7 +56,7 @@ function cmd {
 	# TODO Fix peername somehow
     fi
     if [ "$CMD" == "daemon" ] ; then
-	daemon d
+	daemon $1 $2 $3
 	return 
     fi
     if [ "$CMD" == "killdaemon" ] && [ "$DAEMON" != "NO" ] ; then
@@ -98,17 +98,26 @@ function clean {
 }
 
 function daemon {
+    CMD=$1
+    DCFG=$2
+    DNAME=$3
     if [ "$DAEMON" == "NO" ] ; then
 	echo "daemon start disabled";
 	return 
     fi
+    if [ "$DCFG" == "" ] ; then
+	DCFG=peer
+    fi
+    if [ "$DNAME" == "" ] ; then
+	DNAME=local
+    fi
     # Create backupdir
     mkdir -p /tmp/csync2 
     CMD="$1"
-    echo $NAME $PEER
+    echo $DCFG $DNAME
     if [ "$CMD" == "d" ] ; then 
-	${PROG} -q -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG > $TESTNAME/daemon.log  2>&1 &
-	echo "$!" > daemon.pid
+	${PROG} -q -K csync2_$DCFG.cfg -N $DCFG -z $DNAME -iiii$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
+	echo "$!" > $DCFG.pid
     elif [ "$CMD" == "i" ] ; then 
 	if [ "LLDB" != "" ]; then
 	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG
