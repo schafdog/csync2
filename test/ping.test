@@ -11,7 +11,7 @@ cmd u "4 create directories (update)"
 sleep 1
 echo "Now younger" > ${PEER_DIR}/new
 cmd c "5 check peer" peer local
-cmd Q "5 PING "
+cmd Q "5 PING " local peer test/local
 cmd u "6 update and SAME"
 rm -rf test/local
 cmd x "9 clean (${TEST})"
