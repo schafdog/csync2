@@ -675,6 +675,7 @@ extern int csync_ignore_mod;
 extern int csync_dump_dir_fd;
 
 extern int csync_compare_mode;
+extern char **active_peers;
 
 #ifdef HAVE_LIBGNUTLS
 extern int csync_conn_usessl;
