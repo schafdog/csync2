@@ -1393,15 +1393,18 @@ int csync_update_file_settime(int conn, peername_p peername, const char *key_enc
 
 int compare_files(filename_p filename, const char *pattern, int recursive)
 {
-  int i;
-  const char *slash = "/";
-  if (!strcmp(pattern, slash))
-    return 1;
-  for (i=0; filename[i] && pattern[i]; i++)
-    if (filename[i] != pattern[i]) return 0;
-  if ( filename[i] == '/' && !pattern[i] && recursive) return 1;
-  if ( !filename[i] && !pattern[i]) return 1;
-  return 0;
+    int i;
+    const char *slash = "/";
+    if (!strcmp(pattern, slash))
+	return 1;
+    for (i=0; filename[i] && pattern[i]; i++)
+	if (filename[i] != pattern[i])
+	    return 0;
+    if ( filename[i] == '/' && !pattern[i] && recursive)
+	return 1;
+    if ( !filename[i] && !pattern[i])
+	return 1;
+    return 0;
 }
 
 void csync_directory_add(textlist_p *directory_list, char *directory) {
@@ -1440,15 +1443,16 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 		       const char **patlist, int patnum, 
 		       int ip_version, int flags)
 {
+    /* 
     textlist_p tl = 0, t, next_t;
     textlist_p tl_del = 0, *last_tn=&tl;
     struct stat st;
     tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
 
-    /* just return if there are no files to update */
     if ( !tl) {
 	return;
     }
+    */
     int conn = connect_to_host(db, peername, ip_version);
     if ( conn < 0) {
 	csync_error_count++;
@@ -1475,7 +1479,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
     textlist_p tl_del = 0, *last_tn=&tl;
     struct stat st;
     tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
-
+    csync_debug(1, "Got dirty files from host %s %p \n", peername, tl);
     /* just return if there are no files to update */
     if ( !tl) {
 	return;
