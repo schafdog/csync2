@@ -667,7 +667,7 @@ int main(int argc, char ** argv)
 	    break;
 	case 'P':
 	    active_peerlist = optarg;
-	    active_peers =  parse_peerlist(active_peerlist);	
+	    active_peers = parse_peerlist(active_peerlist);
 	    break;
 	case 'B':
 	    db_blocking_mode = 0;
