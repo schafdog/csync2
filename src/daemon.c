@@ -1006,7 +1006,7 @@ const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *pe
 	 So we need a new db
       */
       csync_debug(0, "PING child fork: %s %s\n", *peername, cfgname);
-      char **active_peers = parse_peerlist(*peername);
+      active_peers = parse_peerlist(*peername);
       csync_server_child_pid = getpid();
       int rc  = csync_start(MODE_UPDATE, FLAG_RECURSIVE, optind, 0, csync_update_host, -1, db->version, ip_version);
       exit(rc);
