@@ -1,7 +1,7 @@
 #
 # 
 #
-daemon d PEER
+daemon d
 clean local
 clean peer
 mkdir -p test/$NAME/usr/local/abc
@@ -39,4 +39,4 @@ cmd c "New file deleted (check)"
 cmd M "List dirty after delete"
 #rm -rf test/$NAME
 #cmd x "clean up other"
-killdaemon d PEER
+killdaemon

@@ -1,6 +1,4 @@
-#
-#
-daemon d PEER
+daemon d
 clean local
 clean peer
 FILENAME="new_file 'N' all"
@@ -15,4 +13,4 @@ cmd T test/$NAME "List daemon (differences)"
 cmd TT test/$NAME "List daemon (differences) with unified diff" 
 rm -rf test/$NAME
 cmd x "clean up"
-killdaemon d PEER
+killdaemon

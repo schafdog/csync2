@@ -1,4 +1,4 @@
-daemon d PEER
+daemon d
 clean local
 clean peer
 FILENAME="1234,"
@@ -11,4 +11,4 @@ cmd x "New $NAME/$FILENAME"
 #rm -rf test/$NAME
 #cmd x "clean up"
 #sleep 10
-#killdaemon d PEER
+#killdaemon

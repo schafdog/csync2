@@ -1,4 +1,4 @@
-daemon d peer local
+daemon d
 daemon d local peer
 clean local
 clean peer
@@ -15,5 +15,5 @@ cmd Q "5 PING "
 cmd u "6 update and SAME"
 rm -rf test/local
 cmd x "9 clean (${TEST})"
+killdaemon
 killdaemon local
-killdaemon peer

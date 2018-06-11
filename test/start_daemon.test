@@ -1,5 +1,4 @@
 #
-#
-daemon d PEER
+daemon d
 clean local
 clean peer
