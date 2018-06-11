@@ -1,3 +1,0 @@
-deleting ping/new
-ping/
-
