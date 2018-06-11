@@ -143,6 +143,7 @@ function killdaemon {
 	echo "daemon stop disabled";
 	return 
     fi
+    HOST=peer
     if [ "$1" != "" ] ; then
 	HOST=$1
     fi
