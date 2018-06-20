@@ -862,7 +862,7 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, cons
     if ( lstat_strict(filename, &st) != 0) {
 	char *path;
 	if ((path = csync_check_path(filename))) {
-	    const char *otherfile = url_encode(prefixencode(filename));
+	    const char *otherfile = url_encode(prefixencode(path));
 	    conn_printf(conn, PATH_NOT_FOUND "%s\n", otherfile);
 	    return NEXT_CMD;
 	}
