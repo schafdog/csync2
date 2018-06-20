@@ -50,7 +50,7 @@ function cmd {
 	shift
     fi
     DESC=$2
-    echo "${COUNT}. CMD $CMD $DESC"
+    echo "${COUNT}. CMD $CMD $DESC $HOST $PEER $TESTPATH"
     if [ "$3" == "" ] ; then
 	HOST=$NAME
 	PEER=peer
@@ -58,6 +58,7 @@ function cmd {
     else
 	HOST=$3
 	PEER=$4
+	TESTPATH="test/$HOST"
     fi
     if [ "$CMD" == "daemon" ] ; then
 	daemon $1 $2 $3
@@ -67,12 +68,13 @@ function cmd {
 	killdaemon $1
 	return 
     fi
-    echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
+    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
     if [ "$LLDB" != "" ] ; then 
 	$LLDB -f $PROG -- -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
 	$GDB $PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
+	echo $PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
 	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
