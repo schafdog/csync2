@@ -1,4 +1,5 @@
-cmd u "6 Fail to autoresolve (not younger)" local
+cmd u "6 Fail to autoresolve (not younger)" local peer test
+Got dirty files from host peer 0xa75390 
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger

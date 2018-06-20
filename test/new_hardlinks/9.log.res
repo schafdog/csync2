@@ -1,4 +1,5 @@
-cmd u "9 not hardlinked when updated" local
+cmd u "9 not hardlinked when updated" local peer test
+Got dirty files from host peer 0xe56510 
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new
