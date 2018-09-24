@@ -10,7 +10,7 @@ mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/t
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' '-'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Got dirty files from host peer 0x2351c50 
+Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' ''

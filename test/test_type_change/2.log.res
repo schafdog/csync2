@@ -11,7 +11,7 @@ mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/tes
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all' '-'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Got dirty files from host peer 0xf320d0 
+Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change' ''

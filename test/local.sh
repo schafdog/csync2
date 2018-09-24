@@ -78,7 +78,7 @@ function cmd {
 	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
-    echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+    echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql --protocol tcp -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
 #    echo "select filename from file; select peername,filename,operation,other from dirty order by peername, timestamp;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
@@ -96,7 +96,7 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+    echo "delete from dirty ; delete from file" | mysql --protocol tcp -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     rm -f csync_$CNAME.log mysql_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1

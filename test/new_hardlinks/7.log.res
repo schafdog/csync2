@@ -1,5 +1,5 @@
 cmd u "7 more files hardlinked (sync marked)" local peer test
-Got dirty files from host peer 0xc26650 
+Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MARK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 Updating (MARK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new' ''
