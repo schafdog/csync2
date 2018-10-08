@@ -25,6 +25,11 @@ BUILT_SOURCES =
 
 CONFDIR = $(DESTDIR)$(sysconfdir)/csync2
 
+dist-clean:
+	rm Makefile
+	rm src/Makefile
+	rm configure
+
 dist-clean-local:
 	rm -rf autom4te.cache
 
