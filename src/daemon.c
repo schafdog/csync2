@@ -548,7 +548,7 @@ struct csync_command cmdtab[] = {
 	{ "debug",	0, 0, 0, NOP, NO, A_DEBUG },
 #endif
 	{ "group",	0, 0, 0, NOP, NO, A_GROUP },
-	{ "ping",	0, 0, 0, NOP, NO, A_PING }, 
+	{ "ping",	0, 0, 0, NOP, NO, A_PING },
 	{ "hello",	0, 0, 0, NOP, NO, A_HELLO },
 	{ "bye",	0, 0, 0, NOP, NO, A_BYE	},
 	{ 0,		0, 0, 0, 0, 0, 0 }
@@ -995,13 +995,13 @@ const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *pe
     peername = NULL;
     return "Identification failed!";
   }
-  const char *ssl_error; 
-  if ( (ssl_error = check_ssl(*peername)) )
+  const char *ssl_error;
+  if ((ssl_error = check_ssl(*peername)))
       return ssl_error;
-  
+
   int pid = -1;
   if (is_ping && (pid = fork()) == 0) {
-      /* Now in child 
+      /* Now in child
 	 We cannot assuming that the parent wont use the database connection and it will close them (if working correctly)
 	 So we need a new db
       */
@@ -1013,7 +1013,7 @@ const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *pe
   }
   else {
       csync_debug(0, "DAEMON is_ping: %d fork: %s %s. pid: %d\n", is_ping, *peername, cfgname, pid);
-  }      
+  }
   return 0;
 }
 
