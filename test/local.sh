@@ -124,7 +124,7 @@ function daemon {
     if [ "$CMD" == "d" ] ; then 
 	${PROG} -q -K csync2_$DCFG.cfg -N $DCFG -z $DNAME -iiii$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
 	echo "$!" > ${DCFG}.pid
-    elif [ "$CMD" == "i" ] ; then 
+    elif [ "$CMD" == "i" ] ; then
 	if [ "LLDB" != "" ]; then
 	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG
 	else
