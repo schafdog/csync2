@@ -1,0 +1,11 @@
+#
+#
+daemon d
+# start local daemon
+clean local
+clean peer
+# ping
+cmd Q "Ping peer" local peer
+sleep 3
+#check local daemon result
+killdaemon
