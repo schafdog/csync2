@@ -793,6 +793,7 @@ int main(int argc, char ** argv)
 	    csync_quiet = 1;
 	    break;
 	case 'Q':
+	    flags |= FLAG_DO_ALL;
 	    update_func = csync_ping_host;
 	    mode = MODE_UPDATE;
 	    break;
