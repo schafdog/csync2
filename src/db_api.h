@@ -76,7 +76,7 @@ struct db_conn_t {
     textlist_p  (*find_file) (db_conn_p conn, filename_p pattern, int (*filter_file) (filename_p filename));
     int         (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, peername_p peername,
 			      const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
-			      int op, int mode);
+			      int op, int mode, int mtime);
     
     void        (*remove_dirty)    (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
     

@@ -37,6 +37,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <time.h>
 
 #ifdef __CYGWIN__
 #include <w32api/windows.h>
@@ -244,10 +245,11 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 	}
 	*cmd_error = ERROR_DIRTY_STR;
 	// Already checked in single_file
+	// NOTE: disabled!
 	if (0 && !rc && operation && peername) {
 	    //csync_log(LOG_DEBUG, 0, "check dirty: peername %s \n", peername);
 	    csync_mark(db, filename, myhostname, peername, operation,
-		       NULL, NULL, NULL, 0);
+		       NULL, NULL, NULL, 0, time(NULL));
 	}
     }
     return rc;
@@ -538,14 +540,14 @@ struct csync_command cmdtab[] = {
 	{ "mklink",	1, 1, S_IFLNK, UPD, YES, A_MKLINK },
 	{ "mkhardlink",	1, 1, 0, UPD, YES, A_MKHLINK },
 	{ "mksock",	1, 1, S_IFSOCK, UPD, YES, A_MKSOCK },
-	{ "mv",	        1, 0, 0, UPD,  YES, A_MV },
-	{ "setown",	1, 1, 0, UPD,  YES, A_SETOWN },
+	{ "mv",	        1, 0, 0, UPD,  YES,  A_MV },
+	{ "setown",	1, 1, 0, UPD,  YES,  A_SETOWN },
 	{ "setmod",	1, 1, 0, NOLOG, YES, A_SETMOD },
 	{ "setime",	1, 0, 0, NOLOG, YES, A_SETTIME},
 	{ "settime",	1, 0, 0, NOLOG, YES, A_SETTIME},
 	{ "list",	0, 0, 0, NOP,  YES, A_LIST },
 #if 1
-	{ "debug",	0, 0, 0, NOP, NO, A_DEBUG },
+	{ "debug",	0, 0, 0, NOP, NO,   A_DEBUG },
 #endif
 	{ "group",	0, 0, 0, NOP, NO, A_GROUP },
 	{ "hello",	0, 0, 0, NOP, NO, A_HELLO },
@@ -818,7 +820,7 @@ const char *csync_daemon_check_perm(db_conn_p db,
       int perm = csync_perm(filename, key, peername, cmd->check_perm == COMPARE_MODE);
       if ( perm ) {
 	  if ( perm == 2 ) {
-	      csync_mark(db, filename, peername, 0, OP_MOD, NULL,NULL,NULL, 0);
+	      csync_mark(db, filename, peername, 0, OP_MOD, NULL,NULL,NULL, 0, time(NULL));
 	      cmd_error = "Permission denied for slave!";
 	  } else
 	      cmd_error = "Permission denied!";
@@ -1174,17 +1176,16 @@ int csync_daemon_dispatch(int conn,
     char *user       = tag[6];
     char *group      = tag[7];
     char *mod        = tag[8];
-    char *time       = tag[9];
+    char *ftime       = tag[9];
     char *digest     = tag[10];
-
+    
     switch ( cmd->action) {
-
     case A_SIG: {
 	return csync_daemon_sig(conn_out, filename, tag, db, cmd_error);
 	break;
     }
     case A_MARK:
-	csync_mark(db, filename, *peername, 0, OP_MOD, NULL, NULL, NULL, 0);
+	csync_mark(db, filename, *peername, 0, OP_MOD, NULL, NULL, NULL, 0, time(NULL));
 	break;
     case A_TYPE:
 	csync_daemon_type(conn_out, filename, cmd_error);
@@ -1214,7 +1215,7 @@ int csync_daemon_dispatch(int conn,
 	rc = csync_daemon_setmod(filename, mod, cmd_error);
 	if (rc != OK)
 	    return rc;
-	rc = csync_daemon_settime(filename, time, cmd_error);
+	rc = csync_daemon_settime(filename, ftime, cmd_error);
 	if (rc != OK)
 	    return rc;
 	return IDENTICAL;
@@ -1237,8 +1238,8 @@ int csync_daemon_dispatch(int conn,
 	csync_info(2, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, mod, errno, (*cmd_error ? *cmd_error : ""));
 	if (rc != OK)
 	    return rc;
-	rc = csync_daemon_settime(filename, time, cmd_error);
-	csync_info(2, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
+	rc = csync_daemon_settime(filename, ftime, cmd_error);
+	csync_info(2, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, ftime, errno, (*cmd_error ? *cmd_error : ""));
 	if (rc  != OK)
 	    return rc;
 	return IDENTICAL;

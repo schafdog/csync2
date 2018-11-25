@@ -31,6 +31,7 @@
 #include <fnmatch.h>
 #include <stdarg.h>
 #include <signal.h>
+#include <time.h>
 
 #include <limits.h>
 
@@ -992,7 +993,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	    sprintf(ino_str, INO_FORMAT, st.st_ino);
 	    char *result_other = NULL;
 	    db->add_dirty(db, other, force, myname, peername,
-			  operation_str, checktxt, dev_str, ino_str, result_other, operation, st.st_mode);
+			  operation_str, checktxt, dev_str, ino_str, result_other, operation, st.st_mode, st.st_mtime);
 	} else {
 	    csync_error(0, "ERROR: Cannot stat %s %s.\n", filename,
 			operation_str);
@@ -1089,7 +1090,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 			rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc, ptr->value, &st, uid, gid, digest,
 					&last_conn_status, auto_resolve_run);
 			if (rc == ERROR_HARDLINK)
-			    csync_mark(db, ptr->value, myname, peername, OP_RM, 0, 0, 0, 0);
+			    csync_mark(db, ptr->value, myname, peername, OP_RM, 0, 0, 0, 0, time(NULL));
 			if (rc == OK) {
 			    csync_clear_dirty(db, peername, filename, auto_resolve_run);
 			}
@@ -1465,68 +1466,68 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 	conn_close(conn);
 	return ;
     }
-  int rc;
-  textlist_p directory_list = 0;
-  for (t = tl; t != 0; t = next_t) {
-    next_t = t->next;
-    if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
-	rc = csync_update_file_mod(conn, db, myname, peername,
-				   t->value /* file */, t->operation, t->value3, /* other */
-				   t->value4 /* checktxt */, t->value5 /* digest */, t->intvalue, flags & FLAG_DRY_RUN);
+    int rc;
+    textlist_p directory_list = 0;
+    for (t = tl; t != 0; t = next_t) {
+	next_t = t->next;
+	if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
+	    rc = csync_update_file_mod(conn, db, myname, peername,
+				       t->value /* file */, t->operation, t->value3, /* other */
+				       t->value4 /* checktxt */, t->value5 /* digest */, t->intvalue, flags & FLAG_DRY_RUN);
+	    if (rc == CONN_CLOSE) {
+		csync_error(0, "Connection closed on updating %s\n", t->value);
+		break;
+	    }
+	    csync_directory_add(&directory_list, t->value);
+	    if (t->value3) {
+		csync_directory_add(&directory_list, t->value3);
+	    }
+	    if (S_ISDIR(st.st_mode))
+		textlist_add_new(&directory_list, t->value, 0);
+	    last_tn=&(t->next);
+	} else {
+	    /* File not found */
+	    /* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
+	    csync_log(LOG_DEBUG, 2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
+	    if (t->operation != OP_RM && t->operation != OP_MARK) {
+		csync_warn(1, "Unable to %s %s:%s. File has disappeared sinc check.\n", csync_operation_str(t->operation), peername, t->value);
+		if (t->value3) {
+		    csync_mark(db, t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
+		    csync_log(LOG_DEBUG, 0, "make other dirty %s\n", t->value3);
+		}
+	    }
+	    *last_tn = next_t;
+	    t->next = tl_del;
+	    tl_del = t;
+	}
+    }
+    textlist_free(tl);
+    for (t = tl_del; t != 0; t = t->next) {
+	rc = csync_update_file_del(conn, db, myname, peername,
+				   t->value, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
 	if (rc == CONN_CLOSE) {
-	    csync_error(0, "Connection closed on updating %s\n", t->value);
+	    csync_error(0, "Connection closed on deleting  %s\n", t->value);
 	    break;
 	}
 	csync_directory_add(&directory_list, t->value);
-	if (t->value3) {
-	    csync_directory_add(&directory_list, t->value3);
-	}
-	if (S_ISDIR(st.st_mode))
-	    textlist_add_new(&directory_list, t->value, 0);
-	last_tn=&(t->next);
-    } else {
-	/* File not found */
-	/* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
-	csync_log(LOG_DEBUG, 2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
-	if (t->operation != OP_RM && t->operation != OP_MARK) {
-	    csync_warn(1, "Unable to %s %s:%s. File has disappeared sinc check.\n", csync_operation_str(t->operation), peername, t->value);
-	    if (t->value3) {
-		csync_mark(db, t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0);
-		csync_log(LOG_DEBUG, 0, "make other dirty %s\n", t->value3);
+    }
+    textlist_free(tl_del);
+
+    if (! (flags & FLAG_DRY_RUN))
+	for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
+	    rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
+	    if (rc == CONN_CLOSE) {
+		csync_error(0, "Connection closed on setting time on directory %s\n", t->value);
+		break;
 	    }
 	}
-	*last_tn = next_t;
-	t->next = tl_del;
-	tl_del = t;
-    }
-  }
-  textlist_free(tl);
-  for (t = tl_del; t != 0; t = t->next) {
-      rc = csync_update_file_del(conn, db, myname, peername,
-				 t->value, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
-      if (rc == CONN_CLOSE) {
-	 csync_error(0, "Connection closed on deleting  %s\n", t->value);
-	 break;
-      }
-      csync_directory_add(&directory_list, t->value);
-  }
-  textlist_free(tl_del);
+    else
+	csync_info(2, "Skipping directories due to dry run");
+    textlist_free(directory_list);
 
-  if (! (flags & FLAG_DRY_RUN))
-     for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
-	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
-	 if (rc == CONN_CLOSE) {
-	     csync_error(0, "Connection closed on setting time on directory %s\n", t->value);
-	     break;
-	}
-     }
-  else
-      csync_info(2, "Skipping directories due to dry run");
-  textlist_free(directory_list);
-
-  conn_printf(conn, "BYE\n");
-  read_conn_status(conn, 0, peername);
-  conn_close(conn);
+    conn_printf(conn, "BYE\n");
+    read_conn_status(conn, 0, peername);
+    conn_close(conn);
 }
 
 void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
@@ -1909,7 +1910,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 	    ret=0;
 	    if (flags & FLAG_INIT_RUN)
 		csync_mark(db, r_file, 0, (flags & FLAG_INIT_RUN_STRAIGHT) ? peername : 0,
-			   OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0);
+			   OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0, time(NULL));
 	}
 
     if (r_file) free(r_file);

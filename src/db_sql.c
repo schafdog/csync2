@@ -1,6 +1,7 @@
 #include "csync2.h" 
 #include "db_sql.h"
 #include <unistd.h>
+#include <time.h>
 
 int db_sql_schema_version(db_conn_p db)
 {
@@ -365,12 +366,13 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 	    //file_st.st_ino;
 	    mode = file_st.st_mode;
 	}
-	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode);
+	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode, file_st.st_mtime);
 	free(filename);
     } SQL_END;
     free(where_rec);
 }
 
+// TODO Does not work due to csync_mark inside SQL_BEGIN
 void db_sql_mark_new(db_conn_p db, char *active_peerlist, const char *realname,
 		 int recursive)
 {
@@ -395,7 +397,7 @@ void db_sql_mark_new(db_conn_p db, char *active_peerlist, const char *realname,
 	    //file_st.st_ino;
 	    mode = file_st.st_mode;
 	}
-	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode);
+	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode, file_st.st_mtime);
 	free(filename);
     } SQL_END;
     free(where_rec);
@@ -706,7 +708,7 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 		     const char *myname, peername_p peername,
 		     const char *op_str, const char *checktxt,
 		     const char *dev, const char *ino, const char *result_other,
-		     operation_t op, int mode)
+		     operation_t op, int mode, int mtime)
 {
     BUF_P buf = buffer_init();
     const char *result_enc = buffer_quote(buf, db_escape(db, result_other));
@@ -807,10 +809,11 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	    textlist_add4(&tl, filename, checktxt, device, inode, mode);
     } SQL_END;
     int count_deletes = 0;
+    time_t now = time(NULL);
     for (t = tl; t != 0; t = t->next) {
 	if (!init_run) {
 	    //csync_log(LOG_DEBUG, 0, "check_dirty (rm): before mark (all) \n");
-	    csync_mark(db, t->value, 0, 0, OP_RM, t->value2, t->value3, t->value4, t->intvalue);
+	    csync_mark(db, t->value, 0, 0, OP_RM, t->value2, t->value3, t->value4, t->intvalue, now);
 	    count_deletes++;
 	}
 	SQL(db,
