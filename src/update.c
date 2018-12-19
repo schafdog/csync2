@@ -603,7 +603,7 @@ int csync_fix_path(int conn, peername_p myname, peername_p peername, filename_p 
 	    local_file[path_len] = ch;
 	}
 	else {
-	    csync_log(LOG_ERR, 1, "Error in ERROR_PATH_MISSING when fixing %s of %s: Not a slash at %d", local_file, path_len);
+	    csync_log(LOG_ERR, 1, "Error in ERROR_PATH_MISSING when fixing %s of %s: Not a slash at %d", local_file, path_not_found, path_len);
 	    free(local_file);
 	    return ERROR_PATH_MISSING;
 	}
@@ -1394,15 +1394,18 @@ int csync_update_file_settime(int conn, peername_p peername, const char *key_enc
 
 int compare_files(filename_p filename, const char *pattern, int recursive)
 {
-  int i;
-  const char *slash = "/";
-  if (!strcmp(pattern, slash))
-    return 1;
-  for (i=0; filename[i] && pattern[i]; i++)
-    if (filename[i] != pattern[i]) return 0;
-  if ( filename[i] == '/' && !pattern[i] && recursive) return 1;
-  if ( !filename[i] && !pattern[i]) return 1;
-  return 0;
+    int i;
+    const char *slash = "/";
+    if (!strcmp(pattern, slash))
+	return 1;
+    for (i=0; filename[i] && pattern[i]; i++)
+	if (filename[i] != pattern[i])
+	    return 0;
+    if ( filename[i] == '/' && !pattern[i] && recursive)
+	return 1;
+    if ( !filename[i] && !pattern[i])
+	return 1;
+    return 0;
 }
 
 void csync_directory_add(textlist_p *directory_list, char *directory) {
@@ -1437,7 +1440,39 @@ int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char *op_st
     return use_this;
 }
 
-void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
+void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
+		       const char **patlist, int patnum, 
+		       int ip_version, int flags)
+{
+    /* 
+    textlist_p tl = 0, t, next_t;
+    textlist_p tl_del = 0, *last_tn=&tl;
+    struct stat st;
+    tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
+
+    if ( !tl) {
+	return;
+    }
+    */
+    int conn = connect_to_host(db, peername, ip_version);
+    if ( conn < 0) {
+	csync_error_count++;
+	csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
+	csync_error(1, "Host stays in dirty state. "
+		    "Try again later...\n");
+	return;
+    }
+    
+    conn_printf(conn, "PING %s %s\n", myname, cfgname);
+    int rc = read_conn_status(conn, 0, peername);
+    csync_debug(1, "Sent PING %s %s to %s: %d \n", myname, cfgname, peername, rc);
+    conn_printf(conn, "BYE\n");
+    read_conn_status(conn, 0, peername);
+    conn_close(conn);
+    return;
+}
+
+  void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 		       const char **patlist, int patnum, 
 		       int ip_version, int flags)
 {
@@ -1445,7 +1480,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     textlist_p tl_del = 0, *last_tn=&tl;
     struct stat st;
     tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
-
+    csync_debug(1, "Got dirty files from host %s\n", peername);
     /* just return if there are no files to update */
     if ( !tl) {
 	return;

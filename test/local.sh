@@ -50,29 +50,35 @@ function cmd {
 	shift
     fi
     DESC=$2
-    echo "${COUNT}. CMD $CMD $DESC"
+    echo "${COUNT}. CMD $CMD $DESC $HOST $PEER $TESTPATH"
     if [ "$3" == "" ] ; then
 	HOST=$NAME
+	PEER=peer
 	# TODO Fix peername somehow
+    else
+	HOST=$3
+	PEER=$4
+	TESTPATH="test/$HOST"
     fi
     if [ "$CMD" == "daemon" ] ; then
-	daemon d
+	daemon $1 $2 $3
 	return 
     fi
     if [ "$CMD" == "killdaemon" ] && [ "$DAEMON" != "NO" ] ; then
-	killdaemon
+	killdaemon $1
 	return 
     fi
-    echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
+    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
     if [ "$LLDB" != "" ] ; then 
 	$LLDB -f $PROG -- -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
 	$GDB $PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
-	$PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
+	echo $PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
-    echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+    echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql --protocol tcp -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
 #    echo "select filename from file; select peername,filename,operation,other from dirty order by peername, timestamp;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
@@ -90,7 +96,7 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty ; delete from file" | mysql -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
+    echo "delete from dirty ; delete from file" | mysql --protocol tcp -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     rm -f csync_$CNAME.log mysql_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1
@@ -98,18 +104,27 @@ function clean {
 }
 
 function daemon {
+    CMD=$1
+    DCFG=$2
+    DNAME=$3
     if [ "$DAEMON" == "NO" ] ; then
 	echo "daemon start disabled";
 	return 
     fi
+    if [ "$DCFG" == "" ] ; then
+	DCFG=peer
+    fi
+    if [ "$DNAME" == "" ] ; then
+	DNAME=local
+    fi
     # Create backupdir
     mkdir -p /tmp/csync2 
     CMD="$1"
-    echo $NAME $PEER
+    echo $DCFG $DNAME
     if [ "$CMD" == "d" ] ; then 
-	${PROG} -q -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG > $TESTNAME/daemon.log  2>&1 &
-	echo "$!" > daemon.pid
-    elif [ "$CMD" == "i" ] ; then 
+	${PROG} -q -K csync2_$DCFG.cfg -N $DCFG -z $DNAME -iiii$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
+	echo "$!" > ${DCFG}.pid
+    elif [ "$CMD" == "i" ] ; then
 	if [ "LLDB" != "" ]; then
 	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG
 	else
@@ -130,8 +145,12 @@ function killdaemon {
 	echo "daemon stop disabled";
 	return 
     fi
-    kill `cat daemon.pid`
-    rm daemon.pid
+    HOST=peer
+    if [ "$1" != "" ] ; then
+	HOST=$1
+    fi
+    kill `cat ${HOST}.pid`
+    rm ${HOST}.pid
 }
 
 function check {

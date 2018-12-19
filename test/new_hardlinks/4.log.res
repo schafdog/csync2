@@ -1,4 +1,4 @@
-cmd x "4 more files hardlinked (x)" local
+cmd x "4 more files hardlinked (x)" local peer test
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new' '-'.
@@ -21,6 +21,7 @@ mark other operation: 'HARDLINK' 'other:/export/home/dennis/Projects/csync2/csyn
 mark other: HARDLINK(32) Old operation: NEW(2) '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file' '(null)'
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
+Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new

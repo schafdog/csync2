@@ -106,7 +106,8 @@ enum {
 	MODE_UPGRADE_DB = 2 * MODE_SIMPLE,
 	MODE_MARK = 2*MODE_UPGRADE_DB,
 	MODE_EQUAL = 2*MODE_MARK,
-	MODE_TAIL = 2*MODE_EQUAL
+	MODE_TAIL = 2*MODE_EQUAL,
+	MODE_PING = 2*MODE_TAIL
 };
 
 #define DEFAULT_PORT "30865" 
@@ -128,9 +129,14 @@ enum {
 } while (0)
 
 
+typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
+			    const char **patlist, int patnum, int ip_version, int flags);
+
 /* csync2.c */
 
 extern int match_peer(char **active_peers, const char *peer);
+
+int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version);
 
 /* action.c */
 
@@ -286,6 +292,9 @@ struct textlist;
 
 int get_file_type(int st_mode);
 int compare_files(filename_p filename, const char *pattern, int recursive);
+
+char ** parse_peerlist(char *peerlist);
+
 extern const char *csync_mode_op_str(int st_mode, int op);
 extern operation_t csync_operation(const char *operation);
 extern const char *csync_operation_str(operation_t op);
@@ -315,9 +324,6 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 
 int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
 
-typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
-			    const char **patlist, int patnum, int ip_version, int flags);
-
 extern void csync_update(db_conn_p db, const char *myname, char **peers,
 			 const char **patlist, int patnum, int ip_version, update_func func, int flags);
 
@@ -325,6 +331,9 @@ extern void csync_update_host(db_conn_p db, const char *myname, peername_p peern
 			      const char **patlist, int patnum, int ip_version, int flags);
 
 extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
+			    const char **patlist, int patnum, int ip_version, int flags);
+
+extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 			    const char **patlist, int patnum, int ip_version, int flags);
 
 extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
@@ -657,7 +666,7 @@ extern int csync_port_cmdline;
 extern char *csync_confdir;
 extern char *active_grouplist;
 extern char *active_peerlist;
-
+    
 extern char *cfgname;
 
 extern int csync_ignore_uid;
@@ -667,6 +676,7 @@ extern int csync_ignore_mod;
 extern int csync_dump_dir_fd;
 
 extern int csync_compare_mode;
+extern char **active_peers;
 
 #ifdef HAVE_LIBGNUTLS
 extern int csync_conn_usessl;

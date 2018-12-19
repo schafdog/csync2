@@ -1,6 +1,5 @@
 #
 #
-#daemon d PEER
 clean local
 clean peer
 FILENAME="new_file"

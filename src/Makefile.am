@@ -48,6 +48,15 @@ CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
 check_version: FORCE
 	@../version.sh $(objects)
 
+clean:
+	rm -rf $(CLEANFILES)
+	rm *.o
+
+dist-clean: dist-clean-local
+	rm configure
+	rm Makefile
+	rm src/Makefile
+
 dist-clean-local:
 	rm -rf autom4te.cache
 

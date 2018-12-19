@@ -1,4 +1,5 @@
-cmd u "8 Update auto (younger)" local
+cmd u "8 Update auto (younger)" local peer test
+Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' ''
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both

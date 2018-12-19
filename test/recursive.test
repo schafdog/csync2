@@ -2,7 +2,7 @@
 #
 rm -rf /tmp/csync2.real/*
 rm -rf /tmp/csync2.res
-daemon d PEER
+daemon d
 clean local
 clean peer
 FILENAME="new_file 'N' all"
@@ -21,5 +21,5 @@ cmd x "rm directory with ignore files"
 #
 rm -rf test/$NAME
 cmd x "clean up"
-killdaemon d PEER
+killdaemon
 diff -r /tmp/csync2/ /tmp/csync2.res/

@@ -1,6 +1,6 @@
 #
 #
-daemon d PEER
+daemon d
 clean local
 clean peer
 FILENAME="new_file 'N' all"
@@ -10,4 +10,4 @@ cmd x "New $NAME/$FILENAME"
 cmd T test/$NAME "List daemon" 
 rm -rf test/$NAME
 cmd x "clean up"
-killdaemon d PEER
+killdaemon
