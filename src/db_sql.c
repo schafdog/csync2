@@ -351,7 +351,7 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
     char *where_rec = NULL;
     csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
     SQL_BEGIN(db, "Adding dirty entries recursively",
-	      "SELECT filename, mode, checktxt, digest, device, inode, type FROM file WHERE %s", where_rec)
+	      "SELECT filename, mode, checktxt, digest, device, inode, type, mtime FROM file WHERE %s", where_rec)
     {
 	char *filename = strdup(db_decode(SQL_V(0)));
 	int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
@@ -360,13 +360,16 @@ void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 	const char *device   = SQL_V(4);
 	const char *inode    = SQL_V(5);
 	const char *type     = SQL_V(6);
+	const char *mtime_str= SQL_V(7);
 	int rc = stat(filename, &file_st);
+	int mtime = atoi(mtime_str);
 	if (!rc) {
 	    //file_st.st_dev;
 	    //file_st.st_ino;
 	    mode = file_st.st_mode;
+	    mtime = file_st.st_mtime;
 	}
-	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode, file_st.st_mtime);
+	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode, mtime);
 	free(filename);
     } SQL_END;
     free(where_rec);
@@ -714,8 +717,8 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
     const char *result_enc = buffer_quote(buf, db_escape(db, result_other));
     SQL(db,
 	"Marking File Dirty",
-	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type) "
-	"VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d, %d)",
+	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) "
+	"VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d, %d, %d)",
 	db_escape(db, file_new),
 	new_force ? "1" : "0",
 	db_escape(db, myname),
@@ -727,7 +730,8 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
 	result_enc,
 	op,
 	mode,
-	get_file_type(mode)
+	get_file_type(mode),
+	mtime
 	);
     //db->free(db, encoded);
     buffer_destroy(buf);
