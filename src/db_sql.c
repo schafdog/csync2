@@ -341,38 +341,69 @@ void db_sql_force(db_conn_p db, const char *realname, int recursive)
 	free(where_rec);
 }
 
-// TODO: rewrite or drop! Does not work with csync_mark inside SQL
 void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 		 int recursive)
 {
     csync_check_usefullness(realname, recursive);
     struct stat file_st;
     const char *db_encoded = db_escape(db, realname);
-    char *where_rec = NULL;
-    csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
-    SQL_BEGIN(db, "Adding dirty entries recursively",
-	      "SELECT filename, mode, checktxt, digest, device, inode, type, mtime FROM file WHERE %s", where_rec)
-    {
-	char *filename = strdup(db_decode(SQL_V(0)));
-	int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
-	const char *checktxt = SQL_V(2);
-	const char *digest   = SQL_V(3);
-	const char *device   = SQL_V(4);
-	const char *inode    = SQL_V(5);
-	const char *type     = SQL_V(6);
-	const char *mtime_str= SQL_V(7);
-	int rc = stat(filename, &file_st);
-	int mtime = atoi(mtime_str);
-	if (!rc) {
-	    //file_st.st_dev;
-	    //file_st.st_ino;
-	    mode = file_st.st_mode;
-	    mtime = file_st.st_mtime;
+    int rc = stat(realname, &file_st);
+    time_t mtime = time(NULL);
+    char *checktxt =  NULL;
+    char *device   = NULL;
+    char *inode    = NULL;
+    int mode  = 0;
+    if (!rc) {
+	mtime = file_st.st_mtime;
+	mode = file_st.st_mode;
+	// calc checktxt, device, inode
+    }
+    csync_mark(db, realname, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode, mtime);
+    
+    // Not working due to nested SQL
+    // TODO: rewrite or drop! Does not work with csync_mark inside SQL
+    if (recursive) {
+	textlist_p tl = 0;	
+        // csync_log(LOG_ERR, 0, "Recursive marking does not work: %s\n", realname);
+	// Missing marking files only in FS
+	char *where_rec = NULL;
+	csync_generate_recursive_sql(db_encoded, recursive, &where_rec);
+
+	SQL_BEGIN(db, "Adding dirty entries recursively",
+		  "SELECT filename, mode, checktxt, digest, device, inode, mtime FROM file WHERE %s order by filename DESC", where_rec)
+	{
+	    const char *filename = SQL_V(0);
+	    int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
+	    const char *checktxt = SQL_V(2);
+	    const char *digest   = SQL_V(3);
+	    const char *device   = SQL_V(4);
+	    const char *inode    = SQL_V(5);
+	    const char *mtime_str= SQL_V(6);
+	    int mtime = atoi(mtime_str);
+	    textlist_add5(&tl, filename, checktxt, device, inode, mtime_str, mode, mtime);
+	} SQL_END;
+	free(where_rec);
+	textlist_p ptr = tl;
+	while (tl != 0) {
+	    char *filename = tl->value;
+	    char *checktxt = tl->value2;
+	    char *device = tl->value3;
+	    char *inode = tl->value4;
+	    char *mtime_str = tl->value5;
+	    int mode = tl->intvalue;
+	    int mtime = tl->operation;
+	    int rc = stat(filename, &file_st);
+	    if (!rc) {
+		//file_st.st_dev;
+		//file_st.st_ino;
+		mode = file_st.st_mode;
+		mtime = file_st.st_mtime;
+	    }
+	    csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode, mtime);
+	    tl = tl->next;
 	}
-	csync_mark(db, filename, NULL, active_peerlist, OP_MARK, checktxt, device, inode, mode, mtime);
-	free(filename);
-    } SQL_END;
-    free(where_rec);
+	textlist_free(ptr);
+    }
 }
 
 // TODO Does not work due to csync_mark inside SQL_BEGIN
