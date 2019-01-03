@@ -386,7 +386,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  `peername` varchar(50)  DEFAULT NULL,"
 		 "  `certdata` varchar(255) DEFAULT NULL,"
 		 "  UNIQUE KEY `peername` (`peername`)"
-		 ") ENGINE=InnoDB");
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
 
 /* csync_db_sql does a csync_fatal on error, so we always return DB_OK here. */
     return DB_OK;
@@ -446,6 +446,11 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
     } else
 fatal:
       csync_fatal("Failed to connect to database: Error: %s\n", f.mysql_error_fn(db));
+  }
+  const char *encoding = mysql_character_set_name(db);
+  csync_log(LOG_DEBUG, 2, "Default encoding %s\n", encoding);
+  if (mysql_set_character_set(db, "utf8")) {
+      csync_fatal("Cannot set character set to utf8\n");
   }
 
   db_conn_p conn = calloc(1, sizeof(*conn));
