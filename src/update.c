@@ -1324,12 +1324,10 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 					      filename_enc, &st, uid, gid);
 	    if (rc != OK)
 		return rc;
-	    if (!S_ISLNK(st.st_mode)) {
-		rc = csync_update_file_setmod(conn, peername, key_enc, filename,
-					      filename_enc, &st);
-		if (rc != OK)
-		    return rc;
-	    }
+	    rc = csync_update_file_setmod(conn, peername, key_enc, filename,
+					  filename_enc, &st);
+	    if (rc != OK)
+		return rc;
 	    rc = csync_update_file_settime(conn, peername, key_enc, filename,
 					   filename_enc, &st);
 	}
