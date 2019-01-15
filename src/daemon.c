@@ -37,7 +37,8 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include <time.h>
+//#include <time.h>
+#include <sys/time.h>
 
 #ifdef __CYGWIN__
 #include <w32api/windows.h>
@@ -946,14 +947,16 @@ void csync_daemon_get_size_time(int conn, char *filename, struct csync_command *
 
 int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
 {
-  struct utimbuf utb;
-  utb.actime = atoll(time);
-  utb.modtime = atoll(time);
-  if ( utime(filename, &utb) ) {
-    *cmd_error = strerror(errno);
-    return ERROR;
-  }
-  return OK;
+    struct timeval times[2];
+    times[0].tv_usec = 0;
+    times[1].tv_usec = 0;
+    times[0].tv_sec = atol(time);
+    times[1].tv_sec = times[0].tv_sec;
+    if ( lutimes(filename, times) ) {
+	*cmd_error = strerror(errno);
+	return ERROR;
+    }
+    return OK;
 }
 
 void csync_daemon_list(int conn, db_conn_p db, char *filename, char *myname, char *peername, int recursive)
