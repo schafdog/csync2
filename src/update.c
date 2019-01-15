@@ -1380,14 +1380,12 @@ int csync_update_file_settime(int conn, peername_p peername, const char *key_enc
 			      filename_p filename, filename_p filename_enc,
 			      const struct stat *st)
 {
-  if ( !S_ISLNK(st->st_mode) ) {
     conn_printf(conn, "SETTIME %s %s %Ld\n",
 		key_enc, filename_enc,
 		(long long)st->st_mtime);
     if ( read_conn_status(conn, filename, peername) )
       return ERROR;
-  }
-  return OK;
+    return OK;
 }
 
 int compare_files(filename_p filename, const char *pattern, int recursive)
