@@ -947,16 +947,18 @@ void csync_daemon_get_size_time(int conn, char *filename, struct csync_command *
 
 int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
 {
+    int result = OK; 
     struct timeval times[2];
     times[0].tv_usec = 0;
     times[1].tv_usec = 0;
     times[0].tv_sec = atol(time);
     times[1].tv_sec = times[0].tv_sec;
-    if ( lutimes(filename, times) ) {
+    int rc = lutimes(filename, times);
+    if ( rc) {
 	*cmd_error = strerror(errno);
-	return ERROR;
     }
-    return OK;
+    csync_info(2, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
+    return result;
 }
 
 void csync_daemon_list(int conn, db_conn_p db, char *filename, char *myname, char *peername, int recursive)
@@ -1267,7 +1269,6 @@ int csync_daemon_dispatch(int conn,
 	if (rc != OK)
 	    return rc;
 	rc = csync_daemon_settime(filename, ftime, cmd_error);
-	csync_info(2, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, ftime, errno, (*cmd_error ? *cmd_error : ""));
 	if (rc  != OK)
 	    return rc;
 	return IDENTICAL;
