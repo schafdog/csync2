@@ -1119,6 +1119,7 @@ nofork:
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
 		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
+		csync_compare_mode = 1;
 		csync_check(db, realname, flags);
 	    }
 	    else {

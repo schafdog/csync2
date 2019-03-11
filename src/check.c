@@ -608,7 +608,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	csync_calc_digest(file, buffer, &digest);
     }
     if (csync_compare_mode) {
-	printf("%40s %s\n", digest ? digest : "-", file);
+	printf("%40s %s\n", digest ? digest : checktxt, file);
     }
     if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
 	if (operation == OP_NEW && digest) {

@@ -19,6 +19,7 @@
 
 sbin_PROGRAMS = csync2
 sbin_SCRIPTS = csync2-compare
+bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
 CC = clang
