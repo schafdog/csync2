@@ -10,6 +10,7 @@ echo "far" > "test/$NAME/${FILENAME}.latin1"
 convmv --notest -f utf8 -t latin1 "test/$NAME/${FILENAME}.latin1"
 cmd x "New $NAME/$FILENAME with utf8 and latin1"
 rm -rf test/$NAME/*
+sleep 1
 cmd x "New $NAME/$FILENAME with utf8 and latin1 (removed)"
 # Other way will fail..
 killdaemon
