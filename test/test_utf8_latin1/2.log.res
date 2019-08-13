@@ -4,6 +4,5 @@ Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows affected: 1
-mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/ÆØÅ Café.latin1' '-'.
 MySql Warning: Incorrect string value: '\xC6\xD8\xC5 Ca...' for column 'filename' at row 1
-Database Error: Deleting old dirty file entries [1]:  on executing DELETE FROM dirty WHERE filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/ÆØÅ Café.latin1' AND peername like 'peer'
+Binary file (standard input) matches

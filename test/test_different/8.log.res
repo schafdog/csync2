@@ -22,4 +22,3 @@ Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/differe
 peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/different is already up to date on peer.
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
 peer:/export/home/dennis/Projects/csync2/csync2/test/test/local is already up to date on peer.
-Finished succesfully.

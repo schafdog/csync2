@@ -21,4 +21,3 @@ Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/lo
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' ''
-Finished succesfully.

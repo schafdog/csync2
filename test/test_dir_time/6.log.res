@@ -6,4 +6,3 @@ Updating (MARK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
 Updating (MARK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local
 Updating (MARK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
-Finished succesfully.

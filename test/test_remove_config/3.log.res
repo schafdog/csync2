@@ -7,4 +7,3 @@ Removing /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file (pe
 remove_old: file
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file from file db.
 remove_old: end
-Finished succesfully.

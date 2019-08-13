@@ -18,4 +18,3 @@ mark operation NEW -> RM peer:/export/home/dennis/Projects/csync2/csync2/test/te
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/A' '-'.
 mark other: RM(64) Old operation: NEW(2) '/export/home/dennis/Projects/csync2/csync2/test/test/local/A' '(null)'
 mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/A deleted before syncing. Removing from dirty.
-Finished succesfully.

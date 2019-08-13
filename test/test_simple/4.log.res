@@ -14,4 +14,3 @@ Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
-Finished succesfully.

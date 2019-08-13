@@ -12,4 +12,3 @@ Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' ''
-Finished succesfully.

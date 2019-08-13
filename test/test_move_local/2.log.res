@@ -17,4 +17,3 @@ mark other: MV(16) Old operation: NEW(2) '/export/home/dennis/Projects/csync2/cs
 mark operation NEW->MV => NEW other '/export/home/dennis/Projects/csync2/csync2/test/test/local/Z' '/export/home/dennis/Projects/csync2/csync2/test/test/local/A' '/export/home/dennis/Projects/csync2/csync2/test/test/local/A'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/Z rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Finished succesfully.

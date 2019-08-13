@@ -23,4 +23,3 @@ Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/lo
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change' ''
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all' ''
-Finished succesfully.

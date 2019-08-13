@@ -14,4 +14,3 @@ Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' ''
-Finished succesfully.

@@ -15,4 +15,3 @@ mark operation MKDIR -> RM peer:/export/home/dennis/Projects/csync2/csync2/test/
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '-'.
 mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '(null)'
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir deleted before syncing. Removing from dirty.
-Finished succesfully.

@@ -20,4 +20,3 @@ Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/loca
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
-Finished succesfully.
