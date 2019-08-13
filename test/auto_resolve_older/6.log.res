@@ -9,4 +9,3 @@ While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/a
 ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both) rc: -11 
 Do not auto-resolve conflict: Lost 'younger/older' test.
 File stays in dirty state after autoresolve. Try again later...
-Finished succesfully.

@@ -24,4 +24,3 @@ Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/ol
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
-Finished succesfully.

@@ -9,4 +9,3 @@ Auto-resolving conflict: Won 'younger/older' test.
 Attempting autoresolve on peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' ''
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
-Finished succesfully.
