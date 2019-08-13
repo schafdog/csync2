@@ -19,6 +19,11 @@ sleep 1
 echo "Now younger" > ${LOCAL_DIR}/update_both
 cmd c "7 Check local (autoresolve)"
 cmd u "8 Update auto (${TEST})"
+echo "Same content" > ${PEER_DIR}/same_content
+sleep 1
+echo "Not Same content" > ${LOCAL_DIR}/same_content
+cmd c "9 Check local (autoresolve, same content)"
+cmd u "10 Same content (${TEST})"
 rm -rf test/local
-cmd x "9 clean (${TEST})"
-killdaemon
+#cmd x "11 clean (${TEST})"
+#killdaemon
