@@ -32,4 +32,3 @@ Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/loca
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123' ''
-Finished succesfully.

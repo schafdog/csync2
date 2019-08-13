@@ -29,4 +29,3 @@ mark other operation: 'HARDLINK' 'other:/export/home/dennis/Projects/csync2/csyn
 mark other: HARDLINK(32) Old operation: NEW(2) '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab' '(null)'
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Finished succesfully.
