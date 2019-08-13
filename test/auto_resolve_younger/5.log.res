@@ -10,4 +10,3 @@ mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/tes
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' '-'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Finished succesfully.
