@@ -50,4 +50,3 @@ Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
-Finished succesfully.
