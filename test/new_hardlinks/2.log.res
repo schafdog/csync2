@@ -17,4 +17,3 @@ mark other operation: 'HARDLINK' 'other:/export/home/dennis/Projects/csync2/csyn
 mark other: HARDLINK(32) Old operation: NEW(2) '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file' '(null)'
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Finished succesfully.

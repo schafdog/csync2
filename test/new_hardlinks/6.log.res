@@ -12,4 +12,3 @@ mark other operation: 'MARK' 'peer:/export/home/dennis/Projects/csync2/csync2/te
 mark other: MARK(0) Old operation: MARK(0) '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked' '(null)'
 mark other operation: 'MARK' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file' '-'.
 mark other: MARK(0) Old operation: MARK(0) '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked' '(null)'
-Finished succesfully.

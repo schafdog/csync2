@@ -100,4 +100,3 @@ Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/
 Found HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file 
 do hardlink check /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked 
 Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file
-Finished succesfully.

@@ -14,4 +14,3 @@ Found HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/ha
 Found HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Finished succesfully.
