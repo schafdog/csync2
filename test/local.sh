@@ -28,6 +28,7 @@ function testing {
     RESULT=$1
     OLD_RESULT=${RESULT}.res
     if [ -f ${OLD_RESULT} ] ; then
+	
 	diff -w $RESULT $OLD_RESULT > ${RESULT}.diff
 	rc=$?
 	RES=$((RES+rc))
@@ -68,7 +69,7 @@ function cmd {
 	killdaemon $1
 	return 
     fi
-    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
+    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH |grep -v Finished > ${TESTNAME}/${COUNT}.log
     if [ "$LLDB" != "" ] ; then 
 	$LLDB -f $PROG -- -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
