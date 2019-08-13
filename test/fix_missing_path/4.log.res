@@ -33,4 +33,3 @@ Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursi
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
-Finished succesfully.

@@ -20,4 +20,3 @@ UPDATE_DIRECTORY: 4
 UPDATE_DIRECTORY: 4
 UPDATE_DIRECTORY: 4
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c' ''
-Finished succesfully.

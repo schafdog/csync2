@@ -9,4 +9,3 @@ Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recu
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4 rows affected: 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5 rows affected: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Finished succesfully.
