@@ -42,6 +42,7 @@
 
 #include <netdb.h>
 #include <db_api.h>
+#include <time.h>
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -893,6 +894,7 @@ int main(int argc, char ** argv)
 
 int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version)
 {
+    int start_time = time(NULL);
     int server = mode & MODE_DAEMON;
     int server_standalone =  mode & MODE_STANDALONE;
     int retval = -1;
@@ -1243,10 +1245,11 @@ nofork:
     }
 
     if ( csync_error_count != 0 || (csync_messages_printed && csync_level_debug) ) {
+	int run_time = time(NULL) - start_time;
 	if (csync_error_count > 0)
-	    csync_warn(1, "Finished with %d errors.\n", csync_error_count);
+	    csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
 	else
-	    csync_info(1, "Finished succesfully.\n");
+	    csync_info(1, "Finished succesfully in %d seconds.\n", run_time);
     }
     csync_printtotaltime();
 
