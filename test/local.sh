@@ -69,14 +69,14 @@ function cmd {
 	killdaemon $1
 	return 
     fi
-    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH |grep -v Finished > ${TESTNAME}/${COUNT}.log
+    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
     if [ "$LLDB" != "" ] ; then 
 	$LLDB -f $PROG -- -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
 	$GDB $PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
 	echo $PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
-	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
+	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
     fi
     testing ${TESTNAME}/${COUNT}.log
     echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql --protocol tcp -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
