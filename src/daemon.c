@@ -476,7 +476,7 @@ int csync_set_backup_file_status(char *filename, int backupDirLength) {
   if (rc == 0 ) {
       csync_log(LOG_DEBUG, 4, "Stating original file %s rc: %d mode: %o\n", (filename + backupDirLength), rc, buf.st_mode);
 
-      rc = chown(filename, buf.st_uid, buf.st_gid);
+      rc = lchown(filename, buf.st_uid, buf.st_gid);
 
       // TODO set  priority depending on rc
       csync_info(rc == 0 ? 4:0, "Changing owner of %s to user %d and group %d, rc= %d \n",
