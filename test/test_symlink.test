@@ -1,0 +1,14 @@
+#
+#
+daemon d
+clean local
+clean peer
+FILENAME="new_file 'N' all"
+mkdir -p "test/$NAME"
+echo "far" > "test/$NAME/$FILENAME"
+pushd test/$NAME
+sleep 1
+ln -s "$FILENAME" "$FILENAME.link"
+popd
+cmd x "New $NAME/$FILENAME"
+killdaemon
