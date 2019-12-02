@@ -22,6 +22,7 @@
 #include "digest.h"
 #include "uidgid.h"
 #include "resolv.h"
+#include "redis.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -717,13 +718,18 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	    recursive = 1;
 	// ALREADY done before patch csync_unlink(db, filename, recursive);
     }
+    time_t lock_time = csync_redis_lock(filename);
+    if (lock_time == 0) {
+	conn_printf(conn, "ERROR (locked).\n");
+	return ABORT_CMD;
+    }
     // Only try to backup if the file exists already.
     if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
 	conn_printf(conn, "OK (send_data).\n");
 	csync_rs_sig(conn, filename);
 	if (csync_rs_patch(conn, filename)) {
 	    *cmd_error = strerror(errno);
-	    return ABORT_CMD;
+	    return clear_redis_lock(filename, lock_time, ABORT_CMD);
 	}
 	//TODO restore hardlinks
 	struct stat st_patched;
@@ -745,9 +751,9 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	}
 	else
 	    csync_error(0, "ERROR: Failed to stat patched file: %s %d", filename, new_rc);
-	return OK;
+	return clear_redis_lock(filename, lock_time, OK);
     }
-    return ABORT_CMD;
+    return clear_redis_lock(filename, lock_time, ABORT_CMD);
 }
 
 int csync_daemon_mkdir(filename_p filename, const char **cmd_error)
