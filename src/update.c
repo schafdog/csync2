@@ -20,6 +20,7 @@
 
 #include "csync2.h"
 #include "uidgid.h"
+#include "redis.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -1366,11 +1367,19 @@ int csync_update_file_mod(int conn, db_conn_p db,
 			  int force, int dry_run)
 {
     BUF_P buffer = buffer_init();
-    int rc = csync_update_file_mod_internal(conn, db,
-				   myname, peername,
-				   filename, operation, other,
-				   checktxt, digest,
-				   force, dry_run, buffer);
+    time_t unix_time = csync_redis_lock(filename);
+    int rc = OK;
+    if (unix_time != -1) {
+	rc = csync_update_file_mod_internal(conn, db,
+					    myname, peername,
+					    filename, operation, other,
+					    checktxt, digest,
+					    force, dry_run, buffer);
+	csync_redis_unlock(filename, unix_time);
+    } else {
+	csync_debug(0, "update_file_mod: Failed to get lock on %s.\n", filename);
+	rc = ERROR_DIRTY;
+    }
     buffer_destroy(buffer);
     return rc;
 }
