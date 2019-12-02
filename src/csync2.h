@@ -644,6 +644,7 @@ extern unsigned csync_lock_timeout;
 extern char *csync_tempdir;
 
 extern char *csync_database;
+extern char *csync_redis;
 
 extern int csync_error_count;
 extern int csync_level_debug;

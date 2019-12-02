@@ -52,6 +52,7 @@
 int yylex_destroy(void);
 
 char *csync_database = 0;
+char *csync_redis = 0;
 
 int db_type = DB_SQLITE3;
 
