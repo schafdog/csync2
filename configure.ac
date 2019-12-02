@@ -97,15 +97,29 @@ then
    ])
 fi
 
+if test "$enable_redis" != no
+then
+   PKG_PROG_PKG_CONFIG
+   PKG_CHECK_MODULES([LIBHIREDIS], [hiredis >= 0.14.0], [
+      AC_DEFINE([HAVE_LIBHIREDIS], 1, [Define to 1 when using libhiredis library])
+   ])
+fi
+
 AC_ARG_ENABLE([mysql],
 	[AC_HELP_STRING([--enable-mysql],
-		[enable/disable MySQL support (default is disabled)])],
+		[enable/disable MySQL support (default is enabled)])],
 	[], [ enable_mysql=yes ])
 
 AC_ARG_ENABLE([postgres],
 	[AC_HELP_STRING([--enable-postgres],
-		[enable/disable Postgres support (default is disabled)])],
+		[enable/disable Postgres support (default is enabled)])],
 	[], [ enable_postgres=yes ])
+
+AC_ARG_ENABLE([redis],
+	[AC_HELP_STRING([--enable-redis],
+		[enable/disable Redis support (default is enabled)])],
+	[], [ enable_redis=yes ])
+
 
 if test "$enable_mysql" == yes
 then

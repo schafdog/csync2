@@ -433,6 +433,11 @@ static void set_database_version(char *version)
   free(version);
 }
 
+static void set_redis(filename_p filename)
+{
+    csync_redis = (char*) filename;
+}
+
 static void set_protocol_version(char *version)
 {
   cfg_protocol_version = atoi(version);
@@ -552,6 +557,8 @@ void csync_config_destroy() {
     nossl_destroy(csync_nossl);
     if (csync_database) 
 	free(csync_database);
+    if (csync_redis) 
+	free(csync_redis);
     csync_nossl = NULL;
     csync_config_destroy_group(csync_group);
     csync_group = NULL;
@@ -581,7 +588,7 @@ static void disable_cygwin_lowercase_hack()
 
 %token TK_BLOCK_BEGIN TK_BLOCK_END TK_STEND TK_AT TK_AUTO
 %token TK_NOSSL TK_IGNORE TK_GROUP TK_HOST TK_EXCL TK_INCL TK_COMP TK_KEY TK_DATABASE
-%token TK_DB_VERSION TK_PROTOCOL_VERSION TK_IP_VERSION
+%token TK_DB_VERSION TK_PROTOCOL_VERSION TK_IP_VERSION TK_REDIS
 %token TK_ACTION TK_PATTERN TK_EXEC TK_DOLOCAL TK_LOGFILE TK_NOCYGLOWER
 %token TK_PREFIX TK_ON TK_COLON TK_POPEN TK_PCLOSE
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
@@ -612,6 +619,8 @@ block:
 		{ set_database($2); }
 |	TK_DB_VERSION TK_STRING TK_STEND
 		{ set_database_version($2); }
+|	TK_REDIS TK_STRING TK_STEND
+		{ set_redis($2); }
 |	TK_PROTOCOL_VERSION TK_STRING TK_STEND
 		{ set_protocol_version($2); }
 |	TK_IP_VERSION TK_STRING TK_STEND
