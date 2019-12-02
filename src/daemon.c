@@ -256,7 +256,7 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
     return rc;
 }
 
-void csync_file_update(db_conn_p db, filename_p filename, peername_p peername)
+void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername)
 {
   struct stat st;
   db->remove_dirty(db, peername, filename, 0);
@@ -272,7 +272,7 @@ void csync_file_update(db_conn_p db, filename_p filename, peername_p peername)
       if (rc)
 	  csync_error(0, "ERROR: generating digest for '%s': %s %d", filename, digest, rc);
     }
-    csync_log(LOG_DEBUG, 2, "daemon_check_update: UPDATE/INSERT into file filename: %s\n", filename);
+    csync_log(LOG_DEBUG, 2, "daemon_file_update: UPDATE/INSERT into file filename: %s\n", filename);
     db->remove_file(db, filename, 0);
     //long count = db->update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
     ///if (count == 0)
@@ -1060,10 +1060,10 @@ int csync_daemon_group(char **active_grouplist, char *newgroup,
 void csync_daemon_check_update(db_conn_p db, filename_p filename, const char *otherfile, struct csync_command *cmd, char *peer)
 {
     if ( cmd->update != NOP)
-	csync_file_update(db, filename, peer);
+	daemon_file_update(db, filename, peer);
 
     if (otherfile)
-	csync_file_update(db, otherfile, peer);
+	daemon_file_update(db, otherfile, peer);
     if ( cmd->update == UPD ) {
 	csync_info(1, "Updated(%s) %s:%s %s \n",
 		    cmd->text,
