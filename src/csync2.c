@@ -20,6 +20,7 @@
 
 #include "csync2.h"
 #include "version.h"
+#include "redis.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -1023,6 +1024,8 @@ nofork:
 
     db_conn_p db = csync_db_open(csync_database);
     db->version = db_version;
+    // Handles NULL
+    csync_redis_connect(csync_redis);
 
     if (mode == MODE_UPGRADE_DB) {
 	int rc = db->upgrade_db(db);
@@ -1233,6 +1236,7 @@ nofork:
     csync_run_commands(db);
     csync_db_close(db);
     csync_config_destroy();
+    csync_redis_close();
     if (active_peers) {
 	free(active_peers);
     }
