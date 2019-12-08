@@ -25,5 +25,5 @@ echo "Not Same content" > ${LOCAL_DIR}/same_content
 cmd c "9 Check local (autoresolve, same content)"
 cmd u "10 Same content (${TEST})"
 rm -rf test/local
-#cmd x "11 clean (${TEST})"
-#killdaemon
+cmd x "11 clean (${TEST})"
+killdaemon
