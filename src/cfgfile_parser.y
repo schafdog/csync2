@@ -557,7 +557,7 @@ void csync_config_destroy() {
     nossl_destroy(csync_nossl);
     if (csync_database) 
 	free(csync_database);
-    if (csync_redis) 
+    if (csync_redis)
 	free(csync_redis);
     csync_nossl = NULL;
     csync_config_destroy_group(csync_group);
