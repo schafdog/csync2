@@ -729,7 +729,7 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	csync_rs_sig(conn, filename);
 	if (csync_rs_patch(conn, filename)) {
 	    *cmd_error = strerror(errno);
-	    return clear_redis_lock(filename, lock_time, ABORT_CMD);
+	    return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 	}
 	//TODO restore hardlinks
 	struct stat st_patched;
@@ -751,9 +751,9 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	}
 	else
 	    csync_error(0, "ERROR: Failed to stat patched file: %s %d", filename, new_rc);
-	return clear_redis_lock(filename, lock_time, OK);
+	return csync_redis_unlock_status(filename, lock_time, OK);
     }
-    return clear_redis_lock(filename, lock_time, ABORT_CMD);
+    return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 }
 
 int csync_daemon_mkdir(filename_p filename, const char **cmd_error)
