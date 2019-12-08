@@ -78,7 +78,9 @@ function cmd {
 	echo $PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
 	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
     fi
-    testing ${TESTNAME}/${COUNT}.log
+    if [ "$SKIP_LOG" != "YES" ] ; then
+       testing ${TESTNAME}/${COUNT}.log
+    fi
     echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql --protocol tcp -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
 #    echo "select filename from file; select peername,filename,operation,other from dirty order by peername, timestamp;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
