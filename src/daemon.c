@@ -719,7 +719,7 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	// ALREADY done before patch csync_unlink(db, filename, recursive);
     }
     time_t lock_time = csync_redis_lock(filename);
-    if (lock_time == 0) {
+    if (lock_time == -1) {
 	conn_printf(conn, "ERROR (locked).\n");
 	return ABORT_CMD;
     }
