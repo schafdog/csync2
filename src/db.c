@@ -107,7 +107,7 @@ void csync_db_maycommit(db_conn_p db)
     if (wait_length && (now - last_wait_cycle) > 10) {
 	SQL(db, "COMMIT", "COMMIT ");
 	if (wait_length) {
-	    csync_info(3, "Waiting %d secs so others can lock the database (%d - %d)...\n",
+	    csync_info(2, "Waiting %d secs so others can lock the database (%d - %d)...\n",
 			wait_length, (int)now, (int)last_wait_cycle);
 	    sleep(wait_length);
 	}
