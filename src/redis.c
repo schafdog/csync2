@@ -50,7 +50,7 @@ time_t csync_redis_lock(filename_p filename) {
     if (strcmp(redis_reply->str, "OK")) {
 	unix_time = -1;
     }
-    csync_debug(1, "csync_redis_lock: %s %s %d\n", redis_reply->str, filename, unix_time);
+    csync_debug(2, "csync_redis_lock: %s %s %d\n", redis_reply->str, filename, unix_time);
     freeReplyObject(redis_reply);
     return unix_time;
 }
@@ -62,8 +62,9 @@ void csync_redis_unlock(filename_p filename, time_t unix_time) {
     if (now > unix_time + lock_time) {
 	csync_debug(0, "operation took longer than lock time: %d (%d)\n", time - unix_time, lock_time);
     } else {
+	csync_debug(1, "Unlocking file: %s\n", filename);
 	redis_reply = redisCommand(redis_context, "DEL %s", filename);
-	csync_debug(1, "csync_redis_unlock: %d %s %d\n", redis_reply->integer, filename, unix_time);
+	csync_debug(2, "csync_redis_unlock: %d %s %d\n", redis_reply->integer, filename, unix_time);
 	if (redis_reply->integer != 1)
 	    csync_debug(0, "redis_unlock failed to delete one key: %d\n", redis_reply->integer);
 	freeReplyObject(redis_reply);
