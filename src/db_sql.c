@@ -794,10 +794,9 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
     BUF_P buf = buffer_init();
     int count = SQL(db,
 		    "Adding new file entry",
-		    "INSERT INTO file (filename, checktxt, device, inode, digest, mode, size, mtime, type) "
-		    "values ('%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ",
-//		    "FROM (SELECT 1 As Value) AS Z "
-//		    "WHERE NOT EXISTS (SELECT 1 FROM file WHERE filename = '%s')",
+		    "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+		    "values ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ",
+		    myhostname,
 		    encoded,
 		    checktxt_encoded,
 		    fstat_dev(file_stat),
@@ -810,6 +809,14 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 		    encoded
 	);
     buffer_destroy(buf);
+    return count;
+}
+
+int db_sql_insert_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+			      const char *digest) {
+    int count = db_sql_update_file(db, encoded, checktxt_encoded, file_stat, digest);
+    if (count <= 0)
+	count = db_sql_insert_file(db, encoded, checktxt_encoded, file_stat, digest);
     return count;
 }
 
@@ -996,6 +1003,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->get_command_filename = db_sql_get_command_filename;
     conn->update_file = db_sql_update_file;
     conn->insert_file = db_sql_insert_file;
+    conn->insert_update_file = db_sql_insert_update_file;
     conn->check_delete  = db_sql_check_delete;
     conn->add_action = db_sql_add_action;
     conn->del_action = db_sql_del_action;
