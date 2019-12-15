@@ -311,6 +311,41 @@ int db_mysql_stmt_close(db_stmt_p stmt)
   return DB_OK; 
 }
 
+unsigned long long fstat_dev(struct stat *file_stat);
+int db_mysql_replace_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+			      const char *digest) {
+    BUF_P buf = buffer_init();
+    char *digest_quote = buffer_quote(buf, digest);
+    int count = SQL(db,
+		    "Add or update file entry",
+		    "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+		    "VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON DUPLICATE KEY UPDATE "
+		    "checktxt = '%s', device = %lu, inode = %llu, "
+		    "digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u",
+		    myhostname,
+		    encoded,
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode),
+		    // SET
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode)
+	);
+    buffer_destroy(buf);
+    return count;
+}
+
 #define FILE_LENGTH 250
 #define HOST_LENGTH  50
 int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
@@ -427,7 +462,7 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
     return rc;
   }
 
-  if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL) {
+  if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, CLIENT_FOUND_ROWS) == NULL) {
     if (f.mysql_errno_fn(db) == ER_BAD_DB_ERROR) {
       if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
 	ASPRINTF(&create_database_statement, "create database %s", database);
@@ -464,6 +499,7 @@ fatal:
   conn->private = db;
   conn->close   = db_mysql_close;
   conn->exec    = db_mysql_exec;
+  conn->insert_update_file = db_mysql_replace_file;
   conn->prepare = db_mysql_prepare;
   conn->errmsg  = db_mysql_errmsg;
   conn->upgrade_to_schema = db_mysql_upgrade_to_schema;
