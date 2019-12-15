@@ -6,16 +6,18 @@ mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2
 mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 mark other: MOD_DIR(129) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local' '(null)'
 mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local (not synced) .
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows affected: 1
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows matched: 1
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' '-'.
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp rows affected: 1
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp rows matched: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
+?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
 Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
 Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' ''
+?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp
 Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp
