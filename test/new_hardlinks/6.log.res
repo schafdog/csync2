@@ -1,4 +1,5 @@
 cmd m "6 more files hardlinked (mark)" local peer test
+Connecting to redis localhost:6379
 mark other operation: 'MARK' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 mark other operation: 'MARK' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new' '-'.
 mark other operation: 'MARK' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked' '-'.

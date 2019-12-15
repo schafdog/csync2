@@ -1,4 +1,5 @@
 cmd x "Both updated (peer dirty)" local peer test
+Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
@@ -12,9 +13,13 @@ Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/diff
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/different
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/different' ''
 ?F: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/different
 While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/different
 ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/different) rc: -11 
 File stays in dirty state after autoresolve. Try again later...
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/different

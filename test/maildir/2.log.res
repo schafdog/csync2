@@ -1,4 +1,5 @@
 cmd x "Setup Maildir" local peer test
+Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
@@ -25,10 +26,24 @@ Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/Mail
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new
+Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
+Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
