@@ -7,7 +7,7 @@
 
 redisContext *redis_context = NULL;
 redisReply *redis_reply = NULL;
-int isunix = 0;    
+int isunix = 0;
 
 int lock_time = 60;
 
