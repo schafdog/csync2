@@ -274,12 +274,9 @@ void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername)
 	  csync_error(0, "ERROR: generating digest for '%s': %s %d", filename, digest, rc);
     }
     csync_log(LOG_DEBUG, 2, "daemon_file_update: UPDATE/INSERT into file filename: %s\n", filename);
-    db->remove_file(db, filename, 0);
-    //long count = db->update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
-    ///if (count == 0)
-    long count = db->insert_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
-    if (count == 0)
-	csync_warn(1, "Failed to update or insert %s", filename);
+    int count = db->insert_update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
+    if (count < 0)
+	csync_warn(1, "Failed to update or insert %s: %d", filename, count);
     if (digest)
       free(digest);
   }
@@ -1460,7 +1457,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 			       &peername, &peeraddr, &otherfile,
 			       &cmd_error);
 	
-      if (rc == OK || rc ==  IDENTICAL) {
+      if (rc == OK || rc == IDENTICAL) {
 	 // check updates done
 	 csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" ));
 	 csync_daemon_check_update(db, filename, otherfile, cmd, peername);

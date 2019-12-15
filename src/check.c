@@ -653,13 +653,14 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	long count;
 	// operation does not reflect result/change in mark_other (which marks dirty)
 	// But only whether it was found in File. This is a race-condition
+	// TODO clean no need for if else when using insert_update...
 	if (is_upgrade|| operation & OP_MOD || operation & OP_MOD2) {
 	    count = db->update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
 	else {
-	    count = db->insert_file(db, encoded, checktxt_encoded, file_stat, digest);
+	    count = db->insert_update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
-	csync_log(LOG_INFO, 1, "Inserted/updated %s rows affected: %ld\n", file, count);
+	csync_log(LOG_INFO, 1, "Inserted/updated %s rows affected/matched: %ld\n", file, count);
     }
     buffer_destroy(buffer);
     return count;
