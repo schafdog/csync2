@@ -660,7 +660,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	else {
 	    count = db->insert_update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
-	csync_log(LOG_INFO, 1, "Inserted/updated %s rows affected/matched: %ld\n", file, count);
+	csync_log(LOG_INFO, 1, "Inserted/updated %s rows matched: %ld\n", file, count);
     }
     buffer_destroy(buffer);
     return count;
