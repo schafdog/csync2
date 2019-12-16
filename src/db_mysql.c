@@ -206,6 +206,9 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
 
   conn->affected_rows = f.mysql_affected_rows_fn(conn->private);
 
+  if (rc == 0) {
+      return DB_OK;
+  }
   if (rc == ER_LOCK_DEADLOCK) {
       return DB_BUSY;
   }
@@ -214,7 +217,8 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
     return DB_ERROR;
   }
   /* On error parse, create DB ERROR element */
-  return rc;
+  csync_warn(0, "Unmapped MYSQL error: %d \n", rc);
+  return rc > 0 ? -rc : rc;
 }
 
 int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, 
