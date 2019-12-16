@@ -36,7 +36,7 @@ int db_sync_mode = 1;
 extern int db_type; 
 static db_conn_p global_db = 0;
 // TODO make configurable
-static int wait_length = 0;
+static int wait_length = 2;
 
 static int get_dblock_timeout()
 {
