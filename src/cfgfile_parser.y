@@ -71,6 +71,7 @@ static void new_group(char *name)
 	t->backup_generations = 3;
 	t->host = 0;
 	t->pattern = 0;
+	t->flags = 0;
 	csync_group = t;
 	csync_log(LOG_DEBUG, 3, "New group: %s\n", name);
 }
@@ -222,6 +223,12 @@ static void set_bak_gen(char *gen)
     free(gen);
 }
 
+static void set_flags(char *flags)
+{
+    csync_group->backup_generations = atoi(flags);
+    free(flags);
+}
+
 static void check_group()
 {
     if ( ! csync_group->key )
@@ -331,6 +338,16 @@ static void host_destroy(struct csync_group_host *host) {
     free(host);
 }
 
+static void csync_hostinfo_destroy(struct csync_hostinfo *hostinfo) {
+    if (!hostinfo)
+	return ; 
+    csync_hostinfo_destroy(hostinfo->next);
+    free(hostinfo->name);
+    free(hostinfo->host);
+    free(hostinfo->port);
+    free(hostinfo);
+}
+
 static void pattern_destroy(struct csync_group_pattern *pattern) {
   if (!pattern)
     return ; 
@@ -428,20 +445,15 @@ static void set_ip_version(char *version)
   free(version);
 }
 
-static void new_hostinfo_entry(char *name, char *host_service)
+static void new_hostinfo_entry(char *name, char *host, char *service)
 {
      struct csync_hostinfo *p =
 	 calloc(sizeof(struct csync_hostinfo), 1);
-     p->name = name;
-     p->host = host_service;
-     p->port = NULL;
-     char *pos_port = strchr(host_service, ':'); 
-     if (pos_port) {
-	 *pos_port = 0;
-	 p->port = pos_port+1;
-     }
-     csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
      p->next = csync_hostinfo;
+     p->name = name;
+     p->host = host;
+     p->port = service;
+     csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
      csync_hostinfo = p;
 }
 
@@ -543,6 +555,8 @@ void csync_config_destroy() {
     csync_nossl = NULL;
     csync_config_destroy_group(csync_group);
     csync_group = NULL;
+    csync_hostinfo_destroy(csync_hostinfo);
+    csync_hostinfo = NULL;
     // TOOD other struct
 }
 
@@ -571,6 +585,7 @@ static void disable_cygwin_lowercase_hack()
 %token TK_ACTION TK_PATTERN TK_EXEC TK_DOLOCAL TK_LOGFILE TK_NOCYGLOWER
 %token TK_PREFIX TK_ON TK_COLON TK_POPEN TK_PCLOSE
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
+%token TK_FLAGS
 %token TK_TEMPDIR
 %token TK_LOCK_TIMEOUT TK_HOSTS
 %token <txt> TK_STRING
@@ -625,7 +640,9 @@ prefix_list:
 alias_list:
 	/* empty */
 |	alias_list TK_STRING TK_COLON TK_STRING TK_STEND
-		{ new_hostinfo_entry($2, $4); }
+                { new_hostinfo_entry($2, $4, strdup(csync_port)); }
+|	alias_list TK_STRING TK_COLON TK_STRING TK_COLON TK_STRING TK_STEND
+                { new_hostinfo_entry($2, $4, $6); }
 ;
 
 block_header:
@@ -659,6 +676,8 @@ stmt:
 		{ set_bak_dir($2); }
 |	TK_BAK_GEN TK_STRING
 		{ set_bak_gen($2); }
+|	TK_FLAGS TK_STRING
+		{ set_flags($2); }
 ;
 
 host_list:

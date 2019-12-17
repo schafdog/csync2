@@ -1,0 +1,47 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2016 Valentin Vidic <Valentin.Vidic@CARNet.hr>,
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH CSYNC2\-COMPARE 1 "2016-10-07" "csync2\-compare" "User Commands"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+csync2\-compare \- simulate a directory sync between two hosts
+.SH SYNOPSIS
+.B csync2\-compare
+.RI [\-v]
+.RI host1
+.RI host2
+.RI basedir
+.SH DESCRIPTION
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics,
+.\" respectively.
+\fBcsync2\-compare\fP compares the synchronization for the directory basedir
+in one direction (host1 \-> host2) with the synchronization in the other
+direction (host2 \-> host1).  Only files that differ between the hosts
+are reported.
+.PP
+This command uses ssh for starting csync2 on hosts and works best when
+public key authentication is in place.
+.SH OPTIONS
+.TP
+.B \-v
+Produce a more verbose output.
+.SH SEE ALSO
+.BR csync2 (1)
+.SH AUTHOR
+This manual page was written by Valentin Vidic <Valentin.Vidic@CARNet.hr>
+for the Debian project (but may be used by others).

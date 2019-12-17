@@ -70,49 +70,49 @@ operation_t csync_operation(const char *operation)
 	csync_warn(0, "Called with null operation");
 	return OP_UNDEF;
     }
-	if (!strcmp(operation, "NEW"))
-		return OP_NEW;
-	if (!strcmp(operation, "MKDIR"))
-		return OP_MKDIR;
-	if (!strcmp(operation, "MKINFO"))
-		return OP_NEW;
-	if (!strcmp(operation, "MKCHR"))
-		return OP_NEW;
-	if (!strcmp(operation, "MOVE"))
-		return OP_MOVE;
-	if (!strcmp(operation, "MV"))
-		return OP_MOVE;
-	if (!strcmp(operation, "HARDLINK"))
-		return OP_HARDLINK;
-	if (!strcmp(operation, "RM"))
-		return OP_RM;
-	if (!strncmp(operation, "MOD",3))
-		return OP_MOD;
-	if (!strncmp(operation, "MARK",3))
-		return OP_MARK;
-	csync_warn(0, "Called with unknown operation: %s", operation);
-	return OP_UNDEF;
+    if (!strcmp(operation, "NEW"))
+	return OP_NEW;
+    if (!strcmp(operation, "MKDIR"))
+	return OP_MKDIR;
+    if (!strcmp(operation, "MKINFO"))
+	return OP_NEW;
+    if (!strcmp(operation, "MKCHR"))
+	return OP_NEW;
+    if (!strcmp(operation, "MOVE"))
+	return OP_MOVE;
+    if (!strcmp(operation, "MV"))
+	return OP_MOVE;
+    if (!strcmp(operation, "HARDLINK"))
+	return OP_HARDLINK;
+    if (!strcmp(operation, "RM"))
+	return OP_RM;
+    if (!strncmp(operation, "MOD",3))
+	return OP_MOD;
+    if (!strncmp(operation, "MARK",4))
+	return OP_MARK;
+    csync_warn(0, "Called with unknown operation: %s", operation);
+    return OP_UNDEF;
 }
 
 const char *csync_operation_str(operation_t op) {
-	switch (op) {
-	case OP_NEW:
-		return "NEW";
-	case OP_MKDIR:
-		return "MKDIR";
-	case OP_MOD:
-		return "MOD";
-	case OP_RM:
-		return "RM";
-	case OP_HARDLINK:
-		return "HARDLINK";
-	case OP_MARK:
-		return "MARK";
-	case OP_MOVE:
-		return "MV";
-	}
-	// UNDEF
-	return "?";
+    switch (op & OP_FILTER) {
+    case OP_NEW:
+	return "NEW";
+    case OP_MKDIR:
+	return "MKDIR";
+    case OP_MOD:
+	return "MOD";
+    case OP_RM:
+	return "RM";
+    case OP_HARDLINK:
+	return "HARDLINK";
+    case OP_MARK:
+	return "MARK";
+    case OP_MOVE:
+	return "MV";
+    }
+    csync_error(1, "No mapping for operation: %u %u\n", op, OP_FILTER);
+    return "?";
 }
 int read_conn_status_raw(int fd, const char *file, const char *host, char *line, int maxlength)
 {
@@ -128,8 +128,11 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 	csync_error(0, line);
 	return CONN_CLOSE;
     }
-    if (strncmp(line, "ERROR (Path not found)", 15) == 0)
+    if (strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN) == 0) {
+	strncpy(line, line+PATH_NOT_FOUND_LEN, maxlength);
 	return ERROR_PATH_MISSING;
+    }
+
     if ( file )
 	csync_error(0, "While syncing file: %s\n", file);
     else
@@ -225,7 +228,7 @@ static int get_auto_method(peername_p peername, filename_p filename)
     const struct csync_group *g = 0;
     const struct csync_group_host *h;
 
-    while ( (g=csync_find_next(g, filename)) ) {
+    while ( (g=csync_find_next(g, filename, 0)) ) {
 	for (h = g->host; h; h = h->next) {
 	    if (!strcmp(h->hostname, peername)) {
 		if (g->auto_method == CSYNC_AUTO_METHOD_LEFT && h->on_left_side)
@@ -244,7 +247,7 @@ static int get_master_slave_status(peername_p peername, filename_p filename)
 	const struct csync_group *g = 0;
 	const struct csync_group_host *h;
 
-	while ( (g=csync_find_next(g, filename)) ) {
+	while ( (g=csync_find_next(g, filename, 0)) ) {
 		if (g->local_slave)
 			continue;
 		for (h = g->host; h; h = h->next) {
@@ -437,10 +440,16 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    else
 		return status;
 	}
-	if ( !conn_gets_newline(conn, chk_peer, 4096, 1) )
+	int buf_size = 4096;
+	char buffer[buf_size];
+	char digest_peer[buf_size];
+	if ( !conn_gets_newline(conn, buffer, buf_size, 1) )
 	    return ERROR;
+	int n = sscanf(buffer, "%s %s", chk_peer, digest_peer);
 	const char *chk_peer_decoded = url_decode(chk_peer);
-
+	if (n == 2) {
+	    csync_log(LOG_INFO, 2, "Got digest from remote: %s\n", digest_peer);
+	}
 	if ((i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
 	    csync_info(2, "File is different on peer (cktxt char #%d).\n", i);
 	    csync_info(2, ">>> PEER:  %s\n>>> LOCAL: %s\n",
@@ -481,8 +490,8 @@ int csync_update_file_del(int conn, db_conn_p db,
     }
 }
 
-#define REG_TYPE 1
-#define DIR_TYPE 2
+#define DIR_TYPE 1
+#define REG_TYPE 2
 #define CHR_TYPE 3
 #define BLK_TYPE 4
 #define FIFO_TYPE 5
@@ -513,13 +522,13 @@ int get_file_type(int st_mode) {
  */
 void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
-		const struct stat *st, const char *uid, const char* gid) {
+		const struct stat *st, const char *uid, const char* gid, const char *digest) {
     if (st) {
-	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %Ld\n",
+	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %Ld %s\n",
 		    cmd, key, filename, secondname,
 		    st->st_uid, st->st_gid,
 		    uid, gid,
-		    st->st_mode, (long long) st->st_mtime);
+		    st->st_mode, (long long) st->st_mtime, (digest ? digest : ""));
     }
     else {
 	conn_printf(conn, "%s %s %s %s\n",
@@ -561,16 +570,74 @@ int csync_update_file_dir(int conn, peername_p peername, filename_p filename,
     return *last_conn_status;
 }
 
+int csync_create_directory(int conn, const char *key_enc, peername_p peername,
+		     filename_p filename, filename_p filename_enc,
+		     struct stat *st, char *uid, char *gid,
+		     int *last_conn_status)
+{
+    cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", st, uid, gid, NULL);
+    int rc = csync_update_file_dir(conn, peername, filename, last_conn_status);
+    return rc;
+}
+
+int csync_update_directory(int conn,
+			   const char *myname, peername_p peername,
+			   const char *dirname, int force, int dry_run);
+
+
+int csync_fix_path(int conn, peername_p myname, peername_p peername, filename_p filename, char *buffer)
+{
+    int rc;
+    char *local_file = strdup(filename);
+    int org_len = strlen(filename);
+    csync_log(LOG_INFO, 1, "PATH MISSING: '%s'\n", buffer);
+    const char *path_not_found = prefixsubst(url_decode(buffer));
+    csync_log(LOG_INFO, 1, "PATH MISSING (decoded): '%s'\n", path_not_found);
+    int path_len = strlen(path_not_found);
+    while (1) {
+	char ch = local_file[path_len];
+	if (ch == '/') {
+	    local_file[path_len] = 0;
+	    rc = csync_update_directory(conn, myname, peername, local_file, /*force */ 1, /* dryrun */ 0);
+	    local_file[path_len] = ch;
+	}
+	else {
+	    csync_log(LOG_ERR, 1, "Error in ERROR_PATH_MISSING when fixing %s of %s: Not a slash at %d", local_file, path_len);
+	    free(local_file);
+	    return ERROR_PATH_MISSING;
+	}
+	csync_log(LOG_INFO, 1, "UPDATE_DIRECTORY: %d\n", rc);
+	if (rc != OK && rc != IDENTICAL)
+	    break;
+	while (++path_len < org_len && local_file[path_len] != '/')
+	    ;
+	if (path_len == org_len) {
+	    csync_log(LOG_INFO, 2, "Fixed missing path for file %s\n", filename);
+	    break;
+	}
+    }
+    free(local_file);
+    if (rc != OK)
+	return ERROR_PATH_MISSING;
+    if (rc != OK) {
+	csync_log(LOG_ERR, 1, "Failed to recover from ERROR_PATH_MISSING for %s: ", filename, rc);
+    }
+    return rc;
+}
 
 /* PRE: command SIG have been sent 
    st can be null */
-int csync_update_file_sig(int conn, peername_p peername, filename_p filename,
+int csync_update_file_sig(int conn, peername_p myname, peername_p peername, filename_p filename,
 			  const struct stat *st, const char *chk_local, const char *digest, int log_level)
 {
     int i = 0;
     char chk_peer[4096] = "---";
-
-    int rc = read_conn_status(conn, filename, peername);
+    char buffer[4096];
+    int rc = read_conn_status_raw(conn, filename, peername, buffer, 4096);
+    csync_log(LOG_INFO, 2, "update_file_sig %s RC %d\n", filename, rc);
+    if (rc == ERROR_PATH_MISSING) {
+	csync_fix_path(conn, myname, peername, filename, buffer);
+    }
     if (rc < 0 || rc == OK_MISSING)
 	return rc;
 
@@ -597,7 +664,7 @@ int csync_update_file_sig(int conn, peername_p peername, filename_p filename,
 					      peer_version);
     if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 	csync_info(log_level, "File is different on peer (cktxt char #%d).\n", i);
-	csync_info(log_level, ">>> %s:  %s\n>>> %s: %s\n",
+	csync_info(log_level, ">>> %s:\t%s\n>>> %s:\t%s\n",
 		    peername, chk_peer_decoded, "LOCAL", chk_local);
 	return rc | DIFF_META;
     }
@@ -634,6 +701,7 @@ int csync_update_hardlink(int conn, peername_p peername, const char *key_encoded
 
 int csync_update_file_all_hardlink(int conn,
 				   db_conn_p db,
+				   peername_p myname,
 				   peername_p peername,
 				   const char *key_encoded,
 				   filename_p filename, filename_p filename_enc,
@@ -659,7 +727,7 @@ int csync_update_file_all_hardlink(int conn,
 
 	    const char *path = filename_enc, *other_enc = url_encode(prefixencode(other));
 	    int rc;
-	    rc = csync_update_file_sig_rs_diff(conn,
+	    rc = csync_update_file_sig_rs_diff(conn, myname,
 					       peername, db_escape(db, key),
 					       other, other_enc,
 					       st, uid, gid,
@@ -702,9 +770,10 @@ int csync_update_file_patch(int conn,
 			    const struct stat *st,
 			    const char *uid,
 			    const char *gid,
+			    const char *digest,
 			    int *last_conn_status)
 {
-    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid);
+    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, digest);
     int rc = csync_update_reg_file(conn, peername, filename, last_conn_status);
     return rc;
 }
@@ -731,7 +800,58 @@ int csync_stat(filename_p filename, struct stat *st, char uid[MAX_UID_SIZE], cha
     return rc;
 }
 
-int csync_update_file_sig_rs_diff(int conn,
+int csync_update_directory(int conn, 
+			   const char *myname, peername_p peername,
+			   const char *dirname, int force, int dry_run)
+{
+    struct stat dir_st;
+    const char *key = csync_key(peername, dirname);
+    if ( !key ) {
+	csync_info(4, "Skipping directory update %s on %s - not in my groups.\n", dirname, peername);
+	return OK;
+    }
+    const char *key_enc = url_encode(key);
+    char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
+    int rc = csync_stat(dirname, &dir_st, uid, gid);
+    if (rc != 0) {
+	csync_log(LOG_DEBUG, 3, "Silent skipping missing directory %s.\n", dirname);
+	return OK;
+    }
+    int last_conn_status;
+    if (get_file_type(dir_st.st_mode) == DIR_TYPE) {
+	const char *dirname_enc = url_encode(prefixencode(dirname));
+	if (force) {
+	    csync_info(2, "creating directory %s\n", dirname);
+	    cmd_printf(conn, "MKDIR", key_enc, dirname_enc, "-", &dir_st, uid, gid, NULL);
+	    rc = csync_update_file_dir(conn, peername, dirname, &last_conn_status);
+	    if (rc == IDENTICAL) {
+		return rc;
+	    }
+	    csync_info(2, "SETOWN on %s: %s %s\n", dirname, uid, gid);
+	    rc = csync_update_file_setown(conn, peername, key_enc, dirname,
+					  dirname_enc, &dir_st, uid, gid);
+	    if (rc != OK) {
+		csync_log(LOG_ERR, 1, "Failed to SETOWN on %s", dirname);
+		return rc;
+	    }
+	    csync_info(2, "SETMOD on %s: %s %s\n", dirname, dir_st.st_mode);
+	    rc = csync_update_file_setmod(conn, peername, key_enc, dirname,
+					  dirname_enc, &dir_st);
+	    if (rc != OK) {
+		csync_log(LOG_ERR, 1, "Failed to SETMOD on %s", dirname);
+		return rc;
+	    }
+	}	
+	csync_info(2, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
+	rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
+	return rc;
+    }
+    csync_warn(1, "WARN: update_directory called on non-directory %s.\n", dirname);
+    return OK;
+}
+
+
+int csync_update_file_sig_rs_diff(int conn, peername_p myname,
 				  peername_p peername, const char *key_enc,
 				  filename_p filename, filename_p filename_enc,
 				  const struct stat *st,
@@ -740,8 +860,8 @@ int csync_update_file_sig_rs_diff(int conn,
 				  int *last_conn_status, int log_level)
 {
     csync_log(LOG_DEBUG, 3, "csync_update_file_sig_rs_diff %s:%s\n", peername, filename);
-    cmd_printf(conn, "SIG", key_enc, filename_enc, "user/group", st, uid, gid);
-    int rc = csync_update_file_sig(conn, peername, filename, st, chk_local, digest, log_level);
+    cmd_printf(conn, "SIG", key_enc, filename_enc, "user/group", st, uid, gid, digest);
+    int rc = csync_update_file_sig(conn, myname, peername, filename, st, chk_local, digest, log_level);
     if (rc < OK || rc & OK_MISSING)
 	return rc;
     csync_log(LOG_DEBUG, 3, "Continue to rs_check %s %d\n", filename, rc);
@@ -800,38 +920,51 @@ int csync_update_file_move(int conn, db_conn_p db, const char* myname, peername_
     return DIFF_FILE;
 }
 
-int csync_update_directory(int conn,
-			   const char *myname, peername_p peername,
-			   const char *dirname, int force, int dry_run, int db_version) {
+int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname, peername_p peername, const char *key_enc,
+				filename_p filename, filename_p filename_enc, filename_p other,
+				struct stat *st, const char *uid, const char *gid,
+				const char *digest, int *last_conn_status, int auto_resolve_run)
+{
+    csync_log(LOG_DEBUG, 1, "do hardlink check %s %s \n", filename, other);
 
-  struct stat dir_st;
-  const char *key = csync_key(peername, dirname);
-  if ( !key ) {
-    csync_info(4, "Skipping directory update %s on %s - not in my groups.\n", dirname, peername);
-    return OK;
-  }
-  const char *key_enc = url_encode(key);
+    const char *other_enc = url_encode(prefixencode(other));
+    struct stat st_other;
+    int rc = stat(other, &st_other);
+    if (rc == 0) {
+	int rc = csync_update_file_sig_rs_diff(conn, myname,
+					       peername, key_enc, other,
+					       other_enc, st, uid, gid,
+					       NULL, digest, last_conn_status, 2);
+	if (rc == CONN_CLOSE)
+	    return rc;
+	if (rc == IDENTICAL)
+	    rc = csync_update_hardlink(conn, peername, key_enc, other,
+				       other_enc, filename, filename_enc,
+				       last_conn_status);
+	else {
+	    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching.\n", other);
+	    rc = ERROR_HARDLINK;
+	}
 
-  int rc = lstat_strict(dirname, &dir_st);
-  if (rc != 0) {
-      csync_log(LOG_DEBUG, 3, "Silent skipping missing directory %s.\n", dirname);
-    return OK;
-  }
-  if (get_file_type(dir_st.st_mode) == DIR_TYPE) {
-    const char *dirname_enc = url_encode(prefixencode(dirname));
-    csync_info(2, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
-    rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
+	if (rc == CONN_CLOSE)
+	    return rc;
+	if (rc == OK) {
+	    csync_clear_dirty(db, peername, filename, auto_resolve_run);
+	    return rc;
+	}
+    }
+    else {
+	csync_warn(0, "Other (%s) does not exist. Not HARDLINK. Patching.\n", other);
+	rc = ERROR_HARDLINK;
+    }
     return rc;
-  }
-  csync_warn(1, "WARN: directory called on non-directory %s.\n", dirname);
-  return OK;
 }
 
-int csync_update_file_mod(int conn, db_conn_p db,
+int csync_update_file_mod_internal(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
 			  filename_p filename, operation_t operation, const char *other,
-			  const char *checktxt, const char *digest,
-			  int force, int dry_run, int db_version)
+			  const char *checktxt, char *digest,
+			  int force, int dry_run, BUF_P buffer)
 {
     struct stat st;
     char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
@@ -911,7 +1044,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 		}
 	    }
 	}
-	int sig_rc = csync_update_file_sig_rs_diff(conn,
+	int sig_rc = csync_update_file_sig_rs_diff(conn, myname,
 						   peername, key_enc, filename,
 						   filename_enc, &st, uid, gid,
 						   NULL, digest, &last_conn_status, 2);
@@ -927,38 +1060,69 @@ int csync_update_file_mod(int conn, db_conn_p db,
 	    return rc;
 	}
 
-	if (operation == OP_HARDLINK) {
-	    csync_log(LOG_DEBUG, 1, "check hardlink OP %s %s %s \n", operation_str,
-			filename, other);
-
-	    const char *other_enc = url_encode(prefixencode(other));
-	    struct stat st_other;
-	    int rc = stat(other, &st_other);
-	    if (rc == 0) {
-		int rc = csync_update_file_sig_rs_diff(conn,
-						       peername, key_enc, other,
-						       other_enc, &st, uid, gid,
-						       NULL, digest, &last_conn_status, 2);
-		if (rc == CONN_CLOSE)
-		    return rc;
-		if (rc == IDENTICAL)
-		    rc = csync_update_hardlink(conn, peername, key_enc, other,
-					       other_enc, filename, filename_enc,
-					       &last_conn_status);
-		else {
-		    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching.", other);
-		    rc = ERROR_HARDLINK;
+	csync_debug(3, "has links: file %s checktxt '%s' %d %d\n", filename, checktxt, st.st_nlink, S_ISREG(st.st_mode));
+	if (operation == OP_MARK) {
+	    int has_links = (st.st_nlink > 1 && S_ISREG(st.st_mode));
+	    if (has_links) {
+		if (!checktxt) {
+		    checktxt = buffer_strdup(buffer, csync_genchecktxt_version(&st, filename, SET_USER|SET_GROUP, db->version));
 		}
+		if (!digest) {
+		    csync_calc_digest(filename, buffer, &digest);
+		}
+		textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
+		textlist_p ptr = tl;
+		while (ptr != NULL) {
+		    csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, filename);
+		    // NOTE move is disabled 
+		    if (0 && ptr->intvalue == OP_RM) {
+			operation = OP_MOVE;
+			db->delete_file(db, ptr->value, 0);
+			other = buffer_strdup(buffer, ptr->value);
+			csync_info(1, "Found MOVE %s -> %s \n", ptr->value, filename);
+			break;
+		    }
+		    else if (ptr->intvalue == OP_HARDLINK) {
+			//operation = OP_HARDLINK;
+			//other = buffer_strdup(buffer, ptr->value);
+			csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, filename);
+			rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc, ptr->value, &st, uid, gid, digest,
+					&last_conn_status, auto_resolve_run);
+			if (rc == ERROR_HARDLINK)
+			    csync_mark(db, ptr->value, myname, peername, OP_RM, 0, 0, 0, 0);
+			if (rc == OK) {
+			    csync_clear_dirty(db, peername, filename, auto_resolve_run);
+			}
+			if (rc == CONN_CLOSE) {
+			    return CONN_CLOSE;
+			}
+			
+		    }
+		    ptr = ptr->next;
+		}
+		textlist_free(tl);
+	    }
+	}
+	if (operation == OP_HARDLINK) {
+	    if (st.st_nlink == 1) {
+		operation = OP_MOD;
+		csync_debug(1, "clear HARDLINK. No longer one\n", filename, other);
+	    }
+	    else {
+		rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc, other, &st, uid, gid, digest,
+						 &last_conn_status, auto_resolve_run);
 
-		if (rc == CONN_CLOSE)
-		    return rc;
-		if (rc == OK) {
-		    csync_clear_dirty(db, peername, filename, auto_resolve_run);
+		if (rc == CONN_CLOSE || rc == OK || rc == IDENTICAL ) {
+		    if (rc == OK || rc == IDENTICAL) {
+			csync_debug(1, "clear dirty HARDLINK\n", filename, other);
+			csync_clear_dirty(db, peername, filename, auto_resolve_run);
+			csync_clear_dirty(db, peername, other, auto_resolve_run);
+		    }
 		    return rc;
 		}
 	    }
 	}
-
+	    
 	/*
 	textlist_p link_move_list = csync_check_link_move(peername,
 								filename, checktxt, operation, digest, &st, NULL);
@@ -1088,7 +1252,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 */
 	    if (sig_rc & (OK_MISSING|DIFF_FILE))
 		rc = csync_update_file_patch(conn, key_enc, peername, filename,
-					     filename_enc, &st, uid, gid, &last_conn_status);
+					     filename_enc, &st, uid, gid, digest, &last_conn_status);
 	    else
 		csync_info(2, "Skipping file patch '%s' (same)", filename);
 
@@ -1110,7 +1274,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 */
 	    break;
 	case DIR_TYPE:
-	    cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid);
+	    cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid, NULL);
 	    rc = csync_update_file_dir(conn, peername, filename, &last_conn_status);
 	    break;
 	case CHR_TYPE:
@@ -1150,9 +1314,9 @@ int csync_update_file_mod(int conn, db_conn_p db,
 			st.st_mode);
 	    rc = ERROR;
 	}
-	csync_log(LOG_DEBUG, 2, "before setown/settime/setmod rc %d.\n", rc);
 	if (rc < OK && rc != ERROR_DIRTY)
 	    return rc;
+	csync_log(LOG_DEBUG, 2, "before setown/settime/setmod on OK. rc %d.\n", rc);
 	if (rc == OK) {
 	    if (rc == OK)
 		rc = csync_update_file_setown(conn, peername, key_enc, filename,
@@ -1168,7 +1332,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 	    rc = csync_update_file_settime(conn, peername, key_enc, filename,
 					   filename_enc, &st);
 	}
-	csync_log(LOG_DEBUG, 2, "After setown/settime/setmod rc %d.\n", rc);
+	csync_log(LOG_DEBUG, 2, "After setown/settime/setmod on OK. rc %d.\n", rc);
 	switch (rc) {
 	case OK:
 	case IDENTICAL:
@@ -1195,6 +1359,23 @@ int csync_update_file_mod(int conn, db_conn_p db,
     csync_fatal(0,"Failed through loop. Should have returned. rc: %d \n", rc);
     return rc;
 }
+
+int csync_update_file_mod(int conn, db_conn_p db,
+			  const char *myname, peername_p peername,
+			  filename_p filename, operation_t operation, const char *other,
+			  const char *checktxt, char *digest,
+			  int force, int dry_run)
+{
+    BUF_P buffer = buffer_init();
+    int rc = csync_update_file_mod_internal(conn, db,
+				   myname, peername,
+				   filename, operation, other,
+				   checktxt, digest,
+				   force, dry_run, buffer);
+    buffer_destroy(buffer);
+    return rc;
+}
+
 
 int csync_update_file_settime(int conn, peername_p peername, const char *key_enc,
 			      filename_p filename, filename_p filename_enc,
@@ -1257,7 +1438,7 @@ int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char *op_st
 
 void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 		       const char **patlist, int patnum, 
-		       int ip_version, int db_version, int flags)
+		       int ip_version, int flags)
 {
     textlist_p tl = 0, t, next_t;
     textlist_p tl_del = 0, *last_tn=&tl;
@@ -1290,8 +1471,8 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
     next_t = t->next;
     if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	rc = csync_update_file_mod(conn, db, myname, peername,
-				   t->value, t->operation, t->value3,
-				   t->value4, t->value5, t->intvalue, flags & FLAG_DRY_RUN, db_version);
+				   t->value /* file */, t->operation, t->value3, /* other */
+				   t->value4 /* checktxt */, t->value5 /* digest */, t->intvalue, flags & FLAG_DRY_RUN);
 	if (rc == CONN_CLOSE) {
 	    csync_error(0, "Connection closed on updating %s\n", t->value);
 	    break;
@@ -1333,7 +1514,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 
   if (! (flags & FLAG_DRY_RUN))
      for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
-	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN, db_version);
+	 rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
 	 if (rc == CONN_CLOSE) {
 	     csync_error(0, "Connection closed on setting time on directory %s\n", t->value);
 	     break;
@@ -1350,7 +1531,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 
 void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 		     const char **patlist, int patnum, 
-		     int ip_version, int db_version, int flags)
+		     int ip_version, int flags)
 {
     textlist_p tl = 0, t = 0;
     int i, use_this = patnum == 0;
@@ -1364,6 +1545,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
     }
     /* just return if there are no files to update */
     if ( !tl) {
+	csync_log(LOG_DEBUG, 0, "csync_sync_host: no files to sync\n");
 	return;
     }
     int conn = connect_to_host(db, peername, ip_version);
@@ -1404,7 +1586,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 	    int rc_exist = csync_stat(filename, &st, uid, gid);
 	    if (!rc_exist) {
 		int last_conn_status;
-		int rc = csync_update_file_sig_rs_diff(conn, peername, key_enc,
+		int rc = csync_update_file_sig_rs_diff(conn, myname, peername, key_enc,
 						       filename, filename_enc,
 						       &st, uid, gid,
 						       chk_local, digest,
@@ -1445,8 +1627,8 @@ int csync_match(const char*filename, const char *patlist[], int patnum, int recu
 }
 
 void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
-		  const char ** patlist, int patnum, int ip_version, int db_version, update_func func,
-		  int flags)
+		  const char ** patlist, int patnum, int ip_version,
+		  update_func func, int flags)
 {
     textlist_p tl = 0, t;
     int i = 0;
@@ -1455,7 +1637,7 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    while (active_peers[i]) {
 		func(db, myhostname, active_peers[i],
 		     patlist, patnum,
-		     ip_version, db_version, flags);
+		     ip_version, flags);
 		i++;
 	    }
 	else
@@ -1481,7 +1663,7 @@ void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
 	    }
 	    if (found)
 		func(db, myhostname, t->value, patlist, patnum,
-		     ip_version, db_version, flags);
+		     ip_version, flags);
 	}
 	textlist_free(tl);
     }
@@ -1502,7 +1684,7 @@ int csync_insynctest_file(int conn,
     struct stat st;
     char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
     int rc_exist = csync_stat(filename, &st, uid, gid);
-    int rc = csync_update_file_sig_rs_diff(conn, peername, key_enc,
+    int rc = csync_update_file_sig_rs_diff(conn, myname, peername, key_enc,
 					   filename, filename_enc,
 					   (!rc_exist  ? &st : NULL), uid, gid,
 					   NULL, NULL,  last_conn_status, 0);
@@ -1529,7 +1711,7 @@ int csync_diff(db_conn_p db,
     int last_conn_status = 0;
     char buffer[512];
     int found = 0;
-    while (!found && (g=csync_find_next(g, filename)) ) {
+    while (!found && (g=csync_find_next(g, filename, 0)) ) {
 	if ( !g->myname || strcmp(g->myname, myname) )
 	    continue;
 	for (h = g->host; h; h = h->next)
@@ -1837,7 +2019,7 @@ int filter_missing_dirty(filename_p filename, const char *localname, peername_p 
     const struct csync_group *g = 0;
     const struct csync_group_host *h;
     int found = 0;
-    while (!found && (g=csync_find_next(g, filename)) != 0) {
+    while (!found && (g=csync_find_next(g, filename, 0)) != 0) {
 	if (!strcmp(g->myname, localname))
 	    for (h = g->host; h; h = h->next) {
 		if (!strcmp(h->hostname, peername)) {
@@ -1851,7 +2033,7 @@ int filter_missing_dirty(filename_p filename, const char *localname, peername_p 
 
 int filter_missing_file(filename_p filename)
 {
-    return csync_find_next(0, filename) != NULL;
+    return csync_find_next(0, filename, 0) != NULL;
 
 };
 

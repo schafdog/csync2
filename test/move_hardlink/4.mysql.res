@@ -23,7 +23,7 @@
 | peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab        | MV        | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123     |   16 |
 | other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab |   32 |
 | peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/123,Sab | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/123,Sab |   32 |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur         | MOD_DIR   | NULL                                                                           |  128 |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur                | MOD_DIR   | NULL                                                                           |  128 |
-| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                | MOD_DIR   | NULL                                                                           |  128 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur         | MKDIR     | NULL                                                                           |  129 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur                | MKDIR     | NULL                                                                           |  129 |
+| peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp                | MKDIR     | NULL                                                                           |  129 |
 +----------+---------------------------------------------------------------------------------------+-----------+--------------------------------------------------------------------------------+------+

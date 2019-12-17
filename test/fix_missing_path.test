@@ -1,0 +1,19 @@
+#
+#
+rm -rf /tmp/csync2.real/*
+rm -rf /tmp/csync2.res
+daemon d PEER
+clean local
+clean peer
+FILENAME="new_file 'N' all"
+DIRNAME=recursive
+TESTDIR=`pwd`/test/$PEER
+mkdir -p "test/$NAME/$DIRNAME"
+mkdir -p "test/$NAME/$DIRNAME/1/2/3/4/5"
+cmd cI "New $NAME/$DIRNAME/.. -I"
+echo "not ignore" > "test/$NAME/$DIRNAME/1/2/3/4/5/file.c"
+sleep 2
+cmd x "Sync with missing directories"
+rm -rf test/$NAME
+cmd x "clean up"
+killdaemon d PEER

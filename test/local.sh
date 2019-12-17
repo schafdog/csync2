@@ -18,11 +18,7 @@ fi
 
 : ${DEBUG:=v}
 
-: ${PORT:=30860}
-: ${SERVER_PORT:=$PORT}
-
 RECURSIVE=r
-echo ${PORT} ${SERVER_PORT}
 
 COUNT=0
 echo "Running command $COMMAND" 
@@ -69,18 +65,18 @@ function cmd {
     fi
     echo cmd $CMD \"$2\" $HOST > ${TESTNAME}/${COUNT}.log 
     if [ "$LLDB" != "" ] ; then 
-	$LLDB -f $PROG -- -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$LLDB -f $PROG -- -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
-	$GDB $PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$GDB $PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
-	$PROG -q -P peer -p ${PORT} -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
+	$PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" >> ${TESTNAME}/${COUNT}.log 2>&1
     fi
     testing ${TESTNAME}/${COUNT}.log
     echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
 #    echo "select filename from file; select peername,filename,operation,other from dirty order by peername, timestamp;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
     testing ${TESTNAME}/${COUNT}.mysql
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
-	rsync --delete -nHav test/local/ peer:`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
+	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
 	testing ${TESTNAME}/${COUNT}.rsync
     fi
     echo "${COUNT}. END $CMD ${DESC}" 
@@ -106,24 +102,26 @@ function daemon {
 	echo "daemon start disabled";
 	return 
     fi
+    # Create backupdir
+    mkdir -p /tmp/csync2 
     CMD="$1"
     echo $NAME $PEER
     if [ "$CMD" == "d" ] ; then 
-	${PROG} -q -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG -p ${SERVER_PORT} > $TESTNAME/daemon.log  2>&1 &
+	${PROG} -q -K csync2_$PEER.cfg -N $PEER -z $NAME -iiii$DEBUG > $TESTNAME/daemon.log  2>&1 &
 	echo "$!" > daemon.pid
     elif [ "$CMD" == "i" ] ; then 
 	if [ "LLDB" != "" ]; then
-	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p ${SERVER_PORT}
+	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG
 	else
-	    $GDB ${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG -p ${SERVER_PORT}
+	    $GDB ${PROG} --args -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG 
 	fi
 #	echo "$!" > daemon.pid
 	sleep 1
     elif [ "$CMD" == "once" ] ; then 
-	${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p ${SERVER_PORT} >> daemon_${NAME}.log 2>&1 & 
+	${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG >> daemon_${NAME}.log 2>&1 & 
     elif [ "$CMD" == "clean_once" ] ; then 
 	clean peer
-	${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG -p ${SERVER_PORT} & 
+	${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG & 
     fi    
 }
 

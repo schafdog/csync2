@@ -42,6 +42,7 @@ typedef textlist_p (*check_old_operation_f) (const char *file,
 
 struct db_conn_t {
     void *private;
+    int         version;
     int         (*exec)   (db_conn_p conn, const char* exec);
     int         (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
     void        (*close)  (db_conn_p conn);
@@ -105,7 +106,7 @@ struct db_conn_t {
     int         (*remove_action_entry)  (db_conn_p conn, filename_p filename, const char *command, const char *logfile);
 
     int        (*check_file) (db_conn_p db, const char *file,
-			      const char *enc, int version, char **other,
+			      const char *enc, char **other,
 			      char *checktxt, struct stat *file_stat,
 			      BUF_P buffer, int *operation,
 			      char **digest, int flags);

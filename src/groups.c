@@ -25,7 +25,7 @@ int csync_compare_mode = 0;
 
 int match_pattern_list(
 		filename_p filename, const char *basename,
-		const struct csync_group_pattern *p)
+		const struct csync_group_pattern *p, int compare_mode)
 {
   int match_path = 0, match_base = 1;
 
@@ -58,8 +58,9 @@ int match_pattern_list(
   return match_path && match_base;
 }
 
-const struct csync_group *csync_find_next(
-		const struct csync_group *g, const char *file)
+const struct csync_group *csync_find_next(const struct csync_group *g,
+					  const char *file,
+					  int compare_mode)
 {
   const char *basename = strrchr(file, '/');
   
@@ -70,15 +71,15 @@ const struct csync_group *csync_find_next(
   
   for (g = g==0 ? csync_group : g->next;  g;  g = g->next) {
     if ( !g->myname ) continue;
-    if ( csync_compare_mode && !g->hasactivepeers ) 
+    if ( compare_mode && !g->hasactivepeers ) 
       continue;
-    if ( match_pattern_list(file, basename, g->pattern) ) 
+    if ( match_pattern_list(file, basename, g->pattern, compare_mode) ) 
       break;
   }
   return g;
 }
 
-int csync_step_into(const char *file)
+int csync_step_into(const char *file, int compare_mode)
 {
   const struct csync_group_pattern *p;
   const struct csync_group *g;
@@ -87,9 +88,9 @@ int csync_step_into(const char *file)
 	
   for (g=csync_group; g; g=g->next) {
     if ( !g->myname ) continue;
-    if ( csync_compare_mode && !g->hasactivepeers ) continue;
+    if ( compare_mode && !g->hasactivepeers ) continue;
     for (p=g->pattern; p; p=p->next) {
-      if ( p->iscompare && !csync_compare_mode )
+      if ( p->iscompare && !compare_mode )
 	continue;
       if ( (p->pattern[0] == '/' || p->pattern[0] == '%') && p->isinclude ) {
 	char t[strlen(p->pattern)+1], *l;
@@ -106,44 +107,46 @@ int csync_step_into(const char *file)
   return 0;
 }
 
-int csync_match_file(const char *file)
+int csync_match_file(const char *file, int compare_mode, const struct csync_group **g)
 {
-  if ( csync_find_next(0, file) ) 
-    return MATCH_NEXT;
-  if ( csync_step_into(file) ) 
-    return MATCH_INTO;
-  return 0;
+    *g = NULL;
+    if ( (*g = csync_find_next(0, file, compare_mode)) )
+	return MATCH_NEXT;
+    if ( csync_step_into(file, compare_mode) ) 
+	return MATCH_INTO;
+    return 0;
 }
 
 void csync_check_usefullness(const char *file, int recursive)
 {
-  if ( csync_find_next(0, file) ) 
-    return;
-  if ( recursive && csync_step_into(file) ) 
-    return;
-  csync_fatal("FATAL: %s did not match any configuration.\n", file);
+    if ( csync_find_next(0, file, 0) ) 
+	return;
+    if ( recursive && csync_step_into(file, 0) ) 
+	return;
+    csync_fatal("FATAL: %s did not match any configuration.\n", file);
 }
 
 int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys)
 {
-  const struct csync_group *g = NULL;
+    const struct csync_group *g = NULL;
 
-  while ( (g=csync_find_next(g, file)) ) {
-    struct csync_group_host *h = g->host;
-    if ( strcmp(myname, g->myname) ) continue;
-    if (keys) {
-      const char **k = keys;
-      while (*k && **k)
-	if ( !strcmp(*(k++), g->key) ) goto found_key;
-      continue;
+    while ( (g=csync_find_next(g, file, 0)) ) {
+	struct csync_group_host *h = g->host;
+	if ( strcmp(myname, g->myname) ) continue;
+	if (keys) {
+	    const char **k = keys;
+	    while (*k && **k)
+		if ( !strcmp(*(k++), g->key) ) goto found_key;
+	    continue;
+	}
+    found_key:
+	while (h) {
+	    if ( !strcmp(h->hostname, peername) )
+		return 1;
+	    h = h->next;
+	}
     }
-  found_key:
-    while (h) {
-      if ( !strcmp(h->hostname, peername) ) return 1;
-      h = h->next;
-    }
-  }
-  return 0;
+    return 0;
 }
 
 struct peer *csync_find_peers(const char *file, const char *thispeer)
@@ -152,7 +155,7 @@ struct peer *csync_find_peers(const char *file, const char *thispeer)
 	struct peer *plist = 0;
 	int pl_size = 0;
 
-	while ( (g=csync_find_next(g, file)) ) {
+	while ( (g=csync_find_next(g, file, 0)) ) {
 		struct csync_group_host *h = g->host;
 
 		if (thispeer) {
@@ -189,20 +192,20 @@ const char *csync_key(const char *hostname, filename_p filename)
 	const struct csync_group *g = NULL;
 	struct csync_group_host *h;
 
-	while ( (g=csync_find_next(g, filename)) )
+	while ( (g=csync_find_next(g, filename, 0)) )
 		for (h = g->host; h; h = h->next)
 			if (!strcmp(h->hostname, hostname)) return g->key;
 
 	return 0;
 }
 
-int csync_perm(filename_p filename, const char *key, const char *hostname)
+int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode)
 {
   const struct csync_group *g = NULL;
   struct csync_group_host *h;
   int false_retcode = 1;
 
-  while ( (g=csync_find_next(g, filename)) ) {
+  while ( (g=csync_find_next(g, filename, compare_mode)) ) {
     if ( !hostname )
       continue;
     for (h = g->host; h; h = h->next)

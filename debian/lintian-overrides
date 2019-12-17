@@ -1,0 +1,2 @@
+# update-inetd is called only if installed
+csync2: maintainer-script-needs-depends-on-update-inetd prerm

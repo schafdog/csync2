@@ -109,10 +109,10 @@ AC_ARG_ENABLE([postgres],
 
 if test "$enable_mysql" == yes
 then
-	mysql=0
-	# Check for mysql.
-	# This is a bloody hack for fedora core
-	# CFLAGS="$CFLAGS `mysql_config --cflags`"
+   PKG_PROG_PKG_CONFIG
+   PKG_CHECK_MODULES([MYSQL], [mariadb] , , [PKG_CHECK_MODULES([MYSQL], [mariadbclient] , , [PKG_CHECK_MODULES([MYSQL], [mysqlclient] , , [] )]) ])
+   CFLAGS="$CFLAGS $MARIADB_CFLAGS"
+   	mysql=0
 
 	# Check MySQL development header
 	AC_CHECK_HEADERS([mysql.h mysql/mysql.h], , [mysql=$((mysql+1))], [[
@@ -130,6 +130,9 @@ then
 	if test "$mysql" -ne 2 
 	then 
 	     AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
+
+	     AC_SEARCH_LIBS(mysql_init, [mysql mariadb mariadbclient] , , [AC_MSG_WARN([[No mysql libraries found]])], )
+
 	else
 	     AC_MSG_WARN([[No MySQL (maria/oracle/percona) headers found. Install mysql-devel and dependencies for MySQL Support]])
 	fi

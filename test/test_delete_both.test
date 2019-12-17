@@ -1,0 +1,15 @@
+daemon d PEER
+clean local
+clean peer
+mkdir -p test/$NAME
+echo A > test/$NAME/file
+mkdir test/$NAME/dir
+cmd x "1 synced file and dir"
+sleep 1
+rm test/$NAME/file
+rmdir test/$NAME/dir
+rm test/$PEER/file
+rmdir test/$PEER/dir
+cmd x "2 Removed both" 
+rm -rf test/$NAME
+cmd x "3 clean up"

@@ -118,7 +118,6 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p)
   conn->prepare = db_sqlite_prepare;
   conn->errmsg  = db_sqlite_errmsg;
   conn->upgrade_to_schema = db_sqlite_upgrade_to_schema;
-  conn->schema_version = db_sqlite_schema_version;
   conn->escape  = db_sqlite_escape;
   return db_sqlite_error_map(rc);
 }
@@ -252,11 +251,6 @@ const char *db_sqlite_escape(db_conn_p conn, const char *string) {
   return escaped;
 }
 
-int db_sqlite_schema_version(db_conn_p conn)
-{
-    return -1;
-}
-
 int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 {
 	if (version < 0)
@@ -291,6 +285,12 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 		"CREATE TABLE action ("
 		"	filename, command, logfile, "
 		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
+		")");
+
+	csync_db_sql(db, NULL, /* "Creating host table", */
+		"CREATE TABLE host ("
+		"	hostname, status, "
+		"	UNIQUE ( hostname ) ON CONFLICT IGNORE"
 		")");
 
 	csync_db_sql(db, NULL, /* "Creating x509_cert table", */

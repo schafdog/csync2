@@ -5,7 +5,7 @@ export FORCE_SOURCE_DATE=1
 CFLAGS = $(shell dpkg-buildflags --get CFLAGS) -I$(shell pg_config --includedir)
 
 %:
-	dh $@ --with autotools_dev,autoreconf
+	dh $@ --with autotools_dev,autoreconf,systemd
 
 override_dh_auto_configure:
 	dh_auto_configure \
@@ -22,4 +22,7 @@ override_dh_autoreconf:
 
 override_dh_installchangelogs:
 	dh_installchangelogs
-	rm debian/csync2/usr/share/doc/csync2/ChangeLog
+	rm -f debian/csync2/usr/share/doc/csync2/ChangeLog
+
+override_dh_systemd_enable:
+	dh_systemd_enable --no-enable csync2.socket
