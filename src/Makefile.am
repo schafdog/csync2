@@ -62,8 +62,9 @@ dist-clean: dist-clean-local
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(MYSQL_CFLAGS) $(LIBHIREDIS_CFLAGS) -std=c99 -O0 -Wno-deprecated-declarations
-AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS)
+AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(MYSQL_CFLAGS) $(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) \
+	-std=c99 -O0 -Wno-deprecated-declarations
+AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) $(LIBOPENSSL_LIBS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
