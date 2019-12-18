@@ -30,19 +30,20 @@
 #include "dl.h"
 
 #ifdef HAVE_MYSQL
-#ifdef HAVE_MYSQL_H
+#ifdef HAVE_MYSQL
 #include <mysql.h>
 #include <mysqld_error.h>
+#include "db_sql.h"
 #elif HAVE_MYSQL_MYSQL_H
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
 #include "db_sql.h"
 #endif 
 
-
 static struct db_mysql_fns {
     MYSQL *(*mysql_init_fn)(MYSQL*);
-    MYSQL *(*mysql_real_connect_fn)(MYSQL *, const char *, const char *, const char *, const char *, unsigned int, const char *, unsigned long);
+    MYSQL *(*mysql_real_connect_fn)(MYSQL *, const char *, const char *, const char *,
+				    const char *, unsigned int, const char *, unsigned long);
     int (*mysql_errno_fn)(MYSQL*);
     int (*mysql_query_fn)(MYSQL*, const char*);
     void (*mysql_close_fn)(MYSQL*);
@@ -516,7 +517,4 @@ fatal:
   return DB_ERROR;
 #endif
 }
-
-
-
 #endif

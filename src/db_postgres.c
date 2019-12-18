@@ -38,11 +38,11 @@
 #include <pgsql/libpq-fe.h>
 #endif
 
-#ifdef HAVE_LIBPQ_FE_H
+#ifdef HAVE_LIBPQ
 #include <libpq-fe.h>
 #endif
 
-#if (!defined HAVE_POSTGRES)
+#if (!defined HAVE_LIBPQ)
 int db_postgres_open(const char *file, db_conn_p *conn_p)
 {
 	return DB_ERROR;
