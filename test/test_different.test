@@ -12,6 +12,7 @@ cmd u "Both updated (peer still dirty)"
 cmd fu "forced update peer"
 sleep 1
 mkdir -p test/$NAME/tmp
+sleep 1
 mkdir -p test/$PEER/tmp
 cmd x "Both updated with new dir (both dirty)"
 touch  test/$PEER/tmp
