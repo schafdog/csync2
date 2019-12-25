@@ -1,4 +1,4 @@
-cmd x "New local/new_file 'N' all" local peer test
+cmd x "Link local/new_file 'N' all" local peer test
 Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 

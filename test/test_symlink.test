@@ -8,7 +8,14 @@ mkdir -p "test/$NAME"
 echo "far" > "test/$NAME/$FILENAME"
 pushd test/$NAME
 sleep 1
-ln -s "$FILENAME" "$FILENAME.link"
+ln -s "$FILENAME" "${FILENAME}.link"
 popd
-cmd x "New $NAME/$FILENAME"
+cmd x "Link $NAME/$FILENAME"
+pushd test/$NAME
+sleep 1
+ln -s "missing" "bad.link"
+popd
+cmd x "Bad link"
+rm -rf "test/$NAME"
+cmd x "Clean up"
 killdaemon
