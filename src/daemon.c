@@ -1105,8 +1105,13 @@ int csync_daemon_setmod(char *filename, char *mod, const char **cmd_error) {
   if ( !csync_ignore_mod ) {
     if (!chmod(filename, atoi(mod)))
       return OK;
-    *cmd_error = strerror(errno);
-    return ABORT_CMD;
+    // Should ignore if symlink
+    if (errno != ENOENT) {
+	*cmd_error = strerror(errno);
+	return ABORT_CMD;
+    } else {
+	csync_warn(0, "daemon_setmod: Ignoring fail setmod on missing file: %s. Symlink?\n", filename);
+    }
   }
   return OK;
 }
