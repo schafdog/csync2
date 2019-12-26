@@ -317,12 +317,6 @@ int db_postgres_stmt_close(db_stmt_p stmt)
 #define HOST_LENGTH  50
 int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 {
-	if (version < 0)
-		return DB_OK;
-
-	if (version > 0)
-		return DB_ERROR;
-
 	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
 	csync_db_sql(conn, NULL, /* "Creating action table", */
@@ -356,7 +350,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  type   int    	      ,"
 		     "  file_id   bigint      ,"
 		     "  timestamp timestamp   DEFAULT current_timestamp,"
-		     "  UNIQUE (filename,peername)"
+		     "  UNIQUE (filename,peername,myname)"
 		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
@@ -376,7 +370,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  digest varchar(130)  ,"
 		     "  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
 		     //		     "  UNIQUE (id),"
-		     "  UNIQUE (filename)"
+		     "  UNIQUE (filename,hostname)"
 		     ");", FILE_LENGTH, FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating hint table", */
