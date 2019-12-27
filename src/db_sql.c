@@ -248,21 +248,13 @@ int db_sql_upgrade_db(db_conn_p db)
 
 int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, int do_it)
 {
-    char *where_rec = "";
     textlist_p tl = 0, t;
 
-    if ( recursive ) {
-	if ( !strcmp(file, "/") )
-	    ASPRINTF(&where_rec, "OR 1=1");
-	else
-	    ASPRINTF(&where_rec, "UNION ALL SELECT filename from file where hostname = '%s' AND filename > '%s/' "
-		     "AND filename < '%s0'",
-		     myhostname, url_encode(file), url_encode(file));
-    }
     int total = 0, found = 0;
-    SQL_BEGIN(db, "Checking for removed files",
+    const char *  file_enc = url_encode(file);
+    SQL_BEGIN(db, "Upgrade to v1-v2",
 	      "SELECT filename, checktxt from file where hostname = '%s' AND "
-	      "filename = '%s' %s ORDER BY filename", myhostname, url_encode(file), where_rec)
+	      "(filename = '%s' OR filename like = '%s/%%') ORDER BY filename", myhostname, file_enc, file_enc)
     {
 	filename_p filename = url_decode(SQL_V(0));
 	const char *checktxt = url_decode(SQL_V(1));
@@ -293,9 +285,6 @@ int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, in
 	}
 
     textlist_free(tl);
-
-    if ( recursive )
-	free(where_rec);
     return 0;
 };
 
@@ -537,7 +526,7 @@ textlist_p db_sql_get_command_filename(db_conn_p db, const char *command, const 
 {
     textlist_p tl = 0;
     SQL_BEGIN(db,
-	      "Checking for removed files",
+	      "Checking for removed files in action",
 	      "SELECT filename from action WHERE command = '%s' "
 	      "and logfile = '%s'", command, logfile)
     {
@@ -646,7 +635,7 @@ void db_sql_remove_file(db_conn_p db, filename_p filename, int recursive)
 void db_sql_add_dirty_simple(db_conn_p db, const char *myhostname, peername_p peername, filename_p filename)
 {
     SQL(db, "Add operation",
-	"INSERT INTO dirty (myhostname, peername, filename) values ('%s', '%s', '%s')",
+	"INSERT INTO dirty (myname, peername, filename) values ('%s', '%s', '%s')",
 	db_escape(db, myhostname), db_escape(db, peername), db_escape(db, filename));
 }
 void db_sql_clear_operation(db_conn_p db, const char *myhostname, peername_p peername, filename_p filename /* , int recursive */)
@@ -756,7 +745,7 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
     const char *result_enc = buffer_quote(buf, db_escape(db, result_other));
     SQL(db,
 	"Marking File Dirty",
-	"INSERT INTO dirty (filename, forced, myhostname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) "
+	"INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) "
 	"VALUES ('%s', %s, '%s', '%s', '%s', '%s', %s, %s, %s, %d, %d, %d, %d)",
 	db_escape(db, file_new),
 	new_force ? "1" : "0",
@@ -837,13 +826,14 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
     const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode FROM file ";
     csync_info(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
     const char *file_encoded = db_escape(db, file);
-    csync_log(LOG_DEBUG, 3,"file %s encoded %s \n", file, file_encoded);
+    csync_log(LOG_DEBUG, 3,"file %s encoded %s. Hostname: %s \n", file, file_encoded, myhostname);
 
     csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 
-    SQL_BEGIN(db, "Checking for removed files",
-	      "%s WHERE hostname = '%' AND %s ORDER BY filename",
-	      SELECT_SQL, myhostname, where_rec)
+    SQL_BEGIN(db, "Checking for removed files - check_delete",
+	      "SELECT filename, checktxt, device, inode, mode FROM file "
+	      "WHERE hostname = '%s' AND %s ORDER BY filename",
+	      myhostname, where_rec)
     {
 	filename_p filename  = db_decode(SQL_V(0));
 	const char *checktxt = db_decode(SQL_V(1));
@@ -955,8 +945,7 @@ textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
     const char *sqls[] = { " SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = '%s'"
 			   " AND device = %lu and inode = %llu and filename != '%s' and peername = '%s' " ,
 			   " SELECT filename, checktxt, digest, NULL FROM file WHERE hostname = '%s"
-			   " AND device = %lu AND inode = %llu AND filename != '%s' ",
-    };
+			   " AND device = %lu AND inode = %llu AND filename != '%s' "};
     textlist_p tl = 0;
     
     for (int index = 0; index < 2; index++) {
