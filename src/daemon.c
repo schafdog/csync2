@@ -89,8 +89,10 @@ int csync_remove_file(db_conn_p db, filename_p filename) {
 	csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
     return rc;
 }
-    
-int csync_rmdir_recursive(db_conn_p db, filename_p file)
+
+int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd, const char **cmd_error);
+
+int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, struct textlist_p *tl)
 {
     struct dirent **namelist;
     int n = 0;
@@ -111,11 +113,21 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file)
 		struct stat st;
 		int rc = lstat(fn, &st);
 		if (!rc) {
+		    const char *cmd_error;
 		    if (S_ISDIR(st.st_mode))
-			csync_rmdir_recursive(db, fn);
+			csync_rmdir_recursive(db, fn, peername, tl );
 		    else {
-			csync_info(0, "Removing file %s %d \n", fn);
-			csync_remove_file(db, fn);
+			if (peername != NULL)
+			    rc = csync_daemon_check_dirty(db, fn, peername,
+							  A_DEL,
+							  &cmd_error);
+			if (rc == 0) { 
+			    csync_info(0, "Removing file %s\n", fn);
+			    csync_remove_file(db, fn);
+			} else {
+			    csync_info(0, "File is dirty %s %d \n", fn, peername);
+			    textlist_add(tl, fn);
+			}
 		    }
 		}
 	    }
@@ -134,7 +146,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file)
     return rc;
 }
 
-int csync_rmdir(db_conn_p db, filename_p filename, int recursive)
+int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recursive)
 {
     /* TODO: check if all files and sub directories are ignored,
        delete them. We need a version of csync_check_dir */
@@ -168,7 +180,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive)
 	textlist_free(tl);
 	/* Above could fail due to ignore files. Do recursive on scandir  */
 	if (rc == ERROR) {
-	    rc = csync_rmdir_recursive(db, filename);
+	    rc = csync_rmdir_recursive(db, filename, peername);
 	}
 	csync_info(0, "Deleted recursive from clean directory (%s): %d \n", filename, dir_count);
 /*
@@ -184,7 +196,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive)
     return rc;
 }
 
-int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_flag, const char **cmd_error)
+int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int recursive, int unlink_flag, const char **cmd_error)
 {
 	struct stat st;
 	int rc;
@@ -196,7 +208,7 @@ int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_fl
 	if ( unlink_flag == 2 && S_ISREG(st.st_mode) )
 	    return 0;
 
-	rc = S_ISDIR(st.st_mode) ? csync_rmdir(db, filename, recursive) : unlink(filename);
+	rc = S_ISDIR(st.st_mode) ? csync_rmdir(db, filename, peername, recursive) : unlink(filename);
 
 	if ( rc && !unlink_flag)
 	  *cmd_error = strerror(errno);
@@ -303,7 +315,7 @@ int csync_backup_rename(filename_p filename, int length, int generations)
 	    {
 		csync_debug(2, "Remove backup %s due to generation %d \n", backup_other, generations);
 		if (S_ISDIR(st.st_mode))
-		    csync_rmdir_recursive(NULL, backup_other);
+		    csync_rmdir_recursive(NULL, backup_other, NULL, NULL);
 		else {
 		    unlink(backup_other);
 		}
@@ -637,14 +649,14 @@ void set_peername_from_env(address_t *p, const char *env)
 	char *val = getenv(env);
 	csync_log(LOG_DEBUG, 3, "getenv(%s): >>%s<<\n", env, val ?: "");
 	if (!val)
-		return;
+	    return;
 	val = strdup(val);
 	if (!val)
-		return;
+	    return;
 
 	c = strchr(val, ' ');
 	if (!c)
-		return;
+	    return;
 	*c = '\0';
 
 	s = getaddrinfo(val, NULL, &hints, &result);
@@ -1239,7 +1251,7 @@ int csync_daemon_dispatch(int conn,
 	break;
     case A_DEL:
 	if (!csync_file_backup(filename, cmd_error))
-	    return csync_unlink(db, filename, 1, cmd->unlink, cmd_error);
+	    return csync_unlink(db, filename, *peername, 1, cmd->unlink, cmd_error);
 
 	break;
     case A_PATCH:
@@ -1453,7 +1465,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 		    csync_log(LOG_INFO, 1, "Unlinking entry due to different type: %d %d \n", cmd->unlink, st.st_mode & S_IFMT);
 		if(csync_file_backup(filename, &cmd_error))
 		    csync_warn(2, "Failed to backup file %s. Unlinking anyway\n", filename);
-		csync_unlink(db, filename, 1, cmd->unlink, &cmd_error);
+		csync_unlink(db, filename, peername, 1, cmd->unlink, &cmd_error);
 	    }
 	}
       const char *otherfile = NULL;
