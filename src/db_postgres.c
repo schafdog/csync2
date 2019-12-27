@@ -406,6 +406,42 @@ const char* db_postgres_escape(db_conn_p conn, const char *string)
   return escaped_buffer;
 }
 
+unsigned long long fstat_dev(struct stat *file_stat);
+int db_postgres_insert_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+			      const char *digest) {
+    BUF_P buf = buffer_init();
+    char *digest_quote = buffer_quote(buf, digest);
+    int count = SQL(db,
+		    "Add or update file entry",
+		    "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+		    "VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON CONFLICT (filename, hostname) DO UPDATE SET "
+		    "checktxt = '%s', device = %lu, inode = %llu, "
+		    "digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u",
+		    myhostname,
+		    encoded,
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode),
+		    // SET
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode)
+	);
+    buffer_destroy(buf);
+    return count;
+}
+
+
 int db_postgres_open(const char *file, db_conn_p *conn_p)
 {
   PGconn *pg_conn;
@@ -503,6 +539,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   conn->errmsg = db_postgres_errmsg;
   conn->prepare = db_postgres_prepare;
   conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
+  conn->insert_update_file = db_postgres_insert_update_file;
   conn->escape = db_postgres_escape;
   free(pg_conn_info);
 
