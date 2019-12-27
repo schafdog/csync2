@@ -22,7 +22,7 @@ fi
 
 : ${DEBUG:=v}
 
-RECURSIVE=r
+RECURSIVE=rB
 
 COUNT=0
 echo "Running command $COMMAND" 
@@ -102,7 +102,7 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'" | ./connect_${DATABASE}.sh $CNAME > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
+    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
     rm -f csync_$CNAME.log ${DATABASE}_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1
@@ -128,21 +128,21 @@ function daemon {
     CMD="$1"
     echo $DCFG $DNAME
     if [ "$CMD" == "d" ] ; then 
-	${PROG} -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiii$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
+	${PROG} -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
 	echo "$!" > ${DCFG}.pid
     elif [ "$CMD" == "i" ] ; then
 	if [ "LLDB" != "" ]; then
-	    $LLDB -f ${PROG} -- -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG
+	    $LLDB -f ${PROG} -- -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiiB$DEBUG
 	else
-	    $GDB ${PROG} --args -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG 
+	    $GDB ${PROG} --args -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiiB$DEBUG 
 	fi
 #	echo "$!" > daemon.pid
 	sleep 1
     elif [ "$CMD" == "once" ] ; then 
-	${PROG} -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG >> daemon_${NAME}.log 2>&1 & 
+	${PROG} -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiB$DEBUG >> daemon_${NAME}.log 2>&1 & 
     elif [ "$CMD" == "clean_once" ] ; then 
 	clean peer
-	${PROG} -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG & 
+	${PROG} -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiB$DEBUG & 
     fi    
 }
 
