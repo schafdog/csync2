@@ -1,5 +1,7 @@
 #!/bin/bash
 
+./set_prefix.sh
+
 if [ "$1" == "" ] ; then 
     COMMAND=c
 else
