@@ -30,19 +30,20 @@
 #include "dl.h"
 
 #ifdef HAVE_MYSQL
-#ifdef HAVE_MYSQL_H
+#ifdef HAVE_MYSQL
 #include <mysql.h>
 #include <mysqld_error.h>
+#include "db_sql.h"
 #elif HAVE_MYSQL_MYSQL_H
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
 #include "db_sql.h"
 #endif 
 
-
 static struct db_mysql_fns {
     MYSQL *(*mysql_init_fn)(MYSQL*);
-    MYSQL *(*mysql_real_connect_fn)(MYSQL *, const char *, const char *, const char *, const char *, unsigned int, const char *, unsigned long);
+    MYSQL *(*mysql_real_connect_fn)(MYSQL *, const char *, const char *, const char *,
+				    const char *, unsigned int, const char *, unsigned long);
     int (*mysql_errno_fn)(MYSQL*);
     int (*mysql_query_fn)(MYSQL*, const char*);
     void (*mysql_close_fn)(MYSQL*);
@@ -206,6 +207,9 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
 
   conn->affected_rows = f.mysql_affected_rows_fn(conn->private);
 
+  if (rc == 0) {
+      return DB_OK;
+  }
   if (rc == ER_LOCK_DEADLOCK) {
       return DB_BUSY;
   }
@@ -214,7 +218,8 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
     return DB_ERROR;
   }
   /* On error parse, create DB ERROR element */
-  return rc;
+  csync_warn(0, "Unmapped MYSQL error: %d \n", rc);
+  return rc > 0 ? -rc : rc;
 }
 
 int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, 
@@ -311,6 +316,41 @@ int db_mysql_stmt_close(db_stmt_p stmt)
   return DB_OK; 
 }
 
+unsigned long long fstat_dev(struct stat *file_stat);
+int db_mysql_replace_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+			      const char *digest) {
+    BUF_P buf = buffer_init();
+    char *digest_quote = buffer_quote(buf, digest);
+    int count = SQL(db,
+		    "Add or update file entry",
+		    "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+		    "VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON DUPLICATE KEY UPDATE "
+		    "checktxt = '%s', device = %lu, inode = %llu, "
+		    "digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u",
+		    myhostname,
+		    encoded,
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode),
+		    // SET
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode)
+	);
+    buffer_destroy(buf);
+    return count;
+}
+
 #define FILE_LENGTH 250
 #define HOST_LENGTH  50
 int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
@@ -344,7 +384,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  peername  varchar(%u)  DEFAULT NULL,"
 		 "  operation varchar(100) DEFAULT NULL,"
 		 "  op 	      int	   DEFAULT NULL,"
-		 "  checktxt  varchar(200) DEFAULT NULL,"
+		 "  checktxt  varchar(%u)  DEFAULT NULL,"
 		 "  device    bigint       DEFAULT NULL,"
 		 "  inode     bigint       DEFAULT NULL,"
 		 "  other     varchar(%u)  DEFAULT NULL,"
@@ -354,9 +394,9 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  mtime     int    	   DEFAULT NULL,"
 		 "  type      int    	   DEFAULT NULL,"
 		 "  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-		 "  UNIQUE KEY `filename_peer` (`filename`(%u),`peername`)"
+		 "  UNIQUE KEY `filename_peername_myname_` (`filename`(%u),`peername`,`myname`)"
 		 //		"  KEY `dirty_host` (`peername`(10))"
-		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH, FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH+50, FILE_LENGTH);
 
     csync_db_sql(conn, NULL, /* "Creating file table", */
 		 "CREATE TABLE `file` ("
@@ -386,7 +426,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  `peername` varchar(50)  DEFAULT NULL,"
 		 "  `certdata` varchar(255) DEFAULT NULL,"
 		 "  UNIQUE KEY `peername` (`peername`)"
-		 ") ENGINE=InnoDB");
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
 
 /* csync_db_sql does a csync_fatal on error, so we always return DB_OK here. */
     return DB_OK;
@@ -427,7 +467,7 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
     return rc;
   }
 
-  if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL) {
+  if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, CLIENT_FOUND_ROWS) == NULL) {
     if (f.mysql_errno_fn(db) == ER_BAD_DB_ERROR) {
       if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
 	ASPRINTF(&create_database_statement, "create database %s", database);
@@ -447,6 +487,11 @@ int db_mysql_open(const char *file, db_conn_p *conn_p)
 fatal:
       csync_fatal("Failed to connect to database: Error: %s\n", f.mysql_error_fn(db));
   }
+  const char *encoding = mysql_character_set_name(db);
+  csync_log(LOG_DEBUG, 2, "Default encoding %s\n", encoding);
+  if (mysql_set_character_set(db, "utf8")) {
+      csync_fatal("Cannot set character set to utf8\n");
+  }
 
   db_conn_p conn = calloc(1, sizeof(*conn));
   if (conn == NULL) {
@@ -459,6 +504,7 @@ fatal:
   conn->private = db;
   conn->close   = db_mysql_close;
   conn->exec    = db_mysql_exec;
+  conn->insert_update_file = db_mysql_replace_file;
   conn->prepare = db_mysql_prepare;
   conn->errmsg  = db_mysql_errmsg;
   conn->upgrade_to_schema = db_mysql_upgrade_to_schema;
@@ -471,7 +517,4 @@ fatal:
   return DB_ERROR;
 #endif
 }
-
-
-
 #endif

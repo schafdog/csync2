@@ -1,4 +1,4 @@
-daemon d PEER
+daemon d
 clean local
 clean peer
 rm -rf test/local
@@ -21,4 +21,4 @@ cmd c "7 Check local (${TEST})"
 cmd u "9 Update auto (older success)"
 rm -rf test/local
 cmd x "9 clean (${TEST})"
-killdaemon d PEER
+killdaemon

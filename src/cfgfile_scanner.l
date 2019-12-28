@@ -59,6 +59,7 @@ int include_stack_ptr = 0;
 
 "group"		{ return TK_GROUP; }
 "host"		{ return TK_HOST; }
+"redis"	        { return TK_REDIS; }
 "exclude"	{ return TK_EXCL; }
 "include"	{ return TK_INCL; }
 "compare"	{ return TK_COMP; }

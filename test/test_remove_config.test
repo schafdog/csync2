@@ -1,16 +1,15 @@
 #
 #
-#daemon d PEER
+ln -sf common_files.cfg common.cfg
 clean local
 clean peer
 FILENAME="new_file"
 mkdir -p "test/$NAME"
 echo "far" >"test/$NAME/$FILENAME"
 cmd c "New $NAME/$FILENAME"
-mv csync2_local.cfg csync2_local.cfg.backup
-ln -s csync2_local_remove_config.cfg csync2_local.cfg
+ln -sf common_remove_config.cfg common.cfg
 cmd R "check -R"
 rm -rf test/$NAME
+ln -sf common_files.cfg common.cfg
 cmd c "clean up"
-rm csync2_local.cfg
-mv csync2_local.cfg.backup csync2_local.cfg
+

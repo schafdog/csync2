@@ -30,6 +30,7 @@ ylwrap
 hardlinks_*.txt
 *.rsync
 *.mysql
+*.cockroach
 tests/*.diff
 tests/test
 *.cpp

@@ -4,7 +4,7 @@
 # When moved from new to cur add :2, to filename
 # When marked read rename to filename,S
 # When deleted hardlinked to .Trash, renamed to filename,ST
-daemon d PEER
+daemon d
 clean local
 clean peer
 mkdir -p test/$NAME/Maildir/cur
@@ -37,4 +37,4 @@ cmd c "check:  Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CUR
 cmd u "update: Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S. mv ${CURFILE}S ${CURFILE}ST"
 rm -rf test/$NAME
 cmd x "clean up"
-killdaemon d PEER
+killdaemon

@@ -215,7 +215,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
 
 void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer, const char *peerfilter,
 		      operation_t operation_org, const char *checktxt,
-		      const char *dev, const char *ino, const char *org_other, int mode)
+		      const char *dev, const char *ino, const char *org_other, int mode, int mtime)
 {
     BUF_P buffer = buffer_init();
     struct peer *pl = csync_find_peers(file, thispeer);
@@ -290,7 +290,7 @@ void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer, const
 			      myname, peername,
 			      csync_operation_str(operation),
 			      checktxt, dev, ino,
-			      result_other, operation, mode);
+			      result_other, operation, mode, mtime);
 	};
     };
     free(pl);
@@ -299,9 +299,9 @@ void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer, const
 
 void csync_mark(db_conn_p db, const char *file, const char *thispeer, const char *peerfilter,
 		operation_t operation, const char *checktxt,
-		const char *dev, const char *ino, int mode)
+		const char *dev, const char *ino, int mode, int mtime)
 {
-    csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode);
+    csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode, mtime);
 }
 
 
@@ -608,7 +608,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	csync_calc_digest(file, buffer, &digest);
     }
     if (csync_compare_mode) {
-	printf("%40s %s\n", digest ? digest : "-", file);
+	printf("%40s %s\n", digest ? digest : checktxt, file);
     }
     if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
 	if (operation == OP_NEW && digest) {
@@ -647,19 +647,20 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    char ino_str[100];
 	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode);
+	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode, file_stat->st_mtime);
 	    count = 1;
 	}
 	long count;
 	// operation does not reflect result/change in mark_other (which marks dirty)
 	// But only whether it was found in File. This is a race-condition
+	// TODO clean no need for if else when using insert_update...
 	if (is_upgrade|| operation & OP_MOD || operation & OP_MOD2) {
 	    count = db->update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
 	else {
-	    count = db->insert_file(db, encoded, checktxt_encoded, file_stat, digest);
+	    count = db->insert_update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
-	csync_log(LOG_INFO, 1, "Inserted/updated %s rows affected: %ld\n", file, count);
+	csync_log(LOG_INFO, 1, "Inserted/updated %s rows matched: %ld\n", file, count);
     }
     buffer_destroy(buffer);
     return count;

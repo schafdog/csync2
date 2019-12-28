@@ -38,11 +38,11 @@
 #include <pgsql/libpq-fe.h>
 #endif
 
-#ifdef HAVE_LIBPQ_FE_H
+#ifdef HAVE_LIBPQ
 #include <libpq-fe.h>
 #endif
 
-#if (!defined HAVE_POSTGRES)
+#if (!defined HAVE_LIBPQ)
 int db_postgres_open(const char *file, db_conn_p *conn_p)
 {
 	return DB_ERROR;
@@ -317,12 +317,6 @@ int db_postgres_stmt_close(db_stmt_p stmt)
 #define HOST_LENGTH  50
 int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 {
-	if (version < 0)
-		return DB_OK;
-
-	if (version > 0)
-		return DB_ERROR;
-
 	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
 	csync_db_sql(conn, NULL, /* "Creating action table", */
@@ -356,8 +350,8 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  type   int    	      ,"
 		     "  file_id   bigint      ,"
 		     "  timestamp timestamp   DEFAULT current_timestamp,"
-		     "  UNIQUE (filename,peername)"
-		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH);
+		     "  UNIQUE (filename,peername,myname)"
+		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
 		     "CREATE TABLE file ("
@@ -365,8 +359,8 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  parent bigint        ,"
 		     "  filename varchar(%u) ,"
 		     "  basename varchar(%u) ,"
-		     "  hostname varchar(50) ,"
-		     "  checktxt varchar(100),"
+		     "  hostname varchar(%u) ,"
+		     "  checktxt varchar(%u),"
 		     "  device bigint        ,"
 		     "  inode  bigint        ,"
 		     "  size   bigint        ,"
@@ -376,8 +370,8 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  digest varchar(130)  ,"
 		     "  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
 		     //		     "  UNIQUE (id),"
-		     "  UNIQUE (filename)"
-		     ");", FILE_LENGTH, FILE_LENGTH);
+		     "  UNIQUE (filename,hostname)"
+		     ");", FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH+50);
 
 	csync_db_sql(conn, NULL, /* "Creating hint table", */
 		     "CREATE TABLE hint ("
@@ -411,6 +405,42 @@ const char* db_postgres_escape(db_conn_p conn, const char *string)
 
   return escaped_buffer;
 }
+
+unsigned long long fstat_dev(struct stat *file_stat);
+int db_postgres_insert_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+			      const char *digest) {
+    BUF_P buf = buffer_init();
+    char *digest_quote = buffer_quote(buf, digest);
+    int count = SQL(db,
+		    "Add or update file entry",
+		    "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+		    "VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON CONFLICT (filename, hostname) DO UPDATE SET "
+		    "checktxt = '%s', device = %lu, inode = %llu, "
+		    "digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u",
+		    myhostname,
+		    encoded,
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode),
+		    // SET
+		    checktxt_encoded,
+		    fstat_dev(file_stat),
+		    file_stat->st_ino,
+		    digest_quote,
+		    file_stat->st_mode,
+		    file_stat->st_size,
+		    file_stat->st_mtime,
+		    get_file_type(file_stat->st_mode)
+	);
+    buffer_destroy(buf);
+    return count;
+}
+
 
 int db_postgres_open(const char *file, db_conn_p *conn_p)
 {
@@ -509,6 +539,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   conn->errmsg = db_postgres_errmsg;
   conn->prepare = db_postgres_prepare;
   conn->upgrade_to_schema = db_postgres_upgrade_to_schema;
+  conn->insert_update_file = db_postgres_insert_update_file;
   conn->escape = db_postgres_escape;
   free(pg_conn_info);
 

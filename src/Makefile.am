@@ -19,6 +19,7 @@
 
 sbin_PROGRAMS = csync2
 sbin_SCRIPTS = csync2-compare
+bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
 CC = clang
@@ -29,6 +30,7 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 		 db_api.c db_sql.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c \
 		 ringbuffer.c buffer.c uidgid.c uidgid.h resolv.c resolv.h \
 		 csync2.h db_api.h db_sql.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
+		 redis.h redis.c \
 		 csync2-compare \
 		 digest.c digest.h version.h \
 		 csync2.1
@@ -48,11 +50,23 @@ CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
 check_version: FORCE
 	@../version.sh $(objects)
 
+clean:
+	rm -rf $(CLEANFILES)
+	rm *.o
+
+dist-clean: dist-clean-local
+	rm configure
+	rm Makefile
+	rm src/Makefile
+
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(MYSQL_CFLAGS) -std=c99 -O0 -Wno-deprecated-declarations
-AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(MYSQL_LIBS)
+AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) \
+	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
+	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) \
+	-std=c99 -O0 -Wno-deprecated-declarations
+AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'

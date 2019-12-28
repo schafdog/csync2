@@ -36,7 +36,7 @@ int db_sync_mode = 1;
 extern int db_type; 
 static db_conn_p global_db = 0;
 // TODO make configurable
-static int wait_length = 0;
+static int wait_length = 2;
 
 static int get_dblock_timeout()
 {
@@ -107,7 +107,7 @@ void csync_db_maycommit(db_conn_p db)
     if (wait_length && (now - last_wait_cycle) > 10) {
 	SQL(db, "COMMIT", "COMMIT ");
 	if (wait_length) {
-	    csync_info(3, "Waiting %d secs so others can lock the database (%d - %d)...\n",
+	    csync_info(2, "Waiting %d secs so others can lock the database (%d - %d)...\n",
 			wait_length, (int)now, (int)last_wait_cycle);
 	    sleep(wait_length);
 	}
@@ -136,7 +136,7 @@ db_conn_p csync_db_open(const char *file)
     db_conn_p db = NULL;
     int rc = db_open(file, db_type, &db);
     global_db = db; 
-    if ( rc != DB_OK )
+    if ( rc != DB_OK || db == NULL)
 	csync_fatal("Can't open database: %s\n", file)
 	    ;
     
@@ -203,7 +203,10 @@ long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...)
 	    csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
 	}
 	else {
-	    count = db->affected_rows;
+		if (rc == DB_OK)
+			count = db->affected_rows;
+		else
+			count = rc;
 	}
 	free(sql);
 
@@ -352,7 +355,7 @@ char *db_default_database(char *dbdir, char *myhostname, char *cfg_name)
 	else
 		ASPRINTF(&db, "mysql://root@localhost/csync2_%s" DBEXTENSION, myhostname);
 
-#elif defined(HAVE_POSTGRES)
+#elif defined(HAVE_LIBPQ)
 	if (cfg_name[0] != '\0')
 		ASPRINTF(&db, "pgsql://root@localhost/csync2_%s_%s" DBEXTENSION, myhostname, cfgname);
 	else
