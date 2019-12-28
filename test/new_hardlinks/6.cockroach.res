@@ -1,4 +1,3 @@
-filename
 /export/home/dennis/Projects/csync2/csync2/test/test/local
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked
@@ -7,7 +6,6 @@ filename
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file
-peername	filename	operation	other	op
 peer	/export/home/dennis/Projects/csync2/csync2/test/test/local	MARK	NULL	0
 peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/new	MARK	NULL	0
 peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked	MARK	NULL	0
