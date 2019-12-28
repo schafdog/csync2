@@ -69,7 +69,7 @@ int db_open(const char *file, int type, db_conn_p *db)
     rc = DB_ERROR;
     break;
 #endif
-#ifdef HAVE_POSTGRES
+#ifdef HAVE_LIBPQ
   case DB_PGSQL:
     rc = db_postgres_open(db_str, db);
     break;

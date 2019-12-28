@@ -283,7 +283,7 @@ void csync_send_error(int conn)
 int csync_recv_file(int conn, FILE *out)
 {
   char buffer[CHUNK_SIZE];
-  int rc, chunk;
+  int bytes, chunk;
   long size;
 
   if (conn_read_get_content_length(conn, &size)) {
@@ -296,19 +296,20 @@ int csync_recv_file(int conn, FILE *out)
 
   while ( size > 0 ) {
     chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
-    rc = conn_read(conn, buffer, chunk);
+    bytes = conn_read(conn, buffer, chunk);
 
-    if ( rc <= 0 )
+    if ( bytes <= 0 )
       csync_fatal("Read-error while receiving data.\n");
-    chunk = rc;
+    chunk = bytes;
 
-    rc = fwrite(buffer, chunk, 1, out);
-    if ( rc != 1 )
+    bytes = fwrite(buffer, chunk, 1, out);
+    if ( bytes != 1 )
       csync_fatal("Write-error while receiving data.\n");
 
     size -= chunk;
-    csync_log(LOG_DEBUG, 3, "Got %d bytes, %ld bytes left ..\n",
-		chunk, size);
+    if (csync_level_debug >= 3)
+	csync_log(LOG_DEBUG, 3, "Got %d bytes, %ld bytes left ..\n",
+		  chunk, size);
   }
 
   fflush(out);

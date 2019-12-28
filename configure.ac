@@ -97,69 +97,49 @@ then
    ])
 fi
 
+PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES([LIBOPENSSL], [openssl >= 1.1], [
+   AC_DEFINE([HAVE_LIBOPENSSL], 1, [Define to 1 when using OpenSSL library])
+ ])
+
+if test "$enable_redis" != no
+then
+   PKG_PROG_PKG_CONFIG
+   PKG_CHECK_MODULES([LIBHIREDIS], [hiredis >= 0.14.0], [
+      AC_DEFINE([HAVE_LIBHIREDIS], 1, [Define to 1 when using libhiredis library])
+   ])
+fi
+
 AC_ARG_ENABLE([mysql],
 	[AC_HELP_STRING([--enable-mysql],
-		[enable/disable MySQL support (default is disabled)])],
+		[enable/disable MySQL support (default is enabled)])],
 	[], [ enable_mysql=yes ])
 
 AC_ARG_ENABLE([postgres],
 	[AC_HELP_STRING([--enable-postgres],
-		[enable/disable Postgres support (default is disabled)])],
+		[enable/disable Postgres support (default is enabled)])],
 	[], [ enable_postgres=yes ])
+
+AC_ARG_ENABLE([redis],
+	[AC_HELP_STRING([--enable-redis],
+		[enable/disable Redis support (default is enabled)])],
+	[], [ enable_redis=yes ])
+
 
 if test "$enable_mysql" == yes
 then
    PKG_PROG_PKG_CONFIG
-   PKG_CHECK_MODULES([MYSQL], [mariadb] , , [PKG_CHECK_MODULES([MYSQL], [mariadbclient] , , [PKG_CHECK_MODULES([MYSQL], [mysqlclient] , , [] )]) ])
-   CFLAGS="$CFLAGS $MARIADB_CFLAGS"
-   	mysql=0
-
-	# Check MySQL development header
-	AC_CHECK_HEADERS([mysql.h mysql/mysql.h], , [mysql=$((mysql+1))], [[
-#ifdef HAVE_MYSQL
-#ifdef HAVE_MYSQL_H
-#include <mysql.h>
-#include <mysqld_error.h>
-#elif HAVE_MYSQL_MYSQL_H
-#include <mysql/mysql.h>
-#include <mysql/mysqld_error.h>
-#endif
-#endif
-	]])
-
-	if test "$mysql" -ne 2 
-	then 
-	     AC_DEFINE([HAVE_MYSQL], 1, [Define if mysql support is wanted])
-
-	     AC_SEARCH_LIBS(mysql_init, [mysql mariadb mariadbclient] , , [AC_MSG_WARN([[No mysql libraries found]])], )
-
-	else
-	     AC_MSG_WARN([[No MySQL (maria/oracle/percona) headers found. Install mysql-devel and dependencies for MySQL Support]])
-	fi
+   PKG_CHECK_MODULES([MYSQL], [libmariadb >= 3.1.0 ] , [
+      AC_DEFINE([HAVE_MYSQL], 1, [Define to 1 when using libmariadb library])
+      ])
 fi
 
 if test "$enable_postgres" == yes
 then
-	postgres=0
-        AC_CHECK_HEADERS([libpq-fe.h postgresql/libpq-fe.h pgsql/libpq-fe.h], , [postgres=$((postgres+1))], [[
-#ifdef HAVE_POSTGRESQL_LIBPQ_FE_H
-#include <postgresql/libpq-fe.h>
-#endif
-
-#ifdef HAVE_LIBPQ_FE_H
-#include <libpq-fe.h>
-#endif
-
-#ifdef HAVE_PGSQL_LIBPQ_FE_H
-#include <pgsql/libpq-fe.h>
-#endif
-]])
-	if test "$postgres" -ne 3
-	then
-		AC_DEFINE([HAVE_POSTGRES], 1, [Define if postgres support is wanted])
-	else
-		AC_MSG_WARN([[postgres header not found; install libpq-dev and dependencies for Postgres support]])
-	fi
+     PKG_PROG_PKG_CONFIG
+     PKG_CHECK_MODULES([LIBPQ], [libpq >= 10.1.0 ] , [
+      AC_DEFINE([HAVE_LIBPQ], 1, [Define to 1 when using libpq library])
+      ])
 fi
 
 

@@ -1,6 +1,6 @@
 #
 #
-daemon d PEER
+daemon d
 clean local
 clean peer
 cmd x "clean"
@@ -10,4 +10,4 @@ mkdir -p test/$NAME
 echo "far" >"test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
 cmd TT test/$NAME/$FILENAME "compare"
-killdaemon d PEER
+killdaemon

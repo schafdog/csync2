@@ -20,6 +20,7 @@
 
 #include "csync2.h"
 #include "version.h"
+#include "redis.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -42,6 +43,7 @@
 
 #include <netdb.h>
 #include <db_api.h>
+#include <time.h>
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -51,6 +53,7 @@
 int yylex_destroy(void);
 
 char *csync_database = 0;
+char *csync_redis = 0;
 
 int db_type = DB_SQLITE3;
 
@@ -585,10 +588,8 @@ int csync_read_config(char *cfgname, int conn, int mode)
 
 int main(int argc, char ** argv)
 {
-    textlist_p tl = 0, t;
     int mode = MODE_NONE;
     int flags = 0;
-    int retval = -1;
     int opt, i;
     // Default db_decodes (version 1 scheme)
     db_decode = url_decode;
@@ -611,7 +612,7 @@ int main(int argc, char ** argv)
     int cmd_ip_version = 0;
     update_func update_func;
     int csync_port_cmdline = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VqeE")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeE")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -669,7 +670,7 @@ int main(int argc, char ** argv)
 	    break;
 	case 'P':
 	    active_peerlist = optarg;
-	    active_peers =  parse_peerlist(active_peerlist);	
+	    active_peers = parse_peerlist(active_peerlist);
 	    break;
 	case 'B':
 	    db_blocking_mode = 0;
@@ -794,6 +795,11 @@ int main(int argc, char ** argv)
 	case 'q':
 	    csync_quiet = 1;
 	    break;
+	case 'Q':
+	    flags |= FLAG_DO_ALL;
+	    update_func = csync_ping_host;
+	    mode = MODE_UPDATE;
+	    break;
 	case 'e':
 	    flags |= FLAG_DO_ALL;
 	    update_func = csync_sync_host;
@@ -881,11 +887,26 @@ int main(int argc, char ** argv)
 	};
     };
 
+    return csync_start(mode, flags, argc, argv, update_func, listenfd, cmd_db_version, cmd_ip_version);
+};
+
+/* Entry point for command line and daemon callback on PING 
+   Responsible for looping in server mode. Need rewrite
+*/
+
+int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version)
+{
+    int start_time = time(NULL);
+    int server = mode & MODE_DAEMON;
+    int server_standalone =  mode & MODE_STANDALONE;
+    int retval = -1;
+    textlist_p tl = 0, t;
     int first = 1;
-    
+    int i; 
 nofork:
+    csync_debug(2, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
     // init syslog if needed. 
-    if (first && csync_syslog && csync_server_child_pid == 0) {
+    if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
 	csync_openlog();
 	first = 0;
     }
@@ -946,6 +967,7 @@ nofork:
 	if (para)
 	    cfgname = strdup(url_decode(para));
     }
+
     if (csync_read_config(cfgname, conn, mode) == -1)
 	goto handle_error;
     // Move configuration versions into place, if configured.
@@ -976,7 +998,8 @@ nofork:
 	}
     } 
 
-	
+
+    /* Read database name from config unless it's overridden from command line */
     if (!csync_database)
 	csync_database = db_default_database(dbdir, myhostname, cfgname);
 
@@ -1001,6 +1024,8 @@ nofork:
 
     db_conn_p db = csync_db_open(csync_database);
     db->version = db_version;
+    // Handles NULL
+    csync_redis_connect(csync_redis);
 
     if (mode == MODE_UPGRADE_DB) {
 	int rc = db->upgrade_db(db);
@@ -1021,7 +1046,7 @@ nofork:
 	    exit(1);
 	}
     }
-    for (i=optind; i < argc; i++)
+    for (i = optind; i < argc; i++)
 	on_cygwin_lowercase(argv[i]);
 
 	
@@ -1079,7 +1104,7 @@ nofork:
     };
     
     if (mode & MODE_UPDATE || mode & MODE_EQUAL ) {
-	if ( argc == optind )
+	if ( argc <= optind )
 	{
 	    csync_update(db, myhostname, active_peers, 0, 0, 
 			 ip_version, update_func, flags);
@@ -1100,6 +1125,7 @@ nofork:
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
 		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
+		csync_compare_mode = 1;
 		csync_check(db, realname, flags);
 	    }
 	    else {
@@ -1210,10 +1236,11 @@ nofork:
     csync_run_commands(db);
     csync_db_close(db);
     csync_config_destroy();
+    csync_redis_close();
     if (active_peers) {
 	free(active_peers);
     }
-    if (csync_server_child_pid ) {
+    if (mode & MODE_DAEMON) {
 	csync_log(LOG_INFO, 1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
@@ -1223,10 +1250,11 @@ nofork:
     }
 
     if ( csync_error_count != 0 || (csync_messages_printed && csync_level_debug) ) {
+	int run_time = time(NULL) - start_time;
 	if (csync_error_count > 0)
-	    csync_warn(1, "Finished with %d errors.\n", csync_error_count);
+	    csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
 	else
-	    csync_info(1, "Finished succesfully.\n");
+	    csync_info(1, "Finished succesfully in %d seconds.\n", run_time);
     }
     csync_printtotaltime();
 
@@ -1238,5 +1266,5 @@ handle_error:
     if (mode == MODE_NOFORK)
 	goto nofork;
     return 0;
-    }
+}
 

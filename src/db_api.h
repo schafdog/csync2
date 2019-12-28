@@ -6,13 +6,13 @@
 #define DB_MYSQL   3
 #define DB_PGSQL   4
 
-#define DB_OK                  0
-#define DB_ERROR               1
-#define DB_BUSY                2
-#define DB_NO_CONNECTION       3
-#define DB_NO_CONNECTION_REAL  4
-#define DB_ROW  100
-#define DB_DONE 101
+#define DB_OK                   0
+#define DB_ERROR               -1
+#define DB_BUSY                -2
+#define DB_NO_CONNECTION       -3
+#define DB_NO_CONNECTION_REAL  -4
+#define DB_ROW  -100
+#define DB_DONE -101
 
 
 #ifdef __DARWIN_C_LEVEL
@@ -76,7 +76,7 @@ struct db_conn_t {
     textlist_p  (*find_file) (db_conn_p conn, filename_p pattern, int (*filter_file) (filename_p filename));
     int         (*add_dirty) (db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, peername_p peername,
 			      const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
-			      int op, int mode);
+			      int op, int mode, int mtime);
     
     void        (*remove_dirty)    (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
     
@@ -98,6 +98,8 @@ struct db_conn_t {
     int         (*update_file) (db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 				const char *digest);
     int         (*insert_file) (db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+				const char *digest);
+    int         (*insert_update_file) (db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 				const char *digest);
     int         (*check_delete) (db_conn_p conn, filename_p filename, int recursive, int init_run);
 

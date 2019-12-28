@@ -1,7 +1,7 @@
 #
 #
 #rm -rf /tmp/csync2.real/*
-daemon d PEER
+daemon d
 clean local
 clean peer
 FILENAME="new_file 'N' all"
@@ -28,5 +28,5 @@ cmd x "6 Directory to file (type change)"
 #
 rm -rf test/$NAME
 cmd x "clean up"
-killdaemon d PEER
+killdaemon
 diff -r /tmp/csync2.real/ test_type_change/backup.res/

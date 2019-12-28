@@ -1,4 +1,4 @@
-daemon d PEER
+daemon d
 clean local
 clean peer
 FILENAME="different"
@@ -12,6 +12,7 @@ cmd u "Both updated (peer still dirty)"
 cmd fu "forced update peer"
 sleep 1
 mkdir -p test/$NAME/tmp
+sleep 1
 mkdir -p test/$PEER/tmp
 cmd x "Both updated with new dir (both dirty)"
 touch  test/$PEER/tmp
@@ -19,4 +20,4 @@ cmd x "Peer touch (both dirty)"
 rm -rf test/$NAME
 rm -rf test/$PEER
 cmd x "clean up"
-killdaemon d PEER
+killdaemon

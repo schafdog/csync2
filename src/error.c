@@ -103,7 +103,7 @@ char *syslog_prio[] = {
     "DEBUG "
 };
 
-    void csync_log(int priority, int lv, const char *fmt, ...)
+void csync_log(int priority, int lv, const char *fmt, ...)
 {
 	va_list ap;
 	if ( csync_level_debug < lv )

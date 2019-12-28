@@ -1,7 +1,7 @@
 #
 # 
 #
-daemon d PEER
+daemon d
 clean local
 clean peer
 mkdir -p test/$NAME/usr/local/sbin
@@ -23,6 +23,6 @@ cmd x "New file"
 sleep 1
 rm test/$NAME/usr/local/sbin/hej
 cmd x "New file deleted"
-#rm -rf test/$NAME
-#cmd x "clean up other"
-killdaemon d PEER
+rm -rf test/$NAME
+cmd x "clean up other"
+killdaemon
