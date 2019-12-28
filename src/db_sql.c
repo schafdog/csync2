@@ -569,7 +569,7 @@ textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, c
 {
     textlist_p tl = 0;
     SQL_BEGIN(db, "Query dirty DB",
-	      "SELECT filename, myhostname, peername FROM dirty where myname = '%s' "
+	      "SELECT filename, myname, peername FROM dirty where myname = '%s' "
 	      "AND peername not in (select host from host where status = 1) ",
 	      myhostname) {
 	filename_p filename   = db_decode(SQL_V(0));
