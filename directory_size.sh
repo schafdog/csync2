@@ -30,17 +30,19 @@ if [ "$DEPTH" != "" ] ; then
     DEPTH_LIMIT_SQL=" and $CURDEPTH < $DEPTH "
 fi 
 cat << __EOT__
-SELECT substring(filename, 1, locate('/', filename, length('$DIRECTORY')+1)-1) as directory $MAXDEPTH,
+SELECT t.* 
+FROM (
+ SELECT substring(filename, 1, LENGTH('$DIRECTORY')+POSITION('/' IN SUBSTR(filename, length('$DIRECTORY')+1))) as DIRECTORY $MAXDEPTH,
        count(filename),
        $SUM_SIZE
-FROM $TABLE WHERE filename LIKE '$DIRECTORY_WITHOUT/%'
-$DEPTH_LIMIT_SQL 
-GROUP BY directory 
-HAVING LENGTH(directory) > 0
+ FROM $TABLE WHERE filename LIKE '$DIRECTORY_WITHOUT/%'
+ $DEPTH_LIMIT_SQL 
+ GROUP BY 1
+) t
 UNION
-SELECT 'TOTAL: $DIRECTORY' as directory $MAXDEPTH, count(filename), $SUM_SIZE
+SELECT 'TOTAL: $DIRECTORY' as DIRECTORY $MAXDEPTH, count(filename), $SUM_SIZE
 FROM $TABLE WHERE filename LIKE '$DIRECTORY_WITHOUT/%'
 $DEPTH_LIMIT_SQL
-GROUP BY directory
+GROUP BY 1
 ORDER BY $ORDER;
 __EOT__
