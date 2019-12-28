@@ -85,7 +85,7 @@ function cmd {
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${COUNT}.log
     fi
-    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
+    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
     testing ${TESTNAME}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
 	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
@@ -102,7 +102,7 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
+    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
     rm -f csync_$CNAME.log ${DATABASE}_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1
@@ -191,5 +191,6 @@ for d in $* ; do
 	fi 
     fi
 done
+./compare_sql.sh $TESTNAME
 echo "Result $RES"
 exit $RES
