@@ -1,4 +1,3 @@
-filename
 /export/home/dennis/Projects/csync2/csync2/test/test/local
 /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
 /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
