@@ -351,7 +351,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  file_id   bigint      ,"
 		     "  timestamp timestamp   DEFAULT current_timestamp,"
 		     "  UNIQUE (filename,peername,myname)"
-		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH);
+		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
 		     "CREATE TABLE file ("
@@ -359,8 +359,8 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  parent bigint        ,"
 		     "  filename varchar(%u) ,"
 		     "  basename varchar(%u) ,"
-		     "  hostname varchar(50) ,"
-		     "  checktxt varchar(100),"
+		     "  hostname varchar(%u) ,"
+		     "  checktxt varchar(%u),"
 		     "  device bigint        ,"
 		     "  inode  bigint        ,"
 		     "  size   bigint        ,"
@@ -371,7 +371,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
 		     //		     "  UNIQUE (id),"
 		     "  UNIQUE (filename,hostname)"
-		     ");", FILE_LENGTH, FILE_LENGTH);
+		     ");", FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH+50);
 
 	csync_db_sql(conn, NULL, /* "Creating hint table", */
 		     "CREATE TABLE hint ("
