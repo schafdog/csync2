@@ -384,7 +384,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  peername  varchar(%u)  DEFAULT NULL,"
 		 "  operation varchar(100) DEFAULT NULL,"
 		 "  op 	      int	   DEFAULT NULL,"
-		 "  checktxt  varchar(200) DEFAULT NULL,"
+		 "  checktxt  varchar(%u)  DEFAULT NULL,"
 		 "  device    bigint       DEFAULT NULL,"
 		 "  inode     bigint       DEFAULT NULL,"
 		 "  other     varchar(%u)  DEFAULT NULL,"
@@ -394,9 +394,9 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  mtime     int    	   DEFAULT NULL,"
 		 "  type      int    	   DEFAULT NULL,"
 		 "  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-		 "  UNIQUE KEY `filename_peer` (`filename`(%u),`peername`)"
+		 "  UNIQUE KEY `filename_peername_myname_` (`filename`(%u),`peername`,`myname`)"
 		 //		"  KEY `dirty_host` (`peername`(10))"
-		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH, FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH+50, FILE_LENGTH);
 
     csync_db_sql(conn, NULL, /* "Creating file table", */
 		 "CREATE TABLE `file` ("

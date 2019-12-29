@@ -33,6 +33,7 @@ int csync_redis_connect(char *redis) {
         if (redis_context) {
             csync_debug(0, "Connection error: %s\n", redis_context->errstr);
             redisFree(redis_context);
+	    redis_context = NULL;
         } else {
             csync_debug(0, "Connection error: can't allocate redis context\n");
         }

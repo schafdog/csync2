@@ -1202,8 +1202,9 @@ int csync_daemon_symlink(filename_p filename, const char *target, const char **c
 	    csync_debug(0, "daemon_symlink: Failed to unlink %s. Symlink will fail", filename);
     }
     if (!symlink(target, filename))
-	return OK;
+	    return OK;
     *cmd_error = strerror(errno);
+    csync_debug(0, "daemon_symlink failed: %s -> %s  %d\n", filename, target, *cmd_error);
     return ABORT_CMD;
 }
 

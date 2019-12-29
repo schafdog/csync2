@@ -1,10 +1,14 @@
 #!/bin/bash
 
+./set_prefix.sh
+
 if [ "$1" == "" ] ; then 
     COMMAND=c
 else
     COMMAND=$1
 fi
+
+DATABASE=`cat database`
 
 NAME=`basename $0 .sh`
 
@@ -18,7 +22,7 @@ fi
 
 : ${DEBUG:=v}
 
-RECURSIVE=r
+RECURSIVE=rB
 
 COUNT=0
 echo "Running command $COMMAND" 
@@ -71,19 +75,18 @@ function cmd {
     fi
     echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
     if [ "$LLDB" != "" ] ; then 
-	$LLDB -f $PROG -- -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$LLDB -f $PROG -- -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
-	$GDB $PROG -q -P peer -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$GDB $PROG -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
-	echo $PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
-	$PROG -q -P $PEER -K csync2_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
+	echo $PROG -q -P $PEER -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$PROG -q -P $PEER -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${COUNT}.log
     fi
-    echo "select filename from file order by filename; select peername,filename,operation,other,op from dirty order by op, filename, peername;" | mysql --protocol tcp -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
-#    echo "select filename from file; select peername,filename,operation,other from dirty order by peername, timestamp;" | mysql -t -u csync2_$HOST -pcsync2_$HOST csync2_$HOST > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
-    testing ${TESTNAME}/${COUNT}.mysql
+    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
+    testing ${TESTNAME}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
 	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
 	testing ${TESTNAME}/${COUNT}.rsync
@@ -99,8 +102,8 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty ; delete from file" | mysql --protocol tcp -u csync2_$CNAME -pcsync2_$CNAME csync2_$CNAME > ${TESTNAME}/${COUNT}.mysql 2> /dev/null
-    rm -f csync_$CNAME.log mysql_$CNAME.log
+    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
+    rm -f csync_$CNAME.log ${DATABASE}_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1
     ${PAUSE}
@@ -125,21 +128,21 @@ function daemon {
     CMD="$1"
     echo $DCFG $DNAME
     if [ "$CMD" == "d" ] ; then 
-	${PROG} -q -K csync2_$DCFG.cfg -N $DCFG -z $DNAME -iiii$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
+	${PROG} -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
 	echo "$!" > ${DCFG}.pid
     elif [ "$CMD" == "i" ] ; then
 	if [ "LLDB" != "" ]; then
-	    $LLDB -f ${PROG} -- -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG
+	    $LLDB -f ${PROG} -- -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiiB$DEBUG
 	else
-	    $GDB ${PROG} --args -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iiii$DEBUG 
+	    $GDB ${PROG} --args -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiiB$DEBUG 
 	fi
 #	echo "$!" > daemon.pid
 	sleep 1
     elif [ "$CMD" == "once" ] ; then 
-	${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG >> daemon_${NAME}.log 2>&1 & 
+	${PROG} -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiB$DEBUG >> daemon_${NAME}.log 2>&1 & 
     elif [ "$CMD" == "clean_once" ] ; then 
 	clean peer
-	${PROG} -q -K csync2_$NAME.cfg -N $NAME -z $PEER -iii$DEBUG & 
+	${PROG} -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiB$DEBUG & 
     fi    
 }
 
@@ -160,8 +163,9 @@ function check {
     cmd c $1 $2
 }
 
-if [ ! -f csync2_${NAME}.cfg ] ; then
-    echo "Missing config file:  csync2_${NAME}.cfg"
+CSYNC2_CONFIG_FILE=csync2_${DATABASE}_${NAME}.cfg 
+if [ ! -f ${CSYNC2_CONFIG_FILE} ] ; then
+    echo "Missing config file:  ${CSYNC2_CONFIG_FILE} "
     exit 1;
 fi 
 
@@ -187,5 +191,6 @@ for d in $* ; do
 	fi 
     fi
 done
+./compare_sql.sh $TESTNAME
 echo "Result $RES"
 exit $RES
