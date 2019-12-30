@@ -1,0 +1,17 @@
+#
+# 
+#
+daemon d
+clean local
+clean peer
+./make_dir_tree.sh test/$NAME
+cmd x "New directory tree"
+# This should just generate ignored files
+./make_dir_tree.sh test/peer
+sleep 1
+rm -rf test/$NAME/
+cmd c "Removed dir recursive (check)"
+cmd u "Remove dir recursive (update)"
+#
+cmd x "clean up other"
+killdaemon
