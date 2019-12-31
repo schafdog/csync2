@@ -129,8 +129,8 @@ int db_sql_is_dirty(db_conn_p db, peername_p peername, filename_p filename,
     int rc = 0;
     SQL_BEGIN(db, "Check if file is dirty",
 	      "SELECT op, mode FROM dirty "
-	      "WHERE filename = '%s' and peername = '%s' LIMIT 1",
-	      db_escape(db, filename), db_escape(db, peername))
+	      "WHERE filename = '%s' and peername = '%s' and myname = '%s' LIMIT 1",
+	      db_escape(db, filename), db_escape(db, peername), db_escape(db, myhostname))
     {
     	rc = 1;
     	*operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
