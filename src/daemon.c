@@ -92,7 +92,7 @@ int csync_remove_file(db_conn_p db, filename_p filename) {
 
 int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd, const char **cmd_error);
 
-int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, struct textlist_p *tl)
+int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, textlist_p *tl)
 {
     struct dirent **namelist;
     int n = 0;
@@ -115,9 +115,10 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, st
 		if (!rc) {
 		    const char *cmd_error;
 		    if (S_ISDIR(st.st_mode))
-			csync_rmdir_recursive(db, fn, peername, tl );
+			csync_rmdir_recursive(db, fn, peername, tl);
 		    else {
-			if (peername != NULL)
+			int rc = 0;
+			if (peername != NULL && db != NULL)
 			    rc = csync_daemon_check_dirty(db, fn, peername,
 							  A_DEL,
 							  &cmd_error);
@@ -126,7 +127,8 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, st
 			    csync_remove_file(db, fn);
 			} else {
 			    csync_info(0, "File is dirty %s %d \n", fn, peername);
-			    textlist_add(tl, fn);
+			    if (tl != NULL)
+				textlist_add(tl, fn, 0);
 			}
 		    }
 		}
@@ -137,12 +139,15 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, st
     }
     int rc = rmdir(file);
     csync_info(0, "Removing directory %s %d\n", file, rc);
+    if (db)
+	db->remove_file(db, file, 0);
     if (rc == -1) {
 	/* Accept if we already deleted it */
 	if (errno == ENOTDIR || errno == ENOENT) {
 	    rc = 0;
 	}
-    }
+    } else
+	rc = IDENTICAL;
     return rc;
 }
 
@@ -150,23 +155,24 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 {
     /* TODO: check if all files and sub directories are ignored,
        delete them. We need a version of csync_check_dir */
-
-    int dir_count = csync_dir_count(db, filename);
-    int dirty_count = csync_check_dir(db, filename, (recursive ? FLAG_RECURSIVE : 0) | FLAG_IGN_DIR);
     int rc = 0;
+    int dir_count = csync_dir_count(db, filename);
+    /*
+    int dirty_count = csync_check_dir(db, filename, (recursive ? FLAG_RECURSIVE : 0) | FLAG_IGN_DIR);
     if (dirty_count != 0) {
 	csync_error(0, "Directory %s has dirty files: %d ", filename, dirty_count);
 	return ERROR;
     }
+    */
     int errors = 0;
     if (recursive) {
+	textlist_p tl, t = 0;
+	/*
 	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
-	textlist_p tl, t, dl = 0;
-	tl = db->find_file(db, filename, NULL /* filter_missing_file */);
+	tl = db->find_file(db, filename, NULL); // No filter;
 	for (t = tl; t != 0; t = t->next) {
 	    csync_debug(0, "rm: Checking %s %d\n", t->value, t->intvalue);
 	    if (S_ISDIR(t->intvalue)) {
-		textlist_add(&dl, t->value, t->intvalue);
 		errors += rmdir(t->value);
 		csync_debug(0, "rmdir %s %d\n", t->value, rc);
 	    }
@@ -174,45 +180,53 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 		csync_remove_file(db, t->value);
 	    }
 	}
+
 	if (errors) {
 	    rc = ERROR;
 	}
 	textlist_free(tl);
+	*/
+	tl = 0;
+	rc = ERROR;
 	/* Above could fail due to ignore files. Do recursive on scandir  */
 	if (rc == ERROR) {
-	    rc = csync_rmdir_recursive(db, filename, peername);
+	    csync_warn(1, "Calling csync_rmdir_recursive %s:%s. Errors %d\n", peername, filename, errors);
+	    rc = csync_rmdir_recursive(db, filename, peername, &tl);
+	    csync_warn(1, "Called csync_rmdir_recursive %s:%s. RC: %d\n", peername, filename, rc);
 	}
-	csync_info(0, "Deleted recursive from clean directory (%s): %d \n", filename, dir_count);
-/*
-	for (t = dl; t != 0; t = t->next) {
-	    csync_debug(1, "PRINT: remove directory: %s \n", t->value);
-	}
-*/
-	textlist_free(dl);
+	csync_info(0, "Deleted recursive from clean directory (%s): %d %d \n", filename, dir_count, rc);
     }
     else {
 	rc = rmdir(filename);
+	if (rc == -1)
+	    rc = ERROR;
     }
     return rc;
 }
 
 int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int recursive, int unlink_flag, const char **cmd_error)
 {
-	struct stat st;
-	int rc;
+    struct stat st;
+    int rc;
 
-	if ( lstat_strict(filename, &st) != 0 )
-	    return 0; /* Already gone */
+    if ( lstat_strict(filename, &st) != 0 )
+	return 0; /* Already gone */
 
-	/* TODO NOT working. Unlink is not set to two */
-	if ( unlink_flag == 2 && S_ISREG(st.st_mode) )
-	    return 0;
+    /* TODO NOT working. Unlink is not set to two */
+    if ( unlink_flag == 2 && S_ISREG(st.st_mode) )
+	return 0;
 
-	rc = S_ISDIR(st.st_mode) ? csync_rmdir(db, filename, peername, recursive) : unlink(filename);
-
-	if ( rc && !unlink_flag)
-	  *cmd_error = strerror(errno);
-	return rc;
+    if (S_ISDIR(st.st_mode)) {
+	rc = csync_rmdir(db, filename, peername, recursive);
+    } else {
+        rc = unlink(filename);
+	if ( rc && !unlink_flag) {
+	    *cmd_error = strerror(errno);
+	    rc = ERROR;
+	}
+    }
+    // IDENTICAL, ERROR, or new PARTIAL?
+    return rc;
 }
 
 int csync_dir_count(db_conn_p db, filename_p filename)
