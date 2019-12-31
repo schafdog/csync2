@@ -1233,10 +1233,11 @@ nofork:
 	csync_remove_old(db, realname);
     }
 
+    csync_redis_close();
     csync_run_commands(db);
     csync_db_close(db);
+    csync_info(3, "Closed db: %p\n", db);
     csync_config_destroy();
-    csync_redis_close();
     if (active_peers) {
 	free(active_peers);
     }
