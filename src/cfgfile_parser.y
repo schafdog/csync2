@@ -552,6 +552,7 @@ static void new_ignore(char *propname)
 }
 
 void csync_config_destroy() {
+    csync_debug(3, "csync_config_destroy");
     prefix_destroy(csync_prefix);
     csync_prefix = NULL;
     nossl_destroy(csync_nossl);
@@ -565,6 +566,7 @@ void csync_config_destroy() {
     csync_hostinfo_destroy(csync_hostinfo);
     csync_hostinfo = NULL;
     // TOOD other struct
+    csync_debug(3, "csync_config_destroy end");
 }
 
 static void disable_cygwin_lowercase_hack()
