@@ -162,7 +162,7 @@ textlist_p check_old_operation(const char *file, operation_t operation, int mode
     if (old_operation == OP_HARDLINK && st_file && st_file->st_nlink == 1) {
 	operation = OP_MOD;
     }
-    csync_info(1, "mark other: %s(%d) Old operation: %s(%d) '%s' '%s'\n", csync_mode_op_str(mode, operation), operation,
+    csync_info(2, "mark other: %s(%d) Old operation: %s(%d) '%s' '%s'\n", csync_mode_op_str(mode, operation), operation,
 	       csync_mode_op_str(mode, old_operation), old_operation,  old_filename, old_other);
     if (CHECK_HARDLINK && st_file && csync_same_stat_file(st_file, old_filename)) {
 	csync_info(1, "mark operation NEW HARDLINK %s:%s->%s .\n", peername, file, old_filename);
@@ -660,7 +660,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	else {
 	    count = db->insert_update_file(db, encoded, checktxt_encoded, file_stat, digest);
 	}
-	csync_log(LOG_INFO, 1, "Inserted/updated %s rows matched: %ld\n", file, count);
+	csync_log(LOG_INFO, 2, "Inserted/updated %s rows matched: %ld\n", file, count);
     }
     buffer_destroy(buffer);
     return count;
