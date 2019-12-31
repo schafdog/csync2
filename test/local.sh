@@ -75,9 +75,9 @@ function cmd {
     fi
     echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
     if [ "$LLDB" != "" ] ; then 
-	$LLDB -f $PROG -- -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$LLDB -f ${PROG} -- -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
-	$GDB $PROG -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$GDB --args ${PROG} -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
     else
 	echo $PROG -q -P $PEER -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
 	$PROG -q -P $PEER -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
@@ -134,7 +134,7 @@ function daemon {
 	if [ "LLDB" != "" ]; then
 	    $LLDB -f ${PROG} -- -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiiB$DEBUG
 	else
-	    $GDB ${PROG} --args -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiiB$DEBUG 
+	    $GDB --args ${PROG} -q -K csync2_${DATABASE}_$NAME.cfg -N $NAME -z $PEER -iiiiB$DEBUG
 	fi
 #	echo "$!" > daemon.pid
 	sleep 1
