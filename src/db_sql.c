@@ -154,8 +154,8 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     }
     SQL_BEGIN(db, "DB Dump - Dirty",
 	      "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty "
-	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) ORDER BY type, filename",
-	      OP_FILTER, where)
+	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) AND myname = '%s' ORDER BY type, filename",
+	      OP_FILTER, where, myhostname)
     {
 	const char *force_str = SQL_V(0);
 	peername_p myname   = db_decode(SQL_V(1));
@@ -558,11 +558,19 @@ void db_sql_add_hint(db_conn_p db, const char *file, int recursive)
 }
 
 void db_sql_remove_dirty(db_conn_p db, peername_p peername,
-			 filename_p filename, int recursive_NOT_IMPLEMENTED)
+			 filename_p filename, int recursive)
 {
-    SQL(db, "Deleting old dirty file entries",
-	"DELETE FROM dirty WHERE myname = '%s' AND filename = '%s' AND peername like '%s'",
-	myhostname, db_escape(db, filename), db_escape(db, peername));
+    const char *filename_enc = db_escape(db, filename);
+    const char *peername_enc = db_escape(db, peername);
+    if (!recursive) {
+	SQL(db, "Deleting old dirty file entries",
+	    "DELETE FROM dirty WHERE myname = '%s' AND peername like '%s' AND filename = '%s'",
+	    myhostname, peername, filename_enc);
+    } else {
+	SQL(db, "Deleting old dirty file entries recursive",
+	    "DELETE FROM dirty WHERE myname = '%s' AND peername like '%s' AND (filename = '%s' OR filename like '%s/%%') ",
+	    myhostname, peername, filename_enc, filename_enc);
+    }
 }
 
 textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, const char *localname, peername_p peername))
@@ -683,7 +691,8 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 		found = 1;
 	    }
 	}
-	csync_info(2, "dirty: %s:%s %d %p\n", peername, filename, found, checktxt);
+	if (found)
+	    csync_info(2, "dirty: %s:%s %d %p\n", peername, filename, found, checktxt);
     } SQL_END;
 
     if (where_rec)
@@ -817,6 +826,31 @@ int db_sql_insert_update_file(db_conn_p db, filename_p encoded, const char *chec
     return count;
 }
 
+int filter_child_to_deleted_dir(const char *filename, const char *checktxt, char **last_dir_del) {
+    return 0;
+
+    if (strstr(checktxt, "type=dir")) {
+	if (*last_dir_del)
+	    free(*last_dir_del);
+	size_t len = strlen(filename);
+	*last_dir_del = malloc(len+1);
+	strcpy(*last_dir_del, filename);
+	strcpy(*last_dir_del+len, "/");
+	return 0;
+    } else {
+	if (*last_dir_del != NULL && strstr(filename, *last_dir_del) == filename) {
+	    csync_info(2, "Skipping child (%s) from deleted directory (%s)\n", filename, *last_dir_del);
+	    return 1;
+	} else {
+	    if (*last_dir_del) {
+		free(*last_dir_del);
+		*last_dir_del = NULL;
+	    }
+	}
+    }
+    return 0;
+}
+
 int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_run)
 {
     char *where_rec = "";
@@ -830,6 +864,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 
     csync_generate_recursive_sql(file_encoded, recursive, &where_rec);
 
+    char *last_dir_deleted = NULL;
     SQL_BEGIN(db, "Checking for removed files - check_delete",
 	      "SELECT filename, checktxt, device, inode, mode FROM file "
 	      "WHERE hostname = '%s' AND %s ORDER BY filename",
@@ -845,8 +880,11 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	    continue;
 
 	// Not found
-	if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
-	    textlist_add4(&tl, filename, checktxt, device, inode, mode);
+	if ( lstat_strict(filename, &st) != 0 || csync_check_pure(filename)) {
+	    if (!filter_child_to_deleted_dir(filename, checktxt, &last_dir_deleted)) {
+		textlist_add4(&tl, filename, checktxt, device, inode, mode);
+	    }
+	}
     } SQL_END;
     int count_deletes = 0;
     time_t now = time(NULL);
