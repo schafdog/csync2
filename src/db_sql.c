@@ -129,8 +129,8 @@ int db_sql_is_dirty(db_conn_p db, peername_p peername, filename_p filename,
     int rc = 0;
     SQL_BEGIN(db, "Check if file is dirty",
 	      "SELECT op, mode FROM dirty "
-	      "WHERE filename = '%s' and peername = '%s' LIMIT 1",
-	      db_escape(db, filename), db_escape(db, peername))
+	      "WHERE filename = '%s' and peername = '%s' and myname = '%s' LIMIT 1",
+	      db_escape(db, filename), db_escape(db, peername), db_escape(db, myhostname))
     {
     	rc = 1;
     	*operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
@@ -154,8 +154,8 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     }
     SQL_BEGIN(db, "DB Dump - Dirty",
 	      "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty "
-	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) ORDER BY type, filename",
-	      OP_FILTER, where)
+	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) AND myname = '%s' ORDER BY type, filename",
+	      OP_FILTER, where, myhostname)
     {
 	const char *force_str = SQL_V(0);
 	peername_p myname   = db_decode(SQL_V(1));
