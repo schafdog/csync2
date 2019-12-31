@@ -387,6 +387,18 @@ const char *prefixencode(filename_p filename);
 
 /* textlist implementation */
 
+struct dirty_by_name {
+    char *filename;
+    char *op;
+    int operation;
+    char *other;
+    char *checktxt;
+    char *digest;
+    int forced;
+};
+
+typedef struct dirty_by_peer *dirty_by_peer_p;
+
 struct textlist {
     struct textlist *next;
     int operation;
@@ -399,6 +411,9 @@ struct textlist {
     int num;
     char **values;
     void *data;
+    union {
+	dirty_by_peer_p *dirty_by_peer;
+    };
     void (*destroy)(void *data);
 };
 
