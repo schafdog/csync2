@@ -1124,7 +1124,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 		}
 	    }
 	}
-	    
+
 	/*
 	textlist_p link_move_list = csync_check_link_move(peername,
 								filename, checktxt, operation, digest, &st, NULL);
@@ -1467,7 +1467,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 		    "Try again later...\n");
 	return;
     }
-    
+
     conn_printf(conn, "PING %s %s\n", myname, cfgname);
     int rc = read_conn_status(conn, 0, peername);
     csync_debug(1, "Sent PING %s %s to %s: %d \n", myname, cfgname, peername, rc);
@@ -1508,6 +1508,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
     }
     int rc;
     textlist_p directory_list = 0;
+    char *last_dir_deleted = NULL;
     for (t = tl; t != 0; t = next_t) {
 	next_t = t->next;
 	if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
@@ -1529,16 +1530,40 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	    /* File not found */
 	    /* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
 	    csync_log(LOG_DEBUG, 2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
+
 	    if (t->operation != OP_RM && t->operation != OP_MARK) {
-		csync_warn(1, "Unable to %s %s:%s. File has disappeared sinc check.\n", csync_operation_str(t->operation), peername, t->value);
+		csync_warn(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation),
+			   peername, t->value);
 		if (t->value3) {
 		    csync_mark(db, t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
 		    csync_log(LOG_DEBUG, 0, "make other dirty %s\n", t->value3);
 		}
+	    } else {
+		if (last_dir_deleted != NULL && strstr(t->value, last_dir_deleted) == t->value) {
+		    // this is a file belonging to the deleted directory, so it should be skipped
+		    csync_info(2, "Matched file (%s) from deleted directory (%s)\n", t->value, last_dir_deleted);
+		} else {
+		    if (last_dir_deleted != NULL) {
+			free(last_dir_deleted);
+			last_dir_deleted = NULL;
+		    }
+		    rc = csync_update_file_del(conn, db, myname, peername,
+					       t->value, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
+		    if (rc == IDENTICAL) {
+			db->remove_dirty(db, peername, t->value, 1);
+			size_t len = strlen(t->value);
+			last_dir_deleted = malloc(len+1);
+			strcpy(last_dir_deleted, t->value);
+			strcat(last_dir_deleted, "/");
+			// Skip following files if from sub-directory
+			csync_info(2, "DELETE (%s) Last dir: %s. rc: %d\n", t->value, last_dir_deleted, rc);
+		    } else {
+			*last_tn = next_t;
+			t->next = tl_del;
+			tl_del = t;
+		    }
+		}
 	    }
-	    *last_tn = next_t;
-	    t->next = tl_del;
-	    tl_del = t;
 	}
     }
     textlist_free(tl);
