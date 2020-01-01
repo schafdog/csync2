@@ -441,7 +441,7 @@ void db_sql_list_hint(db_conn_p db)
 void db_sql_list_files(db_conn_p db)
 {
     SQL_BEGIN(db, "DB Dump - File",
-	      "SELECT checktxt, filename FROM file ORDER BY filename")
+	      "SELECT checktxt, filename FROM file WHERE hostname = '%s' ORDER BY filename", myhostname)
     {
 	if (csync_find_next(0, db_decode(SQL_V(1)), 0)) {
 	    printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
