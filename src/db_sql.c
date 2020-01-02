@@ -147,10 +147,9 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     if (realname[0] != 0) {
 	const char *db_encoded = db_escape(db, realname);
 	ASPRINTF(&where,
-		 " (filename = '%s' or "
-		 "  filename > '%s/' and " 
-		 "  filename < '%s0') and ",
-		 db_encoded, db_encoded, db_encoded);
+		 " (filename = '%s' OR "
+		 "  filename LIKE '%s/%%') AND ",
+		 db_encoded, db_encoded);
     }
     SQL_BEGIN(db, "DB Dump - Dirty",
 	      "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty "
@@ -254,7 +253,7 @@ int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, in
     const char *  file_enc = url_encode(file);
     SQL_BEGIN(db, "Upgrade to v1-v2",
 	      "SELECT filename, checktxt from file where hostname = '%s' AND "
-	      "(filename = '%s' OR filename like = '%s/%%') ORDER BY filename", myhostname, file_enc, file_enc)
+	      "(filename = '%s' OR filename like '%s/%%') ORDER BY filename", myhostname, file_enc, file_enc)
     {
 	filename_p filename = url_decode(SQL_V(0));
 	const char *checktxt = url_decode(SQL_V(1));
@@ -324,13 +323,12 @@ void db_sql_remove_hint(db_conn_p db, filename_p filename, int recursive)
 
 void db_sql_force(db_conn_p db, const char *realname, int recursive)
 {
-    char *where_rec = "";
+    char *where_rec = NULL;
     csync_generate_recursive_sql(db_escape(db, realname), recursive, &where_rec);
     SQL(db, "Mark file as to be forced",
 	"UPDATE dirty SET forced = 1 WHERE %s ", where_rec);
 
-    if ( recursive )
-	free(where_rec);
+    free(where_rec);
 }
 
 void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
@@ -438,15 +436,28 @@ void db_sql_list_hint(db_conn_p db)
     } SQL_END;
 }
 
-void db_sql_list_files(db_conn_p db)
+void db_sql_list_files(db_conn_p db, filename_p realname)
+
 {
+    char *where = NULL;
+    if (realname != NULL && realname[0] != 0) {
+	const char *db_encoded = db_escape(db, realname);
+	ASPRINTF(&where,
+		 " AND (filename = '%s' OR filename LIKE '%s/%%') ",
+		 db_encoded, db_encoded);
+    }
+        
     SQL_BEGIN(db, "DB Dump - File",
-	      "SELECT checktxt, filename FROM file WHERE hostname = '%s' ORDER BY filename", myhostname)
+	      "SELECT checktxt, filename FROM file WHERE hostname = '%s' %s"
+	      " ORDER BY filename", myhostname, where != NULL ? where : "")
     {
 	if (csync_find_next(0, db_decode(SQL_V(1)), 0)) {
 	    printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
 	}
     } SQL_END;
+
+    if (where)
+	free(where);
 }
 
 textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *myhostname, peername_p peername, int recursive)
