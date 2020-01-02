@@ -48,11 +48,13 @@ time_t csync_redis_lock(filename_p filename) {
     time_t unix_time = time(NULL);
     csync_debug(1, "Locking %s\n", filename);
     redis_reply = redisCommand(redis_context, "SET %s %d NX EX %d", filename, unix_time+lock_time, lock_time);
-    if (strcmp(redis_reply->str, "OK")) {
+    if (!redis_reply || !redis_reply->str || strcmp(redis_reply->str, "OK")) {
+	// Failed to get OK reply
 	unix_time = -1;
     }
     csync_debug(2, "csync_redis_lock: %s %s %d\n", redis_reply->str, filename, unix_time);
-    freeReplyObject(redis_reply);
+    if (redis_reply)
+	freeReplyObject(redis_reply);
     return unix_time;
 }
 
