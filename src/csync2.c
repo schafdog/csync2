@@ -825,6 +825,7 @@ int main(int argc, char ** argv)
 	 mode != MODE_CHECK_AND_UPDATE &&
 	 mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
 	 mode != MODE_UPGRADE_DB &&
+	 mode != MODE_LIST_FILE &&
 	 mode != MODE_LIST_DIRTY &&
 	 mode != MODE_EQUAL &&
 	 mode != MODE_REMOVE_OLD &&
@@ -1153,7 +1154,11 @@ nofork:
 
     if (mode == MODE_LIST_FILE) {
 	retval = 2;
-	db->list_files(db);
+	char *realname = "";
+	if (optind < argc) {
+	    realname = getrealfn(argv[optind]);
+	}
+	db->list_files(db, realname);
     };
 
     if (mode == MODE_TAIL) {
