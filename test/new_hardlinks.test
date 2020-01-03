@@ -18,11 +18,12 @@ ln test/$NAME/new/new_file test/$NAME/new/hardlinked_5
 cmd cI "5 more files hardlinked (mark)"
 # See if a mark can handle this
 cmd m "6 more files hardlinked (mark)"
-cmd u "7 more files hardlinked (updated)"
+cmd du "7 more files hardlinked (dry-run updated)"
+cmd u "8 more files hardlinked (updated)"
 echo hej >  test/$NAME/new/was_hardlink
 sleep 1
 ln test/$NAME/new/was_hardlink test/$NAME/new/hardlinked_6
-cmd c "8 hardlinked when checked"
+cmd c "9 hardlinked when checked"
 rm test/$NAME/new/hardlinked_6
-cmd u "9 not hardlinked when updated"
+cmd u "10 not hardlinked when updated"
 killdaemon
