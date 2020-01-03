@@ -90,6 +90,11 @@ function cmd {
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
 	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
 	testing ${TESTNAME}/${COUNT}.rsync
+    else
+	if [ "$CMD" == "c" ] ; then
+	    # clean up if step has changed
+	    rm -f ${TESTNAME}/${COUNT}.rsync ${TESTNAME}/${COUNT}.rsync.res
+	fi
     fi
     echo "${COUNT}. END $CMD ${DESC}" 
     let COUNT=$COUNT+1
