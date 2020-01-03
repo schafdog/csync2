@@ -2,7 +2,9 @@
 
 for d in `ls $1/*.mysql.res` ; do
     other=${d/.mysql/.cockroach}
-    if ! diff $d $other ; then
-	echo $d $other differs
+    if [ -f $other ] ; then
+	diff -q $d $other
+    else
+	echo $other is missing
     fi
 done
