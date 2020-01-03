@@ -5,4 +5,5 @@ for d in `ls $1/*.diff` ; do
     new_res=${d/.diff/}
     rm $res_file
     mv $new_res $res_file
+    rm $d
 done
