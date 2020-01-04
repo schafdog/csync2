@@ -535,11 +535,16 @@ void db_sql_add_hint(db_conn_p db, const char *file, int recursive)
 }
 
 void db_sql_remove_dirty(db_conn_p db, peername_p peername,
-			 filename_p filename, int recursive_NOT_IMPLEMENTED)
+			 filename_p filename, int recursive)
 {
+    const char *file_enc = db_escape(db, filename);
+    char *sql  = csync_generate_recursive_sql(file_enc, recursive, 0, 1);
+    
     SQL(db, "Deleting old dirty file entries",
-	"DELETE FROM dirty WHERE myname = '%s' AND filename = '%s' AND peername like '%s'",
-	myhostname, db_escape(db, filename), db_escape(db, peername));
+	"DELETE FROM dirty WHERE %s myname = '%s' AND filename = '%s' AND peername like '%s'",
+	sql, myhostname, db_escape(db, filename), db_escape(db, peername));
+
+    free(sql);
 }
 
 textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, const char *localname, peername_p peername))
@@ -603,10 +608,12 @@ textlist_p db_sql_get_file_info_by_name(db_conn_p db, filename_p filename, const
 	
 void db_sql_remove_file(db_conn_p db, filename_p filename, int recursive)
 {
-    if (recursive)
-	csync_error(0, "ERROR: Recursive delete on file is NOT IMPLEMENTED");
+    const char *file_enc = db_escape(db, filename);
+    char *sql = csync_generate_recursive_sql(file_enc, recursive, 0 , 1);
+						  
     SQL(db, "Remove old file from file db",
-	"DELETE FROM file WHERE hostname = '%s' AND filename = '%s'", myhostname, db_escape(db, filename));
+	"DELETE FROM file WHERE %s hostname = '%s'", sql, myhostname);
+    free(sql);
 }
 
 void db_sql_add_dirty_simple(db_conn_p db, const char *myhostname, peername_p peername, filename_p filename)
