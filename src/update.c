@@ -944,7 +944,10 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname, peern
 				       other_enc, filename, filename_enc,
 				       last_conn_status);
 	else {
-	    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching.\n", other);
+	    csync_warn(0, "Remote HARDLINK file (%s) not identical. Need patching. RC = %d\n", other, rc);
+	    if (rc == OK_MISSING)
+		return rc;
+
 	    rc = ERROR_HARDLINK;
 	}
 
@@ -1054,6 +1057,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	if (rc >= 0) {
 	    rc &=  ~DIFF_BOTH;
 	}
+
 	if (dry_run) {
 	    if (rc == IDENTICAL) {
 		csync_info(1, "clear %s:%s on dry run\n", peername, filename);
@@ -1088,21 +1092,31 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 			//operation = OP_HARDLINK;
 			//other = buffer_strdup(buffer, ptr->value);
 			csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, filename);
-			rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc, ptr->value, &st, uid, gid, digest,
-					&last_conn_status, auto_resolve_run);
-			if (rc == ERROR_HARDLINK)
-			    csync_mark(db, ptr->value, myname, peername, OP_RM, 0, 0, 0, 0, time(NULL));
+			rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc,
+							 filename, filename_enc, ptr->value, &st, uid, gid, digest,
+							 &last_conn_status, auto_resolve_run);
+			csync_debug(1, "check_update_hardlink result: %s -> %s: %d\n", ptr->value, filename, rc);
+			if (rc == ERROR_HARDLINK || rc == OK_MISSING) {
+			    csync_debug(1, "Not a candidate for HARDLINK %s -> %s\n", ptr->value, filename); 
+			    //csync_mark(db, ptr->value, myname, peername, OP_RM, 0, 0, 0, 0, time(NULL));
+			}
 			if (rc == OK) {
-			    csync_clear_dirty(db, peername, filename, auto_resolve_run);
+			    csync_debug(1, "Candidate for HARDLINK %s -> %s\n", ptr->value, filename);
+			    operation = OP_HARDLINK;
+			    other = buffer_strdup(buffer, ptr->value);
+			    //csync_clear_dirty(db, peername, filename, auto_resolve_run);
+			    break;
 			}
 			if (rc == CONN_CLOSE) {
-			    return CONN_CLOSE;
+			    break;
 			}
 			
 		    }
 		    ptr = ptr->next;
 		}
 		textlist_free(tl);
+		if (rc == CONN_CLOSE)
+		    return rc;
 	    }
 	}
 	if (operation == OP_HARDLINK) {
@@ -2095,7 +2109,7 @@ void csync_remove_old(db_conn_p db, filename_p pattern)
     tl = db->find_file(db, pattern, filter_missing_file); 
     for (t = tl; t != 0; t = t->next) {
 	csync_info(1, "Removing %s from file db.\n", t->value);
-	db->remove_file(db, t->value, 0);
+	db->remove_file(db, t->value, 1);
     }
     textlist_free(tl);
     csync_log(LOG_DEBUG, 1,"remove_old: end\n");
