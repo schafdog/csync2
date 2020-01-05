@@ -1925,7 +1925,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 
     conn_printf(conn, "HELLO %s\n", url_encode(myname));
     read_conn_status(conn, 0, peername);
-    filename_p filename_enc = (filename ? url_encode(prefixencode(filename)) : "-");
+    filename_p filename_enc = (filename ? url_encode(prefixencode(filename)) : "/");
     found = 0; 
     for (g = csync_group; g && !found; g = g->next) {
 	if ( !g->myname || strcmp(g->myname, myname) )
