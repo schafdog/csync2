@@ -42,35 +42,54 @@ int csync_redis_connect(char *redis) {
     return 0;
 }
 
-time_t csync_redis_lock(filename_p filename) {
+time_t csync_redis_get(const char *key) {
+    redis_reply = redisCommand(redis_context, "GET %s", key);
+    if (redis_reply && redis_reply->integer)
+	return redis_reply->integer;
+    return -1;
+}
+
+time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, char *domain) {
     if (redis_context == NULL)
 	return 0;
     time_t unix_time = time(NULL);
-    csync_debug(1, "Locking %s\n", filename);
-    redis_reply = redisCommand(redis_context, "SET %s %d NX EX %d", filename, unix_time+lock_time, lock_time);
+    if (domain)
+	csync_debug(1, "Locking '%s:%s'\n", domain, filename);
+    else
+	csync_debug(1, "Locking '%s'\n", filename);
+    redis_reply = redisCommand(redis_context, "SET %s%s%s %d NX EX %d",
+			       domain ? domain : "", domain ? ":" : "", filename,
+			       unix_time+lock_time, lock_time);
     if (!redis_reply || !redis_reply->str || strcmp(redis_reply->str, "OK")) {
 	// Failed to get OK reply
 	unix_time = -1;
     }
-    csync_debug(2, "csync_redis_lock: %s %s %d\n", redis_reply->str, filename, unix_time);
+    csync_debug(2, "csync_redis_lock: %s %s %d\n", redis_reply ? redis_reply->str : "NULL", filename, unix_time);
     if (redis_reply)
 	freeReplyObject(redis_reply);
     return unix_time;
+}
+
+time_t csync_redis_lock(filename_p filename) {
+    return csync_redis_lock_custom(filename, lock_time, NULL);
+}
+
+void csync_redis_del(filename_p filename) {
+    csync_debug(1, "Deleting key '%s'\n", filename);
+    redis_reply = redisCommand(redis_context, "DEL %s", filename);
+    if (redis_reply == NULL || redis_reply->integer != 1)
+	csync_debug(2, "csync_redis_del failed to delete one key: %d\n", redis_reply ? redis_reply->integer : -1);
+    freeReplyObject(redis_reply);
 }
 
 void csync_redis_unlock(filename_p filename, time_t unix_time) {
     if (redis_context == NULL)
 	return;
     time_t now = time(NULL);
-    if (now > unix_time + lock_time) {
-	csync_debug(0, "operation took longer than lock time: %d (%d)\n", time - unix_time, lock_time);
+    if (unix_time != 0 && now > unix_time + lock_time) {
+	csync_debug(0, "operation took longer than lock time: %d (%d)\n", now - unix_time, lock_time);
     } else {
-	csync_debug(1, "Unlocking file: %s\n", filename);
-	redis_reply = redisCommand(redis_context, "DEL %s", filename);
-	csync_debug(2, "csync_redis_unlock: %d %s %d\n", redis_reply->integer, filename, unix_time);
-	if (redis_reply->integer != 1)
-	    csync_debug(0, "redis_unlock failed to delete one key: %d\n", redis_reply->integer);
-	freeReplyObject(redis_reply);
+	csync_redis_del(filename);
     }
 }
 
