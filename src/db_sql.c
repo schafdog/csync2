@@ -634,16 +634,16 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 				    int (*get_dirty_by_peer) (filename_p filename, const char *pattern, int recursive))
 {
     textlist_p tl = 0;
-    char *filter_sql = "1=1";
+    char *filter_sql = "";
     char *where_rec = NULL;
     if (numpat == 1) {
-	where_rec = csync_generate_recursive_sql(patlist[0], recursive, 0, 0);
+	where_rec = csync_generate_recursive_sql(patlist[0], recursive, 0, 1);
 	filter_sql = where_rec;
     }
     SQL_BEGIN(db, "Get files for host from dirty table",
 	      "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type FROM dirty WHERE "
               " %s "
-	      "AND peername = '%s' AND myname = '%s' "
+	      "peername = '%s' AND myname = '%s' "
 	      "AND peername NOT IN (SELECT host FROM host WHERE status = 1) "
 	      "ORDER by type DESC, filename DESC",
 	      OP_FILTER,
