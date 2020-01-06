@@ -270,6 +270,8 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
     char time[100];
     char operation[100];
     char file[500];
+    char *oldbuffer = NULL;
+    int duplicated = 0;
     while (1) {
 	char *buffer = readbuffer;
 	int rc = gets_newline(fileno, buffer, 1000, 1);
@@ -281,9 +283,26 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    csync_error(0, "Got error from read %d\n", rc);
 	    return ERROR;
 	}
+	if (oldbuffer && strcmp(readbuffer,oldbuffer) == 0) {
+	    duplicated++;
+	    continue;
+	}
+	if (duplicated) {
+	    csync_debug(1, "Last line was repeated %d times", duplicated);
+	    duplicated = 0;
+	}	
 	int match = csync_read_buffer(buffer, time);
 	if (match < 0)
 	    return ERROR;
+	struct tm tm;
+	time_t log_time = -1;
+	const char *rest = strptime(time, "%F_%T", &tm);
+	if (rest) {
+	    log_time = timelocal(&tm);
+	    csync_debug(1, "Parsed %s to %d. Rest: %s", time, log_time, rest);
+	} else
+	    csync_debug(1, "failed to parse %s as %F_%T", time);
+
 	buffer += match + 1;
 	match = csync_read_buffer(buffer, operation);
 	if (match <= 0)
@@ -292,18 +311,26 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	int len = strlen(buffer);
 	if (buffer[len] == '\n')
 	    buffer[len] = 0;
+	// Check if file is "just" made by daemon
+
 	strcpy(file, buffer);
-	time_t lock_time = csync_redis_lock(file);
-	if (lock_time == -1) {
-	    csync_debug(1, "tail: %s locked. Skipping %s on %s\n", operation, file);
+	time_t lock_time = csync_redis_get_custom(file, operation);
+	csync_debug(1, "tail: %s %s at %d %d\n", operation, file, lock_time, log_time);	
+       
+	if (lock_time != -1 && log_time <= lock_time) {
+	    csync_debug(1, "tail: daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 	} else {
-	    csync_info(2, "tail: '%s' '%s' '%s' \n", time, operation, file);
+	    csync_redis_del_custom(file, operation);
+	    csync_info(1, "tail: '%s' '%s' '%s' \n", time, operation, file);
 	    csync_check(db, file, flags);
 	    const char *patlist[1];
 	    patlist[0] = file;
 	    csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
 			 ip_version, csync_update_host, flags);
 	}
+	if (oldbuffer)
+	    free(oldbuffer);
+	oldbuffer = strdup(readbuffer);
     }
 }
 
