@@ -84,13 +84,17 @@ int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
     if (db)
 	rc = csync_file_backup(filename, &cmd_error);
     if (!rc) {
+	time_t lock_time = csync_redis_lock_custom(filename, 300, "daemon");
 	rc = unlink(filename);
 	if (db && !rc) {
 	    csync_info(1, "Removing %s from file db.\n", filename);
 		db->remove_file(db, filename, 0);
 	}
-	if (rc)
+	if (rc) {
+	    if (lock_time != -1)
+		csync_redis_del_custom(filename, "daemon");
 	    csync_error(1, "Failed to delete  %s !\n", filename);
+	}
     }
     else
 	csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
@@ -132,20 +136,18 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, BUF_P buffer)
 	}
 	free(namelist);
     }
-    time_t lock_time = csync_redis_lock(file);
-    if (buffer && lock_time == -1) {
-	buffer_strdup(buffer, file);
-	return ABORT_CMD;
-    }
+    time_t lock_time = csync_redis_lock_custom(file, 300, "daemon");
     int rc = rmdir(file);
     csync_info(0, "Removing directory %s %d\n", file, rc);
     if (rc == -1) {
+	csync_redis_del_custom(file, "daemon");
 	/* Accept if we already deleted it */
 	if (errno == ENOTDIR || errno == ENOENT) {
 	    rc = 0;
 	}
 	else
 	    buffer_strdup(buffer, file);
+	
     }
     return rc;
 }
@@ -212,8 +214,15 @@ int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_fl
 	if ( unlink_flag == 2 && S_ISREG(st.st_mode) )
 	    return 0;
 
-	rc = S_ISDIR(st.st_mode) ? csync_rmdir(db, filename, recursive) : unlink(filename);
-
+	if (S_ISDIR(st.st_mode)) {
+	    rc = csync_rmdir(db, filename, recursive);
+	} else {
+	    csync_redis_set_int(filename, "DELETE", "", time(NULL));
+	    rc = unlink(filename);
+	    if (rc) {
+		csync_redis_del_custom(filename, "daemon");
+	    }	    
+	}
 	if ( rc && !unlink_flag)
 	  *cmd_error = strerror(errno);
 	return rc;
@@ -722,6 +731,8 @@ textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl)
 
 int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char **cmd_error)
 {
+    // Use as a marker. Not lock
+    csync_redis_lock_custom(filename, 300, "daemon");
     struct stat st;
     int rc = stat(filename, &st);
     // TODO also skip if it is a directory that already exists.
