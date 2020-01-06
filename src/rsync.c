@@ -19,6 +19,7 @@
  */
 
 #include "csync2.h"
+#include "redis.h"
 #include <librsync.h>
 
 #if defined(RS_MD4_LENGTH)
@@ -37,6 +38,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
 
 /* for MAXPATHLEN */
 #include <sys/param.h>
@@ -181,7 +183,9 @@ static FILE *open_temp_file(char *fnametmp, const char *fname)
   }
 
   f = NULL;
-  //fd = mkstemp(fnametmp); 
+  //fd = mkstemp(fnametmp);
+  // Let csync2 tail ignore this file for 5 minutes
+  csync_redis_set_int(fnametmp, "CREATE", "", time(NULL));  
   fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
   if (fd >= 0) {
     f = fdopen(fd, "wb+");
@@ -568,22 +572,21 @@ int csync_rs_patch(int conn, filename_p filename)
       return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
     }
   }
-
   csync_log(LOG_DEBUG, 3, "Opening temp file for new data on local host..\n");
   new_file = open_temp_file(newfname, filename);
+  
   if ( !new_file ) { 
     errstr="creating new data temp file"; 
     return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
   }
   
-  csync_log(LOG_DEBUG, 3, "Running rs_patch_file() from librsync..\n");
+  csync_log(LOG_DEBUG, 3, "Running rs_patch_file() from librsync..\n", filename);
   result = rs_patch_file(basis_file, delta_file, new_file, &stats);
   if (result != RS_DONE) {
     csync_log(LOG_DEBUG, 0, "Internal error from rsync library!\n");
     rsync_close_error(errno, basis_file, delta_file, new_file);
   }
   
-  csync_log(LOG_DEBUG, 3, "Renaming tmp file to data file..\n");
   fclose(basis_file);
 
 #ifdef __CYGWIN__
@@ -616,12 +619,17 @@ int csync_rs_patch(int conn, filename_p filename)
     CloseHandle(winfh);
   }
 #endif
+  csync_log(LOG_DEBUG, 3, "Renaming tmp file to data file..\n");
   // TODO this will break any hardlink to filename. 
   // DS: That is not what we want IMHO
+
+  csync_redis_set_int(filename, "MOVED_TO","", time(NULL));
   if (rename(newfname, filename) == 0) {
-      // Now inotify sends MOVED_TO
+
       csync_info(3, "File '%s' has been patched successfully.\n", filename);
       fclose(delta_file);
+      // And a CLOSE_WRITE,CLOSE 
+      csync_redis_set_int(filename, "CLOSE_WRITE,CLOSE", "", time(NULL));
       fclose(new_file);
       // inotify also sends this?
       return 0;
