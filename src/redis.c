@@ -1,6 +1,7 @@
 
 #include "csync2.h"
 #include "redis.h"
+#include "buffer.h"
 #include <hiredis/hiredis.h>
 #include <stdio.h>
 #include <time.h>
@@ -23,7 +24,7 @@ int csync_redis_connect(char *redis) {
 	    port = tmp_port;
     };
     csync_debug(1, "Connecting to redis %s:%d\n", redis, port);
-    struct timeval timeout = { 1, 500000 }; // 1.5 seconds
+    struct timeval timeout = { 5, 0 }; // 5 seconds
     if (isunix) {
         redis_context = redisConnectUnixWithTimeout(redis, timeout);
     } else {
@@ -31,25 +32,87 @@ int csync_redis_connect(char *redis) {
     }
     if (redis_context == NULL || redis_context->err) {
         if (redis_context) {
-            csync_debug(0, "Connection error: %s\n", redis_context->errstr);
+            csync_debug(0, "Redis Connection error: %s\n", redis_context->errstr);
             redisFree(redis_context);
 	    redis_context = NULL;
         } else {
-            csync_debug(0, "Connection error: can't allocate redis context\n");
+            csync_debug(0, "Redis Connection error: can't allocate redis context\n");
         }
         return 1;
     }
     return 0;
 }
 
-time_t csync_redis_get(const char *key) {
-    redis_reply = redisCommand(redis_context, "GET %s", key);
-    if (redis_reply && redis_reply->integer)
-	return redis_reply->integer;
+const char *not_null(const char *str) {
+    return str ? str : "";
+}
+
+const char *not_null_default(const char *str, const char *if_null) {
+    return str ? str : if_null;
+}
+
+const char *build_cmd(const char *cmd, const char *key, const char *domain, const char *value, const char *flags, BUF_P buffer) {
+    int rc = -1;
+    char *spacer = "";
+    if (domain && domain[0] != 0) {
+	spacer = ":";
+    }
+    char *str = buffer_malloc(buffer,
+			      strlen(not_null(domain)) + strlen(key) +
+			      strlen(spacer) + strlen(not_null(value)) +
+			      strlen(not_null(flags)) +100);
+    sprintf(str, "%s \"%s%s%s\" %s %s ", cmd, not_null(domain), spacer, key, not_null(value), not_null(flags));
+    return str;
+}
+
+const char *redis_str(redisReply *redis_reply) {
+    return redis_reply ? redis_reply->str : "<no response>";
+}
+    
+time_t csync_redis_get_custom(const char *key, const char *domain) {
+    BUF_P buffer = buffer_init();
+
+    const char *cmd = build_cmd("GET", key, domain, "", "", buffer);
+    redis_reply = redisCommand(redis_context, cmd);
+    csync_debug(1, "Redis reply: %s %s", cmd, redis_str(redis_reply));
+    buffer_destroy(buffer);
+    
+    if (redis_reply) {
+	if (redis_reply->str) {
+	    int unix_time = atoi(redis_reply->str); 
+	    return unix_time;
+	}
+    }
     return -1;
 }
 
-time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, char *domain) {
+time_t csync_redis_get(const char *key) {
+    return csync_redis_get_custom(key, NULL);
+}
+
+int csync_redis_set(const char *key, const char *domain, const char *flags, const char *value) {
+    BUF_P buffer = buffer_init();
+
+    const char *cmd = build_cmd("SET", key, domain, value, flags, buffer);
+    redis_reply = redisCommand(redis_context, cmd); 
+    csync_debug(1, "Redis reply: %s %s", cmd, redis_str(redis_reply));
+    buffer_destroy(buffer);
+
+    if (!redis_reply || !redis_reply->str || strcmp(redis_reply->str, "OK")) {
+	return -1;
+    }
+    return 1;
+}
+
+int csync_redis_set_int(const char *key, const char *domain, const char *flags, int number) {
+    char value[20];
+    sprintf(value, "%d", number);
+    return csync_redis_set(key, domain, flags, value);
+}
+    
+time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const char *domain) {
+    BUF_P buffer = buffer_init();
+
     if (redis_context == NULL)
 	return 0;
     time_t unix_time = time(NULL);
@@ -57,9 +120,13 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, char *
 	csync_debug(1, "Locking '%s:%s'\n", domain, filename);
     else
 	csync_debug(1, "Locking '%s'\n", filename);
-    redis_reply = redisCommand(redis_context, "SET %s%s%s %d NX EX %d",
-			       domain ? domain : "", domain ? ":" : "", filename,
-			       unix_time+lock_time, lock_time);
+    char flags[20];
+    sprintf(flags, "NX EX %d", custom_lock_time);
+    char value[20];
+    sprintf(value, "\"%ld\"", unix_time);
+    const char *cmd = build_cmd("SET", filename, domain, value, flags, buffer);
+    redis_reply = redisCommand(redis_context, cmd);
+    csync_debug(1, "Redis reply: %s %s", cmd, redis_str(redis_reply));
     if (!redis_reply || !redis_reply->str || strcmp(redis_reply->str, "OK")) {
 	// Failed to get OK reply
 	unix_time = -1;
@@ -74,14 +141,27 @@ time_t csync_redis_lock(filename_p filename) {
     return csync_redis_lock_custom(filename, lock_time, NULL);
 }
 
-void csync_redis_del(filename_p filename) {
-    csync_debug(1, "Deleting key '%s'\n", filename);
-    redis_reply = redisCommand(redis_context, "DEL %s", filename);
-    if (redis_reply == NULL || redis_reply->integer != 1)
+
+int csync_redis_del_custom(const char *key, const char *domain) {
+    BUF_P buffer = buffer_init();
+    int rc = 0; 
+
+    const char *cmd = build_cmd("DEL", key, domain, "", "", buffer);
+    redis_reply = redisCommand(redis_context, "%s", cmd);
+    csync_debug(1, "%s %s", cmd, redis_str(redis_reply));  
+    if (redis_reply == NULL || redis_reply->integer != 1) {
 	csync_debug(2, "csync_redis_del failed to delete one key: %d\n", redis_reply ? redis_reply->integer : -1);
+    } else
+	rc = redis_reply->integer;
+    buffer_destroy(buffer);
     freeReplyObject(redis_reply);
+    return rc;
 }
 
+int csync_redis_del(const char *key) {
+    return csync_redis_del_custom(key, NULL);
+}
+    
 void csync_redis_unlock(filename_p filename, time_t unix_time) {
     if (redis_context == NULL)
 	return;
