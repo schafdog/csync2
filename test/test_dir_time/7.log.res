@@ -13,13 +13,13 @@ mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/te
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local'
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin'
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej'
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej'

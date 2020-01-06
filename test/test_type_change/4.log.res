@@ -15,14 +15,14 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all deleted before syncing. Removing from dirty.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change'
 Updating (MOD) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change' ''
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change'
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all
 peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all is already up to date on peer.
 WARN: update_directory called on non-directory /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change.

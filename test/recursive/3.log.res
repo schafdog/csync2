@@ -29,10 +29,10 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive deleted before syncing. Removing from dirty.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4

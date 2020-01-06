@@ -21,27 +21,27 @@ mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/te
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c'
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c'

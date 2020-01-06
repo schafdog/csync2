@@ -13,15 +13,15 @@ mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/usr
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/usr
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin'

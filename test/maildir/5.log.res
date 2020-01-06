@@ -12,11 +12,11 @@ mark operation NEW->MV => NEW other '/export/home/dennis/Projects/csync2/csync2/
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur'
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S'
 Updating (MV) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S' '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,'
 Succes: MV /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S'

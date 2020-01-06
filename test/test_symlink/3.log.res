@@ -12,10 +12,10 @@ mark other operation: 'RM?' 'other:/export/home/dennis/Projects/csync2/csync2/te
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link'
 Updating (LINK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link' 'missing'
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link
+Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link'
