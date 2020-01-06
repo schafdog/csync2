@@ -23,6 +23,7 @@
 #include "uidgid.h"
 #include "resolv.h"
 #include "redis.h"
+#include "buffer.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -70,10 +71,16 @@ enum action_t {
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 int csync_file_backup(filename_p filename, const char **cmd_error);
 
-int csync_remove_file(db_conn_p db, filename_p filename) {
+int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
     const char *cmd_error = 0;
-    csync_info(0, "csync_remove_file: %s \n", filename);
-    int rc = 0;
+    csync_info(0, "daemon_remove_file: %s \n", filename);
+    time_t lock_time = csync_redis_lock(filename);
+    if (buffer && lock_time == -1) {
+	buffer_strdup(buffer, filename);
+	return ABORT_CMD;
+    }
+    int rc;
+    
     if (db)
 	rc = csync_file_backup(filename, &cmd_error);
     if (!rc) {
@@ -87,10 +94,10 @@ int csync_remove_file(db_conn_p db, filename_p filename) {
     }
     else
 	csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
-    return rc;
+    return csync_redis_unlock_status(filename, lock_time, rc);
 }
     
-int csync_rmdir_recursive(db_conn_p db, filename_p file)
+int csync_rmdir_recursive(db_conn_p db, filename_p file, BUF_P buffer)
 {
     struct dirent **namelist;
     int n = 0;
@@ -111,17 +118,24 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file)
 		struct stat st;
 		int rc = lstat(fn, &st);
 		if (!rc) {
-		    if (S_ISDIR(st.st_mode))
-			csync_rmdir_recursive(db, fn);
+		    if (S_ISDIR(st.st_mode)) {
+			rc = csync_rmdir_recursive(db, fn, buffer);
+		    }
 		    else {
 			csync_info(0, "Removing file %s %d \n", fn);
-			csync_remove_file(db, fn);
+			daemon_remove_file(db, fn, buffer);
+			// Error handling 
 		    }
 		}
 	    }
 	    free(namelist[n]);
 	}
 	free(namelist);
+    }
+    time_t lock_time = csync_redis_lock(file);
+    if (buffer && lock_time == -1) {
+	buffer_strdup(buffer, file);
+	return ABORT_CMD;
     }
     int rc = rmdir(file);
     csync_info(0, "Removing directory %s %d\n", file, rc);
@@ -130,10 +144,12 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file)
 	if (errno == ENOTDIR || errno == ENOENT) {
 	    rc = 0;
 	}
+	else
+	    buffer_strdup(buffer, file);
     }
     return rc;
 }
-
+    
 int csync_rmdir(db_conn_p db, filename_p filename, int recursive)
 {
     /* TODO: check if all files and sub directories are ignored,
@@ -148,18 +164,18 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive)
     }
     int errors = 0;
     if (recursive) {
+	BUF_P buffer = buffer_init();
 	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
-	textlist_p tl, t, dl = 0;
+	textlist_p tl, t;
 	tl = db->find_file(db, filename, NULL /* filter_missing_file */);
 	for (t = tl; t != 0; t = t->next) {
 	    csync_debug(0, "rm: Checking %s %d\n", t->value, t->intvalue);
 	    if (S_ISDIR(t->intvalue)) {
-		textlist_add(&dl, t->value, t->intvalue);
 		errors += rmdir(t->value);
 		csync_debug(0, "rmdir %s %d\n", t->value, rc);
 	    }
 	    else {
-		csync_remove_file(db, t->value);
+		daemon_remove_file(db, t->value, buffer);
 	    }
 	}
 	if (errors) {
@@ -168,15 +184,15 @@ int csync_rmdir(db_conn_p db, filename_p filename, int recursive)
 	textlist_free(tl);
 	/* Above could fail due to ignore files. Do recursive on scandir  */
 	if (rc == ERROR) {
-	    rc = csync_rmdir_recursive(db, filename);
+	    rc = csync_rmdir_recursive(db, filename, buffer);
 	}
 	csync_info(0, "Deleted recursive from clean directory (%s): %d \n", filename, dir_count);
-/*
-	for (t = dl; t != 0; t = t->next) {
-	    csync_debug(1, "PRINT: remove directory: %s \n", t->value);
+	if (rc != OK) {
+	    csync_debug(0, "Recursive delete of %s failed: %d ", filename, buffer_count(buffer));
+	    for (int index = 0; index < buffer_count(buffer); index++)  {
+		csync_debug(0, "%s\n", buffer_get(buffer,index));
+	    }
 	}
-*/
-	textlist_free(dl);
     }
     else {
 	rc = rmdir(filename);
@@ -303,7 +319,7 @@ int csync_backup_rename(filename_p filename, int length, int generations)
 	    {
 		csync_debug(2, "Remove backup %s due to generation %d \n", backup_other, generations);
 		if (S_ISDIR(st.st_mode))
-		    csync_rmdir_recursive(NULL, backup_other);
+		    csync_rmdir_recursive(NULL, backup_other, NULL);
 		else {
 		    unlink(backup_other);
 		}
@@ -717,9 +733,10 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
     }
     time_t lock_time = csync_redis_lock(filename);
     if (lock_time == -1) {
-	conn_printf(conn, "ERROR (locked).\n");
+	*cmd_error = "ERROR (locked).\n";
 	return ABORT_CMD;
     }
+
     // Only try to backup if the file exists already.
     if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
 	conn_printf(conn, "OK (send_data).\n");
@@ -728,22 +745,12 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	    *cmd_error = strerror(errno);
 	    return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 	}
-	//TODO restore hardlinks
+
+	// TODO restore hardlinks
 	struct stat st_patched;
 	int new_rc = stat(filename, &st_patched);
 	if (!new_rc) {
 	    if (st.st_nlink > 1) {
-/*	
-	  const char *checktxt = csync_genchecktxt_version(&st_patched, filename,
-							 SET_USER|SET_GROUP,
-							 );
-*/
- 	  // TODO scan file for hardlinks to old file.
-	  // check_link now works on dirty
-		textlist_p tl = NULL; // csync_check_link(filename, checktxt, &st_patched, &operation, csync_hardlink);
-		// csync_hardlink does not return a list.
-		if (tl)
-		    textlist_free(tl);
 	    }
 	}
 	else
