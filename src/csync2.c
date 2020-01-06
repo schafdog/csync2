@@ -293,12 +293,17 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	if (buffer[len] == '\n')
 	    buffer[len] = 0;
 	strcpy(file, buffer);
-	csync_info(1, "tail '%s' '%s' '%s' \n", time, operation, file);
-	csync_check(db, file, flags);
-	const char *patlist[1];
-	patlist[0] = file;
-	csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
-		     ip_version, csync_update_host, flags);
+	time_t lock_time = csync_redis_lock(file);
+	if (lock_time == -1) {
+	    csync_debug(1, "tail: %s locked. Skipping %s on %s\n", operation, file);
+	} else {
+	    csync_info(2, "tail: '%s' '%s' '%s' \n", time, operation, file);
+	    csync_check(db, file, flags);
+	    const char *patlist[1];
+	    patlist[0] = file;
+	    csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
+			 ip_version, csync_update_host, flags);
+	}
     }
 }
 
