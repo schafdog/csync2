@@ -166,7 +166,7 @@ void csync_redis_unlock(filename_p filename, time_t unix_time) {
     if (redis_context == NULL)
 	return;
     time_t now = time(NULL);
-    if (unix_time != 0 && now > unix_time + lock_time) {
+    if (unix_time > 0 && now > unix_time + lock_time) {
 	csync_debug(0, "operation took longer than lock time: %d (%d)\n", now - unix_time, lock_time);
     } else {
 	csync_redis_del(filename);
