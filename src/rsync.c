@@ -185,11 +185,11 @@ static FILE *open_temp_file(char *fnametmp, const char *fname)
   f = NULL;
   //fd = mkstemp(fnametmp);
   // Let csync2 tail ignore this file for 5 minutes
-  csync_redis_set_int(fnametmp, "CREATE", "", time(NULL));  
   fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
   if (fd >= 0) {
-    f = fdopen(fd, "wb+");
-    /* not unlinking since rename wouldn't work then */
+      csync_redis_set_int(fnametmp, "CREATE", "", time(NULL));  
+      f = fdopen(fd, "wb+");
+      /* not unlinking since rename wouldn't work then */
   }
   if (fd < 0 || !f) {
       csync_error(1, "ERROR: Could not open result from tempnam(%s)!\n", fnametmp);
@@ -623,9 +623,8 @@ int csync_rs_patch(int conn, filename_p filename)
   // TODO this will break any hardlink to filename. 
   // DS: That is not what we want IMHO
 
-  csync_redis_set_int(filename, "MOVED_TO","", time(NULL));
   if (rename(newfname, filename) == 0) {
-
+      csync_redis_set_int(filename, "MOVED_TO","", time(NULL));
       csync_info(3, "File '%s' has been patched successfully.\n", filename);
       fclose(delta_file);
       // And a CLOSE_WRITE,CLOSE 
