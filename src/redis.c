@@ -74,7 +74,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 
     const char *cmd = build_cmd("GET", key, domain, "", "", buffer);
     redis_reply = redisCommand(redis_context, cmd);
-    csync_debug(1, "Redis reply: %s %s", cmd, redis_str(redis_reply));
+    csync_debug(1, "Redis reply: %s %s\n", cmd, redis_str(redis_reply));
     buffer_destroy(buffer);
     
     if (redis_reply) {
@@ -95,7 +95,7 @@ int csync_redis_set(const char *key, const char *domain, const char *flags, cons
 
     const char *cmd = build_cmd("SET", key, domain, value, flags, buffer);
     redis_reply = redisCommand(redis_context, cmd); 
-    csync_debug(1, "Redis reply: %s %s", cmd, redis_str(redis_reply));
+    csync_debug(1, "Redis reply: %s %s\n", cmd, redis_str(redis_reply));
     buffer_destroy(buffer);
 
     if (!redis_reply || !redis_reply->str || strcmp(redis_reply->str, "OK")) {
@@ -126,7 +126,7 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const 
     sprintf(value, "\"%ld\"", unix_time);
     const char *cmd = build_cmd("SET", filename, domain, value, flags, buffer);
     redis_reply = redisCommand(redis_context, cmd);
-    csync_debug(1, "Redis reply: %s %s", cmd, redis_str(redis_reply));
+    csync_debug(1, "Redis reply: %s %s\n", cmd, redis_str(redis_reply));
     if (!redis_reply || !redis_reply->str || strcmp(redis_reply->str, "OK")) {
 	// Failed to get OK reply
 	unix_time = -1;
@@ -148,7 +148,7 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 
     const char *cmd = build_cmd("DEL", key, domain, "", "", buffer);
     redis_reply = redisCommand(redis_context, "%s", cmd);
-    csync_debug(1, "%s %s", cmd, redis_str(redis_reply));  
+    csync_debug(1, "%s %s\n", cmd, redis_str(redis_reply));  
     if (redis_reply == NULL || redis_reply->integer != 1) {
 	csync_debug(2, "csync_redis_del failed to delete one key: %d\n", redis_reply ? redis_reply->integer : -1);
     } else
