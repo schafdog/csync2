@@ -147,7 +147,7 @@ int csync_redis_del_custom(const char *key, const char *domain) {
     int rc = 0; 
 
     const char *cmd = build_cmd("DEL", key, domain, "", "", buffer);
-    redis_reply = redisCommand(redis_context, "%s", cmd);
+    redis_reply = redisCommand(redis_context,cmd);
     csync_debug(1, "%s %s\n", cmd, redis_str(redis_reply));  
     if (redis_reply == NULL || redis_reply->integer != 1) {
 	csync_debug(2, "csync_redis_del failed to delete one key: %d\n", redis_reply ? redis_reply->integer : -1);
