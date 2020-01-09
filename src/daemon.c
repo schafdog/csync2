@@ -216,10 +216,10 @@ int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_fl
 	if (S_ISDIR(st.st_mode)) {
 	    rc = csync_rmdir(db, filename, recursive);
 	} else {
-	    csync_redis_set_int(filename, "DELETE", "", time(NULL));
+	    csync_redis_set_int(filename, "DELETE", time(NULL), 0, 0);
 	    rc = unlink(filename);
 	    if (rc) {
-		csync_redis_del_custom(filename, "daemon");
+		csync_redis_del_custom(filename, "DELETE");
 	    }	    
 	}
 	if ( rc && !unlink_flag)
