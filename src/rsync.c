@@ -187,7 +187,7 @@ static FILE *open_temp_file(char *fnametmp, const char *fname)
   // Let csync2 tail ignore this file for 5 minutes
   fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
   if (fd >= 0) {
-      csync_redis_set_int(fnametmp, "CREATE", "", time(NULL));  
+      csync_redis_set_int(fnametmp, "CREATE", time(NULL), 0, 300);
       f = fdopen(fd, "wb+");
       /* not unlinking since rename wouldn't work then */
   }
@@ -624,11 +624,11 @@ int csync_rs_patch(int conn, filename_p filename)
   // DS: That is not what we want IMHO
 
   if (rename(newfname, filename) == 0) {
-      csync_redis_set_int(filename, "MOVED_TO","", time(NULL));
+      csync_redis_set_int(filename, "MOVED_TO", time(NULL), 0, 300);
       csync_info(3, "File '%s' has been patched successfully.\n", filename);
       fclose(delta_file);
       // And a CLOSE_WRITE,CLOSE 
-      csync_redis_set_int(filename, "CLOSE_WRITE,CLOSE", "", time(NULL));
+      csync_redis_set_int(filename, "CLOSE_WRITE,CLOSE", time(NULL), 0, 300);
       fclose(new_file);
       // inotify also sends this?
       return 0;
