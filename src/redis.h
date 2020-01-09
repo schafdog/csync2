@@ -6,8 +6,8 @@ int csync_redis_connect(char *redis);
 time_t csync_redis_get(const char *key);
 time_t csync_redis_get_custom(const char *key, const char *domain);
 
-int csync_redis_set(const char *key, const char *domain, const char *flags, const char *value);
-int csync_redis_set_int(const char *key, const char *domain, const char *flags, int number);
+int csync_redis_set(const char *key, const char *domain, const char *value, int nx, int expire);
+int csync_redis_set_int(const char *key, const char *domain, int number, int nx, int expire);
 
 int csync_redis_del(const char *filename);
 int  csync_redis_del_custom(const char *key, const char *domain);
