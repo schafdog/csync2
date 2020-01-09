@@ -315,13 +315,11 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 
 	strcpy(file, buffer);
 	time_t lock_time = csync_redis_get_custom(file, operation);
-	csync_debug(1, "tail: %s %s at %d %d\n", operation, file, lock_time, log_time);	
-       
 	if (lock_time != -1 && log_time <= lock_time) {
-	    csync_debug(1, "tail: daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
+	    csync_debug(1, "tail: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 	} else {
 	    csync_redis_del_custom(file, operation);
-	    csync_info(1, "tail: '%s' '%s' '%s' \n", time, operation, file);
+	    csync_info(1, "tail: unmatched '%s' '%s' at '%s' \n", operation, file, time);
 	    csync_check(db, file, flags);
 	    const char *patlist[1];
 	    patlist[0] = file;
