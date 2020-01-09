@@ -72,7 +72,8 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
     BUF_P buffer = buffer_init();
 
     const char *domain_key = build_key(key, domain, buffer);
-    redis_reply = redisCommand(redis_context, "GET", domain_key);
+    const char *argv[] = { "GET", domain_key};
+    redis_reply = redisCommandArgv(redis_context, 2, argv, NULL);
     csync_debug(1, "Redis reply: GET '%s' -> %s\n", domain_key, redis_str(redis_reply));
     buffer_destroy(buffer);
     
