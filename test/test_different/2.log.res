@@ -8,5 +8,7 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test 
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local' '1578595116' NX EX 60 -> OK
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local' -> 1

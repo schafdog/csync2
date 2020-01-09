@@ -10,6 +10,7 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test 
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' '1578595144' NX EX 60 -> OK
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' ''
 PATH MISSING: '%25test%25'
 PATH MISSING (decoded): '/export/home/dennis/Projects/csync2/csync2/test/test/local'
@@ -20,6 +21,9 @@ UPDATE_DIRECTORY: 4
 UPDATE_DIRECTORY: 4
 UPDATE_DIRECTORY: 4
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c' '1578595144' NX EX 60 -> OK
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c' -> 1

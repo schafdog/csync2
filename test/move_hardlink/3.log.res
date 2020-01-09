@@ -20,23 +20,37 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test 
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local' '1578595093' NX EX 60 -> OK
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' '1578595093' NX EX 60 -> OK
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' '1578595093' NX EX 60 -> OK
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' '1578595093' NX EX 60 -> OK
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' '1578595093' NX EX 60 -> OK
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' '1578595093' NX EX 60 -> OK
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123' '1578595093' NX EX 60 -> OK
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123' -> 1

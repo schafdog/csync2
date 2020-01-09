@@ -16,13 +16,17 @@ mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/t
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local' '1578595135' NX EX 60 -> OK
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change' '1578595135' NX EX 60 -> OK
 Updating (MOD) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change' ''
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change' -> 1
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all
 peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all is already up to date on peer.
 WARN: update_directory called on non-directory /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change.

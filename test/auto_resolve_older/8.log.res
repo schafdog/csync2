@@ -3,6 +3,7 @@ Connecting to redis localhost:6379
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' '1578595092' NX EX 60 -> OK
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' ''
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
@@ -12,3 +13,4 @@ Attempting autoresolve on peer:/export/home/dennis/Projects/csync2/csync2/test/t
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' ''
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' -> 1

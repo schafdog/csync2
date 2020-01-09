@@ -14,12 +14,18 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test 
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' '1578595124' NX EX 60 -> OK
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' '1578595124' NX EX 60 -> OK
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' '1578595124' NX EX 60 -> OK
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' -> 1

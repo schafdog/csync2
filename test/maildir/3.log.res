@@ -14,13 +14,19 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test 
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' '1578595099' NX EX 60 -> OK
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' '1578595099' NX EX 60 -> OK
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' -> 1
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764'
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764' '1578595099' NX EX 60 -> OK
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764' ''
 Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764'
+Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764' -> 1
