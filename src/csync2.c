@@ -267,16 +267,23 @@ int csync_read_buffer(char *buffer, char *value) {
 
 static int csync_tail(db_conn_p db, int fileno, int flags) {
     char readbuffer[1000];
-    char time[100];
+    char time_str[100];
     char operation[100];
     char file[500];
     char *oldbuffer = NULL;
     int duplicated = 0;
+    time_t last_sql = time(NULL);
     while (1) {
 	char *buffer = readbuffer;
 	int rc = gets_newline(fileno, buffer, 1000, 1);
 	if (rc == 0) {
 	    sleep(1);
+	    time_t now = time(NULL);
+	    if (now - last_sql > 300) {
+		SQL(db, "ping server", "SELECT 1;");
+		last_sql = now;
+		csync_debug(1, "Pinged DB sever\n");
+	    }
 	    continue;
 	}
 	if (rc < 0) {
@@ -291,17 +298,17 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    csync_debug(1, "Last line was repeated %d times", duplicated);
 	    duplicated = 0;
 	}	
-	int match = csync_read_buffer(buffer, time);
+	int match = csync_read_buffer(buffer, time_str);
 	if (match < 0)
 	    return ERROR;
 	struct tm tm;
 	time_t log_time = -1;
-	const char *rest = strptime(time, "%F_%T", &tm);
+	const char *rest = strptime(time_str, "%F_%T", &tm);
 	if (rest) {
 	    log_time = timelocal(&tm);
-	    csync_debug(1, "Parsed %s to %d. Rest: %s", time, log_time, rest);
+	    csync_debug(1, "Parsed %s to %d. Rest: %s", time_str, log_time, rest);
 	} else
-	    csync_debug(1, "failed to parse %s as %F_%T", time);
+	    csync_debug(1, "failed to parse %s as %F_%T", time_str);
 
 	buffer += match + 1;
 	match = csync_read_buffer(buffer, operation);
@@ -319,12 +326,13 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    csync_debug(1, "tail: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 	} else {
 	    csync_redis_del_custom(file, operation);
-	    csync_info(1, "tail: unmatched '%s' '%s' at '%s' \n", operation, file, time);
+	    csync_info(1, "tail: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
 	    csync_check(db, file, flags);
 	    const char *patlist[1];
 	    patlist[0] = file;
 	    csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
 			 ip_version, csync_update_host, flags);
+	    last_sql = time(NULL);
 	}
 	if (oldbuffer)
 	    free(oldbuffer);
