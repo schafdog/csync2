@@ -280,7 +280,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    sleep(1);
 	    time_t now = time(NULL);
 	    if (now - last_sql > 300) {
-		SQL(db, "ping server", "SELECT 1;");
+		SQL(db, "ping server", "UPDATE dirty set myname = NULL where myname IS NULL and peername is NULL;");
 		last_sql = now;
 		csync_debug(1, "Pinged DB sever\n");
 	    }
