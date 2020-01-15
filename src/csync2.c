@@ -306,7 +306,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	const char *rest = strptime(time_str, "%F_%T", &tm);
 	if (rest) {
 	    log_time = timelocal(&tm);
-	    csync_debug(1, "Parsed %s to %d. Rest: %s", time_str, log_time, rest);
+	    csync_debug(1, "Parsed %s to %d. %s", time_str, log_time, rest);
 	} else
 	    csync_debug(1, "failed to parse %s as %F_%T", time_str);
 
@@ -327,7 +327,15 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	} else {
 	    csync_redis_del_custom(file, operation);
 	    csync_info(1, "tail: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
-	    csync_check(db, file, flags);
+	    if (strcmp(operation, "DELETE") == 0) {
+		csync_check_del(db, file, flags);
+	    } else if (strcmp(operation, "CREATE") == 0 || strstr(operation, "CLOSE_WRITE") != NULL) {
+		const struct csync_group *g = NULL;
+		int count_dirty;
+		csync_check_mod(db, file, flags, &count_dirty, &g);
+	    } else {
+		csync_check(db, file, flags);
+	    }
 	    const char *patlist[1];
 	    patlist[0] = file;
 	    csync_update(db, myhostname, active_peers, (const char **) patlist, 1,

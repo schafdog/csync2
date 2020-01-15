@@ -301,8 +301,12 @@ extern const char *csync_operation_str(operation_t op);
 
 extern void csync_hint(db_conn_p db, const char *file, int recursive);
 extern void csync_check(db_conn_p db, filename_p filename, int flags);
-/* Single file checking but returns possible operation */ 
+/* Single file checking but returns possible operation */
 extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g); 
+
+extern int csync_check_del(db_conn_p db, filename_p filename, int flags);
+extern int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
+
 extern void csync_mark(db_conn_p db, filename_p file, const char *thispeer, const char *peerfilter, operation_t op,
 		       const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
