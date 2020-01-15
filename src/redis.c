@@ -69,6 +69,8 @@ const char *redis_str(redisReply *redis_reply) {
 }
     
 time_t csync_redis_get_custom(const char *key, const char *domain) {
+    if (redis_context == NULL)
+	return 0;
     BUF_P buffer = buffer_init();
 
     const char *domain_key = build_key(key, domain, buffer);
@@ -91,6 +93,8 @@ time_t csync_redis_get(const char *key) {
 }
 
 int csync_redis_set(const char *key, const char *domain, const char *value, int nx, int expire) {
+    if (redis_context == NULL)
+	return 0;
     BUF_P buffer = buffer_init();
     const char *domain_key = build_key(key, domain, buffer);
     const char *argv[] = { "SET", domain_key, value, NULL, NULL, NULL };
@@ -152,6 +156,9 @@ time_t csync_redis_lock(filename_p filename) {
 
 
 int csync_redis_del_custom(const char *key, const char *domain) {
+    if (redis_context)
+	return 0;
+
     BUF_P buffer = buffer_init();
     int rc = 0;
 
