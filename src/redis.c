@@ -156,7 +156,7 @@ time_t csync_redis_lock(filename_p filename) {
 
 
 int csync_redis_del_custom(const char *key, const char *domain) {
-    if (redis_context)
+    if (redis_context == NULL)
 	return 0;
 
     BUF_P buffer = buffer_init();
