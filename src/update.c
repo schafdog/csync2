@@ -1391,7 +1391,7 @@ int csync_update_file_mod(int conn, db_conn_p db,
 					    force, dry_run, buffer);
 	csync_redis_unlock(filename, unix_time);
     } else {
-	csync_debug(0, "update_file_mod: Failed to get lock on %s.\n", filename);
+	csync_debug(0, "update_file_mod: Failed to get lock on %s: %d\n", filename, unix_time);
 	rc = ERROR_DIRTY;
     }
     buffer_destroy(buffer);
