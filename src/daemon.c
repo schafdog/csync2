@@ -1173,16 +1173,20 @@ int csync_daemon_hardlink(filename_p filename, const char *linkname, const char 
 }
 
 int csync_daemon_mv(db_conn_p db, filename_p filename, const char *newname, const char **cmd_error) {
-  if (rename(filename, newname)) {
-    *cmd_error = strerror(errno);
-    return ABORT_CMD;
-  }
-  int rc = db->move_file(db, filename, newname);
-  if (rc) {
-      csync_error(0, "ERROR: failed to update path for moved file %s -> %s\n",
-		  filename, newname);
-  }
-  return OK;
+    const char *operation = "MOVED_TO";
+    time_t lock_time = csync_redis_lock_custom(newname, 300, operation);
+    if (rename(filename, newname)) {
+	*cmd_error = strerror(errno);
+	if (lock_time > 0)
+	    csync_redis_del_custom(filename, operation);
+	return ABORT_CMD;
+    }
+    int rc = db->move_file(db, filename, newname);
+    if (rc) {
+	csync_error(0, "ERROR: failed to update path for moved file %s -> %s\n",
+		    filename, newname);
+    }
+    return OK;
 }
 
 int csync_daemon_symlink(filename_p filename, const char *target, const char **cmd_error) {
