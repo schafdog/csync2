@@ -27,7 +27,6 @@ patch.txt
 stamp-h1
 ylwrap
 *.log
-hardlinks_*.txt
 *.rsync
 *.mysql
 *.cockroach
