@@ -51,8 +51,8 @@ check_version: FORCE
 	@../version.sh $(objects)
 
 clean:
-	rm -rf $(CLEANFILES)
-	rm *.o
+	rm -f $(CLEANFILES)
+	rm -f *.o
 
 dist-clean: dist-clean-local
 	rm configure
