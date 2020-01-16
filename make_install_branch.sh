@@ -3,7 +3,7 @@ CURRENT=`dirname $0`
 cd ${CURRENT}
 BRANCH=$2
 if [ "$1" != "" ] ; then
-    echo sudo ssh $1 `pwd`/`basename $0`
+    sudo ssh $1 `pwd`/`basename $0`
 else
     sudo -u dennis /bin/bash <<EOF
 cd ${CURRENT}
