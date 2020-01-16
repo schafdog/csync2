@@ -1,18 +1,18 @@
 #!/bin/bash
 CURRENT=`dirname $0`
 cd ${CURRENT}
+BRANCH=$2
 if [ "$1" != "" ] ; then
-    sudo ssh $1 `pwd`/`basename $0`
+    echo sudo ssh $1 `pwd`/`basename $0`
 else
     sudo -u dennis /bin/bash <<EOF
 cd ${CURRENT}
-if [ "$1" != "" ] ; then
-git checkout $1 || die
+if [ "$BRANCH" != "" ] ; then
+git checkout $BRANCH || die
 fi
 git pull
-make clean all
+make all
 EOF
     make install
     /usr/local/sbin/csync2 -V
 fi
-
