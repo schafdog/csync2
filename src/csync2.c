@@ -265,6 +265,8 @@ int csync_read_buffer(char *buffer, char *value) {
     return match;
 }
 
+// Monitor file system: Using inotifywait by tailing a file of events
+// TODO: implement inotify natively. Rename to monitor
 static int csync_tail(db_conn_p db, int fileno, int flags) {
     char readbuffer[1000];
     char time_str[100];
@@ -280,9 +282,9 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    sleep(1);
 	    time_t now = time(NULL);
 	    if (now - last_sql > 300) {
-		SQL(db, "ping server", "UPDATE dirty set myname = NULL where myname IS NULL and peername is NULL;");
+		SQL(db, "monitor: ping server", "UPDATE dirty set myname = NULL where myname IS NULL and peername is NULL;");
 		last_sql = now;
-		csync_debug(1, "Pinged DB sever\n");
+		csync_debug(2, "monitor: Pinged DB sever\n");
 	    }
 	    continue;
 	}
@@ -295,7 +297,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    continue;
 	}
 	if (duplicated) {
-	    csync_debug(1, "Last line was repeated %d times", duplicated);
+	    csync_debug(1, "monitor: Last operation was repeated %d times", duplicated);
 	    duplicated = 0;
 	}	
 	int match = csync_read_buffer(buffer, time_str);
@@ -306,9 +308,9 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	const char *rest = strptime(time_str, "%F_%T", &tm);
 	if (rest) {
 	    log_time = timelocal(&tm);
-	    csync_debug(1, "Parsed %s to %d. %s", time_str, log_time, rest);
+	    csync_debug(1, "monitor: Parsed %s to %d. %s", time_str, log_time, rest);
 	} else
-	    csync_debug(1, "failed to parse %s as %F_%T", time_str);
+	    csync_debug(1, "monitor: failed to parse %s as %F_%T", time_str);
 
 	buffer += match + 1;
 	match = csync_read_buffer(buffer, operation);
@@ -323,11 +325,13 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	strcpy(file, buffer);
 	time_t lock_time = csync_redis_get_custom(file, operation);
 	if (lock_time != -1 && log_time <= lock_time) {
-	    csync_debug(1, "tail: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
+	    csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 	} else {
 	    csync_redis_del_custom(file, operation);
-	    csync_info(1, "tail: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
-	    if (strcmp(operation, "DELETE") == 0) {
+	    csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
+	    if (strcmp(operation, "CREATE") == 0) {
+		csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
+	    } else if (strcmp(operation, "DELETE") == 0) {
 		csync_check_del(db, file, flags);
 	    } else if (strcmp(operation, "CREATE") == 0 || strstr(operation, "CLOSE_WRITE") != NULL) {
 		const struct csync_group *g = NULL;
