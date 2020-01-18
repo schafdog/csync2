@@ -1037,7 +1037,7 @@ const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *pe
       exit(rc);
   }
   else {
-      csync_debug(0, "DAEMON is_ping: %d fork: %s %s. pid: %d\n", is_ping, *peername, cfgname, pid);
+      csync_debug(2, "DAEMON is_ping: %d fork: %s %s. pid: %d\n", is_ping, *peername, cfgname, pid);
   }
   return 0;
 }
