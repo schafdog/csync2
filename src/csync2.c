@@ -1216,7 +1216,8 @@ nofork:
 	int fileno = 0;
 	if (optind < argc) {
 	    fileno = open(argv[optind], O_RDONLY);
-	    csync_log(LOG_DEBUG, 1, "Opening %s %d \n", argv[optind], fileno);
+	    csync_log(LOG_DEBUG, 1, "monitor: Opening %s %d \n", argv[optind], fileno);
+	    // TODO load "saved position" in cases of restart
 	    lseek(fileno, 0, SEEK_END);
 	}
 	else {
