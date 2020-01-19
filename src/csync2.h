@@ -165,7 +165,7 @@ typedef struct file_info *file_info_t;
 
 extern const struct csync_group *csync_find_next(const struct csync_group *g, const char *file, int compare_mode);
 extern int csync_match_file(const char *file, int compare_mode, const struct csync_group **g);
-extern void csync_check_usefullness(const char *file, int recursive);
+extern int csync_check_usefullness(const char *file, int recursive);
 extern int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys);
 extern struct peer *csync_find_peers(const char *file, const char *thispeer);
 extern const char *csync_key(const char *hostname, filename_p filename);

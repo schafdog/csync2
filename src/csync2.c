@@ -571,18 +571,21 @@ void csync_config_destroy();
 int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
-	const char *real_name = getrealfn(files[i]);
+	char *real_name =  realpath(files[i], NULL); // getrealfn(files[i]); 
 	if (real_name == NULL) {
 	    csync_warn(0, "%s did not match a real path. Skipping", files[i]);
 	}
 	else {
-	    realnames[count] = strdup(real_name);
-	    csync_check_usefullness(realnames[count], flags);
-	    if (flags & FLAG_DO_CHECK) {
-		csync_check(db, realnames[count], flags);
-		csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+	    if (!csync_check_usefullness(real_name, flags)) {
+		realnames[count] = real_name;
+		if (flags & FLAG_DO_CHECK) {
+		    csync_check(db, realnames[count], flags);
+		    csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+		}
+		count++;
+	    } else {
+		free(real_name);
 	    }
-	    count++;
 	}
     }
     return count; 
@@ -1120,8 +1123,8 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) { 
-		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
-		db->add_hint(db, realname, flags & FLAG_RECURSIVE);
+		if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE))
+		    db->add_hint(db, realname, flags & FLAG_RECURSIVE);
 	    }
 	    else {
 		csync_warn(0, "%s did not match a real path. Skipping.", argv[i]); 
@@ -1175,9 +1178,10 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
-		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
-		csync_compare_mode = 1;
-		csync_check(db, realname, flags);
+		if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
+		    csync_compare_mode = 1;
+		    csync_check(db, realname, flags);
+		}
 	    }
 	    else {
 		csync_warn(0, "%s is not a real path", argv[i]);
@@ -1244,13 +1248,13 @@ nofork:
 	{
 	case 3:
 	    realname = getrealfn(argv[optind+2]);
-	    csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
-
-	    if (flags & FLAG_TEST_AUTO_DIFF ) {
-		retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
-	    } else
-		if ( csync_insynctest(db, argv[optind], argv[optind+1], realname, ip_version, flags))
-		    retval = 2;
+	    if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
+		if (flags & FLAG_TEST_AUTO_DIFF ) {
+		    retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
+		} else
+		    if ( csync_insynctest(db, argv[optind], argv[optind+1], realname, ip_version, flags))
+			retval = 2;
+	    }
 	    break;
 	case 2:
 	    if ( csync_insynctest(db, argv[optind], argv[optind+1], 0, ip_version, flags) )
@@ -1258,10 +1262,10 @@ nofork:
 	    break;
 	case 1:
 	    realname = getrealfn(argv[optind]);
-	    csync_check_usefullness(realname, 0);
-
-	    if ( csync_insynctest_all(db, realname, ip_version, active_peers, flags))
-		retval = 2;
+	    if (!csync_check_usefullness(realname, 0)) {
+		if ( csync_insynctest_all(db, realname, ip_version, active_peers, flags))
+		    retval = 2;
+	    }
 	    break;
 	case 0:
 	    if ( csync_insynctest_all(db, 0, ip_version, active_peers, flags) )

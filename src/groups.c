@@ -117,13 +117,16 @@ int csync_match_file(const char *file, int compare_mode, const struct csync_grou
     return 0;
 }
 
-void csync_check_usefullness(const char *file, int recursive)
+int csync_check_usefullness(const char *file, int recursive)
 {
     if ( csync_find_next(0, file, 0) ) 
-	return;
+	return 0; // OK
     if ( recursive && csync_step_into(file, 0) ) 
-	return;
-    csync_fatal("FATAL: %s did not match any configuration.\n", file);
+	return 0; // OK
+
+    // TODO make it optional if we want to log
+    csync_log(LOG_WARNING, 1, "groups: %s did not match any configuration.\n", file);
+    return -1;
 }
 
 int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys)

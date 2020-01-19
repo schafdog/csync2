@@ -351,7 +351,9 @@ void db_sql_force(db_conn_p db, const char *realname, int recursive)
 void db_sql_mark(db_conn_p db, char *active_peerlist, const char *realname,
 		 int recursive)
 {
-    csync_check_usefullness(realname, recursive);
+    if (csync_check_usefullness(realname, recursive) == -1)
+	return ; // Skipping
+
     struct stat file_st;
     const char *db_encoded = db_escape(db, realname);
     int rc = stat(realname, &file_st);
