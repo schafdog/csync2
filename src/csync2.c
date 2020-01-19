@@ -325,7 +325,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	strcpy(file, buffer);
 	time_t lock_time = csync_redis_get_custom(file, operation);
 	if (csync_check_usefullness(file, flags)) {
-	    csync_debug(1, "monitor: skipping %s %s at %d %d not matched\n", operation, file, lock_time, log_time);
+	    csync_debug(1, "monitor: Skip %s not matched at %d\n", file, log_time);
 	    continue;
 	}
 	if (lock_time != -1 && log_time <= lock_time) {
