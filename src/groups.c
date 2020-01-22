@@ -125,7 +125,7 @@ int csync_check_usefullness(const char *file, int recursive)
 	return 0; // OK
 
     // TODO make it optional if we want to log
-    csync_log(LOG_WARNING, 1, "groups: %s did not match any configuration.\n", file);
+    csync_log(LOG_WARNING, 2, "groups: %s did not match any configuration.\n", file);
     return -1;
 }
 
