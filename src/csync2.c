@@ -1150,7 +1150,11 @@ nofork:
 	{
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind, realnames, flags | FLAG_DO_CHECK);
-	    csync_realnames_free(realnames, count);
+	    if (count > 0)
+		csync_realnames_free(realnames, count);
+	    else {
+		csync_debug(0, "No argument was matched in configuration\n");
+	    }
 	}
     };
 
@@ -1171,9 +1175,13 @@ nofork:
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind,
 					realnames, flags);
-	    csync_update(db, myhostname, active_peers, (const char**) realnames,
-			 argc-optind, ip_version,
-			 update_func, flags);
+	    if (count > 0) {
+		csync_update(db, myhostname, active_peers, (const char**) realnames,
+			     argc-optind, ip_version,
+			     update_func, flags);
+	    } else {
+		csync_debug(0, "No argument was matched in configuration\n");
+	    }
 	    csync_realnames_free(realnames, count);
 	}
     };
