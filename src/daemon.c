@@ -1215,6 +1215,37 @@ int csync_daemon_symlink(filename_p filename, const char *target, const char **c
     return ABORT_CMD;
 }
 
+static int daemon_check_slave_status(filename_p filename)
+{
+    const struct csync_group *g = 0;
+    const struct csync_group_host *h;
+
+    while ( (g=csync_find_next(g, filename, 0)) ) {
+	if (g->local_slave)
+	    return 1;;
+    }
+    return 0;
+}
+
+
+
+extern char * autoresolve_str[];
+int daemon_check_auto_resolve(const char *peername, filename_p filename, const char *ftime, const char *size) {
+    if (daemon_check_slave_status(filename))
+	return 1;
+    int auto_method = get_auto_method(peername, filename);
+    // check first, Left, right
+    csync_info(2, "daemon: Auto resolve method %s %d for %s:%s ", autoresolve_str[auto_method], auto_method, peername, filename);
+
+    // time, size
+    struct stat stat;
+    int rc = lstat(filename, &stat);
+    if (rc) {
+	csync_debug(0, "daemon_check_auto_resolve: %s failed stat", filename);
+    }
+    return 0;
+}
+
 int csync_daemon_dispatch(int conn,
 			  int conn_out,
 			  db_conn_p db,
@@ -1234,9 +1265,13 @@ int csync_daemon_dispatch(int conn,
     char *user       = tag[6];
     char *group      = tag[7];
     char *mod        = tag[8];
-    char *ftime       = tag[9];
-    char *digest     = tag[10];
-    
+    char *ftime      = tag[9];
+    char *size       = tag[10];
+    char *digest     = tag[11];
+
+    if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, ftime, size))
+	db->remove_dirty(db, "%", filename, 0);
+
     switch ( cmd->action) {
     case A_SIG: {
 	return csync_daemon_sig(conn_out, filename, tag, db, cmd_error);
