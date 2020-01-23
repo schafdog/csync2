@@ -182,3 +182,20 @@ int csync_cmpchecktxt_component(const char *a, const char *b)
   free(b_new);
   return differs;
 }
+
+time_t csync_checktxt_get_time(const char *checktxt) {
+    return (time_t) csync_checktxt_get_long_long(checktxt, ":mtime=");
+}
+
+long long csync_checktxt_get_size(const char *checktxt) {
+    return csync_checktxt_get_long_long(checktxt, ":size=");
+}
+
+long long csync_checktxt_get_long_long(const char *checktxt, const char *token) {
+    long long number = -1;
+    const char *pos = strstr(checktxt, token);
+    if (pos != NULL) {
+	number = atoll(pos + strlen(token) + 1);
+    }
+    return number;
+}
