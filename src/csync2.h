@@ -262,6 +262,9 @@ extern const char *csync_genchecktxt_version(const struct stat *st, filename_p f
 extern int csync_cmpchecktxt(const char *a, const char *b);
 extern int csync_cmpchecktxt_component(const char *a, const char *b);
 int csync_get_checktxt_version(const char *value);
+time_t csync_checktxt_get_time(const char *checktxt);
+long long csync_checktxt_get_size(const char *checktxt);
+long long csync_checktxt_get_long_long(const char *checktxt, const char *token);
 
 /* check.c */
 int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino);
@@ -321,6 +324,8 @@ struct textlist *csync_check_link_move(db_conn_p db, peername_p peername, filena
 extern int csync_check_dir(db_conn_p db, const char* file, int flags);
 
 /* update.c */
+
+int get_auto_method(peername_p peername, filename_p filename);
 
 void cmd_printf(int conn, const char *cmd, const char *key, 
 		filename_p filename, const char *secondname,
