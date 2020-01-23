@@ -241,7 +241,7 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
     int mode = 0;
     csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s\n", filename);
 
-    // Returns newly marked dirty, so we cannot use it bail out.
+    // Returns newly marked dirty, so we cannot use it to bail out.
     const struct csync_group *g; 
     int markedDirty = csync_check_single(db, filename, FLAG_IGN_DIR, &g);
     csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
@@ -877,7 +877,7 @@ int response_ok_not_found(int conn) {
     return NEXT_CMD;
 }
 
-int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, const char **cmd_error)
+int csync_daemon_sig(int conn, char *filename, char *user_group, time_t ftime, long long size, db_conn_p db, const char **cmd_error)
 {
     struct stat st;
     if ( lstat_strict(filename, &st) != 0) {
@@ -906,7 +906,7 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, cons
        if (!S_ISDIR(st.st_mode))
        flags |= IGNORE_MTIME;
     */
-    if (strcmp("user/group",tag[3]) == 0)
+    if (strcmp("user/group", user_group) == 0)
 	flags |= SET_USER|SET_GROUP;
     csync_log(LOG_DEBUG, 2, "Flags for gencheck: %d \n", flags);
     const char *checktxt = csync_genchecktxt_version(&st, filename,
@@ -914,8 +914,9 @@ int csync_daemon_sig(int conn, char *filename, char *tag[32], db_conn_p db, cons
     char *digest /* db->get_digest(filename); */ = NULL;
     if (db->version == 1)
 	conn_printf(conn, "%s %s\n", checktxt, (digest ? digest : ""));
-    else if (db->version == 2)
+    else if (db->version == 2) {
 	conn_printf(conn, "%s\n", url_encode(checktxt), (digest ? digest : ""));
+    }
     else
 	conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
 
@@ -963,13 +964,13 @@ void csync_daemon_get_size_time(int conn, char *filename, struct csync_command *
 
 }
 
-int csync_daemon_settime(char *filename, char *time, const char **cmd_error)
+int csync_daemon_settime(char *filename, time_t time, const char **cmd_error)
 {
     int result = OK; 
     struct timeval times[2];
     times[0].tv_usec = 0;
     times[1].tv_usec = 0;
-    times[0].tv_sec = atol(time);
+    times[0].tv_sec = time;
     times[1].tv_sec = times[0].tv_sec;
     int rc = lutimes(filename, times);
     if ( rc) {
@@ -1230,7 +1231,7 @@ static int daemon_check_slave_status(filename_p filename)
 
 
 extern char * autoresolve_str[];
-int daemon_check_auto_resolve(const char *peername, filename_p filename, const char *ftime, const char *size) {
+int daemon_check_auto_resolve(const char *peername, filename_p filename, time_t ftime, long long size) {
     if (daemon_check_slave_status(filename))
 	return 1;
     int auto_method = get_auto_method(peername, filename);
@@ -1265,16 +1266,17 @@ int csync_daemon_dispatch(int conn,
     char *user       = tag[6];
     char *group      = tag[7];
     char *mod        = tag[8];
-    char *ftime      = tag[9];
-    char *size       = tag[10];
-    char *digest     = tag[11];
+    char *digest     = tag[9];
+    time_t ftime     = tag[10] ? atol(tag[10]) : 0;
+    long long size   = tag[11] ? atoll(tag[11]) : 0L;
 
-    if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, ftime, size))
+    if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, ftime, size)) {
+	csync_debug(1, "daemon %s:%s lost auto resolved. clear dirty", *peername, filename);
 	db->remove_dirty(db, "%", filename, 0);
-
+    }
     switch ( cmd->action) {
     case A_SIG: {
-	return csync_daemon_sig(conn_out, filename, tag, db, cmd_error);
+	return csync_daemon_sig(conn_out, filename, value, ftime, size, db, cmd_error);
 	break;
     }
     case A_MARK:
@@ -1380,7 +1382,7 @@ int csync_daemon_dispatch(int conn,
 	return csync_daemon_setmod(filename, value, cmd_error);
 	break;
     case A_SETTIME:
-	return csync_daemon_settime(filename, value, cmd_error);
+	return csync_daemon_settime(filename, atol(value), cmd_error);
 	break;
     case A_LIST:
 	// LIST <host> <filename> <key> <recursive>
