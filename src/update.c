@@ -225,7 +225,7 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version)
   return conn;
 }
 
-static int get_auto_method(peername_p peername, filename_p filename)
+int get_auto_method(peername_p peername, filename_p filename)
 {
     const struct csync_group *g = 0;
     const struct csync_group_host *h;
@@ -385,9 +385,9 @@ int csync_update_file_setown(int conn, peername_p peername, const char *key_enc,
 			     const struct stat *st, const char *uid, const char *gid)
 {
   // Optimize this. The daemon could have done this in the command.
-  conn_printf(conn, "SETOWN %s %s - %d %d %s %s\n",
+  conn_printf(conn, "SETOWN %s %s - %d %d %s %s %Ld %Ld \n",
 	      key_enc, filename_enc,
-	      st->st_uid, st->st_gid, uid, gid);
+	      st->st_uid, st->st_gid, uid, gid, st->st_size, (long long) st->st_mtime);
   return read_conn_status(conn, filename, peername);
 }
 
@@ -397,6 +397,59 @@ int csync_update_file_setmod(int conn, peername_p peername, const char *key_enc,
 {
   conn_printf(conn, "SETMOD %s %s %d\n", key_enc, filename_enc, st->st_mode);
   return read_conn_status(conn, filename, peername);
+}
+
+int check_auto_resolve_peer(const char *peername, filename_p filename, const char *chk_local, const char *chk_peer) {
+    int auto_resolved = 0;
+    if (get_master_slave_status(peername, filename)) {
+	csync_info(0, "Auto-resolving conflict: Won 'master/slave' test.\n");
+	return 1;
+    }
+
+    int auto_method = get_auto_method(peername, filename);
+    csync_info(1, "Auto resolve method %s %d for %s:%s \n", autoresolve_str[auto_method], auto_method, peername, filename);
+    switch (auto_method)
+    {
+    case CSYNC_AUTO_METHOD_FIRST:
+	auto_resolved = 1;
+	break;
+
+    case CSYNC_AUTO_METHOD_LEFT:
+    case CSYNC_AUTO_METHOD_RIGHT:
+	auto_resolved = 1;
+	break;
+
+    case CSYNC_AUTO_METHOD_LEFT_RIGHT_LOST:
+	auto_resolved = 0;
+	break;
+
+    case CSYNC_AUTO_METHOD_YOUNGER:
+    case CSYNC_AUTO_METHOD_OLDER:
+    case CSYNC_AUTO_METHOD_BIGGER:
+    case CSYNC_AUTO_METHOD_SMALLER:
+	if (!strcmp(chk_local,"---")) {
+	    csync_info(1, "Do not auto-resolve conflict by compare: This is a removal.\n");
+	    return 0;
+	}
+	time_t time_l = csync_checktxt_get_time(chk_local);
+	time_t time_p = csync_checktxt_get_time(chk_peer);
+	long long size_l = csync_checktxt_get_size(chk_local);
+	long long size_p = csync_checktxt_get_size(chk_peer);
+
+	if (time_l < time_p && auto_method == CSYNC_AUTO_METHOD_OLDER)
+	    auto_resolved = 1;
+	else if (time_l > time_p && auto_method == CSYNC_AUTO_METHOD_YOUNGER)
+	    auto_resolved = 1;
+	else if (size_l < size_p && auto_method == CSYNC_AUTO_METHOD_SMALLER)
+	    auto_resolved = 1;
+	else if (size_l > size_p && auto_method == CSYNC_AUTO_METHOD_BIGGER)
+	    auto_resolved = 1;
+	break;
+    }
+    csync_warn(1, "File %s:%s: %s autoresolve %s (%d)\n", 
+	       peername, filename, auto_resolved ? "Won" : "Lost" , 
+	       autoresolve_str[auto_method], auto_method);
+    return auto_resolved;
 }
 
 int csync_update_file_del(int conn, db_conn_p db,
@@ -457,6 +510,11 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    csync_info(2, ">>> PEER:  %s\n>>> LOCAL: %s\n",
 			chk_peer_decoded, chk_local);
 	    found_diff=1;
+	    // We should be able to figure auto resolve from checktxt
+	    int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
+	    if (flush) {
+		csync_info(1, "Sould send FLUSH %s:%s (won auto resolved)", peername, filename);
+	    
 	}
 	int rs_check_result = csync_rs_check(conn, filename, 0);
 	if ( rs_check_result < 0 )
@@ -489,6 +547,7 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    return rc;
 	}
 	csync_info(1,"Attempting autoresolve on %s:%s", peername, filename);
+	}
     }
 }
 
@@ -526,11 +585,14 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
 		const struct stat *st, const char *uid, const char* gid, const char *digest) {
     if (st) {
-	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %Ld %s\n",
+	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %Ld %Ld, %s %s\n",
 		    cmd, key, filename, secondname,
 		    st->st_uid, st->st_gid,
 		    uid, gid,
-		    st->st_mode, (long long) st->st_mtime, (digest ? digest : ""));
+		    st->st_mode,
+		    (long long) st->st_mtime,
+		    (long long) st->st_size,
+		    (digest ? digest : ""));
     }
     else {
 	conn_printf(conn, "%s %s %s %s\n",
@@ -668,6 +730,12 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername, file
 	csync_info(log_level, "File is different on peer (cktxt char #%d).\n", i);
 	csync_info(log_level, ">>> %s:\t%s\n>>> %s:\t%s\n",
 		    peername, chk_peer_decoded, "LOCAL", chk_local);
+
+	// We should be able to figure auto resolve from checktxt
+	int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
+	if (flush) {
+	    csync_info(1, "Sould send FLUSH %s:%s (won auto resolved)\n", peername, filename);
+	}
 	return rc | DIFF_META;
     }
     return rc;
@@ -829,7 +897,7 @@ int csync_update_directory(int conn,
 	    if (rc == IDENTICAL) {
 		return rc;
 	    }
-	    csync_info(2, "SETOWN on %s: %s %s\n", dirname, uid, gid);
+	    csync_info(2, "SETOWN on %s: %s %s \n", dirname, uid, gid);
 	    rc = csync_update_file_setown(conn, peername, key_enc, dirname,
 					  dirname_enc, &dir_st, uid, gid);
 	    if (rc != OK) {
@@ -1274,20 +1342,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 
 	    if (rc == CONN_CLOSE)
 		return rc;
-/*
-
-	    if (rc >= OK && st.st_nlink > 1) {
-		char *chk_local = strdup(
-		    csync_genchecktxt_version(&st, filename,
-					      SET_USER | SET_GROUP, db_version));
-		rc = csync_update_file_all_hardlink(peername, key_enc, filename,
-						    filename_enc, &st, uid, gid, OP_MOD, chk_local, digest,
-						    1, &last_conn_status);
-		free(chk_local);
-		if (rc == CONN_CLOSE)
-		    return rc;
-	    }
-*/
+	    // csync_link_update(....)
 	    break;
 	case DIR_TYPE:
 	    cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid, NULL);
@@ -1372,6 +1427,24 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
     }
     csync_fatal(0,"Failed through loop. Should have returned. rc: %d \n", rc);
     return rc;
+}
+
+int csync_link_update(filename_p filename, struct stat *stat, const char *peername,
+		      const char *key_enc, const char *chk_local, const char *digest, int *last_con_status) {
+/*
+    if (rc >= OK && st->st_nlink > 1) {
+	char *chk_local = strdup(
+	    csync_genchecktxt_version(st, filename,
+				      SET_USER | SET_GROUP, db_version));
+	rc = csync_update_file_all_hardlink(peername, key_enc, filename,
+					    filename_enc, &st, uid, gid, OP_MOD, chk_local, digest,
+					    1, last_conn_status);
+	free(chk_local);
+	if (rc == CONN_CLOSE)
+	    return rc;
+    }
+*/
+    return -1;
 }
 
 int csync_update_file_mod(int conn, db_conn_p db,
