@@ -39,10 +39,12 @@
 #define MAX_UID_SIZE  100
 #define MAX_GID_SIZE  100
 
-#define OK_MISSING 32
-#define DIFF_META 16
+#define DIFF_FLUSH 4
 #define DIFF_FILE 8
+#define DIFF_META 16
 #define DIFF_BOTH (DIFF_FILE | DIFF_META)
+
+#define OK_MISSING 32
 #define IDENTICAL 4
 #define LINK_LATER 3
 #define OK_DRY 2
@@ -300,6 +302,8 @@ int csync_check_auto_resolve(int conn, peername_p peername, const char *key_enc,
     }
 
     int auto_method = get_auto_method(peername, filename);
+    if (auto_method == CSYNC_AUTO_METHOD_NONE)
+	return 0;
     csync_info(2, "Auto resolve method %s %d for %s:%s ", autoresolve_str[auto_method], auto_method, peername, filename);
     switch (auto_method)
     {
@@ -407,6 +411,8 @@ int check_auto_resolve_peer(const char *peername, filename_p filename, const cha
     }
 
     int auto_method = get_auto_method(peername, filename);
+    if (auto_method == CSYNC_AUTO_METHOD_NONE) // Do not log
+	return 0;
     csync_info(1, "Auto resolve method %s %d for %s:%s \n", autoresolve_str[auto_method], auto_method, peername, filename);
     switch (auto_method)
     {
@@ -498,6 +504,7 @@ int csync_update_file_del(int conn, db_conn_p db,
 	int buf_size = 4096;
 	char buffer[buf_size];
 	char digest_peer[buf_size];
+	int flush = 0;
 	if ( !conn_gets_newline(conn, buffer, buf_size, 1) )
 	    return ERROR;
 	int n = sscanf(buffer, "%s %s", chk_peer, digest_peer);
@@ -511,10 +518,9 @@ int csync_update_file_del(int conn, db_conn_p db,
 			chk_peer_decoded, chk_local);
 	    found_diff=1;
 	    // We should be able to figure auto resolve from checktxt
-	    int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
-	    if (flush) {
+	    flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
+	    if (flush)
 		csync_info(1, "Sould send FLUSH %s:%s (won auto resolved)", peername, filename);
-	    
 	}
 	int rs_check_result = csync_rs_check(conn, filename, 0);
 	if ( rs_check_result < 0 )
@@ -547,7 +553,6 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    return rc;
 	}
 	csync_info(1,"Attempting autoresolve on %s:%s", peername, filename);
-	}
     }
 }
 
@@ -585,14 +590,14 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
 		const struct stat *st, const char *uid, const char* gid, const char *digest) {
     if (st) {
-	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %Ld %Ld, %s %s\n",
+	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %Ld %Ld \n",
 		    cmd, key, filename, secondname,
 		    st->st_uid, st->st_gid,
 		    uid, gid,
 		    st->st_mode,
+		    digest ? digest : "-",
 		    (long long) st->st_mtime,
-		    (long long) st->st_size,
-		    (digest ? digest : ""));
+		    (long long) st->st_size);
     }
     else {
 	conn_printf(conn, "%s %s %s %s\n",
@@ -692,7 +697,7 @@ int csync_fix_path(int conn, peername_p myname, peername_p peername, filename_p 
 /* PRE: command SIG have been sent 
    st can be null */
 int csync_update_file_sig(int conn, peername_p myname, peername_p peername, filename_p filename,
-			  const struct stat *st, const char *chk_local, const char *digest, int log_level)
+			  const struct stat *st, const char *chk_local, const char *digest, int log_level, int *flags)
 {
     int i = 0;
     char chk_peer[4096] = "---";
@@ -736,6 +741,7 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername, file
 	if (flush) {
 	    csync_info(1, "Sould send FLUSH %s:%s (won auto resolved)\n", peername, filename);
 	}
+	*flags = DIFF_META | (flush & DIFF_FLUSH);
 	return rc | DIFF_META;
     }
     return rc;
@@ -920,6 +926,11 @@ int csync_update_directory(int conn,
     return OK;
 }
 
+int csync_flush(int conn, const char *key_enc, const char *peername, filename_p filename_enc) {
+    conn_printf(conn, "FLUSH %s %s\n", key_enc, filename_enc);
+    int rc = read_conn_status(conn, filename_enc, peername);
+    return rc;
+}
 
 int csync_update_file_sig_rs_diff(int conn, peername_p myname,
 				  peername_p peername, const char *key_enc,
@@ -931,7 +942,8 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname,
 {
     csync_log(LOG_DEBUG, 3, "csync_update_file_sig_rs_diff %s:%s\n", peername, filename);
     cmd_printf(conn, "SIG", key_enc, filename_enc, "user/group", st, uid, gid, digest);
-    int rc = csync_update_file_sig(conn, myname, peername, filename, st, chk_local, digest, log_level);
+    int flags = 0;
+    int rc = csync_update_file_sig(conn, myname, peername, filename, st, chk_local, digest, log_level, &flags);
     if (rc < OK || rc & OK_MISSING)
 	return rc;
     csync_log(LOG_DEBUG, 3, "Continue to rs_check %s %d\n", filename, rc);
@@ -941,6 +953,9 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname,
     if ( rs_check_result > 0) {
 	csync_info(2, "File is different on peer (rsync sig).\n");
 	rc |= DIFF_FILE;
+    }
+    if (flags & DIFF_FLUSH) {
+	csync_flush(conn, key_enc, peername, filename_enc);
     }
     int rc_status;
     if ((rc_status = read_conn_status(conn, filename, peername)) < OK) {
@@ -1097,9 +1112,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 		csync_info(1, "!F: %-15s %s\n", peername, filename);
 		return OK_DRY;
 	    }
-	    conn_printf(conn, "FLUSH %s %s\n", key_enc, filename_enc);
-	    int rc = read_conn_status(conn, filename, peername);
-	    if (rc < 0)
+	    if ((rc = csync_flush(conn, key_enc, peername, filename_enc)) < 0)
 		return rc;
 	}
 	if (operation == OP_MOVE) {
@@ -1696,7 +1709,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
     char *status = "";
     if (dry_run)
 	status = "(DRY RUN)";
-  
+
     for (t = tl; t != 0; t = t->next) {
 	filename_p filename = t->value;
 	const char *key = csync_key(peername, filename);
