@@ -577,7 +577,7 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
     for (int i = 0; i < file_count; i++) {
 	char *real_name =  realpath(files[i], NULL); // getrealfn(files[i]); 
 	if (real_name == NULL) {
-	    csync_warn(0, "%s did not match a real path. Skipping", files[i]);
+	    csync_warn(0, "%s did not match a real path. Skipping\n", files[i]);
 	}
 	else {
 	    if (!csync_check_usefullness(real_name, flags)) {
