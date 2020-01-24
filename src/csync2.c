@@ -575,9 +575,9 @@ void csync_config_destroy();
 int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
-	char *real_name =  realpath(files[i], NULL); // getrealfn(files[i]); 
+	char *real_name =  getrealfn(files[i]); //realpath(files[i], NULL);
 	if (real_name == NULL) {
-	    csync_warn(0, "%s did not match a real path. Skipping", files[i]);
+	    csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 	}
 	else {
 	    if (!csync_check_usefullness(real_name, flags)) {
@@ -1131,7 +1131,7 @@ nofork:
 		    db->add_hint(db, realname, flags & FLAG_RECURSIVE);
 	    }
 	    else {
-		csync_warn(0, "%s did not match a real path. Skipping.", argv[i]); 
+		csync_warn(0, "%s did not match a real path. Skipping.\n", argv[i]); 
 	    };
 	};
     };
@@ -1196,7 +1196,7 @@ nofork:
 		}
 	    }
 	    else {
-		csync_warn(0, "%s is not a real path", argv[i]);
+		csync_warn(0, "%s is not a real path\n", argv[i]);
 	    }
 	}
     };
