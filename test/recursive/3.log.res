@@ -1,5 +1,4 @@
 cmd x "rm directory with ignore files" local peer test
-Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
@@ -29,12 +28,8 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive deleted before syncing. Removing from dirty.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local'
-Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local' '1578595142' NX EX 60 -> OK
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local'
-Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local' -> 1
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4

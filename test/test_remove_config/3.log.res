@@ -1,5 +1,4 @@
 cmd R "check -R" local peer test
-Connecting to redis localhost:6379
 remove_old: dirty
 Remove 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file' from dirty. No longer in configuration
 Remove 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file' from dirty. No longer in configuration
