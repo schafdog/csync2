@@ -1,2 +1,2 @@
-auto/younger/update_both
+auto/younger/local_oldest
 
