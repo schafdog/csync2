@@ -326,6 +326,7 @@ extern int csync_check_dir(db_conn_p db, const char* file, int flags);
 /* update.c */
 
 int get_auto_method(peername_p peername, filename_p filename);
+int csync_auto_resolve_time_size(int auto_method, time_t time_l, time_t time_p, long long size_l, long long size_p);
 
 void cmd_printf(int conn, const char *cmd, const char *key, 
 		filename_p filename, const char *secondname,
