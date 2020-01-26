@@ -475,7 +475,7 @@ int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {
       newname_encoded, filename_length+1, filename_encoded, filename_encoded);
     */
     //  free(update_sql);
-    csync_warn(0, "NOT IMPLEMENTED: csync_db_update_path (update DB recursive)");
+    csync_warn(0, "NOT IMPLEMENTED: csync_db_update_path (update DB recursive)\n");
     return 0;
 }
 
