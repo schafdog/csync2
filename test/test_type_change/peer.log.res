@@ -38,7 +38,7 @@ rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_chan
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Removing  /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/* ..
-Removing file /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/new_file 'N' all 24540019 
+Removing file /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/new_file 'N' all
 Removing directory /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all from file db.
 rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 16877
@@ -85,7 +85,7 @@ rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_chan
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Removing  /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/* ..
-Removing file /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/new_file 'N' all 24683651 
+Removing file /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/new_file 'N' all
 Removing directory /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all from file db.
 rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 16877
