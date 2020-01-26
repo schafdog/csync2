@@ -196,6 +196,9 @@ for d in $* ; do
 	fi 
     fi
 done
+cat ${TESTNAME}/peer.log | sed "s/<[0-9]*> //" | grep -v connection > ${TESTNAME}/peer.log.tmp
+mv ${TESTNAME}/peer.log.tmp ${TESTNAME}/peer.log
+testing ${TESTNAME}/peer.log
 ./compare_sql.sh $TESTNAME
 echo "Result $RES"
 exit $RES
