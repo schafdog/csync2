@@ -104,7 +104,7 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content.
 File /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content is dirty here: NEW 2
-File is dirty /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content 19840592 
+File is dirty /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/peer_oldest ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/peer_oldest 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/peer_oldest.
@@ -149,7 +149,7 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content.
 File /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content is dirty here: NEW 2
-File is dirty /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content 19840592 
+File is dirty /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older -1
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older. RC: -1
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older): 1 -1 
@@ -171,7 +171,7 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content.
 File /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content is dirty here: NEW 2
-File is dirty /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content 19840592 
+File is dirty /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/same_content
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older -1
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older. RC: -1
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older): 1 -1 
