@@ -877,7 +877,8 @@ int response_ok_not_found(int conn) {
     return NEXT_CMD;
 }
 
-int csync_daemon_sig(int conn, char *filename, char *user_group, time_t ftime, long long size, db_conn_p db, const char **cmd_error)
+int csync_daemon_sig(int conn, char *filename, const char *user_group,
+		     time_t ftime, long long size, db_conn_p db, const char **cmd_error)
 {
     struct stat st;
     if ( lstat_strict(filename, &st) != 0) {
@@ -1008,7 +1009,8 @@ const char *check_ssl(char *peername) {
   return 0;
 }
 
-const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *peeraddr, char *newpeername, char *config, int is_ping, int ip_version) {
+const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *peeraddr,
+				    const char *newpeername, const char *config, int is_ping, int ip_version) {
   if (*peername) {
     free(*peername);
     *peername = NULL;
@@ -1043,7 +1045,7 @@ const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *pe
   return 0;
 }
 
-int csync_daemon_group(char **active_grouplist, char *newgroup,
+int csync_daemon_group(char **active_grouplist, const char *newgroup,
 			       const char **cmd_error) {
   if (*active_grouplist) {
     *cmd_error =  "Group list already set!";
@@ -1117,7 +1119,7 @@ void csync_daemon_stdin_check(int fd, address_t *peeraddr, socklen_t *peerlen) {
     }
 }
 
-int csync_daemon_setmod(char *filename, char *mod, const char **cmd_error) {
+int csync_daemon_setmod(filename_p filename, const char *mod, const char **cmd_error) {
   if ( !csync_ignore_mod ) {
     if (!chmod(filename, atoi(mod)))
       return OK;
@@ -1242,41 +1244,48 @@ int daemon_check_auto_resolve(const char *peername, filename_p filename, time_t 
     struct stat stat;
     int rc = lstat(filename, &stat);
     if (rc) {
-	csync_debug(0, "daemon_check_auto_resolve: %s failed stat", filename);
+	csync_debug(0, "daemon_check_auto_resolve: %s failed stat\n", filename);
     }
+    
     return 0;
 }
+
+struct command {
+    const char *first;
+    const char *second;
+    const char *value;
+    const char *secondfile;
+    const char *uid;
+    const char *gid;
+    const char *user;
+    const char *group;
+    const char *mod;
+    const char *digest;
+    time_t ftime;
+    long long size;
+};
+
 
 int csync_daemon_dispatch(int conn,
 			  int conn_out,
 			  db_conn_p db,
 			  char *filename,
 			  struct csync_command *cmd,
-			  char *tag[32],
+			  struct command *params,
 			  int protocol_version,
 			  char **peername,
 			  address_t *peeraddr,
 			  const char **otherfile,
 			  const char **cmd_error)
 {
-    char *value      = tag[3];
-    char *secondfile = value;
-    char *uid        = tag[4];
-    char *gid        = tag[5];
-    char *user       = tag[6];
-    char *group      = tag[7];
-    char *mod        = tag[8];
-    char *digest     = tag[9];
-    time_t ftime     = tag[10] ? atol(tag[10]) : 0;
-    long long size   = tag[11] ? atoll(tag[11]) : 0L;
 
-    if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, ftime, size)) {
+    if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
 	csync_debug(1, "daemon %s:%s lost auto resolved. clear dirty", *peername, filename);
 	db->remove_dirty(db, "%", filename, 0);
     }
     switch ( cmd->action) {
     case A_SIG: {
-	return csync_daemon_sig(conn_out, filename, value, ftime, size, db, cmd_error);
+	return csync_daemon_sig(conn_out, filename, params->value, params->ftime, params->size, db, cmd_error);
 	break;
     }
     case A_MARK:
@@ -1304,13 +1313,13 @@ int csync_daemon_dispatch(int conn,
 	int rc = csync_daemon_patch(conn_out, db, filename, cmd_error);
 	if (rc != OK)
 	    return rc;
-	rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
+	rc = csync_daemon_setown(filename, params->uid, params->gid, params->user, params->group, cmd_error);
 	if (rc != OK)
 	    return rc;
-	rc = csync_daemon_setmod(filename, mod, cmd_error);
+	rc = csync_daemon_setmod(filename, params->mod, cmd_error);
 	if (rc != OK)
 	    return rc;
-	rc = csync_daemon_settime(filename, ftime, cmd_error);
+	rc = csync_daemon_settime(filename, params->ftime, cmd_error);
 	if (rc != OK)
 	    return rc;
 	return IDENTICAL;
@@ -1324,29 +1333,29 @@ int csync_daemon_dispatch(int conn,
 	// fall through on OK
     }
     case A_MOD: {
-	int rc = csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
+	int rc = csync_daemon_setown(filename, params->uid, params->gid, params->user, params->group, cmd_error);
 	csync_info(2, "setown %s rc = %d uid: %s gid: %s errno = %d err = %s\n",
-		    filename, rc, uid, gid, errno, (*cmd_error ? *cmd_error : ""));
+		    filename, rc, params->uid, params->gid, errno, (*cmd_error ? *cmd_error : ""));
 	if (rc != OK)
 	    return rc;
-	rc = csync_daemon_setmod(filename, mod, cmd_error);
-	csync_info(2, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, mod, errno, (*cmd_error ? *cmd_error : ""));
+	rc = csync_daemon_setmod(filename, params->mod, cmd_error);
+	csync_info(2, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, params->mod, errno, (*cmd_error ? *cmd_error : ""));
 	if (rc != OK)
 	    return rc;
-	rc = csync_daemon_settime(filename, ftime, cmd_error);
+	rc = csync_daemon_settime(filename, params->ftime, cmd_error);
 	if (rc  != OK)
 	    return rc;
 	return IDENTICAL;
 	break;
     }
     case A_MKCHR:
-	if ( mknod(filename, 0700|S_IFCHR, atoi(tag[3])) ) {
+	if ( mknod(filename, 0700|S_IFCHR, atoi(params->value)) ) {
 	    *cmd_error = strerror(errno);
 	    return ABORT_CMD;
 	}
 	break;
     case A_MKBLK:
-	if ( mknod(filename, 0700|S_IFBLK, atoi(tag[3])) ) {
+	if ( mknod(filename, 0700|S_IFBLK, atoi(params->value))) {
 	    *cmd_error = strerror(errno);
 	    return ABORT_CMD;
 	}
@@ -1358,17 +1367,17 @@ int csync_daemon_dispatch(int conn,
 	}
 	break;
     case A_MKLINK:
-	*otherfile = prefixsubst(secondfile);
+	*otherfile = prefixsubst(params->secondfile);
 	return csync_daemon_symlink(filename, *otherfile, cmd_error);
 
 	break;
     case A_MKHLINK: {
-	*otherfile = prefixsubst(secondfile);
+	*otherfile = prefixsubst(params->secondfile);
 	return csync_daemon_hardlink(filename, *otherfile, "1", cmd_error);
 	break;
     }
     case A_MV: {
-	*otherfile = prefixsubst(secondfile);
+	*otherfile = prefixsubst(params->secondfile);
 	return csync_daemon_mv(db,filename, *otherfile, cmd_error);
 	break;
     }
@@ -1376,42 +1385,41 @@ int csync_daemon_dispatch(int conn,
 	/* just ignore socket files */
 	break;
     case A_SETOWN:
-	return csync_daemon_setown(filename, uid, gid, user, group, cmd_error);
+	return csync_daemon_setown(filename, params->uid, params->gid, params->user, params->group, cmd_error);
 	break;
     case A_SETMOD:
-	return csync_daemon_setmod(filename, value, cmd_error);
+	return csync_daemon_setmod(filename, params->value, cmd_error);
 	break;
     case A_SETTIME:
-	return csync_daemon_settime(filename, atol(value), cmd_error);
+	return csync_daemon_settime(filename, atol(params->value), cmd_error);
 	break;
     case A_LIST:
 	// LIST <host> <filename> <key> <recursive>
-	csync_log(LOG_DEBUG, 1, "peername: %s file: %s key: %s recursive %s\n", *peername, filename, tag[3], tag[4]);
-	csync_daemon_list(conn_out, db, filename, myhostname, *peername, (tag[4] ? atoi(tag[4]): 0));
+	csync_log(LOG_DEBUG, 1, "peername: %s file: %s key: %s recursive %s\n", *peername, filename, params->value, params->uid);
+	csync_daemon_list(conn_out, db, filename, myhostname, *peername, (params->uid ? atoi(params->uid): 0));
 	break;
     case A_DEBUG:
-	csync_info(2, "DEBUG from %s %s\n", *peername, tag[1]);
+	csync_info(2, "DEBUG from %s %s\n", *peername, params->first);
 	int client_debug_level = 0;
-	if (tag[1][0])
-	    client_debug_level = atoi(tag[1]);
+	if (params->first[0])
+	    client_debug_level = atoi(params->first);
 	if (client_debug_level > csync_level_debug) {
-	    csync_info(1, "Increasing %s DEBUG level to %s\n", *peername, tag[1]);
+	    csync_info(1, "Increasing %s DEBUG level to %s\n", *peername, params->first);
 	    csync_level_debug = client_debug_level;
 	}
 	break;
     case A_PING:
-	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, tag[1], tag[2], 1, protocol_version);
-	csync_info(1, "PING from %s %s. Response: %s\n", *peername, tag[2], (*cmd_error ? *cmd_error : "OK"));
+	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, params->first, params->second, 1, protocol_version);
+	csync_info(1, "PING from %s %s. Response: %s\n", *peername, params->second, (*cmd_error ? *cmd_error : "OK"));
 	return ABORT_CMD;
     case A_HELLO:
-	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, tag[1], tag[2], 0, protocol_version);
+	*cmd_error = csync_daemon_hello_ping(db, peername, peeraddr, params->first, params->second, 0, protocol_version);
 	csync_info(1, "HELLO from %s. Response: %s\n", *peername, (*cmd_error ? *cmd_error : "OK"));
 	return ABORT_CMD;
     case A_GROUP:
-	csync_daemon_group(&active_grouplist, tag[1], cmd_error);
+	csync_daemon_group(&active_grouplist, params->first, cmd_error);
 	break;
     case A_BYE:
-	destroy_tag(tag);
 	conn_printf(conn_out, "OK (cu_later).\n");
 	return BYEBYE;
     }
@@ -1441,6 +1449,21 @@ void csync_end_command(int conn, filename_p filename, char *tag[32], const char 
     }
   }
   destroy_tag(tag);
+}
+
+void parse_tags(char *tag[32], struct command *cmd ) {
+    cmd->first      = tag[1];
+    cmd->second     = tag[2];
+    cmd->value      = tag[3];
+    cmd->secondfile = tag[3];
+    cmd->uid        = tag[4];
+    cmd->gid        = tag[5];
+    cmd->user       = tag[6];
+    cmd->group      = tag[7];
+    cmd->mod        = tag[8];
+    cmd->digest     = tag[9];
+    cmd->ftime     = tag[10] ? atol(tag[10]) : 0;
+    cmd->size   = tag[11] ? atoll(tag[11]) : 0L;
 }
 
 void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_version, int mode)
@@ -1493,10 +1516,13 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
     if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername,tag[1])))
       rc = ABORT_CMD;
 
+    struct command params;
+    parse_tags(tag, &params);
     if (rc == OK && cmd->check_dirty &&
 	csync_daemon_check_dirty(db, filename, peername,
 				 cmd->action,
-				 &cmd_error)) {
+				 &cmd_error) &&
+	!daemon_check_auto_resolve(peername, filename, params.ftime, params.size)) {
 	rc  = ABORT_CMD;
 	//	  csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
 	isDirty  = 1;
@@ -1514,26 +1540,26 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 	    }
 	}
       const char *otherfile = NULL;
-      rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, tag,
+      rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params,
 			       protocol_version,
 			       &peername, &peeraddr, &otherfile,
 			       &cmd_error);
-	
       if (rc == OK || rc == IDENTICAL) {
 	 // check updates done
 	 csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" ));
 	 csync_daemon_check_update(db, filename, otherfile, cmd, peername);
       }
       else if (rc == NEXT_CMD){
-	// Already send an reply
-	destroy_tag(tag);
-	continue;
+	  // Already send an reply
+	  destroy_tag(tag);
+	  continue;
       }
       else if (rc == BYEBYE) {
-	if (active_peer)
-	  free(active_peer);
-	active_peer = 0;
-	return ;
+	  destroy_tag(tag);
+	  if (active_peer)
+	      free(active_peer);
+	  active_peer = 0;
+	  return ;
       }
     }
     // END CMD, in error if cmd_error (but finish it with a reply)
