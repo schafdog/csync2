@@ -1234,20 +1234,29 @@ static int daemon_check_slave_status(filename_p filename)
 
 extern char * autoresolve_str[];
 int daemon_check_auto_resolve(const char *peername, filename_p filename, time_t ftime, long long size) {
+    int auto_resolved = 0;
     if (daemon_check_slave_status(filename))
 	return 1;
     int auto_method = get_auto_method(peername, filename);
+    if (auto_method == CSYNC_AUTO_METHOD_NONE)
+	return 0;
     // check first, Left, right
-    csync_info(2, "daemon: Auto resolve method %s %d for %s:%s ", autoresolve_str[auto_method], auto_method, peername, filename);
+    csync_info(2, "daemon: Auto resolve method %s %d for %s:%s\n", autoresolve_str[auto_method], auto_method, peername, filename);
 
     // time, size
     struct stat stat;
-    int rc = lstat(filename, &stat);
-    if (rc) {
-	csync_debug(0, "daemon_check_auto_resolve: %s failed stat\n", filename);
+    if (filename != NULL && filename[0] != 0) {
+	int rc = lstat(filename, &stat);
+	if (rc) {
+	    csync_debug(2, "daemon_check_auto_resolve: %s failed stat\n", filename);
+	    return 0;
+	}
     }
-    
-    return 0;
+    auto_resolved = csync_auto_resolve_time_size(auto_method, ftime, stat.st_mtime, size, stat.st_size);
+    if (auto_resolved) {
+	csync_debug(1, "check_auto_resolve: Remote %s:%s won auto resolve\n", peername, filename);
+    }
+    return auto_resolved;
 }
 
 struct command {
@@ -1280,7 +1289,7 @@ int csync_daemon_dispatch(int conn,
 {
 
     if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
-	csync_debug(1, "daemon %s:%s lost auto resolved. clear dirty", *peername, filename);
+	csync_debug(1, "daemon: Remote %s:%s won auto resolved. clear dirty\n", *peername, filename);
 	db->remove_dirty(db, "%", filename, 0);
     }
     switch ( cmd->action) {
@@ -1519,10 +1528,11 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
     struct command params;
     parse_tags(tag, &params);
     if (rc == OK && cmd->check_dirty &&
+	!daemon_check_auto_resolve(peername, filename, params.ftime, params.size) && 
 	csync_daemon_check_dirty(db, filename, peername,
 				 cmd->action,
-				 &cmd_error) &&
-	!daemon_check_auto_resolve(peername, filename, params.ftime, params.size)) {
+				 &cmd_error))
+    {
 	rc  = ABORT_CMD;
 	//	  csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
 	isDirty  = 1;
