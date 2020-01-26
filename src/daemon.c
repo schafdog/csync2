@@ -137,7 +137,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 			    daemon_remove_file(db, fn, buffer);
 			    buffer_destroy(buffer);
 			} else {
-			    csync_info(0, "File is dirty %s %d \n", fn, peername);
+			    csync_info(0, "File is dirty %s\n", fn);
 			    if (tl != NULL)
 				textlist_add(tl, fn, 0);
 			}
