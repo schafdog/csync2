@@ -63,9 +63,9 @@ Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csy
 rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 16877
 rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 0
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/* ..
-Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.o 24021939 
+Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.o
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.o from file db.
-Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.c~ 24063219 
+Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.c~
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.c~ from file db.
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5): 0 
