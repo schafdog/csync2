@@ -234,7 +234,8 @@ int csync_dir_count(db_conn_p db, filename_p filename)
     return count;
 }
 
-int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd, const char **cmd_error)
+int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd,
+			     int auto_resolve, const char **cmd_error)
 {
     int rc = 0;
     int operation = 0;
@@ -242,7 +243,7 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
     csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s\n", filename);
 
     // Returns newly marked dirty, so we cannot use it to bail out.
-    const struct csync_group *g; 
+    const struct csync_group *g = NULL;
     int markedDirty = csync_check_single(db, filename, FLAG_IGN_DIR, &g);
     csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s %s\n", filename, (markedDirty ? "is just marked dirty" : " is clean") );
 
@@ -251,6 +252,11 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
     rc = db->is_dirty(db, peername, filename, &operation, &mode);
     // Found dirty
     if (rc == 1) {
+	if (auto_resolve) {
+	    csync_log(LOG_DEBUG, 1, "Remote %s:%s won auto resolve.\n", peername, filename);
+	    db->remove_dirty(db, "%", filename, 0);
+	    return 0;
+	}
 	csync_log(LOG_DEBUG, 2, "daemon_check_dirty: peer operation  %s %s %s\n",
 				peername, filename, csync_operation_str(operation));
 	
@@ -977,7 +983,7 @@ int csync_daemon_settime(char *filename, time_t time, const char **cmd_error)
     if ( rc) {
 	*cmd_error = strerror(errno);
     }
-    csync_info(2, "settime %s rc = %d time: %s errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
+    csync_info(2, "settime %s rc = %d time: %d errno = %d err = %s\n", filename, rc, time, errno, (*cmd_error ? *cmd_error : ""));
     return result;
 }
 
@@ -1241,7 +1247,8 @@ int daemon_check_auto_resolve(const char *peername, filename_p filename, time_t 
     if (auto_method == CSYNC_AUTO_METHOD_NONE)
 	return 0;
     // check first, Left, right
-    csync_info(2, "daemon: Auto resolve method %s %d for %s:%s\n", autoresolve_str[auto_method], auto_method, peername, filename);
+    csync_info(2, "daemon: Auto resolve method %s %d for %s:%s\n",
+	       autoresolve_str[auto_method], auto_method, peername, filename);
 
     // time, size
     struct stat stat;
@@ -1252,7 +1259,10 @@ int daemon_check_auto_resolve(const char *peername, filename_p filename, time_t 
 	    return 0;
 	}
     }
+    csync_info(2, "daemon: Auto resolve %s:%s time: %ld %ld size: %Ld %Ld \n",
+	       peername, filename, ftime, stat.st_mtime, size, stat.st_size);
     auto_resolved = csync_auto_resolve_time_size(auto_method, ftime, stat.st_mtime, size, stat.st_size);
+
     if (auto_resolved) {
 	csync_debug(1, "check_auto_resolve: Remote %s:%s won auto resolve\n", peername, filename);
     }
@@ -1289,7 +1299,7 @@ int csync_daemon_dispatch(int conn,
 {
 
     if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
-	csync_debug(1, "daemon: Remote %s:%s won auto resolved. clear dirty\n", *peername, filename);
+	csync_debug(1, "daemon dispatch: Remote %s:%s won auto resolved. clear dirty\n", *peername, filename);
 	db->remove_dirty(db, "%", filename, 0);
     }
     switch ( cmd->action) {
@@ -1471,8 +1481,8 @@ void parse_tags(char *tag[32], struct command *cmd ) {
     cmd->group      = tag[7];
     cmd->mod        = tag[8];
     cmd->digest     = tag[9];
-    cmd->ftime     = tag[10] ? atol(tag[10]) : 0;
-    cmd->size   = tag[11] ? atoll(tag[11]) : 0L;
+    cmd->ftime      = tag[10] ? atol(tag[10]) : 0;
+    cmd->size       = tag[11] ? atoll(tag[11]) : 0L;
 }
 
 void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_version, int mode)
@@ -1509,8 +1519,9 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 	active_peer = strdup(tag[1]);
     }
     else
-	csync_log(LOG_DEBUG, 2, "CONN %s > %s %s %s %s %s %s %s %s %s \n",
-		    active_peer, tag[0], filename, other, tag[4], tag[5], tag[6], tag[7], tag[8], tag[9]);
+	csync_log(LOG_DEBUG, 2, "CONN %s > %s %s %s %s %s %s %s %s %s %s %s\n",
+		  active_peer, tag[0], filename, other, tag[4], tag[5],
+		  tag[6], tag[7], tag[8], tag[9], tag[10], tag[11]);
 
     cmd_error = 0;
 
@@ -1528,13 +1539,12 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
     struct command params;
     parse_tags(tag, &params);
     if (rc == OK && cmd->check_dirty &&
-	!daemon_check_auto_resolve(peername, filename, params.ftime, params.size) && 
 	csync_daemon_check_dirty(db, filename, peername,
-				 cmd->action,
+				 cmd->action, daemon_check_auto_resolve(peername, filename, params.ftime, params.size),
 				 &cmd_error))
     {
 	rc  = ABORT_CMD;
-	//	  csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
+	// csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
 	isDirty  = 1;
     }
     else {
