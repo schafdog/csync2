@@ -389,9 +389,7 @@ int csync_update_file_setown(int conn, peername_p peername, const char *key_enc,
 			     const struct stat *st, const char *uid, const char *gid)
 {
   // Optimize this. The daemon could have done this in the command.
-  conn_printf(conn, "SETOWN %s %s - %d %d %s %s %Ld %Ld \n",
-	      key_enc, filename_enc,
-	      st->st_uid, st->st_gid, uid, gid, st->st_size, (long long) st->st_mtime);
+  cmd_printf(conn, "SETOWN", key_enc, filename_enc, "user/group", st, uid, gid, NULL);
   return read_conn_status(conn, filename, peername);
 }
 
