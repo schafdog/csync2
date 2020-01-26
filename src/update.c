@@ -403,16 +403,33 @@ int csync_update_file_setmod(int conn, peername_p peername, const char *key_enc,
   return read_conn_status(conn, filename, peername);
 }
 
+int csync_auto_resolve_time_size(int auto_method, time_t time_l, time_t time_p, long long size_l, long long size_p) {
+    int auto_resolved = 0;
+    if (time_l < time_p && auto_method == CSYNC_AUTO_METHOD_OLDER)
+	auto_resolved = 1;
+    else if (time_l > time_p && auto_method == CSYNC_AUTO_METHOD_YOUNGER)
+	auto_resolved = 1;
+    else if (size_l < size_p && auto_method == CSYNC_AUTO_METHOD_SMALLER)
+	auto_resolved = 1;
+    else if (size_l > size_p && auto_method == CSYNC_AUTO_METHOD_BIGGER)
+	auto_resolved = 1;
+    return auto_resolved;
+}
+
 int check_auto_resolve_peer(const char *peername, filename_p filename, const char *chk_local, const char *chk_peer) {
     int auto_resolved = 0;
     if (get_master_slave_status(peername, filename)) {
 	csync_info(0, "Auto-resolving conflict: Won 'master/slave' test.\n");
 	return 1;
     }
-
     int auto_method = get_auto_method(peername, filename);
     if (auto_method == CSYNC_AUTO_METHOD_NONE) // Do not log
 	return 0;
+    time_t time_l = csync_checktxt_get_time(chk_local);
+    time_t time_p = csync_checktxt_get_time(chk_peer);
+    long long size_l = csync_checktxt_get_size(chk_local);
+    long long size_p = csync_checktxt_get_size(chk_peer);
+
     csync_info(1, "Auto resolve method %s %d for %s:%s \n", autoresolve_str[auto_method], auto_method, peername, filename);
     switch (auto_method)
     {
@@ -437,19 +454,8 @@ int check_auto_resolve_peer(const char *peername, filename_p filename, const cha
 	    csync_info(1, "Do not auto-resolve conflict by compare: This is a removal.\n");
 	    return 0;
 	}
-	time_t time_l = csync_checktxt_get_time(chk_local);
-	time_t time_p = csync_checktxt_get_time(chk_peer);
-	long long size_l = csync_checktxt_get_size(chk_local);
-	long long size_p = csync_checktxt_get_size(chk_peer);
-
-	if (time_l < time_p && auto_method == CSYNC_AUTO_METHOD_OLDER)
-	    auto_resolved = 1;
-	else if (time_l > time_p && auto_method == CSYNC_AUTO_METHOD_YOUNGER)
-	    auto_resolved = 1;
-	else if (size_l < size_p && auto_method == CSYNC_AUTO_METHOD_SMALLER)
-	    auto_resolved = 1;
-	else if (size_l > size_p && auto_method == CSYNC_AUTO_METHOD_BIGGER)
-	    auto_resolved = 1;
+	
+	auto_resolved = csync_auto_resolve_time_size(auto_method, time_l, time_p, size_l, size_p);
 	break;
     }
     csync_warn(1, "File %s:%s: %s autoresolve %s (%d)\n", 
