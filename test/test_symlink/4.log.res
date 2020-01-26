@@ -20,6 +20,5 @@ Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_fil
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
 While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
 ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all) rc: -11 
-File stays in dirty state after autoresolve. Try again later...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
