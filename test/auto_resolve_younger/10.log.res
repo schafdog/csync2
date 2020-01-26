@@ -19,5 +19,3 @@ Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync
 File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/same_content: Won autoresolve YOUNGER (2)
 Sould send FLUSH peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/same_content (won auto resolved)
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/same_content
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/same_content
-ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/same_content) rc: -11 
