@@ -125,7 +125,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, BUF_P buffer)
 			rc = csync_rmdir_recursive(db, fn, buffer);
 		    }
 		    else {
-			csync_info(0, "Removing file %s %d \n", fn);
+			csync_info(0, "Removing file %s\n", fn);
 			daemon_remove_file(db, fn, buffer);
 			// Error handling 
 		    }
