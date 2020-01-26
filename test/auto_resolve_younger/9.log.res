@@ -1,5 +1,4 @@
 cmd c "9 Check local (autoresolve, same content)" local peer test
-Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' '-'.

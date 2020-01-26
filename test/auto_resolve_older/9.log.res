@@ -1,5 +1,4 @@
 cmd x "9 clean (older)" local peer test
-Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
@@ -17,4 +16,11 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
+Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both 
+Do not auto-resolve conflict by compare: This is a removal.
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
+Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older 
+Do not auto-resolve conflict by compare: This is a removal.
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local

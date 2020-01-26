@@ -39,7 +39,7 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 
 GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
 
-AM_YFLAGS = -d
+AM_YFLAGS = -d -Wno-yacc
 BUILT_SOURCES = cfgfile_parser.h check_version
 LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
@@ -51,8 +51,8 @@ check_version: FORCE
 	@../version.sh $(objects)
 
 clean:
-	rm -rf $(CLEANFILES)
-	rm *.o
+	rm -f $(CLEANFILES)
+	rm -f *.o
 
 dist-clean: dist-clean-local
 	rm configure

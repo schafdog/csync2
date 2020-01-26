@@ -165,7 +165,7 @@ typedef struct file_info *file_info_t;
 
 extern const struct csync_group *csync_find_next(const struct csync_group *g, const char *file, int compare_mode);
 extern int csync_match_file(const char *file, int compare_mode, const struct csync_group **g);
-extern void csync_check_usefullness(const char *file, int recursive);
+extern int csync_check_usefullness(const char *file, int recursive);
 extern int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys);
 extern struct peer *csync_find_peers(const char *file, const char *thispeer);
 extern const char *csync_key(const char *hostname, filename_p filename);
@@ -262,6 +262,9 @@ extern const char *csync_genchecktxt_version(const struct stat *st, filename_p f
 extern int csync_cmpchecktxt(const char *a, const char *b);
 extern int csync_cmpchecktxt_component(const char *a, const char *b);
 int csync_get_checktxt_version(const char *value);
+time_t csync_checktxt_get_time(const char *checktxt);
+long long csync_checktxt_get_size(const char *checktxt);
+long long csync_checktxt_get_long_long(const char *checktxt, const char *token);
 
 /* check.c */
 int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino);
@@ -301,8 +304,12 @@ extern const char *csync_operation_str(operation_t op);
 
 extern void csync_hint(db_conn_p db, const char *file, int recursive);
 extern void csync_check(db_conn_p db, filename_p filename, int flags);
-/* Single file checking but returns possible operation */ 
+/* Single file checking but returns possible operation */
 extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g); 
+
+extern int csync_check_del(db_conn_p db, filename_p filename, int flags);
+extern int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
+
 extern void csync_mark(db_conn_p db, filename_p file, const char *thispeer, const char *peerfilter, operation_t op,
 		       const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
@@ -317,6 +324,9 @@ struct textlist *csync_check_link_move(db_conn_p db, peername_p peername, filena
 extern int csync_check_dir(db_conn_p db, const char* file, int flags);
 
 /* update.c */
+
+int get_auto_method(peername_p peername, filename_p filename);
+int csync_auto_resolve_time_size(int auto_method, time_t time_l, time_t time_p, long long size_l, long long size_p);
 
 void cmd_printf(int conn, const char *cmd, const char *key, 
 		filename_p filename, const char *secondname,

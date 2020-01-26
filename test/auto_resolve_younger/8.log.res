@@ -1,14 +1,21 @@
 cmd u "8 Update auto (younger)" local peer test
-Connecting to redis localhost:6379
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Locking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both
-Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' ''
-?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both
-ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/update_both) rc: -11 
-Auto-resolving conflict: Won 'younger/older' test.
-Attempting autoresolve on peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both
-Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both' ''
-?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both
-Unlocking file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/update_both
+Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' ''
+Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 
+File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger: Won autoresolve YOUNGER (2)
+Sould send FLUSH peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger (won auto resolved)
+?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
+Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' ''
+Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest 
+File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest: Lost autoresolve YOUNGER (2)
+?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
+While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
+ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest) rc: -11 
+Do not auto-resolve conflict: Lost 'younger/older' test.
+File stays in dirty state after autoresolve. Try again later...
+Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/peer_oldest' ''
+Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/peer_oldest 
+File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/peer_oldest: Won autoresolve YOUNGER (2)
+Sould send FLUSH peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/peer_oldest (won auto resolved)
+?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/peer_oldest

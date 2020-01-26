@@ -265,25 +265,53 @@ int csync_read_buffer(char *buffer, char *value) {
     return match;
 }
 
+// Monitor file system: Using inotifywait by tailing a file of events
+// TODO: implement inotify natively. Rename to monitor
 static int csync_tail(db_conn_p db, int fileno, int flags) {
     char readbuffer[1000];
-    char time[100];
+    char time_str[100];
     char operation[100];
     char file[500];
+    char *oldbuffer = NULL;
+    int duplicated = 0;
+    time_t last_sql = time(NULL);
     while (1) {
 	char *buffer = readbuffer;
 	int rc = gets_newline(fileno, buffer, 1000, 1);
 	if (rc == 0) {
 	    sleep(1);
+	    time_t now = time(NULL);
+	    if (now - last_sql > 300) {
+		SQL(db, "monitor: ping server", "UPDATE dirty set myname = NULL where myname IS NULL and peername is NULL;");
+		last_sql = now;
+		csync_debug(2, "monitor: Pinged DB sever\n");
+	    }
 	    continue;
 	}
 	if (rc < 0) {
 	    csync_error(0, "Got error from read %d\n", rc);
 	    return ERROR;
 	}
-	int match = csync_read_buffer(buffer, time);
+	if (oldbuffer && strcmp(readbuffer,oldbuffer) == 0) {
+	    duplicated++;
+	    continue;
+	}
+	if (duplicated) {
+	    csync_debug(1, "monitor: Last operation was repeated %d times", duplicated);
+	    duplicated = 0;
+	}	
+	int match = csync_read_buffer(buffer, time_str);
 	if (match < 0)
 	    return ERROR;
+	struct tm tm;
+	time_t log_time = -1;
+	const char *rest = strptime(time_str, "%F_%T", &tm);
+	if (rest) {
+	    log_time = timelocal(&tm);
+	    csync_debug(2, "monitor: Parsed %s to %d. %s", time_str, log_time, rest);
+	} else
+	    csync_debug(0, "monitor: failed to parse %s as %F_%T", time_str);
+
 	buffer += match + 1;
 	match = csync_read_buffer(buffer, operation);
 	if (match <= 0)
@@ -292,13 +320,39 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	int len = strlen(buffer);
 	if (buffer[len] == '\n')
 	    buffer[len] = 0;
+	// Check if file is "just" made by daemon
+
 	strcpy(file, buffer);
-	csync_info(1, "tail '%s' '%s' '%s' \n", time, operation, file);
-	csync_check(db, file, flags);
-	const char *patlist[1];
-	patlist[0] = file;
-	csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
-		     ip_version, csync_update_host, flags);
+	time_t lock_time = csync_redis_get_custom(file, operation);
+	if (csync_check_usefullness(file, flags)) {
+	    csync_debug(1, "monitor: Skip %s not matched at %d\n", file, log_time);
+	    continue;
+	}
+	if (lock_time != -1 && log_time <= lock_time) {
+	    csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
+	} else {
+	    csync_redis_del_custom(file, operation);
+	    csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
+	    if (strcmp(operation, "CREATE") == 0) {
+		csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
+	    } else if (strcmp(operation, "DELETE") == 0) {
+		csync_check_del(db, file, flags);
+	    } else if (strcmp(operation, "CREATE") == 0 || strstr(operation, "CLOSE_WRITE") != NULL) {
+		const struct csync_group *g = NULL;
+		int count_dirty;
+		csync_check_mod(db, file, flags, &count_dirty, &g);
+	    } else {
+		csync_check(db, file, flags);
+	    }
+	    const char *patlist[1];
+	    patlist[0] = file;
+	    csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
+			 ip_version, csync_update_host, flags);
+	    last_sql = time(NULL);
+	}
+	if (oldbuffer)
+	    free(oldbuffer);
+	oldbuffer = strdup(readbuffer);
     }
 }
 
@@ -521,18 +575,21 @@ void csync_config_destroy();
 int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
-	const char *real_name = getrealfn(files[i]);
+	char *real_name =  getrealfn(files[i]); //realpath(files[i], NULL);
 	if (real_name == NULL) {
-	    csync_warn(0, "%s did not match a real path. Skipping", files[i]);
+	    csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 	}
 	else {
-	    realnames[count] = strdup(real_name);
-	    csync_check_usefullness(realnames[count], flags);
-	    if (flags & FLAG_DO_CHECK) {
-		csync_check(db, realnames[count], flags);
-		csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+	    if (!csync_check_usefullness(real_name, flags)) {
+		realnames[count] = real_name;
+		if (flags & FLAG_DO_CHECK) {
+		    csync_check(db, realnames[count], flags);
+		    csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+		}
+		count++;
+	    } else {
+		free(real_name);
 	    }
-	    count++;
 	}
     }
     return count; 
@@ -825,6 +882,7 @@ int main(int argc, char ** argv)
 	 mode != MODE_CHECK_AND_UPDATE &&
 	 mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC &&
 	 mode != MODE_UPGRADE_DB &&
+	 mode != MODE_LIST_FILE &&
 	 mode != MODE_LIST_DIRTY &&
 	 mode != MODE_EQUAL &&
 	 mode != MODE_REMOVE_OLD &&
@@ -1069,11 +1127,11 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) { 
-		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
-		db->add_hint(db, realname, flags & FLAG_RECURSIVE);
+		if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE))
+		    db->add_hint(db, realname, flags & FLAG_RECURSIVE);
 	    }
 	    else {
-		csync_warn(0, "%s did not match a real path. Skipping.", argv[i]); 
+		csync_warn(0, "%s did not match a real path. Skipping.\n", argv[i]); 
 	    };
 	};
     };
@@ -1092,7 +1150,11 @@ nofork:
 	{
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind, realnames, flags | FLAG_DO_CHECK);
-	    csync_realnames_free(realnames, count);
+	    if (count > 0)
+		csync_realnames_free(realnames, count);
+	    else {
+		csync_debug(0, "No argument was matched in configuration\n");
+	    }
 	}
     };
 
@@ -1113,9 +1175,13 @@ nofork:
 	    char *realnames[argc-optind];
 	    int count = check_file_args(db, argv+optind, argc-optind,
 					realnames, flags);
-	    csync_update(db, myhostname, active_peers, (const char**) realnames,
-			 argc-optind, ip_version,
-			 update_func, flags);
+	    if (count > 0) {
+		csync_update(db, myhostname, active_peers, (const char**) realnames,
+			     argc-optind, ip_version,
+			     update_func, flags);
+	    } else {
+		csync_debug(0, "No argument was matched in configuration\n");
+	    }
 	    csync_realnames_free(realnames, count);
 	}
     };
@@ -1124,12 +1190,13 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    if (realname != NULL) {
-		csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
-		csync_compare_mode = 1;
-		csync_check(db, realname, flags);
+		if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
+		    csync_compare_mode = 1;
+		    csync_check(db, realname, flags);
+		}
 	    }
 	    else {
-		csync_warn(0, "%s is not a real path", argv[i]);
+		csync_warn(0, "%s is not a real path\n", argv[i]);
 	    }
 	}
     };
@@ -1153,7 +1220,11 @@ nofork:
 
     if (mode == MODE_LIST_FILE) {
 	retval = 2;
-	db->list_files(db);
+	char *realname = "";
+	if (optind < argc) {
+	    realname = getrealfn(argv[optind]);
+	}
+	db->list_files(db, realname);
     };
 
     if (mode == MODE_TAIL) {
@@ -1161,7 +1232,8 @@ nofork:
 	int fileno = 0;
 	if (optind < argc) {
 	    fileno = open(argv[optind], O_RDONLY);
-	    csync_log(LOG_DEBUG, 1, "Opening %s %d \n", argv[optind], fileno);
+	    csync_log(LOG_DEBUG, 1, "monitor: Opening %s %d \n", argv[optind], fileno);
+	    // TODO load "saved position" in cases of restart
 	    lseek(fileno, 0, SEEK_END);
 	}
 	else {
@@ -1188,13 +1260,13 @@ nofork:
 	{
 	case 3:
 	    realname = getrealfn(argv[optind+2]);
-	    csync_check_usefullness(realname, flags & FLAG_RECURSIVE);
-
-	    if (flags & FLAG_TEST_AUTO_DIFF ) {
-		retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
-	    } else
-		if ( csync_insynctest(db, argv[optind], argv[optind+1], realname, ip_version, flags))
-		    retval = 2;
+	    if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
+		if (flags & FLAG_TEST_AUTO_DIFF ) {
+		    retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
+		} else
+		    if ( csync_insynctest(db, argv[optind], argv[optind+1], realname, ip_version, flags))
+			retval = 2;
+	    }
 	    break;
 	case 2:
 	    if ( csync_insynctest(db, argv[optind], argv[optind+1], 0, ip_version, flags) )
@@ -1202,10 +1274,10 @@ nofork:
 	    break;
 	case 1:
 	    realname = getrealfn(argv[optind]);
-	    csync_check_usefullness(realname, 0);
-
-	    if ( csync_insynctest_all(db, realname, ip_version, active_peers, flags))
-		retval = 2;
+	    if (!csync_check_usefullness(realname, 0)) {
+		if ( csync_insynctest_all(db, realname, ip_version, active_peers, flags))
+		    retval = 2;
+	    }
 	    break;
 	case 0:
 	    if ( csync_insynctest_all(db, 0, ip_version, active_peers, flags) )
@@ -1242,7 +1314,7 @@ nofork:
 	free(active_peers);
     }
     if (mode & MODE_DAEMON) {
-	csync_log(LOG_INFO, 1, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+	csync_log(LOG_INFO, 2, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
 	    csync_log(LOG_DEBUG, 1, "goto nofork.\n");

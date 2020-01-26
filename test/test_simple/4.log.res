@@ -1,5 +1,4 @@
 cmd x "clean up" local peer test/local
-Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test/local ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test/local 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/local recursive.

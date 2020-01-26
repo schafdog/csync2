@@ -59,7 +59,7 @@ struct db_conn_t {
     // query functions 
     int         (*list_dirty) (db_conn_p conn, char **active_peers, const char *realname, int recursive);
     void        (*list_hint)  (db_conn_p conn);
-    void        (*list_files) (db_conn_p conn);
+    void        (*list_files) (db_conn_p conn, filename_p filename);
     textlist_p  (*list_file)  (db_conn_p conn, filename_p filename, const char *myname, peername_p peername, int recursive);
     void        (*list_sync)  (db_conn_p conn, peername_p myname, peername_p peername);
 
