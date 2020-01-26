@@ -25,6 +25,10 @@ mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/peer_oldest
+Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/peer_oldest 
+Do not auto-resolve conflict by compare: This is a removal.
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
+Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 
+Do not auto-resolve conflict by compare: This is a removal.
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local

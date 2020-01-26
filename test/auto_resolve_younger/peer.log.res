@@ -35,9 +35,11 @@ ERROR: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csyn
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger.
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
+daemon: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolved. clear dirty
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
+daemon: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolved. clear dirty
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest ...
@@ -45,19 +47,11 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.
 File /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest is dirty here: NEW 2
 ERROR: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest)
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest 
-mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest' '-'.
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest' '-'.
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest.
-File /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest is dirty here: NEW 2
-ERROR: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest)
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest.
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest.
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest won auto resolve
+daemon: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest won auto resolved. clear dirty
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest won auto resolve
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest won auto resolve
+daemon: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest won auto resolved. clear dirty
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/peer_oldest  
@@ -65,9 +59,11 @@ IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger.
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
+daemon: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolved. clear dirty
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
+daemon: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolved. clear dirty
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest ...
@@ -75,6 +71,8 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.
 File /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest is dirty here: NEW 2
 ERROR: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest)
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/same_content won auto resolve
+daemon: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/same_content won auto resolved. clear dirty
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/same_content ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/same_content 
 mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/same_content' '-'.
