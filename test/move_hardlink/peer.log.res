@@ -55,7 +55,8 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp  
 IDENT (cmd_finished).
-NOT IMPLEMENTED: csync_db_update_path (update DB recursive)<3945> Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
+NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
+Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab.
