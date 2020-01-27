@@ -1655,6 +1655,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 					       t->value, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
 		    if (rc == IDENTICAL) {
 			db->remove_dirty(db, peername, t->value, 1);
+			db->remove_file(db, t->value, 1);
 			size_t len = strlen(t->value);
 			last_dir_deleted = malloc(len+1);
 			strcpy(last_dir_deleted, t->value);
