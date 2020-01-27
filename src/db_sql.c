@@ -543,8 +543,8 @@ void db_sql_remove_dirty(db_conn_p db, peername_p peername,
     char *sql  = csync_generate_recursive_sql(file_enc, recursive, 0, 1);
     
     SQL(db, "Deleting old dirty file entries",
-	"DELETE FROM dirty WHERE %s myname = '%s' AND filename = '%s' AND peername like '%s'",
-	sql, myhostname, db_escape(db, filename), db_escape(db, peername));
+	"DELETE FROM dirty WHERE %s myname = '%s' AND peername like '%s'",
+	sql, myhostname, db_escape(db, peername));
 
     free(sql);
 }
