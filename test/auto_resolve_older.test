@@ -13,16 +13,18 @@ sleep 1
 echo "local older" > ${LOCAL_DIR}/local_oldest
 sleep 1
 echo "peer younger" > ${PEER_DIR}/local_oldest
-cmd c "5 Check local (autoresolve failed)"
-cmd u "6 Fail to autoresolve (not ${TEST})"
+cmd c "5 Check local (autoresolve)"
+cmd u "6 autoresolved (local ${TEST})"
 echo "peer oldest" > ${PEER_DIR}/peer_oldest
 sleep 1
 echo "local younger" > ${LOCAL_DIR}/peer_oldest
-cmd c "7 Check local (autoresolve)"
-cmd u "8 Update auto (${TEST})"
-echo "Same content" > ${PEER_DIR}/same_content
-sleep 1
+cmd c "7 Check local (autoresolve failed)"
+cmd u "8 Update auto fail (${TEST})"
+rm ${LOCAL_DIR}/peer_oldest
+rm ${PEER_DIR}/peer_oldest
 echo "Same content" > ${LOCAL_DIR}/same_content
+sleep 1
+echo "Same content" > ${PEER_DIR}/same_content
 cmd c "9 Check local (autoresolve, same content)"
 cmd u "10 Same content (${TEST})"
 rm -rf test/local
