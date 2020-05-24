@@ -575,7 +575,7 @@ void csync_config_destroy();
 int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
-	char *real_name =  getrealfn(files[i]); //realpath(files[i], NULL);
+	char *real_name =  getrealfn(files[i]);
 	if (real_name == NULL) {
 	    csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 	}
