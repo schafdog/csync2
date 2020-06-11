@@ -102,6 +102,11 @@ PKG_CHECK_MODULES([LIBOPENSSL], [openssl >= 1.1], [
    AC_DEFINE([HAVE_LIBOPENSSL], 1, [Define to 1 when using OpenSSL library])
  ])
 
+PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES([LIBSYSTEMD], [libsystemd >= 1.0], [
+   AC_DEFINE([HAVE_LIBSYSTEMD], 1, [Define to 1 when using libsystemd library])
+ ])
+
 if test "$enable_redis" != no
 then
    PKG_PROG_PKG_CONFIG
