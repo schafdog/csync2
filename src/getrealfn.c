@@ -42,7 +42,6 @@ static char *my_get_current_dir_name()
  */
 char *getrealfn(filename_p filename)
 {
-	static char *ret = 0;
 	char *st_mark = 0;
 	struct stat st;
 	char *tempfn;
@@ -131,8 +130,7 @@ return_filename:
 		}
 	}
 
-	if (ret) free(ret);
-	return (ret=tempfn);
+	return tempfn;
 }
 
 #ifdef DEBUG_GETREALFN_MAIN

@@ -44,6 +44,7 @@
 #include <netdb.h>
 #include <db_api.h>
 #include <time.h>
+#include <systemd/sd-daemon.h>
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -575,7 +576,7 @@ void csync_config_destroy();
 int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
-	char *real_name =  getrealfn(files[i]); //realpath(files[i], NULL);
+	char *real_name =  getrealfn(files[i]);
 	if (real_name == NULL) {
 	    csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 	}
@@ -971,6 +972,7 @@ nofork:
     // mode keeps its original value, but now checking on server
     int conn  = -1;
     if (server_standalone) {
+	sd_pid_notify(getpid(), 0, "READY=1");
        if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK),
 				    listenfd, &conn)) 
 	  return 1; // Parent returns

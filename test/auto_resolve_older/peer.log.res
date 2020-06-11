@@ -30,30 +30,25 @@ check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older won auto resolved. clear dirty
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older  
 IDENT (cmd_finished).
-check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest won auto resolve
-daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest won auto resolved. clear dirty
-check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest won auto resolve
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest 
-mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest' '-'.
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest' '-'.
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest.
-Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest won auto resolve.
-check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest won auto resolve
-daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest won auto resolved. clear dirty
-Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/local_oldest  
-IDENT (cmd_finished).
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older won auto resolved. clear dirty
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older  
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
+daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
+mark other operation: 'MOD' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
+mark other operation: 'MOD' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.
+Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve.
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
+daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
+Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/peer_oldest ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/peer_oldest 
@@ -69,6 +64,17 @@ daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/te
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
+daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.
+check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
+daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
+Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both  
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older won auto resolved. clear dirty
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older won auto resolve
@@ -104,6 +110,19 @@ daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/te
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
+Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older): 0 
+rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 16877
+rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 0
+Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older): 0 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older  
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto.
+Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto): 0 
+rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 16877
+rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 0
+Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto): 0 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
