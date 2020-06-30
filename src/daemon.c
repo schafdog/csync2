@@ -216,7 +216,7 @@ int csync_unlink(db_conn_p db, filename_p filename, int recursive, int unlink_fl
 	if (S_ISDIR(st.st_mode)) {
 	    rc = csync_rmdir(db, filename, recursive);
 	} else {
-	    csync_redis_set_int(filename, "DELETE", time(NULL), 0, 0);
+	    csync_redis_lock_custom(filename, 300, "DELETE");
 	    rc = unlink(filename);
 	    if (rc) {
 		csync_redis_del_custom(filename, "DELETE");
