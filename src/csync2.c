@@ -278,9 +278,11 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
     time_t last_sql = time(NULL);
     while (1) {
 	char *buffer = readbuffer;
+	// Rewrite to use some non-blocking
 	int rc = gets_newline(fileno, buffer, 1000, 1);
 	if (rc == 0) {
 	    sleep(1);
+	    // if count of updates 
 	    time_t now = time(NULL);
 	    if (now - last_sql > 300) {
 		SQL(db, "monitor: ping server", "UPDATE dirty set myname = NULL where myname IS NULL and peername is NULL;");
@@ -350,6 +352,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	    }
 	    const char *patlist[1];
 	    patlist[0] = file;
+	    // Delay until we dont get more files or have enough and do it on common path
 	    csync_update(db, myhostname, active_peers, (const char **) patlist, 1,
 			 ip_version, csync_update_host, flags);
 	    last_sql = time(NULL);
