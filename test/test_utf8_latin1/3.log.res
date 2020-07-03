@@ -4,4 +4,4 @@ Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-ERROR from peer: Identification failed! () rc: -12 
+Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
