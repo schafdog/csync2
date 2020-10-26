@@ -838,9 +838,8 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
     const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode FROM file ";
     csync_info(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
     const char *file_encoded = db_escape(db, file);
-    csync_log(LOG_DEBUG, 3,"file %s encoded %s. Hostname: %s \n", file, file_encoded, myhostname);
-
     char *where_rec = csync_generate_recursive_sql(file_encoded, recursive, 0, 1);
+    csync_log(LOG_DEBUG, 3,"file %s encoded %s. Hostname: %s \n", file, file_encoded, myhostname);
 
     char *last_dir_deleted = NULL;
     SQL_BEGIN(db, "Checking for removed files - check_delete",
@@ -882,6 +881,17 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
  
     free(where_rec);
     return count_deletes;
+}
+
+int db_sql_move_file_to_dirty(db_conn_p db, const char *file, int recursive, const char *peername) {
+    const char *file_encoded = db_escape(db, file);
+    char *where_rec = csync_generate_recursive_sql(file_encoded, recursive, 0, 1);
+    SQL(db, "Move to dirty for removed files - move_file_to_dirty",
+	"INSERT INTO dirty (filename, myname, peername, operation, op, device, inode) "
+	"select filename, hostname, %s, 'RM', %d, device, inode where filename like '%s'", 
+	peername, OP_RM, where_rec);
+    free(where_rec);
+    return 0;
 }
 
 int db_sql_add_action(db_conn_p db, filename_p filename, const char *prefix_cmd, const char *logfile)

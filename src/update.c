@@ -1672,6 +1672,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	}
     }
     textlist_free(tl);
+/*
     for (t = tl_del; t != 0; t = t->next) {
 	rc = csync_update_file_del(conn, db, myname, peername,
 				   t->value, t->value5, t->intvalue, flags & FLAG_DRY_RUN);
@@ -1681,6 +1682,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	}
 	csync_directory_add(&directory_list, t->value);
     }
+*/
     textlist_free(tl_del);
 
     if (! (flags & FLAG_DRY_RUN))

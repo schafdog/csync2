@@ -152,7 +152,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
     int rc = rmdir(file);
     csync_info(0, "Removing directory %s %d\n", file, rc);
     if (db)
-	db->remove_file(db, file, 0);
+	db->remove_file(db, file, 1);
     if (rc == -1) {
 	csync_redis_del_custom(file, "DELETE,IS_DIR");
 	/* Accept if we already deleted it */
@@ -180,7 +180,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
     int errors = 0;
     if (recursive) {
 	textlist_p tl, t = 0;
-	/*
+	BUF_P buffer  = buffer_init();
 	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
 	tl = db->find_file(db, filename, NULL); // No filter;
 	for (t = tl; t != 0; t = t->next) {
@@ -198,14 +198,15 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 	    rc = ERROR;
 	}
 	textlist_free(tl);
-	*/
 	tl = 0;
 	rc = ERROR;
 	/* Above could fail due to ignore files. Do recursive on scandir  */
 	if (rc == ERROR) {
 	    csync_warn(1, "Calling csync_rmdir_recursive %s:%s. Errors %d\n", peername, filename, errors);
 	    rc = csync_rmdir_recursive(db, filename, peername, &tl);
-	    csync_warn(1, "Called csync_rmdir_recursive %s:%s. RC: %d\n", peername, filename, rc);
+	    if (rc == -1 && errno == EAGAIN)
+		rc = OK;
+	    csync_warn(1, "Called csync_rmdir_recursive %s:%s. RC: %d %d\n", peername, filename, rc, errno);
 	}
 	csync_info(0, "Deleted recursive from clean directory (%s): %d %d \n", filename, dir_count, rc);
     }
