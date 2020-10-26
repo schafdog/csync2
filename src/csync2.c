@@ -992,6 +992,8 @@ nofork:
      * before we open the config file and database
      */
     if (server) {
+	// Connected with client (after accept)
+	start_time = time(NULL);
 	char line[4096], *cmd, *para;
 	/* configure conn.c for inetd mode */
 	if (MODE_INETD & mode) {
