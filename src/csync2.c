@@ -44,7 +44,9 @@
 #include <netdb.h>
 #include <db_api.h>
 #include <time.h>
+#ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
+#endif
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -978,7 +980,9 @@ nofork:
     // mode keeps its original value, but now checking on server
     int conn  = -1;
     if (server_standalone) {
+#ifdef HAVE_LIBSYSTEMD
 	sd_pid_notify(getpid(), 0, "READY=1");
+#endif
        if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK),
 				    listenfd, &conn)) 
 	  return 1; // Parent returns
