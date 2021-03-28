@@ -145,7 +145,7 @@ const char *csync_genchecktxt_version(const struct stat *st, filename_p filename
 int csync_cmpchecktxt(const char *a, const char *b)
 {
     csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt A: %s \n", a);
-    csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", a);
+    csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", b);
     return strcmp(a, b);
     int i;
     for (i=0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++)
@@ -157,30 +157,35 @@ int csync_cmpchecktxt(const char *a, const char *b)
 }
 
 
-int csync_cmpchecktxt_component(const char *a, const char *b) 
+int csync_cmpchecktxt_component(const char *a, const char *b, int flags)
 {
-  char * a_new = strdup(a);
-  char * b_new = strdup(b);
-  int differs = 0;
-  char *a_save; 
-  char *b_save;
-  char *a_ptr = strtok_r(a_new, ":", &a_save);
-  char *b_ptr = strtok_r(b_new, ":", &b_save);
-  //  printf("components: %s %s", a_ptr, b_ptr);
+    char * a_new = strdup(a);
+    char * b_new = strdup(b);
+    csync_log(LOG_DEBUG, 2, "csync_cmpchecktxt (components) A: %s \n", a);
+    csync_log(LOG_DEBUG, 2, "csync_cmpchecktxt (components) B: %s \n", b);
+    int differs = 0;
+    char *a_save = NULL;
+    char *b_save = NULL;
+    char *a_ptr = strtok_r(a_new, ":", &a_save);
+    char *b_ptr = strtok_r(b_new, ":", &b_save);
+    //  printf("components: %s %s", a_ptr, b_ptr);
 
-  while (a_ptr && b_ptr) {
-      if (strcmp(a_ptr,b_ptr)) {
-	  csync_log(LOG_DEBUG, 3, "%s!=%s:", a_ptr, b_ptr);
-	  differs = 1;
-      }
-      a_ptr = strtok_r(NULL, ":", &a_save);
-      b_ptr = strtok_r(NULL, ":", &b_save);
-      //printf("components: %s %s", a_ptr, b_ptr);
-  }
-  // TODO should write rest of both a and b out, but assuming same number of tokens
-  free(a_new);
-  free(b_new);
-  return differs;
+    while (a_ptr && b_ptr && !differs) {
+	// Not ignore mtime or not mtime
+	if (!(flags & FLAG_IGN_MTIME) || strncmp("mtime=", a_ptr, 6)) {
+	    if (strcmp(a_ptr,b_ptr)) {
+		csync_log(LOG_DEBUG, 3, "%s!=%s:", a_ptr, b_ptr);
+		differs = 1;
+	    }
+	}
+	csync_log(LOG_DEBUG, 1, "components: %s %s", a_ptr, b_ptr);
+	a_ptr = strtok_r(NULL, ":", &a_save);
+	b_ptr = strtok_r(NULL, ":", &b_save);
+    }
+    // TODO should write rest of both a and b out, but assuming same number of tokens
+    free(a_new);
+    free(b_new);
+    return differs;
 }
 
 time_t csync_checktxt_get_time(const char *checktxt) {
