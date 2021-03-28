@@ -260,7 +260,7 @@ extern int csync_rs_patch(int conn, filename_p filename);
 //extern const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
 extern const char *csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version);
 extern int csync_cmpchecktxt(const char *a, const char *b);
-extern int csync_cmpchecktxt_component(const char *a, const char *b);
+extern int csync_cmpchecktxt_component(const char *a, const char *b, int flags);
 int csync_get_checktxt_version(const char *value);
 time_t csync_checktxt_get_time(const char *checktxt);
 long long csync_checktxt_get_size(const char *checktxt);
