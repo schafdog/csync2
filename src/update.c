@@ -516,8 +516,16 @@ int csync_update_file_del(int conn, db_conn_p db,
 	if (n == 2) {
 	    csync_log(LOG_INFO, 2, "Got digest from remote: %s\n", digest_peer);
 	}
-	if ((i = csync_cmpchecktxt(chk_peer_decoded,chk_local))) {
-	    csync_info(2, "File is different on peer (cktxt char #%d).\n", i);
+	int differs = 0;
+	csync_info(1, "update flags: %d\n", flags);
+	if (flags & FLAG_IGN_MTIME) {
+	    csync_info(2, "Compare components (ignore mtime)\n");
+	    differs = csync_cmpchecktxt_component(chk_peer_decoded,chk_local, flags);
+	} else {
+	    differs = csync_cmpchecktxt(chk_peer_decoded,chk_local);
+	}
+	if (differs) {
+	    csync_info(2, "File is different on peer (cktxt char #%d).\n", differs);
 	    csync_info(2, ">>> PEER:  %s\n>>> LOCAL: %s\n",
 			chk_peer_decoded, chk_local);
 	    found_diff=1;
@@ -735,6 +743,7 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername, file
     if (!chk_local)
 	chk_local = csync_genchecktxt_version(st, filename, flag,
 					      peer_version);
+
     if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 	csync_info(log_level, "File is different on peer (cktxt char #%d).\n", i);
 	csync_info(log_level, ">>> %s:\t%s\n>>> %s:\t%s\n",
