@@ -676,7 +676,7 @@ int main(int argc, char ** argv)
     int cmd_ip_version = 0;
     update_func update_func;
     int csync_port_cmdline = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeE")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEY")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -868,6 +868,10 @@ int main(int argc, char ** argv)
 	    flags |= FLAG_DO_ALL;
 	    update_func = csync_sync_host;
 	    mode = MODE_EQUAL;
+	    break;
+	case 'Y':
+	    flags |= FLAG_IGN_MTIME;
+	    csync_debug(1, "Ignoring MTIME: %d", flags);
 	    break;
 	case 'E':
 	{
