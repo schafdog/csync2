@@ -7,7 +7,9 @@ FILENAME="new_file 'N' all"
 mkdir -p "test/$NAME"
 echo "far" > "test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
-cmd T test/$NAME "List daemon" 
+cmd T test/$NAME "List daemon"
+touch "test/$NAME/$FILENAME"
+cmd xY "Touched $NAME/$FILENAME"
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon
