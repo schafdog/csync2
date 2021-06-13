@@ -517,7 +517,7 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    csync_log(LOG_INFO, 2, "Got digest from remote: %s\n", digest_peer);
 	}
 	int differs = 0;
-	csync_info(1, "update flags: %d\n", flags);
+	csync_info(2, "delete flags: %d\n", flags);
 	if (flags & FLAG_IGN_MTIME) {
 	    csync_info(2, "Compare components (ignore mtime)\n");
 	    differs = csync_cmpchecktxt_component(chk_peer_decoded,chk_local, flags);
