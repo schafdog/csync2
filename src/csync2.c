@@ -1331,7 +1331,7 @@ nofork:
 	free(active_peers);
     }
     if (mode & MODE_DAEMON) {
-	csync_log(LOG_INFO, 2, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+	csync_log(LOG_INFO, 3, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
 	    csync_log(LOG_DEBUG, 1, "goto nofork.\n");
