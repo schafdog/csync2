@@ -975,7 +975,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
     int first = 1;
     int i; 
 nofork:
-    csync_debug(2, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
+    csync_debug(3, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
     // init syslog if needed. 
     if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
 	csync_openlog();
