@@ -1259,7 +1259,7 @@ int daemon_check_auto_resolve(const char *peername, filename_p filename, time_t 
 	    return 0;
 	}
     }
-    csync_info(2, "daemon: Auto resolve %s:%s time: %ld %ld size: %Ld %Ld \n",
+    csync_info(3, "daemon: Auto resolve %s:%s time: %ld %ld size: %Ld %Ld \n",
 	       peername, filename, ftime, stat.st_mtime, size, stat.st_size);
     auto_resolved = csync_auto_resolve_time_size(auto_method, ftime, stat.st_mtime, size, stat.st_size);
 
