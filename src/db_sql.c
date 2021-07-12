@@ -86,9 +86,9 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    else
 		*operation = OP_NEW|flag;
 	    
-	    csync_info(2, "%s has changed: \n    %s \nDB: %s %s\n",
+	    csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
-	    csync_info(2, "ignore flags: %d\n", ignore_flags);
+	    csync_info(3, "ignore flags: %d\n", ignore_flags);
 	    if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
 		db_flags |= IS_UPGRADE;
 	    else
