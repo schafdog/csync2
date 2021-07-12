@@ -7,16 +7,19 @@ TEST=older
 DIR=test/local/auto/${TEST}
 PDIR=test/peer/auto/${TEST}
 mkdir -p ${DIR}
+find ${DIR} -exec touch -m -d "2021-03-14" {} \;
 cmd c "3 create directories (check)"
 cmd u "4 create directories (update)"
 sleep 1
 echo "peer older" > ${PDIR}/update_both
-sleep 1
+find ${PDIR} -exec touch -m -d "2021-03-13" {} \;
 echo "local younger" > ${DIR}/update_both
+touch -m -d "2021-03-14" ${DIR}/update_both
 cmd c "5 Check local (autoresolve failed)"
 cmd u "6 Fail to autoresolve (not older)"
 sleep 1
 echo "peer younger" > ${PDIR}/update_both
+find ${PDIR} -exec touch -m -d "2021-03-15" {} \;
 cmd c "7 Check local (${TEST})"
 cmd u "8 Update auto (older success)"
 rm -rf test/local
