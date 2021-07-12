@@ -18,7 +18,7 @@ cmd u "6 Fail to autoresolve (not older)"
 sleep 1
 echo "peer younger" > ${PDIR}/update_both
 cmd c "7 Check local (${TEST})"
-cmd u "9 Update auto (older success)"
+cmd u "8 Update auto (older success)"
 rm -rf test/local
 cmd x "9 clean (${TEST})"
 killdaemon
