@@ -669,7 +669,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 		found = 1;
 	    }
 	}
-	csync_info(2, "dirty: %s:%s %d %p\n", peername, filename, found, checktxt);
+	csync_info(3, "dirty: %s:%s %d %s\n", peername, filename, found, checktxt);
     } SQL_END;
 
     if (where_rec)
