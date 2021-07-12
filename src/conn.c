@@ -515,6 +515,16 @@ void conn_printf(int fd, const char *fmt, ...)
     buffer[size] = 0;
     conn_write(fd, buffer, size);
     conn_remove_key(buffer);
+    if (csync_level_debug == 2) {
+	char *pos = strstr(buffer, "mtime=");
+	if (pos != NULL) {
+	    pos += 6;
+	    while (*pos != '\0' && *pos != '%') {
+		*pos = 'x';
+		pos++;
+	    }
+	}
+    }
     csync_info(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
