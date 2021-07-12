@@ -1,11 +1,11 @@
 cmd x "9 clean (older)" local peer test
-Mode: 65536 Flags: 1 PID: 739477
+Mode: 65536 Flags: 1 PID: 903340
 Config-File:   csync2_mysql_local.cfg
 My hostname is local.
 Database File: mysql://csync2_local:csync2_local@127.0.0.1/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           c6a3a0a88ccc797172be133f3ce41f43cf1b73c8-dirty
+GIT:           938bbc93130031c2e2ed4d0fbda2e0ef326c803f-dirty
 Default encoding utf8mb4
 db_schema_version: 2
 Connecting to redis localhost:6379
@@ -20,6 +20,9 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark other: RM(64) Old operation: NEW(2) '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' '(null)'
 mark operation NEW -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' '-'.
+WARN: operation changed: MKDIR(1) => MKDIR(129)
+mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' '(null)'
+mark operation MKDIR -> RM peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' '-'.
 mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' '(null)'
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older deleted before syncing. Removing from dirty.
@@ -32,10 +35,9 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local' '(null)'
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
 csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both 1 0x21a1f20
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older 1 0x21a202c
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto 1 0x21a2126
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local 1 0x21a2221
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both 1 v2:mtime=1615676400:mode=33188:user=dennis:group=schafroth:type=reg:size=14
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto 1 v2:mtime=1626114718:mode=16877:user=dennis:group=schafroth:type=dir
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local 1 v2:mtime=1626114718:mode=16877:user=dennis:group=schafroth:type=dir
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Connecting to localhost:30861 
@@ -50,15 +52,14 @@ CONN peer < HELLO local
 CONN peer > 'OK (cmd_finished).'
 Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local RM (null) 0
 Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/auto RM (null) 0
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older RM (null) 0
 Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both RM (null) 0
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 CONN peer < SIG %25test%25/auto/older/update_both 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1626105279%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=14'
+CONN peer > 'v2%3Amtime=1615676400%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=14'
 delete flags: 0
 File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1626105279:mode=33188:user=dennis:group=schafroth:type=reg:size=14
+>>> PEER:  v2:mtime=1615676400:mode=33188:user=dennis:group=schafroth:type=reg:size=14
 >>> LOCAL: ---
 Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both 
 Do not auto-resolve conflict by compare: This is a removal.
@@ -72,30 +73,13 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < DEL %25test%25/auto/older/update_both 
 CONN peer > 'OK (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both (0)
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
-CONN peer < SIG %25test%25/auto/older 
-CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1626105281%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-delete flags: 0
-File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1626105281:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL: ---
-Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older 
-Do not auto-resolve conflict by compare: This is a removal.
-Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older', 0 [non-regular file])
-CONN peer > 'octet-stream 0'
-Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
-CONN peer > 'OK (cmd_finished).'
-CONN peer < DEL %25test%25/auto/older 
-CONN peer > 'OK (cmd_finished).'
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older (0)
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 CONN peer < SIG %25test%25/auto 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1626105281%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=1626114718%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 delete flags: 0
 File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1626105281:mode=16877:user=dennis:group=schafroth:type=dir
+>>> PEER:  v2:mtime=1626114718:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL: ---
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
@@ -107,10 +91,10 @@ Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
 CONN peer < SIG %25test%25 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1626105281%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=1626114721%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 delete flags: 0
 File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1626105281:mode=16877:user=dennis:group=schafroth:type=dir
+>>> PEER:  v2:mtime=1626114721:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL: ---
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
