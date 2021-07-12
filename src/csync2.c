@@ -1083,7 +1083,7 @@ nofork:
     csync_info(2, "Database File: %s\n",    csync_database);
     csync_info(2, "DB Version:    %d\n",    db_version);
     csync_info(2, "IP Version:    %s\n",    (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
-    csync_info(2, "GIT:           %s\n",    CSYNC_GIT_VERSION);
+    csync_info(3, "GIT:           %s\n",    CSYNC_GIT_VERSION);
     
 
     {
