@@ -1,11 +1,11 @@
 cmd c "7 Check local (older)" local peer test
-Mode: 2 Flags: 1 PID: 903291
+Mode: 2 Flags: 1 PID: 931073
 Config-File:   csync2_mysql_local.cfg
 My hostname is local.
 Database File: mysql://csync2_local:csync2_local@127.0.0.1/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           938bbc93130031c2e2ed4d0fbda2e0ef326c803f-dirty
+GIT:           25c08860acb2d832f423011a275b78941d04b0f5
 Default encoding utf8mb4
 db_schema_version: 2
 Connecting to redis localhost:6379
