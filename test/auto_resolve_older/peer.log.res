@@ -7,7 +7,6 @@ My hostname is peer.
 Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           fc1be7f606c8f1f0cdf5aee1264ee0c13b5cbc53-dirty
 Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
@@ -115,7 +114,6 @@ My hostname is peer.
 Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           fc1be7f606c8f1f0cdf5aee1264ee0c13b5cbc53-dirty
 Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
@@ -151,7 +149,7 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
 csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
-0 files with same dev:inode (2065:52694282) as file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
+0 files with same dev:inode (2065:0) as file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
 mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both rows matched: 1
@@ -190,7 +188,6 @@ My hostname is peer.
 Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           fc1be7f606c8f1f0cdf5aee1264ee0c13b5cbc53-dirty
 Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
@@ -276,7 +273,6 @@ My hostname is peer.
 Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           fc1be7f606c8f1f0cdf5aee1264ee0c13b5cbc53-dirty
 Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
