@@ -148,11 +148,12 @@ int csync_cmpchecktxt(const char *a, const char *b)
     csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", b);
     return strcmp(a, b);
     int i;
-    for (i=0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++)
+    for (i=0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++) {
 	if ( a[i] != b[i] ) {
 	    csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
 	    return i;
 	}
+    }
     return 0;
 }
 
