@@ -1,14 +1,12 @@
 cmd x "9 clean (older)" local peer test
-Mode: 65536 Flags: 1 PID: 931123
 Config-File:   csync2_mysql_local.cfg
 My hostname is local.
 Database File: mysql://csync2_local:csync2_local@127.0.0.1/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           25c08860acb2d832f423011a275b78941d04b0f5
+GIT:           fc1be7f606c8f1f0cdf5aee1264ee0c13b5cbc53-dirty
 Default encoding utf8mb4
 db_schema_version: 2
-Connecting to redis localhost:6379
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test 65 
@@ -51,11 +49,8 @@ Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 CONN peer < SIG %25test%25/auto/older/update_both 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1623103200%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=14'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=14'
 delete flags: 0
-File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1623103200:mode=33188:user=dennis:group=schafroth:type=reg:size=14
->>> LOCAL: ---
 Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both 
 Do not auto-resolve conflict by compare: This is a removal.
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both', 0 [non-regular file])
@@ -71,11 +66,8 @@ Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
 CONN peer < SIG %25test%25/auto/older 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1626116295%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 delete flags: 0
-File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1626116295:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL: ---
 Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older 
 Do not auto-resolve conflict by compare: This is a removal.
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older', 0 [non-regular file])
@@ -88,11 +80,8 @@ Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 CONN peer < SIG %25test%25/auto 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1626116295%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 delete flags: 0
-File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1626116295:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL: ---
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
@@ -103,11 +92,8 @@ Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
 CONN peer < SIG %25test%25 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=1626116295%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 delete flags: 0
-File is different on peer (cktxt char #73).
->>> PEER:  v2:mtime=1626116295:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL: ---
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 

@@ -525,8 +525,8 @@ int csync_update_file_del(int conn, db_conn_p db,
 	    differs = csync_cmpchecktxt(chk_peer_decoded,chk_local);
 	}
 	if (differs) {
-	    csync_info(2, "File is different on peer (cktxt char #%d).\n", differs);
-	    csync_info(2, ">>> PEER:  %s\n>>> LOCAL: %s\n",
+	    csync_info(3, "File is different on peer (cktxt char #%d).\n", differs);
+	    csync_info(3, ">>> PEER:  %s\n>>> LOCAL: %s\n",
 			chk_peer_decoded, chk_local);
 	    found_diff=1;
 	    // We should be able to figure auto resolve from checktxt
@@ -683,7 +683,8 @@ int csync_fix_path(int conn, peername_p myname, peername_p peername, filename_p 
 	    local_file[path_len] = ch;
 	}
 	else {
-	    csync_log(LOG_ERR, 1, "Error in ERROR_PATH_MISSING when fixing %s of %s: Not a slash at %d", local_file, path_not_found, path_len);
+	    csync_log(LOG_ERR, 1, "Error in ERROR_PATH_MISSING when fixing %s of %s: Not a slash at %d",
+		      local_file, path_not_found, path_len);
 	    free(local_file);
 	    return ERROR_PATH_MISSING;
 	}
@@ -931,7 +932,7 @@ int csync_update_directory(int conn,
 		return rc;
 	    }
 	}	
-	csync_info(2, "Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
+	csync_info(2, "update_directory: Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
 	rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
 	return rc;
     }
@@ -979,7 +980,7 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname,
 
     // Only when both file and meta data is same (differs from earlier behavior)
     if (! (rc & DIFF_BOTH) || rc == IDENTICAL) {
-	csync_log(LOG_DEBUG, 2, "?S: %-15s %s\n", peername, filename);
+	csync_log(LOG_DEBUG, 1, "?S: %-15s %s\n", peername, filename);
 	// DS also remove from dirty on dry_run
 	return IDENTICAL;
     }
@@ -1371,9 +1372,13 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	    // csync_link_update(....)
 	    break;
 	case DIR_TYPE:
-	    cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid, NULL);
-	    rc = csync_update_file_dir(conn, peername, filename, &last_conn_status);
-	    break;
+//	   if (sig_rc & (OK_MISSING|DIFF_FILE)) {
+               cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid, NULL);
+               rc = csync_update_file_dir(conn, peername, filename, &last_conn_status);
+//	   } else {
+//               rc = sig_rc;
+//	   }
+	   break;
 	case CHR_TYPE:
 	    conn_printf(conn, "MKCHR %s %s\n", key_enc, filename_enc);
 	    rc = read_conn_status(conn, filename, peername);
