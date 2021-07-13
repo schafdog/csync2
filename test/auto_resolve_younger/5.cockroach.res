@@ -7,4 +7,3 @@ other	/export/home/dennis/Projects/csync2/csync2/test/test/local/auto	MKDIR	NULL
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger	MKDIR	NULL	1
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest	NEW	NULL	2
 peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest	NEW	NULL	2
-peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger	MKDIR	NULL	129

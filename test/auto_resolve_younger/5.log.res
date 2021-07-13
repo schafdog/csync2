@@ -15,11 +15,6 @@ csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local 193
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto 193 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/* ..
-mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' '-'.
-mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' '(null)'
-mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger (not synced) .
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger rows matched: 1
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 193 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/* ..
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
