@@ -31,12 +31,8 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-CONN peer < SETOWN %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
-CONN peer > 'OK (cmd_finished).'
-CONN peer < SETMOD %25test%25 
-CONN peer > 'OK (cmd_finished).'
-CONN peer < SETTIME %25test%25 
-CONN peer > 'OK (cmd_finished).'
+CONN peer < MOD %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (0)
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' ''
 CONN peer < SIG %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
@@ -51,12 +47,8 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
-CONN peer < SETOWN %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
-CONN peer > 'OK (cmd_finished).'
-CONN peer < SETMOD %25test%25/auto 
-CONN peer > 'OK (cmd_finished).'
-CONN peer < SETTIME %25test%25/auto 
-CONN peer > 'OK (cmd_finished).'
+CONN peer < MOD %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto (0)
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' ''
 CONN peer < SIG %25test%25/auto/older user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
@@ -74,12 +66,8 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
-CONN peer < SETOWN %25test%25/auto/older user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
-CONN peer > 'OK (cmd_finished).'
-CONN peer < SETMOD %25test%25/auto/older 
-CONN peer > 'OK (cmd_finished).'
-CONN peer < SETTIME %25test%25/auto/older 
-CONN peer > 'OK (cmd_finished).'
+CONN peer < MOD %25test%25/auto/older - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older (0)
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' ''
 CONN peer < SIG %25test%25/auto/older/update_both user/group 1234 1000 dennis schafroth 33188 - 1625695200 14 
