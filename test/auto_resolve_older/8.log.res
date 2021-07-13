@@ -23,8 +23,8 @@ CONN peer < SIG %25test%25/auto/older/update_both user/group 1234 1000 dennis sc
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13'
-File is different on peer (cktxt char #3).
->>> peer:	v2:mtime=1654639200:mode=33188:user=dennis:group=schafroth:type=reg:size=13
+File is different on peer (cktxt char #2).
+>>> peer:	v2:mtime=1625695200:mode=33188:user=dennis:group=schafroth:type=reg:size=13
 >>> LOCAL:	v2:mtime=1623103200:mode=33188:user=dennis:group=schafroth:type=reg:size=14
 Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both 
 File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both: Won autoresolve OLDER (3)
