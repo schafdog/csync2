@@ -39,8 +39,6 @@ CONN peer < PATCH %25test%25/auto/older/update_both - 1234 1000 dennis schafroth
 CONN peer > 'File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both)'
 While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both) rc: -11 
-before setown/settime/setmod on OK. rc -11.
-After setown/settime/setmod on OK. rc -11.
 Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both CONN peer < GETTM 
 CONN peer > 'OK (data_follows).'
 CONN peer > '1591567200'

@@ -31,9 +31,9 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < MOD %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
 CONN peer > 'IDENT (cmd_finished).'
-before setown/settime/setmod on OK. rc 4.
+before setown/settime/setmod on OK. rc 4 sig_rc: 16.
 After setown/settime/setmod on OK. rc 4.
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (0)
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' ''
@@ -49,9 +49,9 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
-CONN peer < MKDIR %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < MOD %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
 CONN peer > 'IDENT (cmd_finished).'
-before setown/settime/setmod on OK. rc 4.
+before setown/settime/setmod on OK. rc 4 sig_rc: 16.
 After setown/settime/setmod on OK. rc 4.
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto (0)
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' ''
@@ -70,9 +70,9 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
-CONN peer < MKDIR %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < MOD %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
 CONN peer > 'IDENT (cmd_finished).'
-before setown/settime/setmod on OK. rc 4.
+before setown/settime/setmod on OK. rc 4 sig_rc: 16.
 After setown/settime/setmod on OK. rc 4.
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger (0)
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' ''
@@ -100,7 +100,7 @@ Content length in buffer: 'octet-stream 32' size: 32 rc: 0
 CONN peer < octet-stream 20
 
 CONN peer > 'IDENT (cmd_finished).'
-before setown/settime/setmod on OK. rc 4.
+before setown/settime/setmod on OK. rc 4 sig_rc: 24.
 After setown/settime/setmod on OK. rc 4.
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest (0)
 update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 1625695200.

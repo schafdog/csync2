@@ -12,16 +12,15 @@ mkdir -p ${LDIR_TEST}
 find ${LDIR} -depth -exec touch -m -d "2021-06-08" {} \;
 cmd c "3 create directories (check)"
 cmd u "4 create directories (update)"
-sleep 1
 echo "peer older" > ${PDIR_TEST}/update_both
 find ${PDIR} -depth -exec touch -m -d "2020-06-08" {} \;
 echo "local younger" > ${LDIR_TEST}/update_both
 find ${LDIR} -depth -exec touch -m -d "2021-06-08" {} \;
 cmd c "5 Check local (autoresolve failed)"
 cmd u "6 Fail to autoresolve (not older)"
-sleep 1
 echo "peer younger" > ${PDIR_TEST}/update_both
-find ${PDIR} -depth -exec touch -m -d "2021-07-08" {} \;
+find ${PDIR} -depth -exec touch -m -d "2021-07-09" {} \;
+find ${LDIR} -depth -exec touch -m -d "2021-07-08" {} \;
 cmd c "7 Check local (${TEST})"
 cmd u "8 Update auto (older success)"
 rm -rf test/local

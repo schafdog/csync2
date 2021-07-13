@@ -210,21 +210,19 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 4096 '
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 4096 '
+CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 1625695200 4096
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer rows matched: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer  is clean
-Directory '/export/home/dennis/Projects/csync2/csync2/test/test/peer' already exists
-mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 errno = 11 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1625695200 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -239,21 +237,19 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096 '
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096 '
+CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rows matched: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  is clean
-Directory '/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto' already exists
-mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 errno = 11 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 1625695200 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -271,8 +267,8 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096 '
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096 '
+CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
@@ -283,13 +279,11 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/au
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolved. clear dirty
-Directory '/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger' already exists
-mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 errno = 11 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 1625695200 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
