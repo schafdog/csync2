@@ -980,7 +980,7 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname,
 
     // Only when both file and meta data is same (differs from earlier behavior)
     if (! (rc & DIFF_BOTH) || rc == IDENTICAL) {
-	csync_log(LOG_DEBUG, 1, "?S: %-15s %s\n", peername, filename);
+	csync_log(LOG_DEBUG, 2, "?S: %-15s %s\n", peername, filename);
 	// DS also remove from dirty on dry_run
 	return IDENTICAL;
     }
@@ -1233,55 +1233,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 		}
 	    }
 	}
-	    
-	/*
-	textlist_p link_move_list = csync_check_link_move(peername,
-								filename, checktxt, operation, digest, &st, NULL);
-	textlist_p list_ptr = link_move_list;
-	*/
-	/* Need to do the moves first, otherwise hard link could be between two non-existing files */
-	/*
-	while (list_ptr) {
-	    other = list_ptr->value;
-	    if (list_ptr->intvalue == OP_MOVE) {
-		csync_log(LOG_DEBUG, 0, "check move: %s %s \n ", filename, other);
-		rc = csync_update_file_move(db, myname, peername, key, filename,
-					    other);
-		if (rc == CONN_CLOSE || rc == OK) {
-		    if (rc == OK) {
-			csync_clear_dirty(db, peername, filename, auto_resolve_run);
-			csync_clear_dirty(db, peername, other, auto_resolve_run);
-		    }
-		    textlist_free(link_move_list);
-		    return rc;
-		}
-		break;
-	    }
-	    if (list_ptr)
-		list_ptr = list_ptr->next;
-	}
-	list_ptr = link_move_list;
-	while (list_ptr) {
-	    other = list_ptr->value;
-	    if (list_ptr->intvalue == OP_HARDLINK) {
-		csync_log(LOG_DEBUG, 0, "check hardlink: %s %s \n ", filename, other);
-		const char *other_enc = url_encode(prefixencode(other));
-		rc = csync_update_hardlink(peername, key_enc, other, other_enc,
-					   filename, filename_enc, &last_conn_status);
-		if (rc == CONN_CLOSE || rc == OK) {
-		    if (rc == OK) {
-			csync_clear_dirty(db, peername, filename, auto_resolve_run);
-			csync_clear_dirty(db, peername, other, auto_resolve_run);
-		    }
-		    textlist_free(link_move_list);
-		    return rc;
-		}
-		break;
-	    }
-	    list_ptr = list_ptr->next;
-	}
-	textlist_free(link_move_list);
-	*/
+	// check_link_move 
 	if (operation == OP_MOVE) {
 	    switch (rc) {
 	    case OK_MISSING:
@@ -1308,7 +1260,11 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	case ERROR_PATH_MISSING:
 	case OK_MISSING:
 	    break;
+	case DIFF_META:
+	case SETMOD:
 	case SETOWN:
+//	    rc = csync_update_file_setown(conn, peername, key_enc, filename,
+//					  filename_enc, &st, uid, gid);
 	case SETTIME:
 	    rc = csync_update_file_settime(conn, peername, key_enc, filename,
 					   filename_enc, &st);
@@ -1338,29 +1294,9 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 
 	switch (mode) {
 	case REG_TYPE:
-	    // Attempt to find remote hardlinks that hare similar to current local file.
-	    // So we dont need to copy/patch
-	    // If this doenst work we need to patch
 	    rc = OK;
-/*
-	    if (st.st_nlink > 1 && (rc &) {
-		// TODO this should not be ness. if the first hardlinked file was patched.
-		// Try to find another file that has been updated and link with it (instead of patching again)
-		char *chk_local = strdup(
-		    csync_genchecktxt_version(&st, filename,
-					      SET_USER | SET_GROUP, db_version));
-		rc = csync_update_file_all_hardlink(peername, key_enc, filename,
-						    filename_enc, &st, uid, gid, operation, chk_local,
-						    digest, 0, // Differs
-						    &last_conn_status);
-
-		free(chk_local);
-		if (rc == CONN_CLOSE)
-		    return rc;
-		if (rc == OK)
-		    return OK;
-	    }
-*/
+	    // Attempt to find remote hardlinks that hare similar to current local file.
+	    // moved into regfile_check_hardlink.c
 	    if (sig_rc & (OK_MISSING|DIFF_FILE))
 		rc = csync_update_file_patch(conn, key_enc, peername, filename,
 					     filename_enc, &st, uid, gid, digest, &last_conn_status);
@@ -1372,13 +1308,17 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	    // csync_link_update(....)
 	    break;
 	case DIR_TYPE:
-//	   if (sig_rc & (OK_MISSING|DIFF_FILE)) {
-               cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", &st, uid, gid, NULL);
-               rc = csync_update_file_dir(conn, peername, filename, &last_conn_status);
-//	   } else {
-//               rc = sig_rc;
-//	   }
-	   break;
+	    csync_info(3, "MKDIR rc: %d\n", sig_rc);
+	    char *op = "MOD";
+	    if (sig_rc & (OK_MISSING|DIFF_FILE)) {
+		op = "MKDIR";
+	    } else if (sig_rc & DIFF_META) {
+		op = "MOD";
+		csync_info(3, "Doing %s '%s:%s' on DIFF_META\n", op, peername, filename);
+	    }
+	    cmd_printf(conn, op, key_enc, filename_enc, "-", &st, uid, gid, NULL);
+	    rc = csync_update_file_dir(conn, peername, filename, &last_conn_status);
+	    break;
 	case CHR_TYPE:
 	    conn_printf(conn, "MKCHR %s %s\n", key_enc, filename_enc);
 	    rc = read_conn_status(conn, filename, peername);
@@ -1418,21 +1358,27 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 	}
 	if (rc < OK && rc != ERROR_DIRTY)
 	    return rc;
-	csync_log(LOG_DEBUG, 2, "before setown/settime/setmod on OK. rc %d.\n", rc);
+	csync_log(LOG_DEBUG, 3, "before setown/settime/setmod on OK. rc %d sig_rc: %d.\n", rc, sig_rc);
 	if (rc == OK) {
-	    if (rc == OK)
-		rc = csync_update_file_setown(conn, peername, key_enc, filename,
-					      filename_enc, &st, uid, gid);
-	    if (rc != OK)
+	    rc = csync_update_file_setown(conn, peername, key_enc, filename, filename_enc, &st, uid, gid);
+	    if (rc != OK) {
+		csync_error(2, "Failed to set owner on %s:%s %d", peername, filename, rc);
 		return rc;
-	    rc = csync_update_file_setmod(conn, peername, key_enc, filename,
-					  filename_enc, &st);
-	    if (rc != OK)
+	    }
+
+	    rc = csync_update_file_setmod(conn, peername, key_enc, filename, filename_enc, &st);
+	    if (rc != OK) {
+		csync_error(2, "Failed to set mod on %s:%s %d", peername, filename, rc);
 		return rc;
-	    rc = csync_update_file_settime(conn, peername, key_enc, filename,
-					   filename_enc, &st);
+	    }
+
+            rc = csync_update_file_settime(conn, peername, key_enc, filename, filename_enc, &st);
+	    if (rc != OK) {
+		csync_error(2, "Failed to set time on %s:%s %d", peername, filename, rc);
+		return rc;
+	    }
 	}
-	csync_log(LOG_DEBUG, 2, "After setown/settime/setmod on OK. rc %d.\n", rc);
+	csync_log(LOG_DEBUG, 3, "After setown/settime/setmod on OK. rc %d.\n", rc);
 	switch (rc) {
 	case OK:
 	case IDENTICAL:
