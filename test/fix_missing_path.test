@@ -10,11 +10,11 @@ DIRNAME=recursive
 TESTDIR=`pwd`/test/$PEER
 mkdir -p "test/$NAME/$DIRNAME"
 mkdir -p "test/$NAME/$DIRNAME/1/2/3/4/5"
-cmd cI "New $NAME/$DIRNAME/.. -I"
+cmd cI "2. New $NAME/$DIRNAME/.. -I"
 sleep 1
 echo "not ignore" > "test/$NAME/$DIRNAME/1/2/3/4/5/file.c"
 sleep 1
-cmd x "Sync with missing directories"
+cmd x "3. Sync with missing directories"
 rm -rf test/$NAME
-cmd x "clean up"
+cmd x "4. clean up"
 killdaemon

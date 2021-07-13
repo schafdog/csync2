@@ -28,7 +28,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
@@ -49,7 +49,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
@@ -75,7 +75,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink 

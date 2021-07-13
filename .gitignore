@@ -2,6 +2,7 @@ build-stamp
 configure-stamp
 *.o
 *~
+.DS_Store
 .deps/
 Makefile
 Makefile.in

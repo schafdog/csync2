@@ -86,9 +86,9 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    else
 		*operation = OP_NEW|flag;
 	    
-	    csync_info(2, "%s has changed: \n    %s \nDB: %s %s\n",
+	    csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
 			file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
-	    csync_info(2, "ignore flags: %d\n", ignore_flags);
+	    csync_info(3, "ignore flags: %d\n", ignore_flags);
 	    if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
 		db_flags |= IS_UPGRADE;
 	    else
@@ -670,7 +670,8 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 	    }
 	}
 	if (found)
-	    csync_info(2, "dirty: %s:%s %d %p\n", peername, filename, found, checktxt);
+	    csync_info(3, "dirty: %s:%s %d %s\n", peername, filename, found, checktxt);
+
     } SQL_END;
 
     if (where_rec)
@@ -953,7 +954,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 	}
     } SQL_FIN {
 	csync_info(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
-		    SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
+		   SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) csync_level_debug == 3 ? st->st_ino : 0l, filename);
     } SQL_END;
     return tl;
 }

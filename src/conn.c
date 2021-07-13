@@ -497,6 +497,23 @@ void  conn_remove_key(char *buf) {
        *ptr = 0;
 }
 
+char *filter_mtime(char *buffer, int make_copy) {
+    char *str = buffer;
+    if (make_copy)
+	str = strdup(buffer);
+    if (csync_level_debug == 2) {
+	char *pos = strstr(str, "mtime=");
+	if (pos != NULL) {
+	    pos += 6;
+	    while (*pos != '\0' && *pos != '%') {
+		*pos = 'x';
+		pos++;
+	    }
+	}
+    }
+    return str;
+}
+
 void conn_printf(int fd, const char *fmt, ...)
 {
     char dummy = 0, *buffer = 0;
@@ -515,7 +532,8 @@ void conn_printf(int fd, const char *fmt, ...)
     buffer[size] = 0;
     conn_write(fd, buffer, size);
     conn_remove_key(buffer);
-    csync_info(2, "CONN %s < %s\n", active_peer, buffer);
+    char *str = filter_mtime(buffer, 0);
+    csync_info(2, "CONN %s < %s\n", active_peer, str);
 }
 
 void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...)
@@ -564,8 +582,10 @@ size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 	csync_error(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
 	return rc; 
     }
-    //	conn_debug(active_peer, s, i);
-    csync_error(2, "CONN %s > '%s'\n", active_peer, s);
+    // Filter mtime but on a copy.
+    char *copy = filter_mtime(s, 1);
+    csync_info(2, "CONN %s > '%s'\n", active_peer, copy);
+    free(copy);
     return rc;
 }
 

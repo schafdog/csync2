@@ -44,7 +44,9 @@
 #include <netdb.h>
 #include <db_api.h>
 #include <time.h>
+#ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
+#endif
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -676,7 +678,7 @@ int main(int argc, char ** argv)
     int cmd_ip_version = 0;
     update_func update_func;
     int csync_port_cmdline = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeE")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEY")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -869,6 +871,10 @@ int main(int argc, char ** argv)
 	    update_func = csync_sync_host;
 	    mode = MODE_EQUAL;
 	    break;
+	case 'Y':
+	    flags |= FLAG_IGN_MTIME;
+	    csync_debug(1, "Ignoring MTIME: %d", flags);
+	    break;
 	case 'E':
 	{
 	    mode = MODE_TAIL;
@@ -969,7 +975,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
     int first = 1;
     int i; 
 nofork:
-    csync_debug(2, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
+    csync_debug(3, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
     // init syslog if needed. 
     if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
 	csync_openlog();
@@ -978,7 +984,9 @@ nofork:
     // mode keeps its original value, but now checking on server
     int conn  = -1;
     if (server_standalone) {
+#ifdef HAVE_LIBSYSTEMD
 	sd_pid_notify(getpid(), 0, "READY=1");
+#endif
        if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK),
 				    listenfd, &conn)) 
 	  return 1; // Parent returns
@@ -992,6 +1000,8 @@ nofork:
      * before we open the config file and database
      */
     if (server) {
+	// Connected with client (after accept)
+	start_time = time(NULL);
 	char line[4096], *cmd, *para;
 	/* configure conn.c for inetd mode */
 	if (MODE_INETD & mode) {
@@ -1073,7 +1083,7 @@ nofork:
     csync_info(2, "Database File: %s\n",    csync_database);
     csync_info(2, "DB Version:    %d\n",    db_version);
     csync_info(2, "IP Version:    %s\n",    (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
-    csync_info(2, "GIT:           %s\n",    CSYNC_GIT_VERSION);
+    csync_info(3, "GIT:           %s\n",    CSYNC_GIT_VERSION);
     
 
     {
@@ -1322,7 +1332,7 @@ nofork:
 	free(active_peers);
     }
     if (mode & MODE_DAEMON) {
-	csync_log(LOG_INFO, 2, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+	csync_log(LOG_INFO, 3, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
 	    csync_log(LOG_DEBUG, 1, "goto nofork.\n");

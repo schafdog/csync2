@@ -13,5 +13,3 @@ Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej
-peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej is already up to date on peer.

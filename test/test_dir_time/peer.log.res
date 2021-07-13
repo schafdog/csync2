@@ -28,7 +28,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local
@@ -36,7 +36,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local
@@ -44,7 +44,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej 
@@ -57,7 +57,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej 
@@ -68,36 +68,23 @@ Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
-Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin): 0 
-rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 16877
-rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 0
-Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin): 0 
-Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local.
-Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local): 0 
-rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 16877
-rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 0
-Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local): 0 
-Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local  
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr.
-Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr): 0 
-rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 16877
-rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 0
-Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr): 0 
-Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr  
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 0 
+Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 
+rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 16877
+rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 0
+rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 16877
+rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 0
+rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 16877
+rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 0
 rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer 16877
 rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
-Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 0 
+Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
+No such file or directory in scandir: /export/home/dennis/Projects/csync2/csync2/test/test/peer (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer -1
+Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 0 11
+Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 0 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 goto nofork.

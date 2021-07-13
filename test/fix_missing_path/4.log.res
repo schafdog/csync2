@@ -1,4 +1,4 @@
-cmd x "clean up" local peer test
+cmd x "4. clean up" local peer test
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
@@ -24,3 +24,5 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
+peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive is already up to date on peer.

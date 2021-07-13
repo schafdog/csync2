@@ -74,13 +74,14 @@ function cmd {
 	return 
     fi
     echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
+    OPTS="$CSYNC2_OPT -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG"
     if [ "$LLDB" != "" ] ; then 
-	$LLDB -f ${PROG} -- -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$LLDB -f ${PROG} -- ${OPTS} "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
-	$GDB --args ${PROG} -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
+	$GDB --args ${PROG} ${OPTS} "${TESTPATH}"
     else
-	echo $PROG -q -P $PEER -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}"
-	$PROG -q -P $PEER -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
+	echo $PROG ${OPTS} "${TESTPATH}"
+	$PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${COUNT}.log
@@ -196,9 +197,11 @@ for d in $* ; do
 	fi 
     fi
 done
+echo "DAEMON:"
 cat ${TESTNAME}/peer.log | sed "s/<[0-9]*> //" | grep -v connection > ${TESTNAME}/peer.log.tmp
 mv ${TESTNAME}/peer.log.tmp ${TESTNAME}/peer.log
 testing ${TESTNAME}/peer.log
 ./compare_sql.sh $TESTNAME
+echo "END DAEMON"
 echo "Result $RES"
 exit $RES

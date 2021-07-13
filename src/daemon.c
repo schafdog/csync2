@@ -581,6 +581,7 @@ struct csync_command cmdtab[] = {
 	{ "patch",	1, 1, S_IFREG, UPD, YES, A_PATCH },
 	{ "create",	1, 1, S_IFREG, UPD, YES, A_CREATE },
 	{ "mkdir",	1, 1, S_IFDIR, UPD, YES, A_MKDIR },
+	{ "moddir",	1, 1, S_IFDIR, UPD, YES, A_MKDIR },
 	{ "mod",	1, 1, 0,       UPD, YES, A_MOD },
 	// TODO add/use  mod operations for these
 	{ "mkchr",	1, 1, -1, UPD, YES, A_MKCHR },
@@ -1279,7 +1280,7 @@ int daemon_check_auto_resolve(const char *peername, filename_p filename, time_t 
 	    return 0;
 	}
     }
-    csync_info(2, "daemon: Auto resolve %s:%s time: %ld %ld size: %Ld %Ld \n",
+    csync_info(3, "daemon: Auto resolve %s:%s time: %ld %ld size: %Ld %Ld \n",
 	       peername, filename, ftime, stat.st_mtime, size, stat.st_size);
     auto_resolved = csync_auto_resolve_time_size(auto_method, ftime, stat.st_mtime, size, stat.st_size);
 
@@ -1378,7 +1379,8 @@ int csync_daemon_dispatch(int conn,
 	if (rc != OK)
 	    return rc;
 	rc = csync_daemon_setmod(filename, params->mod, cmd_error);
-	csync_info(2, "setmod %s rc = %d mod: %s errno = %d err = %s\n", filename, rc, params->mod, errno, (*cmd_error ? *cmd_error : ""));
+	csync_info(2, "setmod %s rc = %d mod: %s errno = %d err = %s\n",
+		   filename, rc, params->mod, errno, (*cmd_error ? *cmd_error : ""));
 	if (rc != OK)
 	    return rc;
 	rc = csync_daemon_settime(filename, params->ftime, cmd_error);
