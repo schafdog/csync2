@@ -711,7 +711,7 @@ textlist_p db_sql_get_old_operation(db_conn_p db, const char *checktxt,
 	operation_t op = SQL_V(5) ? atoi(SQL_V(5)) : 0;
 	if (op != old_operation)
 	    csync_warn(0, "WARN: operation changed: %s(%d) => %s(%d)\n", SQL_V(0), old_operation, csync_operation_str(op), op);
-	textlist_add4(&tl, old_filename, old_other, old_checktxt, old_digest, old_operation);
+	textlist_add4(&tl, old_filename, old_other, old_checktxt, old_digest, op);
 	break; 
     } SQL_FIN {
     } SQL_END;
