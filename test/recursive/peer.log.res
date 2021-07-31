@@ -261,32 +261,6 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1626287159 4096'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 1626287159 4096
-CONN local < OK (data_follows).
-
-Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
-
-CONN local < octet-stream 0
-
-CONN local < OK (cmd_finished).
-
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 1626287159 4096'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 1626287159 4096
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer  is clean
-setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1626287159 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
-IDENT (cmd_finished).
-CONN local < IDENT (cmd_finished).
-
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/recursive user/group'
 CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive user/group        
 CONN local < OK (data_follows).
@@ -308,12 +282,12 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/re
 backup /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive 0 
 6 files within directory '/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive': 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive. Errors 0
-Removing  d/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/* ..
-Removing  d/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/* ..
-Removing  d/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/* ..
-Removing  d/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/* ..
-Removing  d/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/* ..
-Removing  d/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/* ..
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.o
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.o ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/ignored.o 
@@ -340,7 +314,6 @@ backup /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 check backup generation /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.3 due  3 
-Remove backup /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.3 due to generation 3 
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.2' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.3'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.1' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.2'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.1'. rc = 0
@@ -399,12 +372,13 @@ CONN local > DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer rows matched: 1
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer  is clean
 backup /export/home/dennis/Projects/csync2/csync2/test/test/peer 0 
 0 files within directory '/export/home/dennis/Projects/csync2/csync2/test/test/peer': 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
-Removing  d/export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 0 1 
