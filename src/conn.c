@@ -470,6 +470,7 @@ void  conn_remove_key(char *buf) {
     if (!strncmp(buf, "HELLO", 5) ||
 	!strncmp(buf, "CONFIG",6) || 
 	!strncmp(buf, "BYE", 3)   ||
+//	!strncmp(buf, "DEL", 3)   ||
 	!strncmp(buf, "LIST", 4))
 	return ;
     char *ptr = buf;
@@ -493,8 +494,9 @@ void  conn_remove_key(char *buf) {
       Will remove last word if not ending with a space
       Good for removing time for log compare. Should be configurable though
     */
-    while (*(--ptr) != ' ')
-       *ptr = 0;
+    while (*(--ptr) != ' ') { //  || (*ptr >= '0' && *ptr <= '9')) {
+	*ptr = 0;
+    }
 }
 
 char *filter_mtime(char *buffer, int make_copy) {
