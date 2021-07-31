@@ -180,9 +180,9 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
     int errors = 0;
     if (recursive) {
 	textlist_p tl, t = 0;
+	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
 /*
 	BUF_P buffer  = buffer_init();
-	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
 	tl = db->find_file(db, filename, NULL); // No filter;
 	for (t = tl; t != 0; t = t->next) {
 	    csync_debug(0, "rm: Checking %s %d\n", t->value, t->intvalue);
