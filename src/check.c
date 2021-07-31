@@ -556,25 +556,30 @@ int csync_check_dir(db_conn_p db, const char* file, int flags)
     return count_dirty;
 }
 
-int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
+int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat)
 {
     if (!dev)
-	return 1;
+	return 4;
     if (!ino)
-	return 1;
+	return 8;
 
     unsigned long long dev_no;
     unsigned long long ino_no;
     sscanf(dev, "%llu", &dev_no);
     sscanf(ino, "%llu", &ino_no);
 
+    if (old_stat) {
+	old_stat->st_dev = dev_no;
+	old_stat->st_ino = ino_no;
+    }
+    int rc = 0;
     if (file_stat->st_dev != dev_no) {
-	return 1;
+	rc |= 1;
     }
     if (file_stat->st_ino != ino_no) {	
-	return 1;
+	rc |= 2;
     }
-    return 0;
+    return rc;
 }
 
 int csync_calc_digest(const char *file, BUF_P buffer, char **digest) {
@@ -599,18 +604,25 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     operation_t operation = 0;
     char *other = 0;
     char *digest = NULL;
-    int db_flags = db->check_file(db, file, encoded, &other, checktxt, file_stat, buffer, &operation, &digest, flags);
+    dev_t old_no;
+    int db_flags = db->check_file(db, file, encoded, &other, checktxt, file_stat, buffer, &operation, &digest, flags, &old_no);
     int calc_digest   = db_flags & CALC_DIGEST;
-    int this_is_dirty = db_flags & IS_DIRTY;
+    int is_dirty = db_flags & IS_DIRTY;
     int is_upgrade    = db_flags & IS_UPGRADE;
-    csync_info(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d \n", calc_digest, this_is_dirty, is_upgrade);
+    int dev_change    = db_flags & DEV_CHANGE;
+    csync_info(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d dev_change: %d\n",
+	       calc_digest, is_dirty, is_upgrade, dev_change);
     if (calc_digest) {
 	csync_calc_digest(file, buffer, &digest);
     }
     if (csync_compare_mode) {
 	printf("%40s %s\n", digest ? digest : checktxt, file);
     }
-    if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
+    if (!(is_upgrade|| is_dirty) && dev_change) {
+	csync_log(LOG_INFO, 2, "Fixing dev no for %s\n", encoded);
+	count = db->update_dev_no(db, encoded, S_ISDIR(file_stat->st_mode), old_no, file_stat->st_dev);
+    }
+    if ((is_upgrade || is_dirty) && !csync_compare_mode ) {
 	if (operation == OP_NEW && digest) {
 	    textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat);
 	    textlist_p ptr = tl;
@@ -641,7 +653,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 
 	const char *checktxt_encoded = db_escape(db, checktxt);
 	// Insert into dirty first due to new clean up method. With this there could be a race condition
-	if (!init_run && this_is_dirty) {
+	if (!init_run && is_dirty) {
 	    //      csync_log(LOG_DEBUG, 0, "check_dirty (mod): before mark (all) \n");
 	    char dev_str[100];
 	    char ino_str[100];
