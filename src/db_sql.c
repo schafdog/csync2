@@ -27,7 +27,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 		      char **other,
 		      char *checktxt, struct stat *file_stat,
 		      BUF_P buffer, int *operation,
-		      char **digest, int ignore_flags)
+		      char **digest, int ignore_flags, dev_t *old_no)
 {
     int db_flags = 0;
     int db_version = db->version;
@@ -57,11 +57,19 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    ug_flag |= SET_USER;
     	if (strstr(checktxt_db, ":group=") != NULL)
 	    ug_flag |= SET_GROUP;
-
-    	if (update_dev_inode(file_stat, device, inode) ) {
+	struct stat old_stat;
+	int dev_inode;
+    	if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat))) {
 	    csync_info(2, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
 			file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
-	    db_flags |= IS_UPGRADE;
+
+	    if (dev_inode == DEV_CHANGED) {
+		db_flags |= DEV_CHANGE;
+		csync_info(2, "File %s has only changed device %s -> %llu\n", file, device, file_stat->st_dev);
+		*old_no = old_stat.st_dev;
+	    }
+	    else
+		db_flags |= IS_UPGRADE; 
     	}
     	if (!*digest && strstr(checktxt, "type=reg")) {
 	    db_flags |= CALC_DIGEST;
@@ -754,8 +762,20 @@ int db_sql_add_dirty(db_conn_p db, const char *file_new,
     return 0;
 };
 
-unsigned long long fstat_dev(struct stat *file_stat) {
+dev_t fstat_dev(struct stat *file_stat) {
     return (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
+}
+
+int db_sql_update_dev_no(db_conn_p db, filename_p encoded, int recursive, dev_t old_no, dev_t new_no) {
+    char *where_rec = csync_generate_recursive_sql(encoded, recursive, 0, 0);
+    SQL(db,
+    	"Update device no",
+	"UPDATE file set device=%lu WHERE %s AND device = %lu", 
+	new_no,
+	where_rec,
+	old_no);
+    free(where_rec);
+    return 0;
 }
 
 int db_sql_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
@@ -1027,6 +1047,7 @@ int  db_sql_init(db_conn_p conn) {
     conn->update_file = db_sql_update_file;
     conn->insert_file = db_sql_insert_file;
     conn->insert_update_file = db_sql_insert_update_file;
+    conn->update_dev_no = db_sql_update_dev_no;
     conn->check_delete  = db_sql_check_delete;
     conn->add_action = db_sql_add_action;
     conn->del_action = db_sql_del_action;

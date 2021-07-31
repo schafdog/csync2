@@ -267,7 +267,12 @@ long long csync_checktxt_get_size(const char *checktxt);
 long long csync_checktxt_get_long_long(const char *checktxt, const char *token);
 
 /* check.c */
-int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino);
+#define DEV_INO_SAME 0
+#define DEV_CHANGED 1
+#define INO_CHANGED 2
+#define DEV_MISSING 4
+#define INO_MISSING 8
+int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
 int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
 
 struct textlist;
@@ -287,9 +292,11 @@ struct textlist;
 #define OP_SYNC     (OP_MOD|OP_MOD2)
 #define OP_FILTER   (~(OP_SYNC) & 1023) 
 
-#define IS_UPGRADE 1
-#define IS_DIRTY   2
+#define IS_UPGRADE  1
+#define IS_DIRTY    2
 #define CALC_DIGEST 4
+#define DEV_CHANGE  8
+
 #define PATH_NOT_FOUND "ERROR (Path not found): "
 #define PATH_NOT_FOUND_LEN sizeof(PATH_NOT_FOUND)-1
 
