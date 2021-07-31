@@ -180,6 +180,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
     int errors = 0;
     if (recursive) {
 	textlist_p tl, t = 0;
+/*
 	BUF_P buffer  = buffer_init();
 	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
 	tl = db->find_file(db, filename, NULL); // No filter;
@@ -193,19 +194,20 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 		daemon_remove_file(db, t->value, buffer);
 	    }
 	}
-
 	if (errors) {
 	    rc = ERROR;
 	}
 	textlist_free(tl);
 	tl = 0;
+*/
 	rc = ERROR;
 	/* Above could fail due to ignore files. Do recursive on scandir  */
 	if (rc == ERROR) {
 	    csync_warn(1, "Calling csync_rmdir_recursive %s:%s. Errors %d\n", peername, filename, errors);
 	    rc = csync_rmdir_recursive(db, filename, peername, &tl);
-	    if (rc == -1 && errno == EAGAIN)
+	    if (rc == -1 && errno == EAGAIN) {
 		rc = OK;
+	    }
 	    csync_warn(1, "Called csync_rmdir_recursive %s:%s. RC: %d %d\n", peername, filename, rc, errno);
 	}
 	csync_info(0, "Deleted recursive from clean directory (%s): %d %d \n", filename, dir_count, rc);
@@ -401,7 +403,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       }
 	
       if (S_ISDIR(buf.st_mode)) {
-	  csync_log(LOG_DEBUG, 2, "Directory. Skip\n");
+	  csync_log(LOG_DEBUG, 3, "Directory: %s skipping\n", filename);
 	  return 0;
       }
 
@@ -447,7 +449,6 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	
 	      backup_filename[back_dir_len+i] = filename[i];
 	  }
-
       }
 
       backup_filename[back_dir_len + filename_len] = 0;
@@ -466,7 +467,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	return 1;
       }
 
-      csync_log(LOG_DEBUG, 4,"Copying data from %s to backup file %s \n", filename, backup_filename);
+      csync_log(LOG_DEBUG, 3, "Copying data from %s to backup file %s \n", filename, backup_filename);
 
       rc  = csync_copy_file(fd_in, fd_out);
       if (rc != 0) {
@@ -478,7 +479,6 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 
 	*cmd_error = error_buffer;
 	// TODO verify file disapeared ?
-	//
 	// return 1;
       }
       csync_set_backup_file_status(backup_filename, back_dir_len);
