@@ -1,3 +1,3 @@
 #/bin/bash
-./local.sh recursive.test
+DEBUG=vv ./local.sh recursive.test
 
