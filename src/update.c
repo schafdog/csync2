@@ -602,7 +602,7 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
 		const struct stat *st, const char *uid, const char* gid, const char *digest) {
     if (st) {
-	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %Ld %Ld \n",
+	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %Ld %Ld\n",
 		    cmd, key, filename, secondname,
 		    st->st_uid, st->st_gid,
 		    uid, gid,
@@ -932,7 +932,7 @@ int csync_update_directory(int conn,
 		return rc;
 	    }
 	}	
-	csync_info(2, "update_directory: Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
+	csync_info(3, "update_directory: Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
 	rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
 	return rc;
     }
@@ -1592,9 +1592,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	    last_tn=&(t->next);
 	} else {
 	    /* File not found */
-	    /* Reverse order (deepest first when deleting. Otherwise we need recursive deleting in daemon */
 	    csync_log(LOG_DEBUG, 2, "Dirty (missing) item %s %s %s %d\n", t->value, t->value2, t->value3, t->intvalue, t->operation);
-
 	    if (t->operation != OP_RM && t->operation != OP_MARK) {
 		csync_warn(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation),
 			   peername, t->value);
@@ -1605,7 +1603,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	    } else {
 		if (last_dir_deleted != NULL && strstr(t->value, last_dir_deleted) == t->value) {
 		    // this is a file belonging to the deleted directory, so it should be skipped
-		    csync_info(2, "Matched file (%s) from deleted directory (%s)\n", t->value, last_dir_deleted);
+		    csync_info(2, "Skipping matched file (%s) from deleted directory (%s)\n", t->value, last_dir_deleted);
 		} else {
 		    if (last_dir_deleted != NULL) {
 			free(last_dir_deleted);
