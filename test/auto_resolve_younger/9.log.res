@@ -52,19 +52,15 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 CONN peer < DEL %25test%25 
-CONN peer > 'OK (cmd_finished).'
+CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (0)
+DELETE (/export/home/dennis/Projects/csync2/csync2/test/test/local) Last dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/. rc: 4
 Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/auto RM (null) 0
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
-CONN peer < SIG %25test%25/auto 
-CONN peer > 'ERROR (Path not found): %25test%25'
-peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto is already up to date on peer.
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto (0)
-DELETE (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto) Last dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/. rc: 4
+Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
 Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger RM (null) 0
-Matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/)
+Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
 Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest RM (null) 0
-Matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/)
+Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
 CONN peer < BYE
 
 CONN peer > 'OK (cu_later).'

@@ -19,7 +19,7 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1625695200 
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
@@ -31,11 +31,11 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
-CONN peer < MOD %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < MOD %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (0)
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' ''
-CONN peer < SIG %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < SIG %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1625695200 
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
@@ -47,11 +47,11 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
-CONN peer < MOD %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < MOD %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto (0)
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' ''
-CONN peer < SIG %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < SIG %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 1625695200 
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
@@ -66,11 +66,11 @@ CONN peer > 'octet-stream 0'
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
-CONN peer < MOD %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096 
+CONN peer < MOD %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger (0)
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' ''
-CONN peer < SIG %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1625695200 14 
+CONN peer < SIG %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1625695200 
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13'
@@ -87,7 +87,7 @@ rs_check: Found diff in sig at -32:-0
 File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-CONN peer < PATCH %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1625695200 14 
+CONN peer < PATCH %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1625695200 
 CONN peer > 'OK (send_data).'
 CONN peer > 'octet-stream 32'
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 
@@ -95,13 +95,10 @@ CONN peer < octet-stream 20
 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest (0)
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 1625695200.
 CONN peer < SETTIME %25test%25/auto/younger 
 CONN peer > 'OK (cmd_finished).'
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/auto 1625695200.
 CONN peer < SETTIME %25test%25/auto 
 CONN peer > 'OK (cmd_finished).'
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local 1625695200.
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
 CONN peer < BYE

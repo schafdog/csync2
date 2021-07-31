@@ -19,7 +19,7 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' ''
-CONN peer < SIG %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1620424800 12 
+CONN peer < SIG %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1620424800 
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13'
@@ -35,7 +35,7 @@ rs_check: Found diff in sig at -32:-0
 File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-CONN peer < PATCH %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1620424800 12 
+CONN peer < PATCH %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1620424800 
 CONN peer > 'File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest)'
 While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
 ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest) rc: -11 
@@ -44,7 +44,6 @@ CONN peer > 'OK (data_follows).'
 CONN peer > '1623103200'
 Do not auto-resolve conflict: Lost 'younger/older' test.
 File stays in dirty state after autoresolve. Try again later...
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 1620424800.
 CONN peer < SETTIME %25test%25/auto/younger 
 CONN peer > 'OK (cmd_finished).'
 CONN peer < BYE

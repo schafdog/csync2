@@ -19,30 +19,28 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1623103200 4096 
+CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1623103200 
 CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local RC 32
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 1623103200 4096 
+CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 1623103200 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (0)
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' ''
-CONN peer < SIG %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1623103200 4096 
+CONN peer < SIG %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1623103200 
 CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto RC 32
-CONN peer < MKDIR %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1623103200 4096 
+CONN peer < MKDIR %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1623103200 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto (0)
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' ''
-CONN peer < SIG %25test%25/auto/older user/group 1234 1000 dennis schafroth 16877 - 1623103200 4096 
+CONN peer < SIG %25test%25/auto/older user/group 1234 1000 dennis schafroth 16877 - 1623103200 
 CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older RC 32
-CONN peer < MKDIR %25test%25/auto/older - 1234 1000 dennis schafroth 16877 - 1623103200 4096 
+CONN peer < MKDIR %25test%25/auto/older - 1234 1000 dennis schafroth 16877 - 1623103200 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older (0)
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/auto 1623103200.
 CONN peer < SETTIME %25test%25/auto 
 CONN peer > 'OK (cmd_finished).'
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local 1623103200.
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
 CONN peer < BYE
