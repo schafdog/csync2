@@ -5,6 +5,7 @@
 #include <hiredis/hiredis.h>
 #include <stdio.h>
 #include <time.h>
+#include <poll.h>
 
 redisContext *redis_context = NULL;
 redisReply *redis_reply = NULL;
@@ -49,6 +50,18 @@ const char *not_null(const char *str) {
 
 const char *not_null_default(const char *str, const char *if_null) {
     return str ? str : if_null;
+}
+
+int csync_redis_check_connection() {
+    struct pollfd fds;
+    fds.fd = redis_context->fd;
+    fds.events = POLLOUT;
+    if ((poll(&fds, 1, 0) != 1) || (fds.revents & POLLHUP)) {
+	redisFree(redis_context);
+	redis_context = NULL;
+	return 0;
+    }
+    return 1;
 }
 
 const char *build_key(const char *key, const char *domain, BUF_P buffer) {
