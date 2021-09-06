@@ -314,9 +314,9 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	if (rest) {
 	    log_time = timelocal(&tm);
 	    csync_debug(2, "monitor: Parsed %s to %d. %s", time_str, log_time, rest);
-	} else
+	} else {
 	    csync_debug(0, "monitor: failed to parse %s as %F_%T", time_str);
-
+	}
 	buffer += match + 1;
 	match = csync_read_buffer(buffer, operation);
 	if (match <= 0)
@@ -325,21 +325,19 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	int len = strlen(buffer);
 	if (buffer[len] == '\n')
 	    buffer[len] = 0;
-	// Check if file is "just" made by daemon
-
 	strcpy(file, buffer);
-	time_t lock_time = csync_redis_get_custom(file, operation);
 	if (csync_check_usefullness(file, flags)) {
 	    csync_debug(1, "monitor: Skip %s not matched at %d\n", file, log_time);
 	    continue;
 	}
+	// Check if file is "just" made by daemon
+	time_t lock_time = csync_redis_get_custom(file, operation);
 	if (lock_time != -1)
 	    csync_redis_del_custom(file, operation);
 
 	if (lock_time != -1 && log_time <= lock_time) {
 	    csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 	} else {
-
 	    csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
 	    if (strcmp(operation, "CREATE") == 0) {
 		csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
