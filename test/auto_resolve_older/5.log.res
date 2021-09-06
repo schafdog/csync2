@@ -19,7 +19,6 @@ csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/* ..
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
-0 files with same dev:inode (2065:0) as file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' '-'.
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' '-'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both rows matched: 1
