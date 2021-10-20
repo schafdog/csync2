@@ -550,7 +550,7 @@ struct csync_command cmdtab[] = {
 			      unlink,
 			         update,
 				    need_ident,
-				       action */
+				           action */
 	{ "sig",	1, 0, 0, NOP, YES, A_SIG  },
 	{ "mark",	1, 0, 0, NOP, YES, A_MARK },
 	{ "type",	2, 0, 0, NOP, YES, A_TYPE },
@@ -843,6 +843,8 @@ const char *csync_daemon_check_perm(db_conn_p db,
 				    char *filename, char *peername,
 				    char* key) {
   const char *cmd_error = 0;
+  on_cygwin_lowercase(filename);
+
   if ( cmd->check_perm ) {
       int perm = csync_perm(filename, key, peername, cmd->check_perm == COMPARE_MODE);
       if ( perm ) {
@@ -854,7 +856,7 @@ const char *csync_daemon_check_perm(db_conn_p db,
 	  return cmd_error;
       }
   }
-  return 0;
+  return NULL;
 }
 
 int csync_daemon_setown(filename_p filename, const char *uidp, const char *gidp, const char *userp, const char *groupp, const char **cmd_error)
@@ -1532,11 +1534,10 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
       continue;
     }		  	
     int rc = OK, isDirty = 0;
-    if ( cmd->check_perm )
-      on_cygwin_lowercase(filename);
 
-    if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername,tag[1])))
-      rc = ABORT_CMD;
+    if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername,tag[1]))) {
+	rc = ABORT_CMD;
+    }
 
     struct command params;
     parse_tags(tag, &params);
@@ -1562,10 +1563,12 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 	    }
 	}
       const char *otherfile = NULL;
-      rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params,
-			       protocol_version,
-			       &peername, &peeraddr, &otherfile,
-			       &cmd_error);
+      if (rc != ABORT_CMD) {
+	  rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params,
+				     protocol_version,
+				     &peername, &peeraddr, &otherfile,
+				     &cmd_error);
+      }
       if (rc == OK || rc == IDENTICAL) {
 	 // check updates done
 	 csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" ));
