@@ -8,14 +8,10 @@ Default encoding utf8mb4
 db_schema_version: 2
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test 65 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
 No match. Don't check at all: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local 193 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto 193 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/* ..
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older 193 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/* ..
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
