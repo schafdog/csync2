@@ -149,7 +149,6 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest 
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
-0 files with same dev:inode (2065:0) as file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest' '-'.
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest' '-'.
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest rows matched: 1

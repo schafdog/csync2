@@ -973,8 +973,11 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 	    csync_info(1, "Different digest for %s %s ", digest, db_digest);
 	}
     } SQL_FIN {
-	csync_info(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
-		   SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) csync_level_debug == 3 ? st->st_ino : 0l, filename);
+	if (SQL_COUNT > 0) {
+	    csync_info(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
+		       SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long)
+		       csync_level_debug == 3 ? st->st_ino : 0l, filename);
+	}
     } SQL_END;
     return tl;
 }

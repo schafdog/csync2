@@ -72,19 +72,17 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 
-rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 16877
-rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 0
-rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 16877
-rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 0
-rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 16877
-rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 0
-rm: Checking /export/home/dennis/Projects/csync2/csync2/test/test/peer 16877
-rmdir /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
-No such file or directory in scandir: /export/home/dennis/Projects/csync2/csync2/test/test/peer (/export/home/dennis/Projects/csync2/csync2/test/test/peer)
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer -1
-Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 0 11
-Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 0 
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/* ..
+Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/* ..
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
+Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
+Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+IDENT (cmd_finished).
 goto nofork.

@@ -2,6 +2,7 @@
 #define REDIS_H
 
 int csync_redis_connect(char *redis);
+int csync_redis_check_connection();
 
 time_t csync_redis_get(const char *key);
 time_t csync_redis_get_custom(const char *key, const char *domain);

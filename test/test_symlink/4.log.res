@@ -20,6 +20,7 @@ Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link
 peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link is already up to date on peer.
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
-peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all is already up to date on peer.
+While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
+ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all) rc: -11 
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
 peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link is already up to date on peer.

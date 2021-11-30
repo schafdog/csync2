@@ -8,7 +8,6 @@ Default encoding utf8mb4
 db_schema_version: 2
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test 65 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 

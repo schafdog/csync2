@@ -1,11 +1,19 @@
 #!/bin/bash
-
 DIRECTORY=$1
+ORDER=$2
+# TABLE=$3
+# HOSTNAME=$4
+# DEPTH=$5
+
+if [ "$1" == "--help" ] ; then
+    echo "$0 [PATH [SORTCOL [TABLE [HOSTNAME [DEPTH]]]]]"
+    exit
+fi
+
 if [ "$1" == "" ] ; then
     DIRECTORY=$PWD
 fi
 
-ORDER=$2
 if [ "$ORDER" == "" ] ; then
    ORDER=3
 fi

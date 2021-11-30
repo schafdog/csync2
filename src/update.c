@@ -144,7 +144,7 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 
     csync_error_count++;
     int rc = !strncmp(line, ERROR_DIRTY_STR, ERROR_DIRTY_LEN) ? ERROR_DIRTY : ERROR_OTHER;
-    csync_error(0, "ERROR from %s: %s rc: %d \n", host, line, rc);
+    csync_warn(0, "ERROR from %s: %s rc: %d \n", host, line, rc);
     return rc; 
 }
 
@@ -281,7 +281,7 @@ void csync_clear_dirty(db_conn_p db, peername_p peername, filename_p filename, i
 }
 
 int auto_resolve_error(const char *cmd, peername_p peername, filename_p filename, int rc) {
-    csync_error(0, "Auto-resolving failed. Failed to do %s on %s:%s. RC: %d\n", cmd, peername, filename, rc);
+    csync_warn(0, "Auto-resolving failed. Failed to do %s on %s:%s. RC: %d\n", cmd, peername, filename, rc);
     return rc;
 }
 
@@ -1441,7 +1441,13 @@ int csync_update_file_mod(int conn, db_conn_p db,
 					    force, dry_run, buffer);
 	csync_redis_unlock(filename, unix_time);
     } else {
-	csync_debug(0, "update_file_mod: Failed to get lock on %s: %d\n", filename, unix_time);
+	csync_info(0, "update_file_mod: Failed to get lock on %s: %d\n", filename, unix_time);
+        if (csync_redis_check_connection() == 0) {
+           csync_info(0, "update_file_mod: redis connection closed. Reconnecting\n");
+           if (csync_redis_connect(csync_redis) == 1) {
+               csync_error(0, "update_file_mod: redis reconnect failed\n");
+           }
+	}
 	rc = ERROR_DIRTY;
     }
     buffer_destroy(buffer);

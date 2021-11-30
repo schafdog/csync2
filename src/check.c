@@ -712,7 +712,7 @@ int csync_check_mod(db_conn_p db, const char *file, int flags, int *count, const
 	    break;
 	if ( !S_ISDIR(st.st_mode) )
 	    break;
-	csync_log(LOG_DEBUG, 2, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
+	csync_log(LOG_DEBUG, 3, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
 	*count += csync_check_dir(db, file, flags | dirdump_this);
 	break;
     default:
