@@ -1505,8 +1505,8 @@ void parse_tags(char *tag[32], struct command *cmd ) {
     cmd->group      = tag[7];
     cmd->mod        = tag[8];
     cmd->digest     = tag[9];
-    cmd->size       = tag[11] ? atoll(tag[11]) : 0L;
-    cmd->ftime      = tag[10] ? atol(tag[10]) : 0;
+    cmd->size       = tag[10] ? atoll(tag[10]) : 0L;
+    cmd->ftime      = tag[11] ? atol(tag[11]) : 0L;
 }
 
 void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_version, int mode)
