@@ -293,7 +293,9 @@ int csync_recv_file(int conn, FILE *out)
   if (conn_read_get_content_length(conn, &size)) {
       if (errno == EIO)
 	  return -1;
-      csync_fatal("Format-error while receiving data length for file (%ld) .\n", size);
+      csync_error(0, "Format-error while receiving data length for file (%ld) .\n", size);
+      size = 0;
+      return -2;
   }
 
   csync_log(LOG_DEBUG, 3, "Receiving %ld bytes ..\n", size);
@@ -362,8 +364,10 @@ int csync_rs_check(int conn, filename_p filename, int isreg)
 
     {
 	csync_log(LOG_DEBUG, 3, "rs_check: Reading signature size from peer....\n");
-	if (conn_read_get_content_length(conn, &size))
-	    csync_fatal("Format-error while receiving data length for signature (%ld) \n", size);
+	if (conn_read_get_content_length(conn, &size)) {
+	    csync_error(0, "Format-error while receiving data length for signature (%ld) \n", size);
+	    return -1;
+	}
     }
 
     if (sig_file) {
@@ -448,7 +452,7 @@ void csync_rs_sig(int conn, filename_p filename)
 #endif
 		       &stats);
   if (result != RS_DONE)
-    csync_fatal("Got an error from librsync, too bad!\n");
+      csync_fatal("Got an error from librsync, too bad!\n");
 
   csync_log(LOG_DEBUG, 3, "Sending sig_file to peer..\n");
   csync_send_file(conn, sig_file);
@@ -560,9 +564,10 @@ int csync_rs_patch(int conn, filename_p filename)
     errstr="creating delta temp file"; 
     return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
   }
-  if ( csync_recv_file(conn, delta_file) ) 
-    return rsync_close_error(errno, basis_file, delta_file, new_file);
-
+  if ( csync_recv_file(conn, delta_file) ) {
+      
+      return rsync_close_error(errno, basis_file, delta_file, new_file);
+  }
   csync_log(LOG_DEBUG, 3, "Opening to be patched file on local host..\n");
   basis_file = fopen(filename, "rb");
   if ( !basis_file ) {

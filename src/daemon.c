@@ -1505,8 +1505,8 @@ void parse_tags(char *tag[32], struct command *cmd ) {
     cmd->group      = tag[7];
     cmd->mod        = tag[8];
     cmd->digest     = tag[9];
-    cmd->ftime      = tag[10] ? atol(tag[10]) : 0;
     cmd->size       = tag[11] ? atoll(tag[11]) : 0L;
+    cmd->ftime      = tag[10] ? atol(tag[10]) : 0;
 }
 
 void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_version, int mode)
@@ -1583,6 +1583,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 	    }
 	}
       const char *otherfile = NULL;
+      cmd_error = 0;
       if (rc != ABORT_CMD) {
 	  rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params,
 				     protocol_version,
