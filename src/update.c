@@ -608,8 +608,9 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 		    uid, gid,
 		    st->st_mode,
 		    digest ? digest : "-",
-		    (long long) st->st_mtime,
-		    (long long) st->st_size);
+		    (long long) st->st_size,
+		    (long long) st->st_mtime);
+
     }
     else {
 	conn_printf(conn, "%s %s %s %s\n",

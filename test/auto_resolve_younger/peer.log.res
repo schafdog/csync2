@@ -22,12 +22,12 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1620424800 4096'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 1620424800 4096
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 1620424800'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1620424800
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 1620424800 4096'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 1620424800 4096
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 1620424800'
+CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 1620424800
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
@@ -43,12 +43,12 @@ Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1620424800 4096'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 1620424800 4096
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 4096 1620424800'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 4096 1620424800
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1620424800 4096'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto - 1234 1000 dennis schafroth 16877 - 1620424800 4096
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 4096 1620424800'
+CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto - 1234 1000 dennis schafroth 16877 - 4096 1620424800
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 
@@ -64,14 +64,14 @@ Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/a
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 1620424800 4096'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger user/group 1234 1000 dennis schafroth 16877 - 1620424800 4096
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 1620424800'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 1620424800
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 daemon_check_auto_resolve: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger failed stat
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1620424800 4096'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 1620424800 4096
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 1620424800'
+CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 1620424800
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 daemon_check_auto_resolve: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger failed stat
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
@@ -129,8 +129,8 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1620424800 12'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1620424800 12
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 12 1620424800'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 12 1620424800
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 CONN local < OK (data_follows).
 
@@ -141,8 +141,8 @@ CONN local < octet-stream 32
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1620424800 12'
-CONN local > PATCH /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1620424800 12
+CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 12 1620424800'
+CONN local > PATCH /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 12 1620424800
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest ...
@@ -198,8 +198,8 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 1625695200'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1625695200
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -209,8 +209,8 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 1625695200 4096'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 1625695200'
+CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 1625695200
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
@@ -225,8 +225,8 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 4096 1625695200'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 4096 1625695200
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -236,8 +236,8 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto - 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 4096 1625695200'
+CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto - 1234 1000 dennis schafroth 16877 - 4096 1625695200
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 
@@ -252,8 +252,8 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/aut
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger user/group 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 1625695200'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 1625695200
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolved. clear dirty
@@ -266,8 +266,8 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 1625695200 4096
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 1625695200'
+CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 1625695200
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolve
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
@@ -286,8 +286,8 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/aut
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1625695200 14'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 1625695200 14
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 14 1625695200'
+CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 14 1625695200
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest won auto resolved. clear dirty
@@ -300,8 +300,8 @@ CONN local < octet-stream 32
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1625695200 14'
-CONN local > PATCH /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 1625695200 14
+CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 14 1625695200'
+CONN local > PATCH /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 14 1625695200
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest won auto resolve
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
