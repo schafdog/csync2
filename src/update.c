@@ -1603,6 +1603,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	    if (t->operation != OP_RM && t->operation != OP_MARK) {
 		csync_warn(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(t->operation),
 			   peername, t->value);
+		csync_mark(db, t->value, 0, peername, OP_RM, NULL, NULL, NULL, 0, time(NULL));
 		if (t->value3) {
 		    csync_mark(db, t->value3, 0, peername, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
 		    csync_log(LOG_DEBUG, 0, "make other dirty %s\n", t->value3);
