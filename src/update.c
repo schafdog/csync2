@@ -868,7 +868,7 @@ int csync_update_file_patch(int conn,
 			    const char *digest,
 			    int *last_conn_status)
 {
-    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, NULL);
+    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, "-");
     int rc = csync_update_reg_file(conn, peername, filename, last_conn_status);
     return rc;
 }
