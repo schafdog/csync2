@@ -493,8 +493,7 @@ int csync_update_file_del(int conn, db_conn_p db,
 	char chk_peer[4096];
 	int status;
 	conn_printf(conn, "SIG %s %s %s\n",
-		    key_enc,
-		    url_encode(prefixencode(filename)), "user/group");
+		    key_enc, filename_enc, "user/group");
 
 	if ((status = read_conn_status(conn, filename, peername))) {
 	    if (status == ERROR_PATH_MISSING || status == OK_MISSING) {
