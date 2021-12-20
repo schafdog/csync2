@@ -600,7 +600,8 @@ int get_file_type(int st_mode) {
  */
 void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
-		const struct stat *st, const char *uid, const char* gid, const char *digest) {
+		const struct stat *st, const char *uid, const char* gid, const char *digest)
+{
     if (digest != NULL && !strcmp(digest, "")) {
 	digest = NULL;
     }
@@ -868,7 +869,7 @@ int csync_update_file_patch(int conn,
 			    const char *digest,
 			    int *last_conn_status)
 {
-    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, digest);
+    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, NULL);
     int rc = csync_update_reg_file(conn, peername, filename, last_conn_status);
     return rc;
 }
