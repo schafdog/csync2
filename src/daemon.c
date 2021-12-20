@@ -1353,17 +1353,25 @@ int csync_daemon_dispatch(int conn,
     case A_PATCH:
     case A_CREATE: {
 	int rc = csync_daemon_patch(conn_out, db, filename, cmd_error);
-	if (rc != OK)
+	if (rc != OK) {
+	    csync_error(1, "Failed to patch %s", filename);
 	    return rc;
+	}
 	rc = csync_daemon_setown(filename, params->uid, params->gid, params->user, params->group, cmd_error);
-	if (rc != OK)
-	    return rc;
+	if (rc != OK) {
+	    csync_error(1, "Failed to set owner %s", filename);
+		return rc;
+	}
 	rc = csync_daemon_setmod(filename, params->mod, cmd_error);
-	if (rc != OK)
+	if (rc != OK) {
+	    csync_error(1, "Failed to set mod %s", filename);
 	    return rc;
+	}
 	rc = csync_daemon_settime(filename, params->ftime, cmd_error);
-	if (rc != OK)
+	if (rc != OK || params->ftime == 0) {
+	    csync_error(1, "Failed to set time %s %d or is 0", filename, params->ftime);
 	    return rc;
+	}
 	return IDENTICAL;
 	break;
     }

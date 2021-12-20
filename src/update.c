@@ -600,6 +600,10 @@ int get_file_type(int st_mode) {
 void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
 		const struct stat *st, const char *uid, const char* gid, const char *digest) {
+    if (digest != NULL && !strcmp(digest, "")) {
+	digest = NULL;
+    }
+
     if (st) {
 	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %Ld %Ld\n",
 		    cmd, key, filename, secondname,
