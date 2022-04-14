@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#define RINGBUFF_LEN 100
+#define RINGBUFF_LEN 10000
 
 static char *ringbuff[RINGBUFF_LEN];
 static int ringbuff_counter = 0;
