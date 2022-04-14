@@ -47,7 +47,8 @@ const char *csync_genchecktxt(const struct stat *st, filename_p filename, int fl
 
 const char *csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version)
 {
-	static char *buffer = 0;
+    BUF_P buf = buffer_init();
+    static char *buffer = 0;
 	char *elements[64];
 	int elidx=0, len=1;
 	int i, j, k;
@@ -87,34 +88,34 @@ const char *csync_genchecktxt_version(const struct stat *st, filename_p filename
 	}
 
 	if ( S_ISREG(st->st_mode) ) {
-		xxprintf(":type=reg:size=%llu", (long long)st->st_size);
-		// TODO would be nice with the real count,
-		// but for now just an indicator for hard links
+	    xxprintf(":type=reg:size=%llu", (long long)st->st_size);
+	    // TODO would be nice with the real count,
+	    // but for now just an indicator for hard links
 
-		//if (st->st_nlink > 1)
-		//  xxprintf(":link=H");
+	    //if (st->st_nlink > 1)
+	    //  xxprintf(":link=H");
 	}
 	if ( S_ISDIR(st->st_mode) )
-		xxprintf(":type=dir");
+	    xxprintf(":type=dir");
 
 	if ( S_ISCHR(st->st_mode) )
-		xxprintf(":type=chr:dev=%d", (int)st->st_rdev);
+	    xxprintf(":type=chr:dev=%d", (int)st->st_rdev);
 
 	if ( S_ISBLK(st->st_mode) )
-		xxprintf(":type=blk:dev=%d", (int)st->st_rdev);
+	    xxprintf(":type=blk:dev=%d", (int)st->st_rdev);
 
 	if ( S_ISFIFO(st->st_mode) )
-		xxprintf(":type=fifo");
+	    xxprintf(":type=fifo");
 
 	if ( S_ISLNK(st->st_mode) ) {
-		char tmp[4096];
-		int r = readlink(filename, tmp, 4095);
-		tmp[ r >= 0 ? r : 0 ] = 0;
-		xxprintf(":type=lnk:target=%s", (version == 1 ? url_encode(tmp) : tmp));
+	    char tmp[4096];
+	    int r = readlink(filename, tmp, 4095);
+	    tmp[ r >= 0 ? r : 0 ] = 0;
+	    xxprintf(":type=lnk:target=%s", (version == 1 ? url_encode(tmp, buf) : tmp));
 	}
 
 	if ( S_ISSOCK(st->st_mode) )
-		xxprintf(":type=sock");
+	    xxprintf(":type=sock");
 
 /*	if ( st->st_nlink > 1 && !S_ISDIR(st->st_mode)) {
 	    xxprintf(":nlink=%lu", st->st_nlink);
@@ -126,15 +127,19 @@ const char *csync_genchecktxt_version(const struct stat *st, filename_p filename
 	}
 	*/
 
-	if ( buffer ) free(buffer);
+	if ( buffer ) {
+	    free(buffer);
+	}
 	buffer = malloc(len);
 
-	for (i=j=0; j<elidx; j++)
-		for (k=0; elements[j][k]; k++)
-			buffer[i++] = elements[j][k];
+	for (i=j=0; j<elidx; j++) {
+	    for (k=0; elements[j][k]; k++) {
+		buffer[i++] = elements[j][k];
+	    }
+	}
 	assert(i == len-1);
 	buffer[i]=0;
-
+	buffer_destroy(buf);
 	return buffer;
 }
 
