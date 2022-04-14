@@ -40,6 +40,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
     	if (db_version < 1 || db_version > 2) {
 	    csync_error(0, "Error extracting version from checktxt: %s", SQL_V(0));
     	}
+	BUF_P buf = buffer_init();
     	const char *checktxt_db = db_decode(SQL_V(0));
     	const char *checktxt_same_version = checktxt;
     	const char *inode    = SQL_V(1);
@@ -102,6 +103,7 @@ int db_sql_check_file(db_conn_p db, const char *file,
 	    else
 		db_flags |= IS_DIRTY;
     	}
+	buffer_destroy(buf);
     } SQL_FIN {
 	if ( SQL_COUNT == 0 ) {
 	    csync_info(2, "New file: %s\n", file);
@@ -164,6 +166,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
 	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) AND myname = '%s' ORDER BY type, filename",
 	      OP_FILTER, where, myhostname)
     {
+	BUF_P buf = buffer_init();
 	const char *force_str = SQL_V(0);
 	peername_p myname   = db_decode(SQL_V(1));
 	peername_p peername = db_decode(SQL_V(2));
@@ -184,6 +187,7 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
 		retval++;
 	    }
 	}
+	buffer_destroy(buf);
     } SQL_END;
     if (where[0] != 0)
 	free(where);
@@ -199,12 +203,14 @@ textlist_p db_sql_non_dirty_files_match(db_conn_p db, const char *pattern) {
 	      " ORDER by filename ASC",
 	      myhostname, pattern, myhostname, pattern)
     {
+	BUF_P buf = buffer_init();
 	filename_p filename  = db_decode(SQL_V(0));
 	const char *checktxt  = db_decode(SQL_V(1));
 	const char *digest    = db_decode(SQL_V(2));
 	if ( compare_files(filename, pattern, 0 /*recursive*/) ) {
 	    textlist_add3(&tl, filename, checktxt, digest, 0);
 	}
+	buffer_destroy(buf);
     } SQL_END;
 
     return tl;
@@ -230,23 +236,23 @@ int db_sql_upgrade_db(db_conn_p db)
 {
     struct csync_prefix *p;
     csync_info(1, "Upgrade database.. \n");
-
     for (p = csync_prefix; p; p = p->next) {
 	if (p->name && p->path) {
+	    BUF_P buf = buffer_init();
 	    int length = strlen(p->name) + 3;
 	    char *prefix = malloc(length);
 	    prefix[0] = '%';
 	    strcpy(prefix+1, p->name);
 	    strcpy(prefix+length-2, "%");
-	    char *prefix_encoded = strdup(url_encode(prefix));
-	    const char *path_encoded = url_encode(p->path);
+	    const char *prefix_encoded = url_encode(prefix, buf);
+	    const char *path_encoded = url_encode(p->path, buf);
 
 	    csync_info(1, "Replace prefix %s with path %s (%s)", prefix_encoded, p->path, path_encoded);
 	    SQL(db, "upgrade database",
 		"UPDATE file set filename=replace(filename,'%s', '%s') WHERE filename like '%s%%' ",
 		prefix_encoded, path_encoded, prefix_encoded);
-	    free(prefix);
-	    free(prefix_encoded);
+	    buffer_destroy(buf);
+
 	}
     }
     exit(0);
@@ -291,53 +297,6 @@ char *csync_generate_recursive_sql(const char *file_encoded, int recursive, int 
     }
     return where_rec;
 }
-
-// No longer in use
-int db_sql_update_format_v1_v2(db_conn_p db, const char *file, int recursive, int do_it)
-{
-    textlist_p tl = 0, t;
-
-    int total = 0, found = 0;
-    const char *  file_enc = url_encode(file);
-    char *where_rec = csync_generate_recursive_sql(file_enc, recursive, 0, 1);
-    SQL_BEGIN(db, "Upgrade to v1-v2",
-	      "SELECT filename, checktxt FROM file WHERE "
-	      "%s"
-	      "hostname = '%s' "
-	      "ORDER BY filename", where_rec, myhostname)
-    {
-	filename_p filename = url_decode(SQL_V(0));
-	const char *checktxt = url_decode(SQL_V(1));
-	const char *db_filename = db_escape(db, filename);
-	// Differ then add
-	if (strcmp(db_filename,SQL_V(0))) {
-	    csync_info(1, "URL encode %s => DB encode %s ", SQL_V(0),db_filename);
-	    textlist_add2(&tl, filename, checktxt, 0);
-	    found++;
-	}
-	//db->free(db, db_filename);
-	total++;
-
-    } SQL_END;
-    printf("Found %d files out of %d to upgrade.\n", found, total);
-    if (do_it)
-	for (t = tl; t != 0; t = t->next) {
-	    const char *encoded = db_escape(db, t->value);
-	    SQL(db, "Updating url encoding to db encoding in file",
-		"UPDATE file set filename='%s' WHERE filename = '%s'",
-		encoded, url_encode(t->value));
-
-	    SQL(db, "Updating url encoding to db encoding in dirty",
-		"UPDATE dirty set filename='%s' WHERE filename = '%s'",
-		encoded, url_encode(t->value));
-	    //db->free(db, encoded);
-	    total--;
-	}
-
-    textlist_free(tl);
-    free(where_rec);
-    return 0;
-};
 
 void db_sql_remove_hint(db_conn_p db, filename_p filename, int recursive)
 {
@@ -566,7 +525,7 @@ textlist_p db_sql_find_dirty(db_conn_p db, int (*filter) (filename_p filename, c
 	      myhostname) {
 	filename_p filename   = db_decode(SQL_V(0));
 	const char *localname = db_decode(SQL_V(1));
-	peername_p peername  = db_decode(SQL_V(2));
+	peername_p peername  = db_decode( SQL_V(2));
 	csync_info(2, "Check '%s' with '%s:%s' from dirty.\n", localname, peername, filename);
 	if (!filter(filename, localname, peername)) {
 	    csync_info(1, "Remove '%s:%s' from dirty. No longer in configuration\n", peername, filename);
@@ -868,6 +827,7 @@ int db_sql_check_delete(db_conn_p db, const char *file, int recursive, int init_
 	      "WHERE %s hostname = '%s' ORDER BY filename",
 	      where_rec, myhostname)
     {
+	BUF_P buf = buffer_init();
 	filename_p filename  = db_decode(SQL_V(0));
 	const char *checktxt = db_decode(SQL_V(1));
 	const char *device   = db_decode(SQL_V(2));
@@ -958,6 +918,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
     SQL_BEGIN(db, "check_file_same_dev_inode",
 	      sql, myhostname,
 	      st->st_dev, st->st_ino, db_escape(db, filename), checktxt, digest) {
+	BUF_P buf = buffer_init();
 	const char *db_filename = db_decode(SQL_V(0));
 	const char *db_checktxt = db_decode(SQL_V(1));
 	const char *db_digest   = db_decode(SQL_V(2));
@@ -972,6 +933,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 	else {
 	    csync_info(1, "Different digest for %s %s ", digest, db_digest);
 	}
+	buffer_destroy(buf);
     } SQL_FIN {
 	if (SQL_COUNT > 0) {
 	    csync_info(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
@@ -1001,6 +963,7 @@ textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
 	SQL_BEGIN(db, "check_dirty_file_same_dev_inode (not checktxt, digest)",
 		  sqls[index], myhostname, 
 		  st->st_dev, st->st_ino, filename_enc, peername_enc) {
+	    BUF_P buf = buffer_init();
 	    const char *db_filename = db_decode(SQL_V(0));
 	    const char *db_checktxt = db_decode(SQL_V(1));
 	    const char *db_digest   = db_decode(SQL_V(2));
@@ -1012,6 +975,7 @@ textlist_p db_sql_check_dirty_file_same_dev_inode(db_conn_p db,
 	    else {
 		csync_info(1, "Different digest for %s %s ", digest, db_digest);
 	    }
+	    buffer_destroy(buf);
 	} SQL_FIN {
 	    csync_info(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
 			SQL_COUNT, (unsigned long long) st->st_dev, (unsigned long long) st->st_ino, filename);
