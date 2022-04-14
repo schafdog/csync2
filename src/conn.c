@@ -255,57 +255,61 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out)
 
 int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 {
-	const gnutls_datum_t *peercerts;
-	unsigned npeercerts;
-	int i, cert_is_ok = -1;
+    const gnutls_datum_t *peercerts;
+    unsigned npeercerts;
+    int i, cert_is_ok = -1;
 
-	if (!csync_conn_usessl)
-		return 1;
-
-	peercerts = gnutls_certificate_get_peers(conn_tls_session, &npeercerts);
-	if(peercerts == NULL || npeercerts == 0) {
-		if (callfatal)
-			csync_fatal("Peer did not provide an SSL X509 cetrificate.\n");
-		csync_error(1, "Peer did not provide an SSL X509 cetrificate.\n");
-		return 0;
-	}
-
-	{
-		char certdata[2*peercerts[0].size + 1];
-
-		for (i=0; i<peercerts[0].size; i++)
-			sprintf(&certdata[2*i], "%02X", peercerts[0].data[i]);
-		certdata[2*i] = 0;
-
-		SQL_BEGIN(db, "Checking peer x509 certificate.",
-			"SELECT certdata FROM x509_cert WHERE peername = '%s'",
-			url_encode(peername))
-		{
-			if (!strcmp(SQL_V(0), certdata))
-				cert_is_ok = 1;
-			else
-				cert_is_ok = 0;
-		} SQL_END;
-
-		if (cert_is_ok < 0) {
-		    csync_log(LOG_DEBUG, 1, "Adding peer x509 certificate to db: %s\n", certdata);
-		    SQL(db, "Adding peer x509 sha1 hash to database.",
-			"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
-			url_encode(peername), url_encode(certdata));
-		    return 1;
-		}
-
-		csync_info(2, "Peer x509 certificate is: %s\n", certdata);
-
-		if (!cert_is_ok) {
-			if (callfatal)
-				csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
-			csync_error(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
-			return 0;
-		}
-	}
-
+    if (!csync_conn_usessl)
 	return 1;
+
+    peercerts = gnutls_certificate_get_peers(conn_tls_session, &npeercerts);
+    if(peercerts == NULL || npeercerts == 0) {
+	if (callfatal)
+	    csync_fatal("Peer did not provide an SSL X509 cetrificate.\n");
+	csync_error(1, "Peer did not provide an SSL X509 cetrificate.\n");
+	return 0;
+    }
+
+    {
+	BUF_P buf = buffer_init();
+	char certdata[2*peercerts[0].size + 1];
+
+	for (i=0; i<peercerts[0].size; i++)
+	    sprintf(&certdata[2*i], "%02X", peercerts[0].data[i]);
+	certdata[2*i] = 0;
+	SQL_BEGIN(db, "Checking peer x509 certificate.",
+		  "SELECT certdata FROM x509_cert WHERE peername = '%s'",
+		  url_encode(peername, buf))
+	{
+	    if (!strcmp(SQL_V(0), certdata))
+		cert_is_ok = 1;
+	    else
+		cert_is_ok = 0;
+	} SQL_END;
+
+	if (cert_is_ok < 0) {
+	    csync_log(LOG_DEBUG, 1, "Adding peer x509 certificate to db: %s\n", certdata);
+	    SQL(db, "Adding peer x509 sha1 hash to database.",
+		"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
+		url_encode(peername, buf), url_encode(certdata, buf));
+	    buffer_destroy(buf);
+	    return 1;
+	}
+	    
+	csync_info(2, "Peer x509 certificate is: %s\n", certdata);
+
+	if (!cert_is_ok) {
+	    if (callfatal)
+		csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n")
+		    ;
+	    csync_error(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
+	    buffer_destroy(buf);
+	    return 0;
+	}
+	buffer_destroy(buf);
+    }
+
+    return 1;
 }
 
 #else
