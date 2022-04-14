@@ -656,7 +656,7 @@ int main(int argc, char ** argv)
     int flags = 0;
     int opt, i;
     // Default db_decodes (version 1 scheme)
-    db_decode = url_decode;
+    // db_decode = url_decode;
 
     ringbuffer_init();
 
@@ -965,6 +965,7 @@ int main(int argc, char ** argv)
 
 int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version)
 {
+    BUF_P buffer = buffer_init();
     int start_time = time(NULL);
     int server = mode & MODE_DAEMON;
     int server_standalone =  mode & MODE_STANDALONE;
@@ -1039,7 +1040,7 @@ nofork:
 	}
 	  
 	if (para)
-	    cfgname = strdup(url_decode(para));
+	    cfgname = strdup(url_decode(para, buffer));
     }
 
     if (csync_read_config(cfgname, conn, mode) == -1)
@@ -1277,17 +1278,20 @@ nofork:
 	case 3:
 	    realname = getrealfn(argv[optind+2]);
 	    if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
+		BUF_P buf = buffer_init();
 		if (flags & FLAG_TEST_AUTO_DIFF ) {
-		    retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version);
+		    retval = csync_diff(db, argv[optind], argv[optind+1], realname, ip_version, buf);
 		} else
 		    if ( csync_insynctest(db, argv[optind], argv[optind+1], realname, ip_version, flags))
 			retval = 2;
+		buffer_destroy(buf);
 	    }
 	    break;
-	case 2:
-	    if ( csync_insynctest(db, argv[optind], argv[optind+1], 0, ip_version, flags) )
+	case 2: {
+	    if ( csync_insynctest(db, argv[optind], argv[optind+1], 0, ip_version, flags))
 		retval = 2;
 	    break;
+	}
 	case 1:
 	    realname = getrealfn(argv[optind]);
 	    if (!csync_check_usefullness(realname, 0)) {
