@@ -212,7 +212,7 @@ extern const char *csync_db_escape_quote(filename_p filename);
 
 #define SQL(db, e, s, rest...) csync_db_sql(db, e, s, ##rest)
 
-extern const char* (*db_decode) (const char *value); 
+extern const char* (*db_decode) (const char *value);
 //extern const char* (*db_encode) (const char *value); 
 
 #define SQL_BEGIN(db, e, s, ...)			\
@@ -220,6 +220,7 @@ extern const char* (*db_decode) (const char *value);
 	char *SQL_ERR = e; \
 	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
 	int SQL_COUNT = 0; \
+	BUF_P bufp = buffer_init(); \
 \
 	if (SQL_VM) { \
 		while (1) { \
@@ -239,7 +240,8 @@ extern const char* (*db_decode) (const char *value);
 
 #define SQL_END \
 		} \
-		    csync_db_fin(SQL_VM, SQL_ERR);	\
+		buffer_destroy(bufp); \
+		csync_db_fin(SQL_VM, SQL_ERR);	\
 	} \
 }
 
@@ -353,8 +355,10 @@ extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peernam
 extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 			    const char **patlist, int patnum, int ip_version, int flags);
 
-extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
-extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version, int flags);
+extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version,
+		      BUF_P buffer);
+extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version,
+			    int flags);
 extern int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags);
 extern void csync_remove_old(db_conn_p db, filename_p pattern);
 int csync_update_file_sig_rs_diff(int conn, peername_p myname,
@@ -380,7 +384,7 @@ extern char *ringbuffer_malloc(size_t length);
 extern char *ringbuffer_strdup(const char *cpy);
 void         ringbuffer_add(const char* string, void (*free_fn) (void *) );
 extern void  ringbuffer_destroy();
-extern int   ringbugger_getcount();
+extern int   ringbuffer_getcount();
 
 /* getrealfn.c */
 
@@ -392,8 +396,8 @@ extern char *getrealfn(filename_p filename);
 /* only use this functions if you understood the sideeffects of the ringbuffer
  * used to allocate the return values.
  */
-const char *url_encode(const char *in);
-const char *url_decode(const char *in);
+const char *url_encode(const char *in, BUF_P buffer);
+const char *url_decode(const char *in, BUF_P buffer);
 
 
 /* prefixsubst.c */
