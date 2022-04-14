@@ -711,7 +711,7 @@ void set_peername_from_env(address_t *p, const char *env)
 	freeaddrinfo(result);
 }
 
-static int setup_tag(char *tag[32], char *line) {
+static int setup_tag(char *tag[32], char *line, BUF_P buffer) {
   int i = 0;
   char *save_ptr = NULL;
   tag[0] = strtok_r(line, "\t \r\n", &save_ptr);
@@ -723,16 +723,19 @@ static int setup_tag(char *tag[32], char *line) {
   if ( !tag[0][0] )
     return 1;
 
-  for (i=0; i<32; i++)
-    tag[i] = strdup(url_decode(tag[i]));
+  for (i=0; i<32; i++) {
+      tag[i] = (char *)url_decode(tag[i], buffer);
+  }
 
   return 0;
 }
 
-static void destroy_tag(char *tag[32]) {
-  int i = 0;
-  for (i=0; i<32; i++)
-    free(tag[i]);
+static void destroy_tag(char *tag[32], BUF_P buffer) {
+    int i = 0;
+    for (i=0; i<32; i++) {
+	tag[i] = NULL;
+    }
+    buffer_destroy(buffer);
 }
 
 int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error);
@@ -907,13 +910,13 @@ int response_ok_not_found(int conn) {
 }
 
 int csync_daemon_sig(int conn, char *filename, const char *user_group,
-		     time_t ftime, long long size, db_conn_p db, const char **cmd_error)
+		     time_t ftime, long long size, db_conn_p db, const char **cmd_error, BUF_P buffer)
 {
     struct stat st;
     if ( lstat_strict(filename, &st) != 0) {
 	char *path;
 	if ((path = csync_check_path(filename))) {
-	    const char *otherfile = url_encode(prefixencode(path));
+	    const char *otherfile = url_encode(prefixencode(path), buffer);
 	    conn_printf(conn, PATH_NOT_FOUND "%s\n", otherfile);
 	    return NEXT_CMD;
 	}
@@ -945,16 +948,16 @@ int csync_daemon_sig(int conn, char *filename, const char *user_group,
     if (db->version == 1)
 	conn_printf(conn, "%s %s\n", checktxt, (digest ? digest : ""));
     else if (db->version == 2) {
-	conn_printf(conn, "%s\n", url_encode(checktxt), (digest ? digest : ""));
+	conn_printf(conn, "%s\n", url_encode(checktxt, buffer), (digest ? digest : ""));
     }
-    else
-	conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
+    else {
+	conn_printf(conn, "%s %s\n", url_encode(checktxt, buffer) /*, url_encode(digest) */);
+    }
 
     if ( S_ISREG(st.st_mode) )
 	csync_rs_sig(conn, filename);
     else
 	conn_printf(conn, "octet-stream 0\n");
-    
     return OK;
 }
 
@@ -1318,7 +1321,8 @@ int csync_daemon_dispatch(int conn,
 			  char **peername,
 			  address_t *peeraddr,
 			  const char **otherfile,
-			  const char **cmd_error)
+			  const char **cmd_error,
+			  BUF_P buffer)
 {
 
     if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
@@ -1327,7 +1331,7 @@ int csync_daemon_dispatch(int conn,
     }
     switch ( cmd->action) {
     case A_SIG: {
-	return csync_daemon_sig(conn_out, filename, params->value, params->ftime, params->size, db, cmd_error);
+	return csync_daemon_sig(conn_out, filename, params->value, params->ftime, params->size, db, cmd_error, buffer);
 	break;
     }
     case A_MARK:
@@ -1479,27 +1483,28 @@ int csync_daemon_dispatch(int conn,
     return OK;
 }
 
-void csync_end_command(int conn, filename_p filename, char *tag[32], const char *cmd_error, int rc) {
-  if ( cmd_error ) {
-    csync_error(0, "ERROR: %s (%s)\n", cmd_error, filename ? filename : "<no file>");
-    conn_printf(conn, "%s (%s)\n", cmd_error, filename ? filename : "<no file>");
-  }
-  else {
-    switch (rc) {
-    case OK:
-    case ABORT_CMD:  // Rename to OK_RESPONSE
-	conn_printf(conn, "OK (cmd_finished).\n");
-      break;
-    case IDENTICAL:
-      csync_info(1, "IDENT (cmd_finished).\n");
-      conn_printf(conn, "IDENT (cmd_finished).\n");
-      break;
-    default:
-      csync_warn(1, "Unknown return rc: %d. Assuming OK\n", rc);
-      conn_printf(conn, "OK (cmd_finished).\n");
+void csync_end_command(int conn, filename_p filename, char *tag[32], const char *cmd_error, int rc, BUF_P buffer) {
+    if ( cmd_error ) {
+	csync_error(0, "ERROR: %s (%s)\n", cmd_error, filename ? filename : "<no file>");
+	conn_printf(conn, "%s (%s)\n", cmd_error, filename ? filename : "<no file>");
     }
-  }
-  destroy_tag(tag);
+    else {
+	switch (rc) {
+	case OK:
+	case ABORT_CMD:  // Rename to OK_RESPONSE
+	    conn_printf(conn, "OK (cmd_finished).\n");
+	    break;
+	case IDENTICAL:
+	    csync_info(1, "IDENT (cmd_finished).\n");
+	    conn_printf(conn, "IDENT (cmd_finished).\n");
+	    break;
+	default:
+	    csync_warn(1, "Unknown return rc: %d. Assuming OK\n", rc);
+	    conn_printf(conn, "OK (cmd_finished).\n");
+	}
+    }
+    buffer_destroy(buffer);
+    destroy_tag(tag, buffer);
 }
 
 void parse_tags(char *tag[32], struct command *cmd ) {
@@ -1519,108 +1524,111 @@ void parse_tags(char *tag[32], struct command *cmd ) {
 
 void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_version, int mode)
 {
-  address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
-  socklen_t peerlen = sizeof(peeraddr);
-  char line[4096], *peername=0, *tag[32];
-  const char *cmd_error  = NULL;
-  //TODO only valid for INETD mode since we do not set fd 0 otherwise.
-  if (MODE_INETD == mode)
-      csync_daemon_stdin_check(0, &peeraddr, &peerlen);
-  else
-      csync_daemon_stdin_check(conn_in, &peeraddr, &peerlen);
-
-  while ( conn_gets(conn_in, line, 4096) ) {
-    //csync_log(LOG_DEBUG, 1, "Command: %s", line);
-    if (setup_tag(tag, line))
-      continue;
-    struct csync_command *cmd = find_command(tag[0]);
-    if (!cmd->text) {
-      cmd_error = "Unkown command!";
-      csync_end_command(conn_out, tag[2], tag, cmd_error, 0);
-      continue;
-    }
-
-    char *filename = NULL;
-    if (tag[2])
-      filename = (char *) prefixsubst(tag[2]);
-    const char *other = prefixsubst(tag[3]);
-    if (cmd->action == A_HELLO) {
-	csync_log(LOG_DEBUG, 1, "Command: %s %s\n", tag[0], tag[1]);
-	if (active_peer)
-	    free(active_peer);
-	active_peer = strdup(tag[1]);
-    }
+    address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
+    socklen_t peerlen = sizeof(peeraddr);
+    char line[4096], *peername=0, *tag[32];
+    const char *cmd_error  = NULL;
+    //TODO only valid for INETD mode since we do not set fd 0 otherwise.
+    if (MODE_INETD == mode)
+	csync_daemon_stdin_check(0, &peeraddr, &peerlen);
     else
-	csync_log(LOG_DEBUG, 2, "CONN %s > %s %s %s %s %s %s %s %s %s %s %s\n",
-		  active_peer, tag[0], filename, other, tag[4], tag[5],
+	csync_daemon_stdin_check(conn_in, &peeraddr, &peerlen);
+
+    while ( conn_gets(conn_in, line, 4096) ) {
+	BUF_P buffer = buffer_init_size(32);
+	if (setup_tag(tag, line, buffer))
+	    continue;
+	struct csync_command *cmd = find_command(tag[0]);
+	if (!cmd->text) {
+	    cmd_error = "Unkown command!";
+	    csync_end_command(conn_out, tag[2], tag, cmd_error, 0, buffer);
+	    continue;
+	}
+
+	char *filename = NULL;
+	if (tag[2]) {
+	    filename = (char *) prefixsubst(tag[2]);
+	}
+	const char *other = prefixsubst(tag[3]);
+	if (cmd->action == A_HELLO) {
+	    csync_log(LOG_DEBUG, 1, "Command: %s %s\n", tag[0], tag[1]);
+	    if (active_peer)
+		free(active_peer);
+	    active_peer = strdup(tag[1]);
+	}
+	else {
+	    csync_log(LOG_DEBUG, 2, "CONN %s > %s %s %s %s %s %s %s %s %s %s %s\n",
+		      active_peer, tag[0], filename, other, tag[4], tag[5],
 		  tag[6], tag[7], tag[8], tag[9], tag[10], tag[11]);
+	}
+	cmd_error = 0;
 
-    cmd_error = 0;
+	if (csync_daemon_check_identify(conn_out, cmd, peername, &peeraddr)) {
+	    buffer_destroy(buffer);	    
+	    continue;
+	}		  	
+	int rc = OK, isDirty = 0;
 
-    if (csync_daemon_check_identify(conn_out, cmd, peername, &peeraddr)) {
-      destroy_tag(tag);
-      continue;
-    }		  	
-    int rc = OK, isDirty = 0;
+	if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername,tag[1]))) {
+	    rc = ABORT_CMD;
+	}
 
-    if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername,tag[1]))) {
-	rc = ABORT_CMD;
-    }
-
-    struct command params;
-    parse_tags(tag, &params);
-    if (rc == OK && cmd->check_dirty &&
-	csync_daemon_check_dirty(db, filename, peername,
-				 cmd->action, daemon_check_auto_resolve(peername, filename, params.ftime, params.size),
-				 &cmd_error))
-    {
-	rc  = ABORT_CMD;
-	// csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
-	isDirty  = 1;
-    }
-    else {
-	// TODO: Unlink only if different type
-	if (rc == OK && cmd->unlink) {
-	    struct stat st;
-	    if (lstat_strict(filename, &st) == 0 && (abs(cmd->unlink) != (st.st_mode & S_IFMT) || cmd->unlink == -1)) {
- 		if (cmd->unlink != -1) // -1: alway unlink and no logging
-		    csync_log(LOG_INFO, 1, "Unlinking entry due to different type: %d %d \n", cmd->unlink, st.st_mode & S_IFMT);
-		if(csync_file_backup(filename, &cmd_error))
+	struct command params;
+	parse_tags(tag, &params);
+	if (rc == OK && cmd->check_dirty &&
+	    csync_daemon_check_dirty(db, filename, peername,
+				     cmd->action, daemon_check_auto_resolve(peername, filename, params.ftime, params.size),
+				     &cmd_error))
+	{
+	    rc  = ABORT_CMD;
+	    // csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
+	    isDirty  = 1;
+	}
+	else {
+	    // TODO: Unlink only if different type
+	    if (rc == OK && cmd->unlink) {
+		struct stat st;
+		if (lstat_strict(filename, &st) == 0 && (abs(cmd->unlink) != (st.st_mode & S_IFMT) || cmd->unlink == -1)) {
+		    if (cmd->unlink != -1) // -1: alway unlink and no logging
+			csync_log(LOG_INFO, 1, "Unlinking entry due to different type: %d %d \n",
+				  cmd->unlink, st.st_mode & S_IFMT);
+		    if(csync_file_backup(filename, &cmd_error))
 		    csync_warn(2, "Failed to backup file %s. Unlinking anyway\n", filename);
-		csync_unlink(db, filename, peername, 1, cmd->unlink, &cmd_error);
+		    csync_unlink(db, filename, peername, 1, cmd->unlink, &cmd_error);
+		}
+	    }
+	    const char *otherfile = NULL;
+	    cmd_error = 0;
+	    if (rc != ABORT_CMD) {
+		rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params,
+					   protocol_version,
+					   &peername, &peeraddr, &otherfile,
+					   &cmd_error, buffer);
+	    }
+	    if (rc == OK || rc == IDENTICAL) {
+		// check updates done
+		csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n",
+			   rc, peername, filename, (otherfile ? otherfile : "-" ));
+		csync_daemon_check_update(db, filename, otherfile, cmd, peername);
+	    }
+	    else if (rc == NEXT_CMD){
+		// Already send an reply
+		buffer_destroy(buffer);
+		continue;
+	    }
+	    else if (rc == BYEBYE) {
+		buffer_destroy(buffer);
+		if (active_peer)
+		    free(active_peer);
+		active_peer = 0;
+		return ;
 	    }
 	}
-      const char *otherfile = NULL;
-      cmd_error = 0;
-      if (rc != ABORT_CMD) {
-	  rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params,
-				     protocol_version,
-				     &peername, &peeraddr, &otherfile,
-				     &cmd_error);
-      }
-      if (rc == OK || rc == IDENTICAL) {
-	 // check updates done
-	 csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" ));
-	 csync_daemon_check_update(db, filename, otherfile, cmd, peername);
-      }
-      else if (rc == NEXT_CMD){
-	  // Already send an reply
-	  destroy_tag(tag);
-	  continue;
-      }
-      else if (rc == BYEBYE) {
-	  destroy_tag(tag);
-	  if (active_peer)
-	      free(active_peer);
-	  active_peer = 0;
-	  return ;
-      }
+	// END CMD, in error if cmd_error (but finish it with a reply)
+	csync_end_command(conn_out, filename, tag, cmd_error, rc, buffer);
     }
-    // END CMD, in error if cmd_error (but finish it with a reply)
-    csync_end_command(conn_out, filename, tag, cmd_error, rc);
-  }
-  csync_warn(0, "CONN %s closed without BYE\n", active_peer);
-  if (active_peer)
-      free(active_peer);
-  active_peer = 0;
+    csync_warn(0, "CONN %s closed without BYE\n", active_peer);
+    if (active_peer)
+	free(active_peer);
+    active_peer = 0;
 }
