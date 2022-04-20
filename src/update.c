@@ -1627,7 +1627,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 			db->remove_dirty(db, peername, t->value, 1);
 			db->remove_file(db, t->value, 1);
 			size_t len = strlen(t->value);
-			last_dir_deleted = malloc(len+1);
+			last_dir_deleted = malloc(len+2);
 			strcpy(last_dir_deleted, t->value);
 			strcat(last_dir_deleted, "/");
 			// Skip following files if from sub-directory
