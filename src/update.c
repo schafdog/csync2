@@ -1589,7 +1589,8 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	    rc = csync_update_file_mod(conn, db, myname, peername,
 				       t->value /* file */, t->operation, t->value3, /* other */
-				       t->value4 /* checktxt */, t->value5 /* digest */, t->intvalue, flags & FLAG_DRY_RUN);
+				       t->value4 /* checktxt */, t->value5 /* digest */,
+				       t->intvalue, flags & FLAG_DRY_RUN);
 	    if (rc == CONN_CLOSE) {
 		csync_error(0, "Connection closed on updating %s\n", t->value);
 		break;
