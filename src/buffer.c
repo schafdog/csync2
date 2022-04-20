@@ -34,13 +34,13 @@ BUF_P buffer_init() {
 };
 
 void buffer_resize(BUF_P handle, int new_size);
+
 BUF_P buffer_init_size(int size)
 {
     BUF_P handle = malloc(sizeof(*handle));
-    handle->buffer = NULL;
-    handle->size = 0;
+    handle->size = size;
+    handle->buffer = calloc(size, sizeof(void*));
     handle->current = 0;
-    buffer_resize(handle, size);
     return handle;
 };
 
@@ -49,7 +49,7 @@ void buffer_resize(BUF_P handle, int new_size) {
     int size = handle->size;
     if (new_size <= size)
 	return;
-    handle->buffer = calloc(sizeof(*handle->buffer), new_size);
+    handle->buffer = calloc(new_size, sizeof(*handle->buffer));
     if (old_buffer) {
 	memcpy(handle->buffer, old_buffer, size*sizeof(*handle->buffer));
 	free(old_buffer);
