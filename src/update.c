@@ -1615,7 +1615,8 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	    } else {
 		if (last_dir_deleted != NULL && strstr(t->value, last_dir_deleted) == t->value) {
 		    // this is a file belonging to the deleted directory, so it should be skipped
-		    csync_info(2, "Skipping matched file (%s) from deleted directory (%s)\n", t->value, last_dir_deleted);
+		    csync_info(2, "Skipping matched file (%s) from deleted directory (%s)\n",
+			       t->value, last_dir_deleted);
 		} else {
 		    if (last_dir_deleted != NULL) {
 			free(last_dir_deleted);
