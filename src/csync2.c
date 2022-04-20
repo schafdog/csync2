@@ -579,6 +579,16 @@ int match_peer(char **active_peers, const char *peer) {
 
 void csync_config_destroy();
 
+void free_realname(char *real_name) {
+    if (real_name == NULL) {
+	return ;
+    }
+    if (!strcmp("", real_name)) {
+	return ;
+    }
+    free(real_name);
+}
+
 int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
@@ -1149,6 +1159,7 @@ nofork:
 	    else {
 		csync_warn(0, "%s did not match a real path. Skipping.\n", argv[i]); 
 	    };
+	    free_realname(realname);
 	};
     };
 
@@ -1178,6 +1189,7 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    db->force(db, realname, flags & FLAG_RECURSIVE);
+	    free_realname(realname);
 	};
     };
     
@@ -1210,6 +1222,7 @@ nofork:
 		    csync_compare_mode = 1;
 		    csync_check(db, realname, flags);
 		}
+		free_realname(realname);
 	    }
 	    else {
 		csync_warn(0, "%s is not a real path\n", argv[i]);
@@ -1304,11 +1317,13 @@ nofork:
 
     if (mode == MODE_LIST_DIRTY) {
 	retval = 0;
-	char *realname = ""; 
+	char *realname = "";
 	if (optind < argc) {
 	    realname = getrealfn(argv[optind]);
 	}
 	db->list_dirty(db, active_peers, realname, flags & FLAG_RECURSIVE);
+	free_realname(realname);
+
     }
     if (mode == MODE_REMOVE_OLD) {
 	char *realname = ""; 
@@ -1319,6 +1334,7 @@ nofork:
 	    csync_fatal("Never run -R with -G!\n");
 	// TODO add "path" to limit clean up
 	csync_remove_old(db, realname);
+	free_realname(realname);
     }
 
     csync_redis_close();
