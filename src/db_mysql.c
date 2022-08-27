@@ -424,7 +424,7 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
     csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
 		 "CREATE TABLE `x509_cert` ("
 		 "  `peername` varchar(50)  DEFAULT NULL,"
-		 "  `certdata` varchar(255) DEFAULT NULL,"
+		 "  `certdata` text DEFAULT NULL,"
 		 "  UNIQUE KEY `peername` (`peername`)"
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
 

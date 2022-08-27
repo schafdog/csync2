@@ -382,7 +382,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 	csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
 		     "CREATE TABLE x509_cert ("
 		     "  peername varchar(50) ,"
-		     "  certdata varchar(255) ,"
+		     "  certdata text ,"
 		     "  UNIQUE (peername)"
 		     ");");
 
