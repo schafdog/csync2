@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
-      run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl
+      run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl librsync
     - name: autogen
       run: ./autogen.sh
     - name: configure
