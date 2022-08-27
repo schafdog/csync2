@@ -10,9 +10,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
-      run: sudo apt-get install -y flex
-    - name: autoconf
-      run: autoconf
+      run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl
+    - name: autogen
+      run: ./autogen.sh
     - name: configure
       run: ./configure
     - name: make
