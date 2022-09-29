@@ -20,10 +20,6 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link.
 Updated(setown) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link  
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link.
-Daemon_setmod called on symlink: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link. Skipping!
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
@@ -40,10 +36,6 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link.
 Updated(setown) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link  
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link.
-Daemon_setmod called on symlink: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link. Skipping!
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK

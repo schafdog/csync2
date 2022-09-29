@@ -1370,13 +1370,16 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 		csync_error(2, "Failed to set owner on %s:%s %d", peername, filename, rc);
 		return rc;
 	    }
-
-	    rc = csync_update_file_setmod(conn, peername, key_enc, filename, filename_enc, &st);
-	    if (rc != OK) {
-		csync_error(2, "Failed to set mod on %s:%s %d", peername, filename, rc);
-		return rc;
+	    // Is this difference for FS?
+	    if (mode != LINK_TYPE) {
+		rc = csync_update_file_setmod(conn, peername, key_enc, filename, filename_enc, &st);
+		if (rc != OK) {
+		    csync_error(2, "Failed to set mod on %s:%s %d", peername, filename, rc);
+		    return rc;
+		} else {
+		    csync_info(2, "Skipping setmod on link %s:%s", peername, filename);
+		}
 	    }
-
             rc = csync_update_file_settime(conn, peername, key_enc, filename, filename_enc, &st);
 	    if (rc != OK) {
 		csync_error(2, "Failed to set time on %s:%s %d", peername, filename, rc);
