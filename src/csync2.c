@@ -950,7 +950,6 @@ int main(int argc, char ** argv)
 		if (!strcmp(myhostinfo->name, myhostname))
 		{
 		    csync_log(LOG_DEBUG, 1, "Found my alias %s %s %s \n" ,myhostinfo->name, myhostinfo->host, myhostinfo->port);
-		    //strncpy(myhostname, myhostinfo->host, 255);
 		    myport = strdup(myhostinfo->port);
 		    break;
 		}
