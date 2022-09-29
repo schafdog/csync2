@@ -88,7 +88,7 @@ void csync_version() {
 	"Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
 	"\n"
 #ifdef CSYNC_GIT_VERSION
-	" " CSYNC_GIT_VERSION "\n"
+	"git: " CSYNC_GIT_VERSION "\n"
 #endif
 	);
 }
