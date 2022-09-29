@@ -1,4 +1,6 @@
 cmd x "Link local/new_file 'N' all" local peer test
+Found my alias local localhost 30860 
+Binding to 30860 IPv0 
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
