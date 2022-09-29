@@ -36,33 +36,36 @@ static char badchars[] =
 
 const char *url_encode(const char *in)
 {
-	char *out;
-	int i, j, k, len;
+    char *out;
+    int i, j, k, len;
 
-	for (i=len=0; in[i]; i++, len++)
-		for (j=0; badchars[j]; j++)
-			if ( in[i] == badchars[j] ) { len+=2; break; }
+    for (i=len=0; in[i]; i++, len++)
+	for (j=0; badchars[j]; j++)
+	    if ( in[i] == badchars[j] ) {
+		len+=2;
+		break;
+	    }
 
-	out = malloc(len + 1);
+    out = malloc(len + 1);
 
-	for (i=k=0; in[i]; i++) {
-		for (j=0; badchars[j]; j++)
-			if ( in[i] == badchars[j] ) break;
-		if ( badchars[j] ) {
-			snprintf(out+k, 4, "%%%02X", in[i]);
-			k += 3;
-		} else
-			out[k++] = in[i];
-	}
-	assert(k==len);
-	out[k] = 0;
+    for (i=k=0; in[i]; i++) {
+	for (j=0; badchars[j]; j++)
+	    if ( in[i] == badchars[j] ) break;
+	if ( badchars[j] ) {
+	    snprintf(out+k, 4, "%%%02X", in[i]);
+	    k += 3;
+	} else
+	    out[k++] = in[i];
+    }
+    assert(k==len);
+    out[k] = 0;
 
-	if ( ringbuff[ringbuff_counter] )
-		free(ringbuff[ringbuff_counter]);
-	ringbuff[ringbuff_counter++] = out;
-	if ( ringbuff_counter == RINGBUFF_LEN ) ringbuff_counter=0;
-
-	return out;
+    if ( ringbuff[ringbuff_counter] )
+	free(ringbuff[ringbuff_counter]);
+    ringbuff[ringbuff_counter++] = out;
+    if ( ringbuff_counter == RINGBUFF_LEN )
+	ringbuff_counter=0;
+    return out;
 }
 
 const char *url_decode(const char *in)
