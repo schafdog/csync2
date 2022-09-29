@@ -263,41 +263,46 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version)
 
 	csync_db_sql(db, NULL, /* "Creating file table", */
 		"CREATE TABLE file ("
-		"	filename, checktxt, device, inode, size, digest, mode, mtime, type, "
+		"	filename, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
 		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-		"	UNIQUE ( filename ) ON CONFLICT REPLACE"
-		")");
+		"	UNIQUE (hostname, filename), " 
+		"       ON CONFLICT REPLACE); "
+		"       CREATE INDEX idx_file_device_inode on file (device, inode);"
+	    );
 
 	csync_db_sql(db, NULL, /* "Creating dirty table", */
 		"CREATE TABLE dirty ("
 		"	filename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
 		"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-		"	UNIQUE ( filename, peername ) ON CONFLICT IGNORE"
-		")");
-
+		"	UNIQUE (filename, peername), "
+		"	KEY (device, inode), " 		     
+		"       ON CONFLICT IGNORE); "
+		"       CREATE INDEX idx_dirty_device_inode on file (device, inode);"
+	    );
 	csync_db_sql(db, NULL, /* "Creating hint table", */
 		"CREATE TABLE hint ("
 		"	filename, recursive,"
-		"	UNIQUE ( filename, recursive ) ON CONFLICT IGNORE"
-		")");
+		"	UNIQUE ( filename, recursive ) ON CONFLICT IGNORE)"
+	    );
 
 	csync_db_sql(db, NULL, /* "Creating action table", */
 		"CREATE TABLE action ("
 		"	filename, command, logfile, "
 		"	UNIQUE ( filename, command ) ON CONFLICT IGNORE"
-		")");
+		")"
+	    );
 
 	csync_db_sql(db, NULL, /* "Creating host table", */
 		"CREATE TABLE host ("
 		"	hostname, status, "
-		"	UNIQUE ( hostname ) ON CONFLICT IGNORE"
-		")");
+		"	UNIQUE ( hostname ) ON CONFLICT IGNORE)"
+	    );
 
 	csync_db_sql(db, NULL, /* "Creating x509_cert table", */
 		"CREATE TABLE x509_cert ("
 		"	peername, certdata, "
-		"	UNIQUE ( peername ) ON CONFLICT IGNORE"
-		")");
+		"	UNIQUE ( peername ) ON CONFLICT IGNORE)"
+	    );
 
 	return DB_OK;
 }

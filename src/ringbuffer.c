@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 /* Maximum simultanous allocated */
-#define RINGBUFFER_LEN 100
+#define RINGBUFFER_LEN 10000
 
 typedef void (*free_fn_t) (void *);
 static char *ringbuffer[RINGBUFFER_LEN];

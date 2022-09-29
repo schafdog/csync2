@@ -149,7 +149,7 @@ int conn_set(int infd, int outfd)
 
 static void ssl_log(int prio, const char* msg)
 {
-    csync_log(prio, 0, "%s", msg);
+    csync_log(prio, 3, "%s", msg);
 }
 
 static const char *ssl_keyfile = ETCDIR "/csync2_ssl_key.pem";
@@ -165,7 +165,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out)
 
 	gnutls_global_init();
 	gnutls_global_set_log_function(ssl_log);
-	gnutls_global_set_log_level(10);
+	gnutls_global_set_log_level(3);
 
 	gnutls_certificate_allocate_credentials(&conn_x509_cred);
 

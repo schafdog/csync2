@@ -599,7 +599,8 @@ int get_file_type(int st_mode) {
  */
 void cmd_printf(int conn, const char *cmd, const char *key,
 		filename_p filename, const char *secondname,
-		const struct stat *st, const char *uid, const char* gid, const char *digest) {
+		const struct stat *st, const char *uid, const char* gid, const char *digest)
+{
     if (digest != NULL && !strcmp(digest, "")) {
 	digest = NULL;
     }
@@ -867,7 +868,7 @@ int csync_update_file_patch(int conn,
 			    const char *digest,
 			    int *last_conn_status)
 {
-    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, digest);
+    cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, "-");
     int rc = csync_update_reg_file(conn, peername, filename, last_conn_status);
     return rc;
 }
@@ -1369,13 +1370,16 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 		csync_error(2, "Failed to set owner on %s:%s %d", peername, filename, rc);
 		return rc;
 	    }
-
-	    rc = csync_update_file_setmod(conn, peername, key_enc, filename, filename_enc, &st);
-	    if (rc != OK) {
-		csync_error(2, "Failed to set mod on %s:%s %d", peername, filename, rc);
-		return rc;
+	    // Is this difference for FS?
+	    if (mode != LINK_TYPE) {
+		rc = csync_update_file_setmod(conn, peername, key_enc, filename, filename_enc, &st);
+		if (rc != OK) {
+		    csync_error(2, "Failed to set mod on %s:%s %d", peername, filename, rc);
+		    return rc;
+		} else {
+		    csync_info(2, "Skipping setmod on link %s:%s", peername, filename);
+		}
 	    }
-
             rc = csync_update_file_settime(conn, peername, key_enc, filename, filename_enc, &st);
 	    if (rc != OK) {
 		csync_error(2, "Failed to set time on %s:%s %d", peername, filename, rc);
@@ -1588,7 +1592,8 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	if ( lstat_strict(t->value, &st) == 0 && !csync_check_pure(t->value)) {
 	    rc = csync_update_file_mod(conn, db, myname, peername,
 				       t->value /* file */, t->operation, t->value3, /* other */
-				       t->value4 /* checktxt */, t->value5 /* digest */, t->intvalue, flags & FLAG_DRY_RUN);
+				       t->value4 /* checktxt */, t->value5 /* digest */,
+				       t->intvalue, flags & FLAG_DRY_RUN);
 	    if (rc == CONN_CLOSE) {
 		csync_error(0, "Connection closed on updating %s\n", t->value);
 		break;
@@ -1614,7 +1619,8 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 	    } else {
 		if (last_dir_deleted != NULL && strstr(t->value, last_dir_deleted) == t->value) {
 		    // this is a file belonging to the deleted directory, so it should be skipped
-		    csync_info(2, "Skipping matched file (%s) from deleted directory (%s)\n", t->value, last_dir_deleted);
+		    csync_info(2, "Skipping matched file (%s) from deleted directory (%s)\n",
+			       t->value, last_dir_deleted);
 		} else {
 		    if (last_dir_deleted != NULL) {
 			free(last_dir_deleted);
@@ -1626,7 +1632,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 			db->remove_dirty(db, peername, t->value, 1);
 			db->remove_file(db, t->value, 1);
 			size_t len = strlen(t->value);
-			last_dir_deleted = malloc(len+1);
+			last_dir_deleted = malloc(len+2);
 			strcpy(last_dir_deleted, t->value);
 			strcat(last_dir_deleted, "/");
 			// Skip following files if from sub-directory

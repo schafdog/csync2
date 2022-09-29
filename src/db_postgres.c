@@ -350,8 +350,8 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  type   int    	      ,"
 		     "  file_id   bigint      ,"
 		     "  timestamp timestamp   DEFAULT current_timestamp,"
-		     "  UNIQUE (filename,peername,myname)"
-		     ");", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
+		     "  UNIQUE (filename,peername,myname), "
+		     "); CREATE INDEX idx_dirty_device_inode on drity (device, inode);", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
 		     "CREATE TABLE file ("
@@ -370,8 +370,8 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 		     "  digest varchar(130)  ,"
 		     "  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
 		     //		     "  UNIQUE (id),"
-		     "  UNIQUE (filename,hostname)"
-		     ");", FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH+50);
+		     "  UNIQUE (filename,hostname), "
+		     "); CREATE INDEX idx_file_device_inode ON FILE (device, inode); ", FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH+50);
 
 	csync_db_sql(conn, NULL, /* "Creating hint table", */
 		     "CREATE TABLE hint ("
@@ -382,7 +382,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version)
 	csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
 		     "CREATE TABLE x509_cert ("
 		     "  peername varchar(50) ,"
-		     "  certdata varchar(255) ,"
+		     "  certdata text ,"
 		     "  UNIQUE (peername)"
 		     ");");
 

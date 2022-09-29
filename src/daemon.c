@@ -1149,18 +1149,25 @@ void csync_daemon_stdin_check(int fd, address_t *peeraddr, socklen_t *peerlen) {
 }
 
 int csync_daemon_setmod(filename_p filename, const char *mod, const char **cmd_error) {
-  if ( !csync_ignore_mod ) {
-    if (!chmod(filename, atoi(mod)))
-      return OK;
-    // Should ignore if symlink
-    if (errno != ENOENT) {
-	*cmd_error = strerror(errno);
-	return ABORT_CMD;
-    } else {
-	csync_warn(0, "daemon_setmod: Ignoring fail setmod on missing file: %s. Symlink?\n", filename);
+    if ( !csync_ignore_mod ) {
+	struct stat st;
+	int rc = lstat(filename, &st);
+	if (rc == 0) {
+	    if (S_ISLNK(st.st_mode)) {
+		csync_warn(0, "Daemon_setmod called on symlink: %s. Skipping!\n", filename);
+		return OK;
+	    }
+	}
+	if (!chmod(filename, atoi(mod)))
+	    return OK;
+	if (errno != ENOENT) {
+	    *cmd_error = strerror(errno);
+	    return ABORT_CMD;
+	} else {
+	    csync_warn(0, "daemon_setmod: Ignoring fail setmod on missing file: %s. errno %d\n", filename, errno);
+	}
     }
-  }
-  return OK;
+    return OK;
 }
 
 int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error)
@@ -1241,7 +1248,7 @@ int csync_daemon_symlink(filename_p filename, const char *target, const char **c
 	    csync_debug(0, "daemon_symlink: Failed to unlink %s. Symlink will fail", filename);
     }
     if (!symlink(target, filename))
-	    return OK;
+	return OK;
     *cmd_error = strerror(errno);
     csync_debug(0, "daemon_symlink failed: %s -> %s  %d\n", filename, target, *cmd_error);
     return ABORT_CMD;

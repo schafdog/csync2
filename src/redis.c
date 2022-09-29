@@ -145,8 +145,6 @@ int csync_redis_set_int(const char *key, const char *domain, int number, int nx,
 }
     
 time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const char *domain) {
-    BUF_P buffer = buffer_init();
-
     if (redis_context == NULL)
 	return 0;
     time_t unix_time = time(NULL);
@@ -182,7 +180,8 @@ int csync_redis_del_custom(const char *key, const char *domain) {
     redis_reply = redisCommandArgv(redis_context, 2, argv, NULL);
     csync_debug(3, "Redis Reply: DEL '%s' -> %d\n", domain_key, redis_reply ? redis_reply->integer : -1);
     if (redis_reply == NULL || redis_reply->integer != 1) {
-	csync_debug(3, "csync_redis_del failed to delete one key: %d\n", redis_reply ? redis_reply->integer : -1);
+	csync_debug(3, "csync_redis_del failed to delete one key: %d\n",
+		    redis_reply ? redis_reply->integer : -1);
     } else
 	rc = redis_reply->integer;
     buffer_destroy(buffer);

@@ -161,7 +161,8 @@ int db_sql_list_dirty(db_conn_p db, char **active_peers, const char *realname, i
     }
     SQL_BEGIN(db, "DB Dump - Dirty",
 	      "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty "
-	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) AND myname = '%s' ORDER BY type, filename",
+	      "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) AND myname = '%s' "
+	      "ORDER BY type, filename",
 	      OP_FILTER, where, myhostname)
     {
 	const char *force_str = SQL_V(0);
