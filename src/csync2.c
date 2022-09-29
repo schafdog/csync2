@@ -662,7 +662,7 @@ int csync_read_config(char *cfgname, int conn, int mode)
 
 int main(int argc, char ** argv)
 {
-    int mode = MODE_NONE;
+    long mode = MODE_NONE;
     int flags = 0;
     int opt, i;
     // Default db_decodes (version 1 scheme)
@@ -937,10 +937,10 @@ int main(int argc, char ** argv)
 
     int listenfd;
     int server = mode & MODE_DAEMON;
-    int server_standalone =  mode & MODE_STANDALONE;
+    long server_standalone =  mode & MODE_STANDALONE;
     char *myport = csync_port;
-    csync_log(LOG_DEBUG, 3, "csync_hostinfo %p \n", csync_hostinfo);
-    if (server_standalone) {
+    csync_log(LOG_DEBUG, 3, "csync_hostinfo %p %ld %ld\n", csync_hostinfo, mode, server_standalone);
+    if (server_standalone != 0) {
 	if (!csync_port_cmdline) {
 	    // We need to read the config file to determine a eventual port override
 	    // port override needs to be consistent over all configurations
@@ -1313,7 +1313,7 @@ nofork:
 	    break;
 	}
     };
-
+    csync_info(0, "MODE %ld\n", mode);
     if (mode == MODE_LIST_DIRTY) {
 	retval = 0;
 	char *realname = "";
