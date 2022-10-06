@@ -224,7 +224,6 @@ int create_keyfile(filename_p filename)
     char matrix[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
     unsigned char n;
     int i;
-    int rc;
     assert(sizeof(matrix) == 65);
     if ( fd == -1 ) {
 	fprintf(stderr, "Can't create key file: %s\n", strerror(errno));
@@ -235,10 +234,10 @@ int create_keyfile(filename_p filename)
 	return 1;
     }
     for (i=0; i<64; i++) {
-	rc = read(rand, &n, 1);
-	rc = write(fd, matrix+(n&63), 1);
+	read(rand, &n, 1);
+	write(fd, matrix+(n&63), 1);
     }
-    rc = write(fd, "\n", 1);
+    write(fd, "\n", 1);
     close(rand);
     close(fd);
     return 0;
@@ -935,15 +934,17 @@ int main(int argc, char ** argv)
     for (i=0; myhostname[i]; i++)
 	myhostname[i] = tolower(myhostname[i]);
 
-    int listenfd;
-    int server = mode & MODE_DAEMON;
+    int listenfd = 0;
     long server_standalone =  mode & MODE_STANDALONE;
     char *myport = csync_port;
-    csync_log(LOG_DEBUG, 3, "csync_hostinfo %p %ld %ld\n", csync_hostinfo, mode, server_standalone);
-    if (server_standalone != 0) {
+    csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
+    csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone: %ld\n", server_standalone, server_standalone > 0);
+    if (server_standalone > 0) {
+	csync_info(0,"server standalone %ld server_standalone>0: %ld\n",  server_standalone, server_standalone > 0);
 	if (!csync_port_cmdline) {
 	    // We need to read the config file to determine a eventual port override
 	    // port override needs to be consistent over all configurations
+	    csync_debug(0,"No command line port. Reading config\n");
 	    csync_read_config(cfgname, 0, MODE_NONE);
 	    struct csync_hostinfo *myhostinfo = csync_hostinfo;
 	    while (myhostinfo != NULL) {
