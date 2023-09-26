@@ -103,11 +103,22 @@ Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/p
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur.
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur  
+IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  
 IDENT (cmd_finished).
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
+Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S  
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.
@@ -117,64 +128,27 @@ Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Mai
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp.
-Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp  
-IDENT (cmd_finished).
-goto nofork.
-Command: HELLO local
-HELLO from local. Response: OK
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new.
-Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new  
-IDENT (cmd_finished).
-ERROR: No such file or directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/1434.M21,S=6631,W=6764)
-ERROR: No such file or directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/1434.M21,S=6631,W=6764)
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
-IDENT (cmd_finished).
-goto nofork.
-Command: HELLO local
-HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 8 
+Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 6 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/* ..
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/* ..
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 0
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/* ..
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764.
-Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764
-Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
-Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 from file db.
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 0
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/* ..
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 0
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/* ..
 Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/* ..
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
-Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S
-Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
-Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S from file db.
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 0
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 0
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 0
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
-Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 8 1 
+Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 6 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 goto nofork.

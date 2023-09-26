@@ -16,6 +16,7 @@ cmd x "Setup Maildir"
 sleep 1
 FILE=1434.M21,S=6631,W=6764
 CURFILE=${FILE}:2,
+FILE2=2_${FILE}
 CURPATH=
 echo NewMail > test/$NAME/Maildir/tmp/${FILE}
 sleep 1
@@ -36,16 +37,7 @@ sleep 1
 cmd c "check:  Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S. mv ${CURFILE}S ${CURFILE}ST"
 cmd u "update: Delete email: ln Maildir/cur/${CURFILE}S Maildir/.Trash/cur/${CURFILE}S. mv ${CURFILE}S ${CURFILE}ST"
 rm -rf test/$NAME/Maildir/.Trash/cur/${CURFILE}S test/$NAME/Maildir/cur/${CURFILE}ST
-cmd x "Remove files before rerun"
-echo NewMail > test/$NAME/Maildir/tmp/${FILE}
-cmd c "New Maildir/tmp/${FILE}"
-mv test/$NAME/Maildir/tmp/${FILE} test/$NAME/Maildir/new/${FILE}
-cmd u "New Maildir/tmp/${FILE} already move to new"
-mv test/$NAME/Maildir/tmp/${FILE} test/$NAME/Maildir/cur/${FILE},2
-cmd c "New Maildir/cur/${FILE},2"
-mv test/$NAME/Maildir/cur/${FILE},2
-cmd u "New Maildir/cur/${FILE},2 removed on update"
-cmd x "New Maildir/cur/${FILE},2 removed on check and update"
+cmd x "9 Remove files. Removed from other"
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon
