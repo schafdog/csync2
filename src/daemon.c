@@ -73,30 +73,30 @@ int csync_file_backup(filename_p filename, const char **cmd_error);
 
 int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
     const char *cmd_error = 0;
+    int rc = 0;
     time_t lock_time = csync_redis_lock(filename);
     if (buffer && lock_time == -1) {
 	buffer_strdup(buffer, filename);
 	return ABORT_CMD;
     }
-    int rc;
-    
-    if (db)
-	rc = csync_file_backup(filename, &cmd_error);
-    if (!rc) {
-	time_t lock_time = csync_redis_lock_custom(filename, 300, "DELETE");
-	rc = unlink(filename);
-	if (db && !rc) {
-	    csync_info(1, "Removing %s from file db.\n", filename);
+    if (db) {
+	rc = csync_file_backup(filename, &cmd_error); 
+	if (!rc) {
+	    lock_time = csync_redis_lock_custom(filename, 300, "DELETE");
+	    rc = unlink(filename);
+	    if (db && !rc) {
+		csync_info(1, "Removing %s from file db.\n", filename);
 		db->remove_file(db, filename, 0);
+	    }
+	    if (rc) {
+		if (lock_time != -1)
+		    csync_redis_del_custom(filename, "DELETE");
+		csync_error(1, "Failed to delete  %s !\n", filename);
+	    }
 	}
-	if (rc) {
-	    if (lock_time != -1)
-		csync_redis_del_custom(filename, "DELETE");
-	    csync_error(1, "Failed to delete  %s !\n", filename);
-	}
+	else
+	    csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
     }
-    else
-	csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
     return csync_redis_unlock_status(filename, lock_time, rc);
 }
 int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd, int auto_resolve, const char **cmd_error);
@@ -148,7 +148,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 	}
 	free(namelist);
     }
-    time_t lock_time = csync_redis_lock_custom(file, 300, "DELETE,IS_DIR");
+    /* time_t lock_time = */ csync_redis_lock_custom(file, 300, "DELETE,IS_DIR");
     int rc = rmdir(file);
     csync_info(0, "Removing directory %s %d\n", file, rc);
     if (db)
@@ -179,7 +179,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
     */
     int errors = 0;
     if (recursive) {
-	textlist_p tl, t = 0;
+	textlist_p tl;
 	csync_info(0, "Deleting recursive from clean directory (%s): %d \n", filename, dir_count);
 /*
 	BUF_P buffer  = buffer_init();
@@ -739,20 +739,23 @@ int csync_daemon_hardlink(filename_p filename, const char *linkname, const char 
 
 textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl)
 {
-  const char *cmd_error = NULL;
-  textlist_p t = tl;
-  while (t) {
-    char *src  = t->value;
-    int rc = unlink(src);
-    if (rc) {
-	csync_error(0, "ERROR: Failed to unlink '%s'before hardlinking to '%s'",
-		    src, filename);
+    if (st) {
+	csync_error(0, "csync_hardlink: unused parameter %s'", st);
     }
-    csync_daemon_hardlink(filename, src, "1", &cmd_error);
-    t = t->next;
-  }
-  textlist_free(tl);
-  return 0;
+    const char *cmd_error = NULL;
+    textlist_p t = tl;
+    while (t) {
+	char *src  = t->value;
+	int rc = unlink(src);
+	if (rc) {
+	    csync_error(0, "ERROR: Failed to unlink '%s'before hardlinking to '%s'",
+			src, filename);
+	}
+	csync_daemon_hardlink(filename, src, "1", &cmd_error);
+	t = t->next;
+    }
+    textlist_free(tl);
+    return 0;
 }
 
 int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char **cmd_error)
@@ -764,7 +767,7 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 	int recursive = 0;
 	if (S_ISDIR(st.st_mode))
 	    recursive = 1;
-	// ALREADY done before patch csync_unlink(db, filename, recursive);
+	csync_error(1, "ALREADY done before patch csync_unlink(%p,%s,%d)", db, filename, recursive);
     }
     time_t lock_time = csync_redis_lock(filename);
     if (lock_time == -1) {
@@ -909,6 +912,7 @@ int response_ok_not_found(int conn) {
 int csync_daemon_sig(int conn, char *filename, const char *user_group,
 		     time_t ftime, long long size, db_conn_p db, const char **cmd_error)
 {
+    csync_debug(3, "csync_daemon_sig: unused parameters: ftime %ld size %lld", ftime, size); 
     struct stat st;
     if ( lstat_strict(filename, &st) != 0) {
 	char *path;
@@ -971,7 +975,7 @@ void csync_daemon_type(int conn, char *filename, const char **cmd_error)
 
 	conn_printf(conn, "OK (data_follows).\n");
 	while ( (rc=fread(buffer, 1, 512, f)) > 0 )
-	    if ( conn_write(conn, buffer, rc) != rc ) {
+	    if ( conn_write(conn, buffer, rc) != (ssize_t) rc ) {
 		conn_printf(conn, "[[ %s ]]", strerror(errno));
 		break;
 	    }
@@ -1039,7 +1043,11 @@ const char *check_ssl(char *peername) {
 }
 
 const char *csync_daemon_hello_ping(db_conn_p db, char **peername, address_t *peeraddr,
-				    const char *newpeername, const char *config, int is_ping, int ip_version) {
+				    const char *newpeername, const char *config, int is_ping, int ip_version)
+{
+    // unused
+    (void) config;
+    
   if (*peername) {
     free(*peername);
     *peername = NULL;
@@ -1257,7 +1265,6 @@ int csync_daemon_symlink(filename_p filename, const char *target, const char **c
 static int daemon_check_slave_status(filename_p filename)
 {
     const struct csync_group *g = 0;
-    const struct csync_group_host *h;
 
     while ( (g=csync_find_next(g, filename, 0)) ) {
 	if (g->local_slave)
@@ -1327,7 +1334,9 @@ int csync_daemon_dispatch(int conn,
 			  const char **otherfile,
 			  const char **cmd_error)
 {
-
+    // unused
+    (void) conn;
+    
     if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
 	csync_debug(1, "daemon dispatch: Remote %s:%s won auto resolved. clear dirty\n", *peername, filename);
 	db->remove_dirty(db, "%", filename, 0);
@@ -1568,7 +1577,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
       destroy_tag(tag);
       continue;
     }		  	
-    int rc = OK, isDirty = 0;
+    int rc = OK;
 
     if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername,tag[1]))) {
 	rc = ABORT_CMD;
@@ -1583,7 +1592,6 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
     {
 	rc  = ABORT_CMD;
 	// csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
-	isDirty  = 1;
     }
     else {
 	// TODO: Unlink only if different type

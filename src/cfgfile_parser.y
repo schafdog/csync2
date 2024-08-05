@@ -58,12 +58,12 @@ void yyerror(char *text)
 static void new_group(char *name)
 {
 	int static autonum = 1;
-	int rc; 
 	struct csync_group *t =
 		calloc(sizeof(struct csync_group), 1);
 
 	if (name == 0)
-		rc = asprintf(&name, "group_%d", autonum++);
+	    // missing check on result
+	    asprintf(&name, "group_%d", autonum++);
 	
 	t->next = csync_group;
 	t->auto_method = -1;
@@ -261,7 +261,8 @@ static void check_group()
 
     if (active_peerlist) {
 	struct csync_group_host *h;
-	int i=0, thisplen;
+	int i=0;
+	size_t thisplen;
 
 	while (active_peerlist[i]) {
 	    thisplen = strcspn(active_peerlist + i, ",");

@@ -76,7 +76,7 @@ void csync_run_single_command(db_conn_p db, const char *command, const char *log
     if ( !mark ) {
 	real_command = strdup(command_clr);
     } else {
-	int len = strlen(command_clr) + 10;
+	size_t len = strlen(command_clr) + 10;
 	char *pos;
 
 	for (t = tl; t != 0; t = t->next)

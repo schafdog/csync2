@@ -180,11 +180,11 @@ extern int conn_activate_ssl(int server_role, int in, int out);
 extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal);
 extern int conn_close(int conn);
 
-extern int conn_read(int fd, void *buf, size_t count);
-extern int conn_read_get_content_length(int fd, long *size);
-extern int conn_write(int fd, const void *buf, size_t count);
-size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline);
-size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);
+extern ssize_t conn_read(int fd, void *buf, size_t count);
+extern ssize_t conn_read_get_content_length(int fd, long *size);
+extern ssize_t conn_write(int fd, const void *buf, size_t count);
+ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline);
+ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);
 
 extern void conn_printf(int fd, const char *fmt, ...);
 extern int conn_fgets(int fd, char *s, int size);
@@ -220,6 +220,7 @@ extern const char* (*db_decode) (const char *value);
 	char *SQL_ERR = e; \
 	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
 	int SQL_COUNT = 0; \
+	(void) SQL_COUNT; \
 \
 	if (SQL_VM) { \
 		while (1) { \

@@ -23,11 +23,9 @@ int dsync_digest(int file, const char *digest_name, unsigned char *md_value, uns
   EVP_DigestInit_ex(mdctx, md, NULL);
   char buffer[4096];
   ssize_t n;
-  ssize_t total = 0;
   while ((n = read(file, buffer, 4096)) > 0) {
     EVP_DigestUpdate(mdctx, buffer, n);
-    total += n;
-    }
+  }
   EVP_DigestFinal_ex(mdctx, md_value, md_len);
 
   EVP_MD_CTX_destroy(mdctx);
@@ -37,13 +35,13 @@ int dsync_digest(int file, const char *digest_name, unsigned char *md_value, uns
 
 void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *digest_str)
 {
-  for (int i = 0; i < md_len; i++) {
+  for (unsigned int i = 0; i < md_len; i++) {
     sprintf(digest_str+2*i, "%02x", md_value[i]);
   }
 }
 
 
-int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, int size) {
+int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, unsigned int size) {
   int fileno = open(filename, O_RDONLY);
   if (fileno < 0)
     return fileno;

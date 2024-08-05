@@ -51,19 +51,22 @@ static int in_sql_query = 0;
 
 void csync_db_alarmhandler(int signum)
 {
-	if ( in_sql_query || begin_commit_recursion )
-		alarm(2);
+    // unused parameter
+    (void) signum ;
+    
+    if ( in_sql_query || begin_commit_recursion )
+	alarm(2);
 
-	if (tqueries_counter <= 0)
-		return;
+    if (tqueries_counter <= 0)
+	return;
 
-	begin_commit_recursion++;
+    begin_commit_recursion++;
 
-	// csync_info(3, "Database idle in transaction. Forcing COMMIT.\n");
-	SQL(global_db, "COMMIT (alarmhandler)", "COMMIT ");
-	tqueries_counter = -10;
+    // csync_info(3, "Database idle in transaction. Forcing COMMIT.\n");
+    SQL(global_db, "COMMIT (alarmhandler)", "COMMIT ");
+    tqueries_counter = -10;
 
-	begin_commit_recursion--;
+    begin_commit_recursion--;
 }
 
 void csync_db_maybegin(db_conn_p db)
@@ -256,28 +259,31 @@ int csync_db_get_column_int(void *stmt, int column) {
 int csync_db_next(void *vmx, const char *err,
 		int *pN, const char ***pazValue, const char ***pazColName)
 {
-	db_stmt_p stmt = vmx;
-	int rc, busyc = 0;
+    // unused
+    (void) pN; (void) pazValue; (void) pazColName;
+    
+    db_stmt_p stmt = vmx;
+    int rc, busyc = 0;
 
-	csync_info(4, "Trying to fetch a row from the database.\n");
-
-	while (1) {
-		rc = db_stmt_next(stmt);
-		if ( rc != DB_BUSY ) 
-		  break;
-		if (busyc++ > get_dblock_timeout()) { 
-		  global_db = 0; 
-		  csync_fatal(DEADLOCK_MESSAGE); 
-		}
-		csync_warn(3, "Database is busy, sleeping a sec.\n");
-		sleep(1);
+    csync_info(4, "Trying to fetch a row from the database.\n");
+	
+    while (1) {
+	rc = db_stmt_next(stmt);
+	if ( rc != DB_BUSY ) 
+	    break;
+	if (busyc++ > get_dblock_timeout()) { 
+	    global_db = 0; 
+	    csync_fatal(DEADLOCK_MESSAGE); 
 	}
+	csync_warn(3, "Database is busy, sleeping a sec.\n");
+	sleep(1);
+    }
 
-	if ( rc != DB_OK && rc != DB_ROW &&
-	     rc != DB_DONE && err )
-		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(global_db));
+    if ( rc != DB_OK && rc != DB_ROW &&	 rc != DB_DONE && err ) {
+	csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(global_db));
+    }
 
-	return rc == DB_ROW;
+    return rc == DB_ROW;
 }
 
 const void * csync_db_colblob(void *stmtx, int col) {

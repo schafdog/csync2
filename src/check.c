@@ -466,6 +466,9 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
 				 const char* checktxt, int operation, const char *digest,
 				 struct stat *st, textlist_loop_t loop)
 {
+    if (loop) {
+	csync_info(2, "check_link_move:  unused parameter textlist_loop_t %p\n", loop);
+    }
     textlist_p t, tl = NULL;
     textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
     struct stat file_stat;
@@ -476,7 +479,7 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
     	const char *db_operation = t->value3;
 	csync_info(2, "check_link_move:  DB file: %s %s: %d\n", db_filename, db_operation, operation);
     	int rc = stat(db_filename, &file_stat);
-    	int db_version = csync_get_checktxt_version(db_checktxt);
+    	/* int db_version = */ csync_get_checktxt_version(db_checktxt);
     	int i = 0;
 	if (db_operation && !strcmp(db_operation, "NEW")) {
 	    csync_info(1, "Unable to MOVE/LINK: both NEW\n");
@@ -745,10 +748,11 @@ int csync_check_recursive(db_conn_p db, filename_p filename, int flags, const st
     return count_dirty;
 }
 
-
+/*
 void csync_combined_operation(peername_p peername, const char *dev, const char *inode, const char *checktxt) {
 
 }
+*/
 
 void csync_check(db_conn_p db, filename_p filename, int flags)
 {

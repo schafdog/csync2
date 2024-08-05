@@ -130,6 +130,7 @@ int conn_set(int infd, int outfd)
 	int on = 1;
 
 //	conn_fd_in  = infd;
+	(void) infd;
 //	conn_fd_out = outfd;
 #ifdef HAVE_LIBGNUTLS
 	csync_conn_usessl = 0;
@@ -257,7 +258,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 {
 	const gnutls_datum_t *peercerts;
 	unsigned npeercerts;
-	int i, cert_is_ok = -1;
+	int cert_is_ok = -1;
 
 	if (!csync_conn_usessl)
 		return 1;
@@ -272,10 +273,10 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 
 	{
 		char certdata[2*peercerts[0].size + 1];
-
-		for (i=0; i<peercerts[0].size; i++)
-			sprintf(&certdata[2*i], "%02X", peercerts[0].data[i]);
-		certdata[2*i] = 0;
+		size_t size; 
+		for (size=0; size < peercerts[0].size; size++)
+			sprintf(&certdata[2*size], "%02X", peercerts[0].data[size]);
+		certdata[2*size] = 0;
 
 		SQL_BEGIN(db, "Checking peer x509 certificate.",
 			"SELECT certdata FROM x509_cert WHERE peername = '%s'",
@@ -337,7 +338,7 @@ int conn_close(int conn)
     return 0;
 }
 
-static inline int READ(int filedesc, void *buf, size_t count)
+static inline size_t READ(int filedesc, void *buf, size_t count)
 {
 #ifdef HAVE_LIBGNUTLS
     if (csync_conn_usessl)
@@ -360,7 +361,7 @@ static inline int READ(int filedesc, void *buf, size_t count)
 	csync_error(0, "Error in READ: %d %s\n", errno, strerror(errno));
 	return rc;
     }
-    int length = 0; 
+    ssize_t length = 0; 
     while (1) {
 	length = read(filedesc, buf, count);
 	if (length == -1 && errno == EINTR)
@@ -374,9 +375,10 @@ static inline int READ(int filedesc, void *buf, size_t count)
     return length;
 }
 
-static inline int WRITE(int fd, const void *buf, size_t count)
+static inline ssize_t WRITE(int fd, const void *buf, size_t count)
 {
-    int n, total;
+    ssize_t n;
+    size_t total;
 #ifdef HAVE_LIBGNUTLS
     if (csync_conn_usessl)
 	return gnutls_record_send(conn_tls_session, buf, count);
@@ -400,19 +402,19 @@ static inline int WRITE(int fd, const void *buf, size_t count)
     }
 }
 
-int conn_raw_read(int filedesc, void *buf, size_t count)
+ssize_t conn_raw_read(int filedesc, void *buf, size_t count)
 {
     return READ(filedesc, buf, count);
 }
 
 void conn_debug(const char *name, const char*buf, size_t count)
 {
-	int i;
+	size_t i;
 
 	if ( csync_level_debug < 3 ) return;
 
 	fprintf(csync_out_debug, "%s> ", name);
-	for (i=0; i<count; i++) {
+	for (i=0; i < count; i++) {
 		switch (buf[i]) {
 			case '\n':
 				fprintf(csync_out_debug, "\\n");
@@ -431,7 +433,7 @@ void conn_debug(const char *name, const char*buf, size_t count)
 	fprintf(csync_out_debug, "\n");
 }
 
-int conn_read_get_content_length(int fd, long *size) 
+ssize_t conn_read_get_content_length(int fd, long *size) 
 {
    char buffer[100];
    *size = 0;
@@ -445,9 +447,10 @@ int conn_read_get_content_length(int fd, long *size)
 }
 
 /* Rewritten not to mask errors */ 
-int conn_read(int fd, void *buf, size_t count)
+ssize_t conn_read(int fd, void *buf, size_t count)
 {
-    int pos, rc;
+    size_t pos;
+    ssize_t rc;
     for (pos=0; pos < count ; pos+=rc) {
 	rc = conn_raw_read(fd, (char *)buf+pos, count-pos);
 	if (rc < 0)
@@ -460,7 +463,7 @@ int conn_read(int fd, void *buf, size_t count)
     return pos;
 }
 
-int conn_write(int fd, const void *buf, size_t count)
+ssize_t conn_write(int fd, const void *buf, size_t count)
 {
     // conn_debug("Local", buf, count);
     return WRITE(fd, buf, count);
@@ -543,7 +546,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const c
     char dummy = 0, *buffer = 0;
     va_list ap;
     int size;
-
+    csync_debug(2, "conn_printf_cmd_filepath: unused parameters cmd %s file %s key_enc %s", cmd, file, key_enc);
     va_start(ap, fmt);
     size = vsnprintf(&dummy, 1, fmt, ap);
     buffer = alloca(size+1);
@@ -559,7 +562,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const c
     csync_info(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
-size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
+ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 {
     size_t i=0;
     int rc = 0;
@@ -577,7 +580,7 @@ size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
     return rc ? rc : i;
 }
 
-size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
+ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 {
     int rc = gets_newline(filedesc, s, size, remove_newline);
     if (rc == -1) {
