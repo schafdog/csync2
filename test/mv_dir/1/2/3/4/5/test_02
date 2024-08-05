@@ -1,0 +1,3 @@
+sleep 2
+echo hejhejhej > test/$NAME/hej.txt
+check "first directory dir1 plus file"

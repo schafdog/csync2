@@ -1,0 +1,10 @@
+#
+clean local
+clean peer
+daemon d
+mkdir test/local
+cp -rp mv_dir/1 test/$NAME/1
+cmd x "create 1" 
+mv  test/$NAME/1 test/$NAME/new
+cmd x "rename 1 to new  => peer: move 1 new" 
+killdaemon
