@@ -758,7 +758,7 @@ textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl)
     return 0;
 }
 
-int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char **cmd_error)
+int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error)
 {
     struct stat st;
     int rc = stat(filename, &st);
@@ -1361,7 +1361,7 @@ int csync_daemon_dispatch(int conn,
 	break;
     case A_PATCH:
     case A_CREATE: {
-	int rc = csync_daemon_patch(conn_out, db, filename, cmd_error);
+	int rc = csync_daemon_patch(conn_out, filename, cmd_error);
 	if (rc != OK) {
 	    csync_error(1, "Failed to patch %s", filename);
 	    return rc;
@@ -1608,7 +1608,8 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
       }
       if (rc == OK || rc == IDENTICAL) {
 	 // check updates done
-	 csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename, (otherfile ? otherfile : "-" ));
+	 csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename,
+		    (otherfile ? otherfile : "-" ));
 	 csync_daemon_check_update(db, filename, otherfile, cmd, peername);
       }
       else if (rc == NEXT_CMD){
