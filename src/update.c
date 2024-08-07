@@ -1414,9 +1414,10 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
     return rc;
 }
 
+/*
+
 int csync_link_update(filename_p filename, struct stat *stat, const char *peername,
 		      const char *key_enc, const char *chk_local, const char *digest, int *last_con_status) {
-/*
     if (rc >= OK && st->st_nlink > 1) {
 	char *chk_local = strdup(
 	    csync_genchecktxt_version(st, filename,
@@ -1428,9 +1429,9 @@ int csync_link_update(filename_p filename, struct stat *stat, const char *peerna
 	if (rc == CONN_CLOSE)
 	    return rc;
     }
-*/
     return -1;
 }
+*/
 
 int csync_update_file_mod(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
