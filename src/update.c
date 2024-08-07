@@ -832,7 +832,7 @@ int csync_update_file_all_hardlink(int conn,
 		    // We have a remote file that we can use to "reverse" hardlink with
 		    path = other_enc;
 		    other_enc = filename_enc;
-		    // we onlu need one, if it succed
+		    // we only need one, if it succed
 		    found_one = 1;
 		}
 		else
@@ -1080,6 +1080,39 @@ int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname, peern
 	rc = ERROR_HARDLINK;
     }
     return rc;
+}
+
+int csync_update_hardlinks(int conn, const char *key_enc, const char *peername,
+		      filename_p filename, filename_p filename_enc, struct stat *st, textlist_p tl)
+{
+    textlist_p ptr = tl;
+    int count = 0;
+    while (ptr != NULL) {
+	filename_p other = ptr->value;
+	csync_info(0, "check same file (%d) %s -> %s \n", ptr->intvalue, other, filename);
+	struct stat st_other;
+	int rc = stat(other, &st_other);
+	if (rc == 0) {
+	    if (st->st_dev == st_other.st_dev && st->st_ino == st_other.st_ino) {
+		int last_conn_status = 0;
+		const char *path = filename_enc, *other_enc = url_encode(prefixencode(other));
+		int rc_hl = csync_update_hardlink(conn, peername, key_enc,
+						  filename, path, other, other_enc, &last_conn_status);
+		if (rc_hl != OK) {
+		    csync_error(0, "Failed to hardlink %s: %s -> %s\n", peername, filename, other);
+		}
+		count++;
+	    } else {
+		csync_info(0, "link_update MISMATCH: %s: %llu %llu %llu %llu\n", other,
+			   st->st_dev, st_other.st_dev, st->st_ino, st_other.st_ino);
+	    }
+	} else {
+	    csync_error(0, "stat failed %s\n", other);
+	}
+	ptr = ptr->next;
+    }
+    csync_debug(0, "Found %d links to %s\n", count, filename);
+    return OK;
 }
 
 int csync_update_file_mod_internal(int conn, db_conn_p db,
@@ -1330,7 +1363,15 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
 
 	    if (rc == CONN_CLOSE)
 		return rc;
-	    // csync_link_update(....)
+/*	    
+	    if (st.st_nlink > 0) {
+		csync_debug(0, "checking hardlinks: %s:%s %ld %ld %s %s\n", peername, filename,
+			    st.st_dev, st.st_ino, checktxt, digest);
+		textlist_p others = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
+		csync_update_hardlinks(conn, key_enc, peername, filename, filename_enc, &st, others);
+		textlist_free(others);
+	    }
+*/
 	    break;
 	case DIR_TYPE:
 	    csync_info(3, "MKDIR rc: %d\n", sig_rc);
@@ -1434,24 +1475,6 @@ int csync_update_file_mod_internal(int conn, db_conn_p db,
     return rc;
 }
 
-/*
-int csync_link_update(filename_p filename, struct stat *stat, const char *peername,
-		      const char *key_enc, const char *chk_local, const char *digest, int *last_con_status) {
-
-    if (rc >= OK && st->st_nlink > 1) {
-	char *chk_local = strdup(
-	    csync_genchecktxt_version(st, filename,
-				      SET_USER | SET_GROUP, db_version));
-	rc = csync_update_file_all_hardlink(peername, key_enc, filename,
-					    filename_enc, &st, uid, gid, OP_MOD, chk_local, digest,
-					    1, last_conn_status);
-	free(chk_local);
-	if (rc == CONN_CLOSE)
-	    return rc;
-    }
-    return -1;
-}
-*/
 
 int csync_update_file_mod(int conn, db_conn_p db,
 			  const char *myname, peername_p peername,
