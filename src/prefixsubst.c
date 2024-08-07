@@ -30,7 +30,7 @@ const char *prefixsubst(const char *in)
 {
 	struct csync_prefix *p;
 	const char *pn, *path;
-	int pn_len;
+	unsigned int pn_len;
 
 	if (!in || *in != '%')
 		return in;
