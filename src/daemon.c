@@ -762,13 +762,6 @@ int csync_daemon_patch(int conn, db_conn_p db, filename_p filename, const char *
 {
     struct stat st;
     int rc = stat(filename, &st);
-    // TODO also skip if it is a directory that already exists.
-    if (!S_ISREG(st.st_mode)) {
-	int recursive = 0;
-	if (S_ISDIR(st.st_mode))
-	    recursive = 1;
-	csync_error(1, "ALREADY done before patch csync_unlink(%p,%s,%d)", db, filename, recursive);
-    }
     time_t lock_time = csync_redis_lock(filename);
     if (lock_time == -1) {
 	*cmd_error = "ERROR (locked).\n";

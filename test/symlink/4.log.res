@@ -1,6 +1,4 @@
 cmd x "Clean up" local peer test
-Found my alias local localhost 30860 
-Binding to 30860 IPv0 
 Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
