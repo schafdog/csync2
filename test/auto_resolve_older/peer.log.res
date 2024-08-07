@@ -325,8 +325,6 @@ backup /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/upda
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 check backup generation /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.3 due  3 
-Remove backup /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.3 due to generation 3 
-renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.2' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.3'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.1' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.2'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.1'. rc = 0
 CONN local < OK (send_data).
@@ -410,9 +408,9 @@ backup /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 3 files within directory '/export/home/dennis/Projects/csync2/csync2/test/test/peer': 
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/* ..
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/* ..
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
@@ -423,14 +421,13 @@ backup /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/upda
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 check backup generation /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.3 due  3 
-Remove backup /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.3 due to generation 3 
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.2' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.3'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.1' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.2'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.1'. rc = 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both from file db.
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 0
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 0
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  

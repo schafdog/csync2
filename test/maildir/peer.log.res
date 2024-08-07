@@ -133,20 +133,20 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 6 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/* ..
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/* ..
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/* ..
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/* ..
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/* ..
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/* ..
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 0
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 0
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 0
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/* ..
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 0
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/* ..
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 0
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/* ..
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 0
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/* ..
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 6 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  

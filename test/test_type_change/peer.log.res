@@ -35,18 +35,15 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 Unlinking entry due to different type: 32768 16384 
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. Errors 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/* ..
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
 Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
-Removing  /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/* ..
-Removing file /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/new_file 'N' all
-Removing directory /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all from file db.
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 1 
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
@@ -87,18 +84,15 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 Unlinking entry due to different type: 32768 16384 
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. Errors 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/* ..
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
 Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
-Removing  /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/* ..
-Removing file /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3/new_file 'N' all
-Removing directory /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.3 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all from file db.
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 1 
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
@@ -112,7 +106,7 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 1 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
-Removing  /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
+Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
@@ -120,7 +114,7 @@ Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_cha
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change from file db.
-Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
+Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 1 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
