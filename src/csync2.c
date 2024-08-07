@@ -940,11 +940,11 @@ int main(int argc, char ** argv)
     csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
     csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone: %ld\n", server_standalone, server_standalone > 0);
     if (server_standalone > 0) {
-	csync_info(0,"server standalone %ld server_standalone>0: %ld\n",  server_standalone, server_standalone > 0);
+	csync_info(2,"server standalone %ld server_standalone>0: %ld\n",  server_standalone, server_standalone > 0);
 	if (!csync_port_cmdline) {
 	    // We need to read the config file to determine a eventual port override
 	    // port override needs to be consistent over all configurations
-	    csync_debug(0,"No command line port. Reading config\n");
+	    csync_debug(2,"No command line port. Reading config\n");
 	    csync_read_config(cfgname, 0, MODE_NONE);
 	    struct csync_hostinfo *myhostinfo = csync_hostinfo;
 	    while (myhostinfo != NULL) {
@@ -1314,7 +1314,7 @@ nofork:
 	    break;
 	}
     };
-    csync_info(0, "MODE %ld\n", mode);
+    csync_info(2, "MODE %ld\n", mode);
     if (mode == MODE_LIST_DIRTY) {
 	retval = 0;
 	char *realname = "";
