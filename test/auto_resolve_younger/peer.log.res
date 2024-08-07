@@ -316,6 +316,8 @@ backup /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/lo
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 check backup generation /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.3 due  3 
+Remove backup /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.3 due to generation 3 
+renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.2' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.3'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.1' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.2'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.1'. rc = 0
 CONN local < OK (send_data).
@@ -410,6 +412,7 @@ backup /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/lo
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 check backup generation /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.3 due  3 
+Remove backup /tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.3 due to generation 3 
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.2' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.3'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.1' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.2'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.1'. rc = 0
