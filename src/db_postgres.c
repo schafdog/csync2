@@ -73,7 +73,8 @@ static void db_postgres_dlopen(void)
 
     dl_handle = dlopen(SO_FILE, RTLD_LAZY);
     if (dl_handle == NULL) {
-	csync_fatal("Could not open libpq.so: %s\nPlease install postgres client library (libpg) or use other database (sqlite, mysql)\n", dlerror());
+	csync_fatal("Could not open libpq.so: %s\n"
+		    "Please install postgres client library (libpg) or use other database (sqlite, mysql)\n", dlerror());
     }
     csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
 
@@ -173,57 +174,61 @@ int db_postgres_exec(db_conn_p conn, const char *sql)
 }
 
 
-int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
-		     char **pptail)
+int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, char **pptail)
 {
-  PGresult *result;
-  int *row_p;
+    // unused
+    (void) pptail;
+    
+    PGresult *result;
+    int *row_p;
 
-  *stmt_p = NULL;
+    *stmt_p = NULL;
 
-  if (!conn)
-    return DB_NO_CONNECTION;
+    if (!conn)
+	return DB_NO_CONNECTION;
 
-  if (!conn->private) {
-    /* added error element */
-    return DB_NO_CONNECTION_REAL;
-  }
-  result = f.PQexec_fn(conn->private, sql);
+    if (!conn->private) {
+	/* added error element */
+	return DB_NO_CONNECTION_REAL;
+    }
+    result = f.PQexec_fn(conn->private, sql);
 
-  if (result == NULL)
-    csync_fatal("No memory for result\n");
+    if (result == NULL) {
+	csync_fatal("No memory for result\n");
+    }
+    switch (f.PQresultStatus_fn(result)) {
+    case PGRES_COMMAND_OK:
+    case PGRES_TUPLES_OK:
+	break;
 
-  switch (f.PQresultStatus_fn(result)) {
-  case PGRES_COMMAND_OK:
-  case PGRES_TUPLES_OK:
-    break;
+    default:
+	csync_error(1, "Error in PQexec: %s", f.PQresultErrorMessage_fn(result));
+	f.PQclear_fn(result);
+	return DB_ERROR;
+    }
 
-  default:
-    csync_error(1, "Error in PQexec: %s", f.PQresultErrorMessage_fn(result));
-    f.PQclear_fn(result);
-    return DB_ERROR;
-  }
+    row_p = malloc(sizeof(*row_p));
+    if (row_p == NULL) {
+	csync_fatal("No memory for row\n");
+    }
+    *row_p = -1;
 
-  row_p = malloc(sizeof(*row_p));
-  if (row_p == NULL)
-    csync_fatal("No memory for row\n");
-  *row_p = -1;
+    db_stmt_p stmt = malloc(sizeof(*stmt));
+    if (stmt == NULL) {
+	csync_fatal("No memory for stmt\n");
+    }
+  
+    stmt->private = result;
+    stmt->private2 = row_p;
 
-  db_stmt_p stmt = malloc(sizeof(*stmt));
-  if (stmt == NULL)
-    csync_fatal("No memory for stmt\n");
-
-  stmt->private = result;
-  stmt->private2 = row_p;
-
-  *stmt_p = stmt;
-  stmt->get_column_text = db_postgres_stmt_get_column_text;
-  stmt->get_column_blob = db_postgres_stmt_get_column_blob;
-  stmt->get_column_int = db_postgres_stmt_get_column_int;
-  stmt->next = db_postgres_stmt_next;
-  stmt->close = db_postgres_stmt_close;
-  stmt->db = conn;
-  return DB_OK;
+    *stmt_p = stmt;
+    stmt->get_column_text = db_postgres_stmt_get_column_text;
+    stmt->get_column_blob = db_postgres_stmt_get_column_blob;
+    stmt->get_column_int = db_postgres_stmt_get_column_int;
+    stmt->next = db_postgres_stmt_next;
+    stmt->close = db_postgres_stmt_close;
+    stmt->db = conn;
+    return DB_OK;
 }
 
 
@@ -400,8 +405,7 @@ const char* db_postgres_escape(db_conn_p conn, const char *string)
   }
   size_t length = strlen(string);
   char *escaped_buffer = ringbuffer_malloc(2*length+1);
-  size_t size = 0 ;
-  size = f.PQescapeStringConn_fn(conn->private, escaped_buffer, string, length, &rc);
+  f.PQescapeStringConn_fn(conn->private, escaped_buffer, string, length, &rc);
 
   return escaped_buffer;
 }
@@ -452,9 +456,9 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
 
   db_postgres_dlopen();
 
-  if (db_url == NULL)
+  if (db_url == NULL) {
     csync_fatal("No memory for db_url\n");
-
+  }
   user = "postgres";
   pass = "";
   host = "localhost";
@@ -469,9 +473,9 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
 	host, user, pass, database, port);
 
   pg_conn = f.PQconnectdb_fn(pg_conn_info);
-  if (pg_conn == NULL)
+  if (pg_conn == NULL) {
     csync_fatal("No memory for postgress connection handle\n");
-
+  }
   if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
     f.PQfinish_fn(pg_conn);
     free(pg_conn_info);
@@ -515,9 +519,9 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
 	    host, user, pass, database, port);
 
       pg_conn = f.PQconnectdb_fn(pg_conn_info);
-      if (pg_conn == NULL)
+      if (pg_conn == NULL) {
         csync_fatal("No memory for postgress connection handle\n");
-
+      }
       if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
         csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
         f.PQfinish_fn(pg_conn);
@@ -528,9 +532,9 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
   }
 
   db_conn_p conn = calloc(1, sizeof(*conn));
-  if (conn == NULL)
-    csync_fatal("No memory for conn\n");
-
+  if (conn == NULL) {
+      csync_fatal("No memory for conn\n");
+  }
   db_sql_init(conn);
   *conn_p = conn;
   conn->private = pg_conn;

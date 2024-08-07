@@ -245,10 +245,13 @@ const char *db_my_escape(const char *string)
 };
 
 const char *db_sqlite_escape(db_conn_p conn, const char *string) {
-  const char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
-  if (escaped)
-      ringbuffer_add(escaped, free);
-  return escaped;
+    // unused
+    (void) conn;
+
+    const char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
+    if (escaped)
+	ringbuffer_add(escaped, free);
+    return escaped;
 }
 
 int db_sqlite_upgrade_to_schema(db_conn_p db, int version)

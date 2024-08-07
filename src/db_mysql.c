@@ -220,53 +220,56 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
 
 int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, 
 		     char **pptail) {
-  int rc = DB_ERROR;
+    // unused
+    (void) pptail;
 
-  *stmt_p = NULL;
+    int rc = DB_ERROR;
 
-  if (!conn)
-    return DB_NO_CONNECTION;
+    *stmt_p = NULL;
 
-  if (!conn->private) {
-    /* added error element */
-    return DB_NO_CONNECTION_REAL;
-  }
-  db_stmt_p stmt = malloc(sizeof(*stmt));
-  /* TODO avoid strlen, use configurable limit? */
-  rc = f.mysql_query_fn(conn->private, sql);
-  
+    if (!conn)
+	return DB_NO_CONNECTION;
+
+    if (!conn->private) {
+	/* added error element */
+	return DB_NO_CONNECTION_REAL;
+    }
+    db_stmt_p stmt = malloc(sizeof(*stmt));
+    /* TODO avoid strlen, use configurable limit? */
+    rc = f.mysql_query_fn(conn->private, sql);
+    (void) rc;
+/* Treat warnings as errors. For example when a column is too short this should
+   be an error. */
+    
+    if (f.mysql_warning_count_fn(conn->private) > 0) {
+	print_warnings(1, conn->private);
+	return DB_ERROR;
+    }
+
+    MYSQL_RES *mysql_stmt = f.mysql_store_result_fn(conn->private);
+    if (mysql_stmt == NULL) {
+	csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(conn->private));
+	return DB_ERROR;
+    }
+
 /* Treat warnings as errors. For example when a column is too short this should
    be an error. */
 
-  if (f.mysql_warning_count_fn(conn->private) > 0) {
-    print_warnings(1, conn->private);
-    return DB_ERROR;
-  }
+    if (f.mysql_warning_count_fn(conn->private) > 0) {
+      print_warnings(1, conn->private);
+      return DB_ERROR;
+    }
 
-  MYSQL_RES *mysql_stmt = f.mysql_store_result_fn(conn->private);
-  if (mysql_stmt == NULL) {
-    csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(conn->private));
-    return DB_ERROR;
-  }
-
-/* Treat warnings as errors. For example when a column is too short this should
-   be an error. */
-
-  if (f.mysql_warning_count_fn(conn->private) > 0) {
-    print_warnings(1, conn->private);
-    return DB_ERROR;
-  }
-
-  stmt->private = mysql_stmt;
-  /* TODO error mapping / handling */
-  *stmt_p = stmt;
-  stmt->get_column_text = db_mysql_stmt_get_column_text;
-  stmt->get_column_blob = db_mysql_stmt_get_column_blob;
-  stmt->get_column_int = db_mysql_stmt_get_column_int;
-  stmt->next = db_mysql_stmt_next;
-  stmt->close = db_mysql_stmt_close;
-  stmt->db = conn;
-  return DB_OK;
+    stmt->private = mysql_stmt;
+    /* TODO error mapping / handling */
+    *stmt_p = stmt;
+    stmt->get_column_text = db_mysql_stmt_get_column_text;
+    stmt->get_column_blob = db_mysql_stmt_get_column_blob;
+    stmt->get_column_int = db_mysql_stmt_get_column_int;
+    stmt->next = db_mysql_stmt_next;
+    stmt->close = db_mysql_stmt_close;
+    stmt->db = conn;
+    return DB_OK;
 }
 
 const void* db_mysql_stmt_get_column_blob(db_stmt_p stmt, int column) {
@@ -434,8 +437,6 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 
 const char* db_mysql_escape(db_conn_p conn, const char *string) 
 {
-  int rc = DB_ERROR;
-
   if (!conn)
     return 0; 
   if (!conn->private)
@@ -445,8 +446,7 @@ const char* db_mysql_escape(db_conn_p conn, const char *string)
 
   size_t length = strlen(string);
   char *escaped_buffer = ringbuffer_malloc(2*length+1);
-  rc = f.mysql_real_escape_string_fn(conn->private, escaped_buffer, string, length);
-
+  f.mysql_real_escape_string_fn(conn->private, escaped_buffer, string, length);
   return escaped_buffer;
 }
 
