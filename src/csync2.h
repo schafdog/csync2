@@ -220,6 +220,7 @@ extern const char* (*db_decode) (const char *value);
 	char *SQL_ERR = e; \
 	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
 	int SQL_COUNT = 0; \
+        (void) SQL_COUNT; \
 \
 	if (SQL_VM) { \
 		while (1) { \
