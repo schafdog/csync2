@@ -80,32 +80,33 @@ int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 	return ABORT_CMD;
     }
     if (db) {
-	rc = csync_file_backup(filename, &cmd_error); 
-	if (!rc) {
-	    lock_time = csync_redis_lock_custom(filename, 300, "DELETE");
-	    rc = unlink(filename);
-	    if (db && !rc) {
-		csync_info(1, "Removing %s from file db.\n", filename);
-		db->remove_file(db, filename, 0);
-	    }
-	    if (rc) {
-		if (lock_time != -1)
-		    csync_redis_del_custom(filename, "DELETE");
-		csync_error(1, "Failed to delete  %s !\n", filename);
-	    }
+	rc = csync_file_backup(filename, &cmd_error);
+    }
+    if (!rc) {
+	lock_time = csync_redis_lock_custom(filename, 300, "DELETE");
+	rc = unlink(filename);
+	if (db && !rc) {
+	    csync_info(1, "Removing %s from file db.\n", filename);
+	    db->remove_file(db, filename, 0);
 	}
-	else
-	    csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
+	if (rc) {
+	    if (lock_time != -1)
+		csync_redis_del_custom(filename, "DELETE");
+	    csync_error(1, "Failed to delete  %s !\n", filename);
+	}
+    }
+    else {
+	csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
     }
     return csync_redis_unlock_status(filename, lock_time, rc);
 }
 int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd, int auto_resolve, const char **cmd_error);
 
-int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, textlist_p *tl)
+int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, textlist_p *tl, int backup)
 {
     struct dirent **namelist;
     int n = 0;
-    csync_info(0, "Removing  %s%s* ..\n", file, !strcmp(file, "/") ? "" : "/");
+    csync_info(1+backup, "Removing %s%s* ..\n", file, !strcmp(file, "/") ? "" : "/");
     n = scandir(file, &namelist, 0, alphasort);
     if (n < 0) {
 	csync_error(0, "%s in scandir: %s (%s)\n", strerror(errno), file, file);
@@ -124,7 +125,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 		if (!rc) {
 		    const char *cmd_error;
 		    if (S_ISDIR(st.st_mode))
-			csync_rmdir_recursive(db, fn, peername, tl);
+			csync_rmdir_recursive(db, fn, peername, tl, backup);
 		    else {
 			int rc = 0;
 			if (peername != NULL && db != NULL)
@@ -133,8 +134,13 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 							  &cmd_error);
 			if (rc == 0) {
 			    BUF_P buffer = buffer_init();
-			    csync_info(0, "Removing file %s\n", fn);
-			    daemon_remove_file(db, fn, buffer);
+			    csync_info(1+backup, "Removing file %s\n", fn);
+			    if (backup) {
+				int rc = unlink(fn);
+				csync_info(1+backup, "Removed file %s %d\n", fn, rc);
+			    } else {
+				daemon_remove_file(db, fn, buffer);
+			    }
 			    buffer_destroy(buffer);
 			} else {
 			    csync_info(0, "File is dirty %s\n", fn);
@@ -150,7 +156,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
     }
     /* time_t lock_time = */ csync_redis_lock_custom(file, 300, "DELETE,IS_DIR");
     int rc = rmdir(file);
-    csync_info(0, "Removing directory %s %d\n", file, rc);
+    csync_info(1+backup, "Removed directory %s %d\n", file, rc);
     if (db)
 	db->remove_file(db, file, 1);
     if (rc == -1) {
@@ -204,7 +210,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 	/* Above could fail due to ignore files. Do recursive on scandir  */
 	if (rc == ERROR) {
 	    csync_warn(1, "Calling csync_rmdir_recursive %s:%s. Errors %d\n", peername, filename, errors);
-	    rc = csync_rmdir_recursive(db, filename, peername, &tl);
+	    rc = csync_rmdir_recursive(db, filename, peername, &tl, 0);
 	    if (rc == -1 && errno == EAGAIN) {
 		rc = OK;
 	    }
@@ -355,7 +361,7 @@ int csync_backup_rename(filename_p filename, int length, int generations)
 	    {
 		csync_debug(2, "Remove backup %s due to generation %d \n", backup_other, generations);
 		if (S_ISDIR(st.st_mode))
-		    csync_rmdir_recursive(NULL, backup_other, NULL, NULL);
+		    csync_rmdir_recursive(NULL, backup_other, NULL, NULL, 1);
 		else {
 		    unlink(backup_other);
 		}
@@ -394,7 +400,6 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
       int fd_in, fd_out, i;
       int lastSlash = 0;
       mode_t mode;
-      // Skip generation of directories
       rc = lstat(filename, &buf);
       csync_debug(2, "backup %s %d \n", filename, rc);
       if (rc != 0) {
@@ -402,20 +407,27 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	  return 0;
       }
 	
+      // Copy the combined string into backup_filename.
+      memcpy(backup_filename, g->backup_directory, back_dir_len);
+      memcpy(backup_filename+back_dir_len, filename, filename_len);
+      backup_filename[back_dir_len + filename_len] = 0;
+      mode = 0777;
+      // Skip generation of directories
       if (S_ISDIR(buf.st_mode)) {
-	  csync_log(LOG_DEBUG, 3, "Directory: %s skipping\n", filename);
+	  struct stat backup_stat; 
+	  int rc = lstat(backup_filename, &backup_stat);
+	  if (rc == 0 && !S_ISDIR(backup_stat.st_mode)) {
+	      csync_log(LOG_DEBUG, 3, "Directory: %s type change backup\n", filename);
+	      csync_backup_rename(backup_filename, back_dir_len + filename_len, g->backup_generations);
+	  } else {
+	      csync_log(LOG_DEBUG, 3, "Directory: %s skipping\n", filename);
+	  }
 	  return 0;
       }
 
       fd_in = open(filename, O_RDONLY);
       if (fd_in < 0)
 	return 0;
-
-      // Copy the combined string into backup_filename.
-      memcpy(backup_filename, g->backup_directory, back_dir_len);
-      memcpy(backup_filename+back_dir_len, filename, filename_len);
-      backup_filename[back_dir_len + filename_len] = 0;
-      mode = 0777;
 
       for (i=filename_len; i> 0; i--)
 	if (filename[i] == '/')  {
@@ -450,12 +462,13 @@ int csync_file_backup(filename_p filename, const char **cmd_error)
 	      backup_filename[back_dir_len+i] = filename[i];
 	  }
       }
-
+      
       backup_filename[back_dir_len + filename_len] = 0;
       backup_filename[back_dir_len] = '/';
       csync_info(3, "backup_rename FILE: %s filename: %s i: \n", backup_filename, filename, i);
       csync_backup_rename(backup_filename, back_dir_len + filename_len, g->backup_generations);
-      
+
+
       fd_out = open(backup_filename, O_WRONLY|O_CREAT, 0600);
 
       if (fd_out < 0) {
