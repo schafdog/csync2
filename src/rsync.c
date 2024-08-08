@@ -63,10 +63,8 @@
  *
  * @return index of the terminating byte.
  **/
-#if __DARWIN_C_LEVEL && __DARWIN_C_LEVEL >= __DARWIN_C_FULL
-#define STRLCPY 1 
-#else
-static size_t strlcpy_unused(char *d, const char *s, size_t bufsize)
+#ifndef HAVE_STRLCPY
+static size_t strlcpy(char *d, const char *s, size_t bufsize)
 {
   size_t len = strlen(s);
   size_t ret = len;
