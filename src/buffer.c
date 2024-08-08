@@ -105,15 +105,6 @@ char *buffer_quote(BUF_P handle, const char *cpy)
   return "NULL";
 };
 
-char *buffer_printf(BUF_P handle, const char *format) {
-    char *line = "NULL";
-    if (handle) {
-	ASPRINTF(&line, "format");
-	buffer_add(handle, line);
-    }
-    return line;
-}
-
 void buffer_destroy(BUF_P handle) {
   int index;
   
