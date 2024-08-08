@@ -107,7 +107,7 @@ PKG_CHECK_MODULES([LIBSYSTEMD], [libsystemd >= 1.0], [
  [HAVE_LIBSYSTEMD=0])
 
 PKG_PROG_PKG_CONFIG
-PKG_CHECK_MODULES([LIBBSD], [libbsd >= 0.12], [
+PKG_CHECK_MODULES([LIBBSD], [libbsd >= 0.11], [
    AC_DEFINE([HAVE_LIBBSD], 1, [Define to 1 when using libbsd library])
  ],
  [HAVE_LIBBSD=0])
