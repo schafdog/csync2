@@ -65,6 +65,7 @@ int csync_redis_check_connection() {
 }
 
 const char *build_key(const char *key, const char *domain, BUF_P buffer) {
+    int rc = -1;
     char *spacer = "";
     if (domain && domain[0] != 0) {
 	spacer = ":";

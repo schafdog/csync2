@@ -105,7 +105,6 @@ char *buffer_quote(BUF_P handle, const char *cpy)
   return "NULL";
 };
 
-/*
 char *buffer_printf(BUF_P handle, const char *format) {
     char *line = "NULL";
     if (handle) {
@@ -114,7 +113,6 @@ char *buffer_printf(BUF_P handle, const char *format) {
     }
     return line;
 }
-*/
 
 void buffer_destroy(BUF_P handle) {
   int index;
