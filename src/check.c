@@ -517,27 +517,24 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
     return tl;
 }
 
-int csync_check_dir(db_conn_p db, const char* file, int flags)
+int csync_check_dir(db_conn_p db, const char* directory, int flags)
 {
     struct dirent **namelist;
-    const struct csync_group *g = NULL;
+   const struct csync_group *g = NULL;
     int dirdump_this = flags & FLAG_DIRDUMP;
-    int n = 0;
     int count_dirty = 0;
-    csync_info(2, "Checking %s%s* ..\n", file, !strcmp(file, "/") ? "" : "/");
-    n = scandir(file, &namelist, 0, alphasort);
+    csync_info(2, "Checking %s%s* ..\n", directory, !strcmp(directory, "/") ? "" : "/");
+    int n = scandir(directory, &namelist, 0, alphasort);
     if (n < 0) {
-	csync_error(0, "%s in scandir: %s (%s)\n", strerror(errno), file, file);
+	csync_error(0, "%s in scandir: %s (%s)\n", strerror(errno), directory, directory);
 	csync_error_count++;
     } else {
 	while(n--) {
 	    on_cygwin_lowercase(namelist[n]->d_name);
 	    if ( strcmp(namelist[n]->d_name, ".") &&
 		 strcmp(namelist[n]->d_name, "..") ) {
-		char fn[strlen(file)+
-			strlen(namelist[n]->d_name)+2];
-		sprintf(fn, "%s/%s",
-			!strcmp(file, "/") ? "" : file,
+		char fn[strlen(directory) + strlen(namelist[n]->d_name)+2];
+		sprintf(fn, "%s/%s", !strcmp(directory, "/") ? "" : directory,
 			namelist[n]->d_name);
 		if (csync_check_mod(db, fn, flags, &count_dirty, &g))
 		    dirdump_this = FLAG_DIRDUMP;
@@ -547,9 +544,9 @@ int csync_check_dir(db_conn_p db, const char* file, int flags)
 	free(namelist);
     }
     if ( dirdump_this && csync_dump_dir_fd >= 0 ) {
-	int written = 0, len = strlen(file)+1;
+	int written = 0, len = strlen(directory)+1;
 	while (written < len) {
-	    int rc = write(csync_dump_dir_fd, file+written, len-written);
+	    int rc = write(csync_dump_dir_fd, directory+written, len-written);
 	    if (rc <= 0)
 		csync_fatal("Error while writing to dump_dir_fd %d: %s\n",
 			    csync_dump_dir_fd, strerror(errno));
@@ -639,6 +636,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 		    break;
 		}
 		else if (ptr->intvalue == OP_HARDLINK) {
+		    // BROKEN LOGIC. There can be more that one hardlink. Only finds last
 		    operation = OP_HARDLINK;
 		    other = buffer_strdup(buffer, ptr->value);
 		    csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, file);
@@ -662,7 +660,8 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	    char ino_str[100];
 	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode, file_stat->st_mtime);
+	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other,
+			     file_stat->st_mode, file_stat->st_mtime);
 	    count = 1;
 	}
 	long count;
