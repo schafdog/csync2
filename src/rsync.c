@@ -43,6 +43,9 @@
 /* for MAXPATHLEN */
 #include <sys/param.h>
 
+#ifdef HAVE_LIBBSD
+#include <bsd/string.h>
+#endif
 
 #ifdef __CYGWIN__
 #include <w32api/windows.h>
