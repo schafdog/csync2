@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT(csync2, 2.1-rc2, dennis@schafroth.com)
+AC_INIT([csync2],[2.1-rc2],[dennis@schafroth.com])
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_SRCDIR(src/csync2.c)
@@ -58,8 +58,7 @@ AC_ARG_WITH([librsync-source],
 AM_CONDITIONAL([PRIVATE_LIBRSYNC], [test -n "$librsync_source_file"])
 
 AC_ARG_ENABLE([sqlite],
-	[AC_HELP_STRING([--enable-sqlite],
-		[enable/disable sqlite 2 support (default is disabled)])],
+	[AS_HELP_STRING([--enable-sqlite],[enable/disable sqlite 2 support (default is disabled)])],
 	[], [ enable_sqlite=no ])
 
 if test "$enable_sqlite" == yes
@@ -70,8 +69,7 @@ then
 fi
 
 AC_ARG_ENABLE([sqlite3],
-	[AC_HELP_STRING([--disable-sqlite3],
-		[enable/disable sqlite3 support (default is enabled)])],
+	[AS_HELP_STRING([--disable-sqlite3],[enable/disable sqlite3 support (default is enabled)])],
 	[], [ enable_sqlite3=yes ])
 
 if test "$enable_sqlite3" == yes
@@ -117,18 +115,15 @@ then
 fi
 
 AC_ARG_ENABLE([mysql],
-	[AC_HELP_STRING([--enable-mysql],
-		[enable/disable MySQL support (default is enabled)])],
+	[AS_HELP_STRING([--enable-mysql],[enable/disable MySQL support (default is enabled)])],
 	[], [ enable_mysql=yes ])
 
 AC_ARG_ENABLE([postgres],
-	[AC_HELP_STRING([--enable-postgres],
-		[enable/disable Postgres support (default is enabled)])],
+	[AS_HELP_STRING([--enable-postgres],[enable/disable Postgres support (default is enabled)])],
 	[], [ enable_postgres=yes ])
 
 AC_ARG_ENABLE([redis],
-	[AC_HELP_STRING([--enable-redis],
-		[enable/disable Redis support (default is enabled)])],
+	[AS_HELP_STRING([--enable-redis],[enable/disable Redis support (default is enabled)])],
 	[], [ enable_redis=yes ])
 
 
@@ -158,9 +153,10 @@ then
 fi
 
 # AC_CONFIG_FILES([Makefile])
-AC_OUTPUT([
+AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	test/Makefile
 ])
+AC_OUTPUT
 
