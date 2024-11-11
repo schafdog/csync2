@@ -1557,7 +1557,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
       continue;
     struct csync_command *cmd = find_command(tag[0]);
     if (!cmd->text) {
-      cmd_error = "Unkown command!";
+      cmd_error = "Unknown command!";
       csync_end_command(conn_out, tag[2], tag, cmd_error, 0);
       continue;
     }
