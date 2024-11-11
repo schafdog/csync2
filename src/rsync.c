@@ -51,7 +51,7 @@
 #include <w32api/windows.h>
 #endif
 
-#define CHUNK_SIZE 4096
+#define CHUNK_SIZE 4*4096
 
 /* This has been taken from rsync:lib/compat.c */
 
@@ -249,7 +249,7 @@ void csync_send_file(int conn, FILE *in)
   size = ftell(in);
   rewind(in);
 
-  csync_log(LOG_DEBUG, 3, "Sending octet-stream of %ld bytes\n", size);
+  csync_log(LOG_DEBUG, 1, "Sending octet-stream of %ld bytes\n", size);
   conn_printf(conn, "octet-stream %ld\n", size);
 
   while ( size > 0 ) {
@@ -294,7 +294,7 @@ int csync_recv_file(int conn, FILE *out)
   if (conn_read_get_content_length(conn, &size)) {
       if (errno == EIO)
 	  return -1;
-      csync_error(0, "Format-error while receiving data length for file (%ld) .\n", size);
+      csync_fatal("Format-error while receiving data length for file (%ld) .\n", size);
       size = 0;
       return -2;
   }
