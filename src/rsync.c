@@ -289,7 +289,7 @@ int csync_recv_file(int conn, FILE *out)
 {
   char buffer[CHUNK_SIZE];
   int bytes, chunk;
-  long size;
+  long long size;
 
   if (conn_read_get_content_length(conn, &size)) {
       if (errno == EIO)
@@ -299,7 +299,7 @@ int csync_recv_file(int conn, FILE *out)
       return -2;
   }
 
-  csync_log(LOG_DEBUG, 3, "Receiving %ld bytes ..\n", size);
+  csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes ..\n", size);
 
   while ( size > 0 ) {
     chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
@@ -331,7 +331,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg)
     int rc, chunk, found_diff = 0;
     rs_stats_t stats;
     rs_result result = 0;
-    long size = 0; 
+    long long size = 0; 
 
     csync_log(LOG_DEBUG, 2, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n",
 		filename, isreg, isreg ? "regular file" : "non-regular file");
@@ -366,7 +366,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg)
     {
 	csync_log(LOG_DEBUG, 3, "rs_check: Reading signature size from peer....\n");
 	if (conn_read_get_content_length(conn, &size)) {
-	    csync_fatal(0, "Format-error while receiving data length for signature (%ld) \n", size);
+	    csync_fatal(0, "Format-error while receiving data length for signature (%Ld) \n", size);
 	    return -1;
 	}
     }
@@ -374,17 +374,17 @@ int csync_rs_check(int conn, filename_p filename, int isreg)
     if (sig_file) {
 	fflush(sig_file);
 	if ( size != ftell(sig_file) ) {
-	    csync_info(2, "rs_check: Signature size differs: local=%d, peer=%d\n",
+	    csync_info(2, "rs_check: Signature size differs: local=%d, peer=%Ld\n",
 			ftell(sig_file), size);
 	    found_diff = 1;
 	}
 	rewind(sig_file);
     }
     else {
-	csync_info(2, "rs_check: Signature size differs: local don't exist, peer=%d\n", size);
+	csync_info(2, "rs_check: Signature size differs: local don't exist, peer=%Ld\n", size);
 	found_diff = 1;
     }
-    csync_info(3, "rs_check: Receiving signature %ld bytes ..\n", size);
+    csync_info(3, "rs_check: Receiving signature %Ld bytes ..\n", size);
 
     while ( size > 0 ) {
 	chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
@@ -400,13 +400,13 @@ int csync_rs_check(int conn, filename_p filename, int isreg)
 		found_diff = 1;
 	    }
 	    else if (memcmp(buffer1, buffer2, chunk) ) {
-		csync_info(2, "rs_check: Found diff in sig at -%d:-%d\n",
+		csync_info(2, "rs_check: Found diff in sig at -%Ld:-%Ld\n",
 			    size, size-chunk);
 		found_diff = 1;
 	    }
 	}
 	size -= chunk;
-	csync_info(3, "Got %d bytes, %ld bytes left ..\n",
+	csync_info(3, "Got %d bytes, %Ld bytes left ..\n",
 		    chunk, size);
     }
     

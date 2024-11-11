@@ -433,12 +433,12 @@ void conn_debug(const char *name, const char*buf, size_t count)
 	fprintf(csync_out_debug, "\n");
 }
 
-ssize_t conn_read_get_content_length(int fd, long *size) 
+ssize_t conn_read_get_content_length(int fd, long long *size) 
 {
    char buffer[200];
    *size = 0;
-   int rc = !conn_gets(fd, buffer, 200) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
-   csync_log(LOG_DEBUG, 1, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
+   int rc = !conn_gets(fd, buffer, 200) || sscanf(buffer, "octet-stream %Ld\n", size) != 1;
+   csync_log(LOG_DEBUG, 1, "Content length in buffer: '%s' size: %Ld rc: %d \n", buffer, *size, rc);
    if (!strcmp(buffer, "ERROR\n")) {
       errno=EIO;
       return -1;
