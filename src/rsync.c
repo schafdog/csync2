@@ -366,7 +366,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg)
     {
 	csync_log(LOG_DEBUG, 3, "rs_check: Reading signature size from peer....\n");
 	if (conn_read_get_content_length(conn, &size)) {
-	    csync_fatal(0, "Format-error while receiving data length for signature (%Ld) \n", size);
+	    csync_fatal("Format-error while receiving data length for signature (%Ld) \n", size);
 	    return -1;
 	}
     }
