@@ -249,7 +249,7 @@ void csync_send_file(int conn, FILE *in)
   size = ftell(in);
   rewind(in);
 
-  csync_log(LOG_DEBUG, 1, "Sending octet-stream of %ld bytes\n", size);
+  csync_log(LOG_DEBUG, 2, "Sending octet-stream of %ld bytes\n", size);
   conn_printf(conn, "octet-stream %ld\n", size);
 
   while ( size > 0 ) {
