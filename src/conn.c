@@ -441,7 +441,7 @@ ssize_t conn_read_get_content_length(int fd, long long *size)
    char buffer[200];
    *size = 0;
    int rc = !conn_gets(fd, buffer, 200) || sscanf(buffer, "octet-stream %Ld\n", size) != 1;
-   csync_log(LOG_DEBUG, 1, "Content length in buffer: '%s' size: %Ld rc: %d \n", buffer, *size, rc);
+   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %Ld rc: %d \n", buffer, *size, rc);
    if (!strcmp(buffer, "ERROR\n")) {
       errno=EIO;
       return -1;
