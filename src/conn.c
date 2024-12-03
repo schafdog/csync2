@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 #ifdef HAVE_LIBGNUTLS
 #  include <gnutls/gnutls.h>
@@ -350,7 +353,7 @@ static inline size_t READ(int filedesc, void *buf, size_t count)
     FD_ZERO (&set);
     FD_SET (filedesc, &set);
     /* Initialize the timeout data structure. */
-    timeout.tv_sec = 60;
+    timeout.tv_sec = 600;
     timeout.tv_usec = 0;
     int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
     if (rc == 0) {
@@ -444,6 +447,84 @@ ssize_t conn_read_get_content_length(int fd, long long *size)
       return -1;
    }
    return rc;
+}
+
+#define CHUNK_SIZE 16*1024
+
+int conn_write_file_chunked(int sockfd, FILE *file) {
+    char buffer[CHUNK_SIZE];
+    size_t bytes_read;
+    while ((bytes_read = fread(buffer, 1, CHUNK_SIZE, file)) > 0) {
+        char header[16];
+        snprintf(header, sizeof(header), "%zx\r\n", bytes_read);  // Chunk size in hex
+
+        if (send(sockfd, header, strlen(header), 0) == -1) {
+            perror("Error sending chunk header");
+            break;
+        }
+
+        if (send(sockfd, buffer, bytes_read, 0) == -1) {
+            perror("Error sending file chunk");
+            break;
+        }
+
+        if (send(sockfd, "\r\n", 2, 0) == -1) {  // Chunk delimiter
+            perror("Error sending chunk delimiter");
+            break;
+        }
+    }
+
+    // Send final zero-length chunk to indicate EOF
+    send(sockfd, "0\r\n\r\n", 5, 0);
+
+    fclose(file);
+    printf("File sent using chunked encoding.\n");
+    return 0;
+}
+
+int conn_read_file_chunked(int sockfd, FILE *file) {
+    char buffer[CHUNK_SIZE];
+    while (1) {
+        char header[16];
+        ssize_t header_len = recv(sockfd, header, sizeof(header) - 1, MSG_PEEK);
+        if (header_len <= 0) {
+            perror("Error receiving chunk header");
+	    return -1;
+        }
+
+        char *end_of_header = strstr(header, "\r\n");
+        if (!end_of_header) {
+	    // try again
+	    continue;
+	}
+
+        size_t chunk_size;
+        *end_of_header = '\0';  // Null-terminate the header
+        sscanf(header, "%zx", &chunk_size);  // Read the chunk size in hexadecimal
+
+        recv(sockfd, header, end_of_header - header + 2, 0);  // Consume the header
+
+        if (chunk_size == 0) {
+	    // End of transmission
+	    break;
+	}
+        size_t bytes_received = 0;
+        while (bytes_received < chunk_size) {
+            ssize_t n = recv(sockfd, buffer,
+                             chunk_size - bytes_received > CHUNK_SIZE ? CHUNK_SIZE : chunk_size - bytes_received, 0);
+            if (n <= 0) {
+                perror("Error receiving file chunk");
+                return -1;
+            }
+            fwrite(buffer, 1, n, file);
+            bytes_received += n;
+        }
+        // Consume the trailing "\r\n" after each chunk
+        recv(sockfd, buffer, 2, 0);
+    }
+
+    printf("File received using chunked encoding.\n");
+    return 0;
 }
 
 /* Rewritten not to mask errors */ 
