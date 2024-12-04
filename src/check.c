@@ -466,6 +466,9 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
 				 const char* checktxt, int operation, const char *digest,
 				 struct stat *st, textlist_loop_t loop)
 {
+    if (loop) {
+	csync_info(2, "check_link_move:  unused parameter textlist_loop_t %p\n", loop);
+    }
     textlist_p t, tl = NULL;
     textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername, filename, checktxt, digest, st);
     struct stat file_stat;
@@ -476,7 +479,7 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
     	const char *db_operation = t->value3;
 	csync_info(2, "check_link_move:  DB file: %s %s: %d\n", db_filename, db_operation, operation);
     	int rc = stat(db_filename, &file_stat);
-    	int db_version = csync_get_checktxt_version(db_checktxt);
+    	/* int db_version = */ csync_get_checktxt_version(db_checktxt);
     	int i = 0;
 	if (db_operation && !strcmp(db_operation, "NEW")) {
 	    csync_info(1, "Unable to MOVE/LINK: both NEW\n");
@@ -514,27 +517,24 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
     return tl;
 }
 
-int csync_check_dir(db_conn_p db, const char* file, int flags)
+int csync_check_dir(db_conn_p db, const char* directory, int flags)
 {
     struct dirent **namelist;
-    const struct csync_group *g = NULL;
+   const struct csync_group *g = NULL;
     int dirdump_this = flags & FLAG_DIRDUMP;
-    int n = 0;
     int count_dirty = 0;
-    csync_info(2, "Checking %s%s* ..\n", file, !strcmp(file, "/") ? "" : "/");
-    n = scandir(file, &namelist, 0, alphasort);
+    csync_info(2, "Checking %s%s* ..\n", directory, !strcmp(directory, "/") ? "" : "/");
+    int n = scandir(directory, &namelist, 0, alphasort);
     if (n < 0) {
-	csync_error(0, "%s in scandir: %s (%s)\n", strerror(errno), file, file);
+	csync_error(0, "%s in scandir: %s (%s)\n", strerror(errno), directory, directory);
 	csync_error_count++;
     } else {
 	while(n--) {
 	    on_cygwin_lowercase(namelist[n]->d_name);
 	    if ( strcmp(namelist[n]->d_name, ".") &&
 		 strcmp(namelist[n]->d_name, "..") ) {
-		char fn[strlen(file)+
-			strlen(namelist[n]->d_name)+2];
-		sprintf(fn, "%s/%s",
-			!strcmp(file, "/") ? "" : file,
+		char fn[strlen(directory) + strlen(namelist[n]->d_name)+2];
+		sprintf(fn, "%s/%s", !strcmp(directory, "/") ? "" : directory,
 			namelist[n]->d_name);
 		if (csync_check_mod(db, fn, flags, &count_dirty, &g))
 		    dirdump_this = FLAG_DIRDUMP;
@@ -544,9 +544,9 @@ int csync_check_dir(db_conn_p db, const char* file, int flags)
 	free(namelist);
     }
     if ( dirdump_this && csync_dump_dir_fd >= 0 ) {
-	int written = 0, len = strlen(file)+1;
+	int written = 0, len = strlen(directory)+1;
 	while (written < len) {
-	    int rc = write(csync_dump_dir_fd, file+written, len-written);
+	    int rc = write(csync_dump_dir_fd, directory+written, len-written);
 	    if (rc <= 0)
 		csync_fatal("Error while writing to dump_dir_fd %d: %s\n",
 			    csync_dump_dir_fd, strerror(errno));
@@ -556,25 +556,30 @@ int csync_check_dir(db_conn_p db, const char* file, int flags)
     return count_dirty;
 }
 
-int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino)
+int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat)
 {
     if (!dev)
-	return 1;
+	return 4;
     if (!ino)
-	return 1;
+	return 8;
 
     unsigned long long dev_no;
     unsigned long long ino_no;
     sscanf(dev, "%llu", &dev_no);
     sscanf(ino, "%llu", &ino_no);
 
+    if (old_stat) {
+	old_stat->st_dev = dev_no;
+	old_stat->st_ino = ino_no;
+    }
+    int rc = 0;
     if (file_stat->st_dev != dev_no) {
-	return 1;
+	rc |= 1;
     }
     if (file_stat->st_ino != ino_no) {	
-	return 1;
+	rc |= 2;
     }
-    return 0;
+    return rc;
 }
 
 int csync_calc_digest(const char *file, BUF_P buffer, char **digest) {
@@ -599,18 +604,25 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
     operation_t operation = 0;
     char *other = 0;
     char *digest = NULL;
-    int db_flags = db->check_file(db, file, encoded, &other, checktxt, file_stat, buffer, &operation, &digest, flags);
+    dev_t old_no;
+    int db_flags = db->check_file(db, file, encoded, &other, checktxt, file_stat, buffer, &operation, &digest, flags, &old_no);
     int calc_digest   = db_flags & CALC_DIGEST;
-    int this_is_dirty = db_flags & IS_DIRTY;
+    int is_dirty = db_flags & IS_DIRTY;
     int is_upgrade    = db_flags & IS_UPGRADE;
-    csync_info(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d \n", calc_digest, this_is_dirty, is_upgrade);
+    int dev_change    = db_flags & DEV_CHANGE;
+    csync_info(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d dev_change: %d\n",
+	       calc_digest, is_dirty, is_upgrade, dev_change);
     if (calc_digest) {
 	csync_calc_digest(file, buffer, &digest);
     }
     if (csync_compare_mode) {
 	printf("%40s %s\n", digest ? digest : checktxt, file);
     }
-    if ( (is_upgrade || this_is_dirty) && !csync_compare_mode ) {
+    if (!(is_upgrade|| is_dirty) && dev_change) {
+	csync_log(LOG_INFO, 2, "Fixing dev no for %s\n", encoded);
+	count = db->update_dev_no(db, encoded, S_ISDIR(file_stat->st_mode), old_no, file_stat->st_dev);
+    }
+    if ((is_upgrade || is_dirty) && !csync_compare_mode ) {
 	if (operation == OP_NEW && digest) {
 	    textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat);
 	    textlist_p ptr = tl;
@@ -624,6 +636,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 		    break;
 		}
 		else if (ptr->intvalue == OP_HARDLINK) {
+		    // BROKEN LOGIC. There can be more that one hardlink. Only finds last
 		    operation = OP_HARDLINK;
 		    other = buffer_strdup(buffer, ptr->value);
 		    csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, file);
@@ -641,13 +654,14 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 
 	const char *checktxt_encoded = db_escape(db, checktxt);
 	// Insert into dirty first due to new clean up method. With this there could be a race condition
-	if (!init_run && this_is_dirty) {
+	if (!init_run && is_dirty) {
 	    //      csync_log(LOG_DEBUG, 0, "check_dirty (mod): before mark (all) \n");
 	    char dev_str[100];
 	    char ino_str[100];
 	    sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 	    sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other, file_stat->st_mode, file_stat->st_mtime);
+	    csync_mark_other(db, file, 0, 0, operation,  checktxt_encoded, dev_str, ino_str, other,
+			     file_stat->st_mode, file_stat->st_mtime);
 	    count = 1;
 	}
 	long count;
@@ -700,7 +714,7 @@ int csync_check_mod(db_conn_p db, const char *file, int flags, int *count, const
 	    break;
 	if ( !S_ISDIR(st.st_mode) )
 	    break;
-	csync_log(LOG_DEBUG, 2, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
+	csync_log(LOG_DEBUG, 3, "csync_check_dir: %s %d \n", file, flags | dirdump_this);
 	*count += csync_check_dir(db, file, flags | dirdump_this);
 	break;
     default:
@@ -733,10 +747,11 @@ int csync_check_recursive(db_conn_p db, filename_p filename, int flags, const st
     return count_dirty;
 }
 
-
+/*
 void csync_combined_operation(peername_p peername, const char *dev, const char *inode, const char *checktxt) {
 
 }
+*/
 
 void csync_check(db_conn_p db, filename_p filename, int flags)
 {

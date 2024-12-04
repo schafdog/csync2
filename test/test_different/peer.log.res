@@ -44,7 +44,7 @@ HELLO from local. Response: OK
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/tmp ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/tmp 
@@ -52,7 +52,7 @@ mark other operation: 'MKDIR' 'local:/export/home/dennis/Projects/csync2/csync2/
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/tmp' '-'.
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/tmp.
 Ignoring dirty directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/tmp
-Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/tmp  
+Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/tmp  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local

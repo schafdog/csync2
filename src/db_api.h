@@ -101,6 +101,7 @@ struct db_conn_t {
 				const char *digest);
     int         (*insert_update_file) (db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 				const char *digest);
+    int         (*update_dev_no) (db_conn_p db, filename_p encoded, int recursive, dev_t old_no, dev_t new_no);
     int         (*check_delete) (db_conn_p conn, filename_p filename, int recursive, int init_run);
 
     int         (*del_action)  (db_conn_p conn, filename_p filename, const char *prefix_command);
@@ -111,7 +112,7 @@ struct db_conn_t {
 			      const char *enc, char **other,
 			      char *checktxt, struct stat *file_stat,
 			      BUF_P buffer, int *operation,
-			      char **digest, int flags);
+			      char **digest, int flags, dev_t *old_no);
 		
     textlist_p (*check_file_same_dev_inode) (db_conn_p db, filename_p filename, const char *checktxt, const char *digest, struct stat *st);
     textlist_p (*check_dirty_file_same_dev_inode) (db_conn_p db, peername_p peername, filename_p filename,

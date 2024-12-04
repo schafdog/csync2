@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 #ifdef HAVE_LIBGNUTLS
 #  include <gnutls/gnutls.h>
@@ -130,6 +133,7 @@ int conn_set(int infd, int outfd)
 	int on = 1;
 
 //	conn_fd_in  = infd;
+	(void) infd;
 //	conn_fd_out = outfd;
 #ifdef HAVE_LIBGNUTLS
 	csync_conn_usessl = 0;
@@ -149,7 +153,7 @@ int conn_set(int infd, int outfd)
 
 static void ssl_log(int prio, const char* msg)
 {
-    csync_log(prio, 0, "%s", msg);
+    csync_log(prio, 3, "%s", msg);
 }
 
 static const char *ssl_keyfile = ETCDIR "/csync2_ssl_key.pem";
@@ -165,7 +169,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out)
 
 	gnutls_global_init();
 	gnutls_global_set_log_function(ssl_log);
-	gnutls_global_set_log_level(10);
+	gnutls_global_set_log_level(3);
 
 	gnutls_certificate_allocate_credentials(&conn_x509_cred);
 
@@ -257,7 +261,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 {
 	const gnutls_datum_t *peercerts;
 	unsigned npeercerts;
-	int i, cert_is_ok = -1;
+	int cert_is_ok = -1;
 
 	if (!csync_conn_usessl)
 		return 1;
@@ -272,10 +276,10 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal)
 
 	{
 		char certdata[2*peercerts[0].size + 1];
-
-		for (i=0; i<peercerts[0].size; i++)
-			sprintf(&certdata[2*i], "%02X", peercerts[0].data[i]);
-		certdata[2*i] = 0;
+		size_t size; 
+		for (size=0; size < peercerts[0].size; size++)
+			sprintf(&certdata[2*size], "%02X", peercerts[0].data[size]);
+		certdata[2*size] = 0;
 
 		SQL_BEGIN(db, "Checking peer x509 certificate.",
 			"SELECT certdata FROM x509_cert WHERE peername = '%s'",
@@ -337,7 +341,7 @@ int conn_close(int conn)
     return 0;
 }
 
-static inline int READ(int filedesc, void *buf, size_t count)
+static inline size_t READ(int filedesc, void *buf, size_t count)
 {
 #ifdef HAVE_LIBGNUTLS
     if (csync_conn_usessl)
@@ -349,7 +353,7 @@ static inline int READ(int filedesc, void *buf, size_t count)
     FD_ZERO (&set);
     FD_SET (filedesc, &set);
     /* Initialize the timeout data structure. */
-    timeout.tv_sec = 60;
+    timeout.tv_sec = 600;
     timeout.tv_usec = 0;
     int rc = select (FD_SETSIZE, &set, NULL, NULL, &timeout);
     if (rc == 0) {
@@ -360,7 +364,7 @@ static inline int READ(int filedesc, void *buf, size_t count)
 	csync_error(0, "Error in READ: %d %s\n", errno, strerror(errno));
 	return rc;
     }
-    int length = 0; 
+    ssize_t length = 0; 
     while (1) {
 	length = read(filedesc, buf, count);
 	if (length == -1 && errno == EINTR)
@@ -374,9 +378,10 @@ static inline int READ(int filedesc, void *buf, size_t count)
     return length;
 }
 
-static inline int WRITE(int fd, const void *buf, size_t count)
+static inline ssize_t WRITE(int fd, const void *buf, size_t count)
 {
-    int n, total;
+    ssize_t n;
+    size_t total;
 #ifdef HAVE_LIBGNUTLS
     if (csync_conn_usessl)
 	return gnutls_record_send(conn_tls_session, buf, count);
@@ -400,19 +405,19 @@ static inline int WRITE(int fd, const void *buf, size_t count)
     }
 }
 
-int conn_raw_read(int filedesc, void *buf, size_t count)
+ssize_t conn_raw_read(int filedesc, void *buf, size_t count)
 {
     return READ(filedesc, buf, count);
 }
 
 void conn_debug(const char *name, const char*buf, size_t count)
 {
-	int i;
+	size_t i;
 
 	if ( csync_level_debug < 3 ) return;
 
 	fprintf(csync_out_debug, "%s> ", name);
-	for (i=0; i<count; i++) {
+	for (i=0; i < count; i++) {
 		switch (buf[i]) {
 			case '\n':
 				fprintf(csync_out_debug, "\\n");
@@ -431,12 +436,12 @@ void conn_debug(const char *name, const char*buf, size_t count)
 	fprintf(csync_out_debug, "\n");
 }
 
-int conn_read_get_content_length(int fd, long *size) 
+ssize_t conn_read_get_content_length(int fd, long long *size) 
 {
-   char buffer[100];
+   char buffer[200];
    *size = 0;
-   int rc = !conn_gets(fd, buffer, 100) || sscanf(buffer, "octet-stream %ld\n", size) != 1;
-   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %ld rc: %d \n", buffer, *size, rc);
+   int rc = !conn_gets(fd, buffer, 200) || sscanf(buffer, "octet-stream %Ld\n", size) != 1;
+   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %Ld rc: %d \n", buffer, *size, rc);
    if (!strcmp(buffer, "ERROR\n")) {
       errno=EIO;
       return -1;
@@ -444,10 +449,89 @@ int conn_read_get_content_length(int fd, long *size)
    return rc;
 }
 
+#define CHUNK_SIZE 16*1024
+
+int conn_write_file_chunked(int sockfd, FILE *file) {
+    char buffer[CHUNK_SIZE];
+    size_t bytes_read;
+    while ((bytes_read = fread(buffer, 1, CHUNK_SIZE, file)) > 0) {
+        char header[16];
+        snprintf(header, sizeof(header), "%zx\r\n", bytes_read);  // Chunk size in hex
+
+        if (send(sockfd, header, strlen(header), 0) == -1) {
+            perror("Error sending chunk header");
+            break;
+        }
+
+        if (send(sockfd, buffer, bytes_read, 0) == -1) {
+            perror("Error sending file chunk");
+            break;
+        }
+
+        if (send(sockfd, "\r\n", 2, 0) == -1) {  // Chunk delimiter
+            perror("Error sending chunk delimiter");
+            break;
+        }
+    }
+
+    // Send final zero-length chunk to indicate EOF
+    send(sockfd, "0\r\n\r\n", 5, 0);
+
+    fclose(file);
+    printf("File sent using chunked encoding.\n");
+    return 0;
+}
+
+int conn_read_file_chunked(int sockfd, FILE *file) {
+    char buffer[CHUNK_SIZE];
+    while (1) {
+        char header[16];
+        ssize_t header_len = recv(sockfd, header, sizeof(header) - 1, MSG_PEEK);
+        if (header_len <= 0) {
+            perror("Error receiving chunk header");
+	    return -1;
+        }
+
+        char *end_of_header = strstr(header, "\r\n");
+        if (!end_of_header) {
+	    // try again
+	    continue;
+	}
+
+        size_t chunk_size;
+        *end_of_header = '\0';  // Null-terminate the header
+        sscanf(header, "%zx", &chunk_size);  // Read the chunk size in hexadecimal
+
+        recv(sockfd, header, end_of_header - header + 2, 0);  // Consume the header
+
+        if (chunk_size == 0) {
+	    // End of transmission
+	    break;
+	}
+        size_t bytes_received = 0;
+        while (bytes_received < chunk_size) {
+            ssize_t n = recv(sockfd, buffer,
+                             chunk_size - bytes_received > CHUNK_SIZE ? CHUNK_SIZE : chunk_size - bytes_received, 0);
+            if (n <= 0) {
+                perror("Error receiving file chunk");
+                return -1;
+            }
+            fwrite(buffer, 1, n, file);
+            bytes_received += n;
+        }
+        // Consume the trailing "\r\n" after each chunk
+        recv(sockfd, buffer, 2, 0);
+    }
+
+    printf("File received using chunked encoding.\n");
+    return 0;
+}
+
 /* Rewritten not to mask errors */ 
-int conn_read(int fd, void *buf, size_t count)
+ssize_t conn_read(int fd, void *buf, size_t count)
 {
-    int pos, rc;
+    size_t pos;
+    ssize_t rc;
     for (pos=0; pos < count ; pos+=rc) {
 	rc = conn_raw_read(fd, (char *)buf+pos, count-pos);
 	if (rc < 0)
@@ -460,7 +544,7 @@ int conn_read(int fd, void *buf, size_t count)
     return pos;
 }
 
-int conn_write(int fd, const void *buf, size_t count)
+ssize_t conn_write(int fd, const void *buf, size_t count)
 {
     // conn_debug("Local", buf, count);
     return WRITE(fd, buf, count);
@@ -470,6 +554,7 @@ void  conn_remove_key(char *buf) {
     if (!strncmp(buf, "HELLO", 5) ||
 	!strncmp(buf, "CONFIG",6) || 
 	!strncmp(buf, "BYE", 3)   ||
+//	!strncmp(buf, "DEL", 3)   ||
 	!strncmp(buf, "LIST", 4))
 	return ;
     char *ptr = buf;
@@ -493,8 +578,26 @@ void  conn_remove_key(char *buf) {
       Will remove last word if not ending with a space
       Good for removing time for log compare. Should be configurable though
     */
-    while (*(--ptr) != ' ')
-       *ptr = 0;
+    while (*(--ptr) != ' ') { //  || (*ptr >= '0' && *ptr <= '9')) {
+	*ptr = 0;
+    }
+}
+
+char *filter_mtime(char *buffer, int make_copy) {
+    char *str = buffer;
+    if (make_copy)
+	str = strdup(buffer);
+    if (csync_level_debug == 2) {
+	char *pos = strstr(str, "mtime=");
+	if (pos != NULL) {
+	    pos += 6;
+	    while (*pos != '\0' && *pos != '%') {
+		*pos = 'x';
+		pos++;
+	    }
+	}
+    }
+    return str;
 }
 
 void conn_printf(int fd, const char *fmt, ...)
@@ -515,7 +618,8 @@ void conn_printf(int fd, const char *fmt, ...)
     buffer[size] = 0;
     conn_write(fd, buffer, size);
     conn_remove_key(buffer);
-    csync_info(2, "CONN %s < %s\n", active_peer, buffer);
+    char *str = filter_mtime(buffer, 0);
+    csync_info(2, "CONN %s < %s\n", active_peer, str);
 }
 
 void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...)
@@ -523,7 +627,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const c
     char dummy = 0, *buffer = 0;
     va_list ap;
     int size;
-
+    csync_debug(2, "conn_printf_cmd_filepath: unused parameters cmd %s file %s key_enc %s", cmd, file, key_enc);
     va_start(ap, fmt);
     size = vsnprintf(&dummy, 1, fmt, ap);
     buffer = alloca(size+1);
@@ -539,7 +643,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const c
     csync_info(2, "CONN %s < %s\n", active_peer, buffer);
 }
 
-size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
+ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 {
     size_t i=0;
     int rc = 0;
@@ -557,15 +661,17 @@ size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline)
     return rc ? rc : i;
 }
 
-size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
+ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline)
 {
     int rc = gets_newline(filedesc, s, size, remove_newline);
     if (rc == -1) {
 	csync_error(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
 	return rc; 
     }
-    //	conn_debug(active_peer, s, i);
-    csync_error(2, "CONN %s > '%s'\n", active_peer, s);
+    // Filter mtime but on a copy.
+    char *copy = filter_mtime(s, 1);
+    csync_info(2, "CONN %s > '%s'\n", active_peer, copy);
+    free(copy);
     return rc;
 }
 

@@ -1,7 +1,7 @@
-FROM debian:jessie
+FROM debian:latest
 MAINTAINER dennis@schafroth.com
 
-RUN apt-get update && \
-    apt-get install libclientmysql libpq5 libsqlite 
+RUN apt-get -y update && \
+    apt-get install -y libmariadb-dev libpq-dev libsqlite3-dev
 
-CP ../csync2 /usr/local/sbin/
+COPY bin/csync2 /usr/local/sbin/

@@ -16,7 +16,4 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local

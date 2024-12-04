@@ -144,10 +144,6 @@ void db_mysql_close(db_conn_p conn)
     return;
   f.mysql_close_fn(conn->private);
   conn->private = 0;
-//  csync_log(LOG_DEBUG, "freeing db_conn_p %p");
-//  free(conn);
-  // TODO wrong place
-  //f.mysql_library_end_fn();
 }
 
 const char *db_mysql_errmsg(db_conn_p conn)
@@ -224,53 +220,56 @@ int db_mysql_exec(db_conn_p conn, const char *sql)
 
 int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, 
 		     char **pptail) {
-  int rc = DB_ERROR;
+    // unused
+    (void) pptail;
 
-  *stmt_p = NULL;
+    int rc = DB_ERROR;
 
-  if (!conn)
-    return DB_NO_CONNECTION;
+    *stmt_p = NULL;
 
-  if (!conn->private) {
-    /* added error element */
-    return DB_NO_CONNECTION_REAL;
-  }
-  db_stmt_p stmt = malloc(sizeof(*stmt));
-  /* TODO avoid strlen, use configurable limit? */
-  rc = f.mysql_query_fn(conn->private, sql);
-  
+    if (!conn)
+	return DB_NO_CONNECTION;
+
+    if (!conn->private) {
+	/* added error element */
+	return DB_NO_CONNECTION_REAL;
+    }
+    db_stmt_p stmt = malloc(sizeof(*stmt));
+    /* TODO avoid strlen, use configurable limit? */
+    rc = f.mysql_query_fn(conn->private, sql);
+    (void) rc;
+/* Treat warnings as errors. For example when a column is too short this should
+   be an error. */
+    
+    if (f.mysql_warning_count_fn(conn->private) > 0) {
+	print_warnings(1, conn->private);
+	return DB_ERROR;
+    }
+
+    MYSQL_RES *mysql_stmt = f.mysql_store_result_fn(conn->private);
+    if (mysql_stmt == NULL) {
+	csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(conn->private));
+	return DB_ERROR;
+    }
+
 /* Treat warnings as errors. For example when a column is too short this should
    be an error. */
 
-  if (f.mysql_warning_count_fn(conn->private) > 0) {
-    print_warnings(1, conn->private);
-    return DB_ERROR;
-  }
+    if (f.mysql_warning_count_fn(conn->private) > 0) {
+      print_warnings(1, conn->private);
+      return DB_ERROR;
+    }
 
-  MYSQL_RES *mysql_stmt = f.mysql_store_result_fn(conn->private);
-  if (mysql_stmt == NULL) {
-    csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(conn->private));
-    return DB_ERROR;
-  }
-
-/* Treat warnings as errors. For example when a column is too short this should
-   be an error. */
-
-  if (f.mysql_warning_count_fn(conn->private) > 0) {
-    print_warnings(1, conn->private);
-    return DB_ERROR;
-  }
-
-  stmt->private = mysql_stmt;
-  /* TODO error mapping / handling */
-  *stmt_p = stmt;
-  stmt->get_column_text = db_mysql_stmt_get_column_text;
-  stmt->get_column_blob = db_mysql_stmt_get_column_blob;
-  stmt->get_column_int = db_mysql_stmt_get_column_int;
-  stmt->next = db_mysql_stmt_next;
-  stmt->close = db_mysql_stmt_close;
-  stmt->db = conn;
-  return DB_OK;
+    stmt->private = mysql_stmt;
+    /* TODO error mapping / handling */
+    *stmt_p = stmt;
+    stmt->get_column_text = db_mysql_stmt_get_column_text;
+    stmt->get_column_blob = db_mysql_stmt_get_column_blob;
+    stmt->get_column_int = db_mysql_stmt_get_column_int;
+    stmt->next = db_mysql_stmt_next;
+    stmt->close = db_mysql_stmt_close;
+    stmt->db = conn;
+    return DB_OK;
 }
 
 const void* db_mysql_stmt_get_column_blob(db_stmt_p stmt, int column) {
@@ -372,59 +371,63 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 		 "  `filename` varchar(%u) DEFAULT NULL,"
 		 "  `command`  text,"
 		 "  `logfile` text,"
-		 "  KEY `filename` (`filename`(%u),`command`(%u))"
+		 "  KEY `filename` (`filename`(%u),`command`(%u)) "
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
-
-    csync_db_sql(conn, NULL, /* "Creating dirty table" */ 
+    csync_db_sql(conn, "Creating dirty table",
 		 "CREATE TABLE `dirty` ("
-		 //		"  `id`        bigint        AUTO_INCREMENT,"
+//		 "  id        bigint       AUTO_INCREMENT,"
 		 "  filename  varchar(%u)  DEFAULT NULL,"
 		 "  forced    int 	   DEFAULT NULL,"
 		 "  myname    varchar(%u)  DEFAULT NULL,"
 		 "  peername  varchar(%u)  DEFAULT NULL,"
-		 "  operation varchar(100) DEFAULT NULL,"
+		 "  operation varchar(20)  DEFAULT NULL,"
 		 "  op 	      int	   DEFAULT NULL,"
 		 "  checktxt  varchar(%u)  DEFAULT NULL,"
 		 "  device    bigint       DEFAULT NULL,"
 		 "  inode     bigint       DEFAULT NULL,"
 		 "  other     varchar(%u)  DEFAULT NULL,"
 		 "  file_id   bigint       DEFAULT NULL,"
-		 "  digest    varchar(130) DEFAULT NULL,"
+		 "  digest    varchar(70)  DEFAULT NULL,"
 		 "  mode      int	   DEFAULT NULL,"
 		 "  mtime     int    	   DEFAULT NULL,"
 		 "  type      int    	   DEFAULT NULL,"
 		 "  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-		 "  UNIQUE KEY `filename_peername_myname_` (`filename`(%u),`peername`,`myname`)"
-		 //		"  KEY `dirty_host` (`peername`(10))"
-		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH+50, FILE_LENGTH);
+		 "  UNIQUE KEY `filename_peername_myname` (`filename`(%u),`peername`,`myname`), "
+		 "  KEY `idx_file_dev_inode` (`device`,`inode`) "
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
+		 FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH+50, FILE_LENGTH, FILE_LENGTH);
 
-    csync_db_sql(conn, NULL, /* "Creating file table", */
+    csync_db_sql(conn, "Creating file table",
 		 "CREATE TABLE `file` ("
-		 //		"  `id`       bigint AUTO_INCREMENT,"
+//		 "  `id`       bigint AUTO_INCREMENT,"
 		 //		"  `parent`   bigint DEFAULT NULL,"
 		 "  filename varchar(%u)  DEFAULT NULL,"
 		 "  hostname varchar(%u)  DEFAULT NULL,"
-		 "  checktxt varchar(200) DEFAULT NULL,"
+		 "  checktxt varchar(%u)  DEFAULT NULL,"
 		 "  device   bigint 	  DEFAULT NULL,"
 		 "  inode    bigint 	  DEFAULT NULL,"
 		 "  size     bigint 	  DEFAULT NULL,"
 		 "  mode     int    	  DEFAULT NULL,"
 		 "  mtime    int    	  DEFAULT NULL,"
 		 "  type     int    	  DEFAULT NULL,"
-		 "  digest   varchar(130) DEFAULT NULL,"
-		 "  UNIQUE KEY `hostname_filename` (`hostname` (%u), `filename`(%u))"
-		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
+		 "  digest   varchar(70)  DEFAULT NULL,"
+		 "  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+		 "  UNIQUE KEY `hostname_filename` (`hostname` , `filename` (%u)), "
+		 "  KEY `idx_file_dev_inode` (`device`,`inode`) "
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
+		 FILE_LENGTH, HOST_LENGTH, FILE_LENGTH+50, FILE_LENGTH);
 
     csync_db_sql(conn, NULL, /* "Creating hint table", */
-		     "CREATE TABLE `hint` ("
+		 "  CREATE TABLE `hint` ("
 		 "  `filename` varchar(%u) DEFAULT NULL,"
 		 "  `recursive` int(11)    DEFAULT NULL"
-		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH);
+		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
+		 FILE_LENGTH);
 
     csync_db_sql(conn, NULL, /* "Creating x509_cert table", */
 		 "CREATE TABLE `x509_cert` ("
 		 "  `peername` varchar(50)  DEFAULT NULL,"
-		 "  `certdata` varchar(255) DEFAULT NULL,"
+		 "  `certdata` text DEFAULT NULL,"
 		 "  UNIQUE KEY `peername` (`peername`)"
 		 ") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
 
@@ -434,8 +437,6 @@ int db_mysql_upgrade_to_schema(db_conn_p conn, int version)
 
 const char* db_mysql_escape(db_conn_p conn, const char *string) 
 {
-  int rc = DB_ERROR;
-
   if (!conn)
     return 0; 
   if (!conn->private)
@@ -445,8 +446,7 @@ const char* db_mysql_escape(db_conn_p conn, const char *string)
 
   size_t length = strlen(string);
   char *escaped_buffer = ringbuffer_malloc(2*length+1);
-  rc = f.mysql_real_escape_string_fn(conn->private, escaped_buffer, string, length);
-
+  f.mysql_real_escape_string_fn(conn->private, escaped_buffer, string, length);
   return escaped_buffer;
 }
 

@@ -27,35 +27,38 @@ int match_pattern_list(
 		filename_p filename, const char *basename,
 		const struct csync_group_pattern *p, int compare_mode)
 {
-  int match_path = 0, match_base = 1;
+    // unused
+    (void) compare_mode;
+    
+    int match_path = 0, match_base = 1;
 
-  while (p) {
-    int matched = 0;
+    while (p) {
+	int matched = 0;
     
-    if ( p->iscompare && !csync_compare_mode )
-			goto next_pattern;
-    
-    if ( p->pattern[0] != '/' && p->pattern[0] != '%' ) {
-      if ( !fnmatch(p->pattern, basename, 0) ) {
-	match_base = p->isinclude;
-	matched = 1;
-      }
-    } else {
-      int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
-      if ( !fnmatch(p->pattern, filename,
-		    FNM_LEADING_DIR|fnm_pathname) ) {
-	match_path = p->isinclude;
-	matched = 1;
-      }
+	if ( p->iscompare && !csync_compare_mode )
+	    goto next_pattern;
+
+	if ( p->pattern[0] != '/' && p->pattern[0] != '%' ) {
+	    if ( !fnmatch(p->pattern, basename, 0) ) {
+		match_base = p->isinclude;
+		matched = 1;
+	    }
+	} else {
+	    int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
+	    if ( !fnmatch(p->pattern, filename,
+			  FNM_LEADING_DIR|fnm_pathname) ) {
+		match_path = p->isinclude;
+		matched = 1;
+	    }
+	}
+	if ( matched ) {
+	    csync_log(LOG_DEBUG, 3, "Match (%c): %s on %s\n",
+		      p->isinclude ? '+' : '-', p->pattern, filename);
+	}
+    next_pattern:
+	p = p->next;
     }
-    if ( matched ) {
-	csync_log(LOG_DEBUG, 3, "Match (%c): %s on %s\n",
-		  p->isinclude ? '+' : '-', p->pattern, filename);
-    }
-  next_pattern:
-    p = p->next;
-  }
-  return match_path && match_base;
+    return match_path && match_base;
 }
 
 const struct csync_group *csync_find_next(const struct csync_group *g,

@@ -4,4 +4,3 @@ Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 Unmapped MYSQL error: 1 
-Binary file (standard input) matches

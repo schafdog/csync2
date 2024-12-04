@@ -6,6 +6,9 @@
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5
 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file
+peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/new	MARK	NULL	0
+peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4	MARK	NULL	0
+peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5	MARK	NULL	0
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local	MKDIR	NULL	1
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local/new	MKDIR	NULL	1
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file	NEW	NULL	2

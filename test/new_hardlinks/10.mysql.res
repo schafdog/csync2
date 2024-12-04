@@ -17,3 +17,4 @@ other	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked	
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2	HARDLINK	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file	32
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_3	HARDLINK	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file	32
 other	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6	HARDLINK	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink	32
+peer	/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6	RM	NULL	64

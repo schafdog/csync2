@@ -88,7 +88,7 @@ void csync_version() {
 	"Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
 	"\n"
 #ifdef CSYNC_GIT_VERSION
-	" " CSYNC_GIT_VERSION "\n"
+	"git: " CSYNC_GIT_VERSION "\n"
 #endif
 	);
 }
@@ -224,7 +224,6 @@ int create_keyfile(filename_p filename)
     char matrix[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
     unsigned char n;
     int i;
-    int rc;
     assert(sizeof(matrix) == 65);
     if ( fd == -1 ) {
 	fprintf(stderr, "Can't create key file: %s\n", strerror(errno));
@@ -235,10 +234,10 @@ int create_keyfile(filename_p filename)
 	return 1;
     }
     for (i=0; i<64; i++) {
-	rc = read(rand, &n, 1);
-	rc = write(fd, matrix+(n&63), 1);
+	read(rand, &n, 1);
+	write(fd, matrix+(n&63), 1);
     }
-    rc = write(fd, "\n", 1);
+    write(fd, "\n", 1);
     close(rand);
     close(fd);
     return 0;
@@ -314,9 +313,9 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	if (rest) {
 	    log_time = timelocal(&tm);
 	    csync_debug(2, "monitor: Parsed %s to %d. %s", time_str, log_time, rest);
-	} else
+	} else {
 	    csync_debug(0, "monitor: failed to parse %s as %F_%T", time_str);
-
+	}
 	buffer += match + 1;
 	match = csync_read_buffer(buffer, operation);
 	if (match <= 0)
@@ -325,21 +324,19 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	int len = strlen(buffer);
 	if (buffer[len] == '\n')
 	    buffer[len] = 0;
-	// Check if file is "just" made by daemon
-
 	strcpy(file, buffer);
-	time_t lock_time = csync_redis_get_custom(file, operation);
 	if (csync_check_usefullness(file, flags)) {
 	    csync_debug(1, "monitor: Skip %s not matched at %d\n", file, log_time);
 	    continue;
 	}
+	// Check if file is "just" made by daemon
+	time_t lock_time = csync_redis_get_custom(file, operation);
 	if (lock_time != -1)
 	    csync_redis_del_custom(file, operation);
 
 	if (lock_time != -1 && log_time <= lock_time) {
 	    csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 	} else {
-
 	    csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
 	    if (strcmp(operation, "CREATE") == 0) {
 		csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
@@ -581,6 +578,16 @@ int match_peer(char **active_peers, const char *peer) {
 
 void csync_config_destroy();
 
+void free_realname(char *real_name) {
+    if (real_name == NULL) {
+	return ;
+    }
+    if (!strcmp("", real_name)) {
+	return ;
+    }
+    free(real_name);
+}
+
 int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
     int count = 0;
     for (int i = 0; i < file_count; i++) {
@@ -654,7 +661,7 @@ int csync_read_config(char *cfgname, int conn, int mode)
 
 int main(int argc, char ** argv)
 {
-    int mode = MODE_NONE;
+    long mode = MODE_NONE;
     int flags = 0;
     int opt, i;
     // Default db_decodes (version 1 scheme)
@@ -678,7 +685,7 @@ int main(int argc, char ** argv)
     int cmd_ip_version = 0;
     update_func update_func;
     int csync_port_cmdline = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeE")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEY")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -871,6 +878,10 @@ int main(int argc, char ** argv)
 	    update_func = csync_sync_host;
 	    mode = MODE_EQUAL;
 	    break;
+	case 'Y':
+	    flags |= FLAG_IGN_MTIME;
+	    csync_debug(1, "Ignoring MTIME: %d", flags);
+	    break;
 	case 'E':
 	{
 	    mode = MODE_TAIL;
@@ -923,22 +934,23 @@ int main(int argc, char ** argv)
     for (i=0; myhostname[i]; i++)
 	myhostname[i] = tolower(myhostname[i]);
 
-    int listenfd;
-    int server = mode & MODE_DAEMON;
-    int server_standalone =  mode & MODE_STANDALONE;
+    int listenfd = 0;
+    long server_standalone =  mode & MODE_STANDALONE;
     char *myport = csync_port;
-    csync_log(LOG_DEBUG, 3, "csync_hostinfo %p \n", csync_hostinfo);
-    if (server_standalone) {
+    csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
+    csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
+    if (server_standalone > 0) {
+	csync_info(3,"server standalone %ld server_standalone > 0: %d\n",  server_standalone, server_standalone > 0);
 	if (!csync_port_cmdline) {
 	    // We need to read the config file to determine a eventual port override
 	    // port override needs to be consistent over all configurations
+	    csync_debug(3,"No command line port. Reading config\n");
 	    csync_read_config(cfgname, 0, MODE_NONE);
 	    struct csync_hostinfo *myhostinfo = csync_hostinfo;
 	    while (myhostinfo != NULL) {
 		if (!strcmp(myhostinfo->name, myhostname))
 		{
 		    csync_log(LOG_DEBUG, 1, "Found my alias %s %s %s \n" ,myhostinfo->name, myhostinfo->host, myhostinfo->port);
-		    //strncpy(myhostname, myhostinfo->host, 255);
 		    myport = strdup(myhostinfo->port);
 		    break;
 		}
@@ -971,7 +983,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
     int first = 1;
     int i; 
 nofork:
-    csync_debug(2, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
+    csync_debug(3, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
     // init syslog if needed. 
     if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
 	csync_openlog();
@@ -1079,7 +1091,7 @@ nofork:
     csync_info(2, "Database File: %s\n",    csync_database);
     csync_info(2, "DB Version:    %d\n",    db_version);
     csync_info(2, "IP Version:    %s\n",    (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
-    csync_info(2, "GIT:           %s\n",    CSYNC_GIT_VERSION);
+    csync_info(3, "GIT:           %s\n",    CSYNC_GIT_VERSION);
     
 
     {
@@ -1147,6 +1159,7 @@ nofork:
 	    else {
 		csync_warn(0, "%s did not match a real path. Skipping.\n", argv[i]); 
 	    };
+	    free_realname(realname);
 	};
     };
 
@@ -1176,6 +1189,7 @@ nofork:
 	for (i=optind; i < argc; i++) {
 	    char *realname = getrealfn(argv[i]);
 	    db->force(db, realname, flags & FLAG_RECURSIVE);
+	    free_realname(realname);
 	};
     };
     
@@ -1208,6 +1222,7 @@ nofork:
 		    csync_compare_mode = 1;
 		    csync_check(db, realname, flags);
 		}
+		free_realname(realname);
 	    }
 	    else {
 		csync_warn(0, "%s is not a real path\n", argv[i]);
@@ -1299,14 +1314,16 @@ nofork:
 	    break;
 	}
     };
-
+    csync_debug(3, "MODE %ld\n", mode);
     if (mode == MODE_LIST_DIRTY) {
 	retval = 0;
-	char *realname = ""; 
+	char *realname = "";
 	if (optind < argc) {
 	    realname = getrealfn(argv[optind]);
 	}
 	db->list_dirty(db, active_peers, realname, flags & FLAG_RECURSIVE);
+	free_realname(realname);
+
     }
     if (mode == MODE_REMOVE_OLD) {
 	char *realname = ""; 
@@ -1317,17 +1334,19 @@ nofork:
 	    csync_fatal("Never run -R with -G!\n");
 	// TODO add "path" to limit clean up
 	csync_remove_old(db, realname);
+	free_realname(realname);
     }
 
+    csync_redis_close();
     csync_run_commands(db);
     csync_db_close(db);
+    csync_info(3, "Closed db: %p\n", db);
     csync_config_destroy();
-    csync_redis_close();
     if (active_peers) {
 	free(active_peers);
     }
     if (mode & MODE_DAEMON) {
-	csync_log(LOG_INFO, 2, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+	csync_log(LOG_INFO, 3, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 	  
 	if (mode & MODE_NOFORK) {
 	    csync_log(LOG_DEBUG, 1, "goto nofork.\n");

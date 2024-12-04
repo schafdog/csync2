@@ -5,6 +5,7 @@
 #include <hiredis/hiredis.h>
 #include <stdio.h>
 #include <time.h>
+#include <poll.h>
 
 redisContext *redis_context = NULL;
 redisReply *redis_reply = NULL;
@@ -23,7 +24,7 @@ int csync_redis_connect(char *redis) {
 	if (tmp_port > 0)
 	    port = tmp_port;
     };
-    csync_debug(2, "Connecting to redis %s:%d\n", redis, port);
+    csync_debug(3, "Connecting to redis %s:%d\n", redis, port);
     struct timeval timeout = { 5, 0 }; // 5 seconds
     if (isunix) {
         redis_context = redisConnectUnixWithTimeout(redis, timeout);
@@ -51,8 +52,19 @@ const char *not_null_default(const char *str, const char *if_null) {
     return str ? str : if_null;
 }
 
+int csync_redis_check_connection() {
+    struct pollfd fds;
+    fds.fd = redis_context->fd;
+    fds.events = POLLOUT;
+    if ((poll(&fds, 1, 0) != 1) || (fds.revents & POLLHUP)) {
+	redisFree(redis_context);
+	redis_context = NULL;
+	return 0;
+    }
+    return 1;
+}
+
 const char *build_key(const char *key, const char *domain, BUF_P buffer) {
-    int rc = -1;
     char *spacer = "";
     if (domain && domain[0] != 0) {
 	spacer = ":";
@@ -76,7 +88,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
     const char *domain_key = build_key(key, domain, buffer);
     const char *argv[] = { "GET", domain_key};
     redis_reply = redisCommandArgv(redis_context, 2, argv, NULL);
-    csync_debug(2, "Redis reply: GET '%s' -> %s\n", domain_key, redis_str(redis_reply));
+    csync_debug(3, "Redis reply: GET '%s' -> %s\n", domain_key, redis_str(redis_reply));
     buffer_destroy(buffer);
     
     if (redis_reply) {
@@ -113,7 +125,7 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 	
     }
     redis_reply = redisCommandArgv(redis_context, argc, argv, NULL);
-    csync_debug(2, "Redis reply: SET '%s' '%s' %s %s %s -> %s\n", domain_key, value, nx ? "NX" : "",
+    csync_debug(3, "Redis reply: SET '%s' '%s' %s %s %s -> %s\n", domain_key, value, nx ? "NX" : "",
 		expire > 0 ? "EX" : "", expire > 0 ? time : "",
 		redis_str(redis_reply));
 
@@ -132,21 +144,19 @@ int csync_redis_set_int(const char *key, const char *domain, int number, int nx,
 }
     
 time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const char *domain) {
-    BUF_P buffer = buffer_init();
-
     if (redis_context == NULL)
 	return 0;
     time_t unix_time = time(NULL);
     if (domain)
-	csync_debug(2, "Locking '%s:%s'\n", domain, filename);
+	csync_debug(3, "Locking '%s:%s'\n", domain, filename);
     else
-	csync_debug(2, "Locking '%s'\n", filename);
+	csync_debug(3, "Locking '%s'\n", filename);
     int rc =  csync_redis_set_int(filename, domain, unix_time, 1, custom_lock_time);
     if (rc < 0) {
 	// Failed to get OK reply
 	unix_time = -1;
     }
-    csync_debug(2, "csync_redis_lock: %s %s %d\n", rc == 1 ? "OK" : "ERR", filename, unix_time);
+    csync_debug(3, "csync_redis_lock: %s %s %d\n", rc == 1 ? "OK" : "ERR", filename, unix_time);
     return unix_time;
 }
 
@@ -163,13 +173,14 @@ int csync_redis_del_custom(const char *key, const char *domain) {
     int rc = 0;
 
     const char *domain_key = build_key(key, domain, buffer);
-    csync_debug(2, "Deleting key '%s'\n", domain_key);
+    csync_debug(3, "Deleting key '%s'\n", domain_key);
     const char *argv[] = { "DEL", domain_key };
     
     redis_reply = redisCommandArgv(redis_context, 2, argv, NULL);
-    csync_debug(2, "Redis Reply: DEL '%s' -> %d\n", domain_key, redis_reply ? redis_reply->integer : -1);
+    csync_debug(3, "Redis Reply: DEL '%s' -> %d\n", domain_key, redis_reply ? redis_reply->integer : -1);
     if (redis_reply == NULL || redis_reply->integer != 1) {
-	csync_debug(2, "csync_redis_del failed to delete one key: %d\n", redis_reply ? redis_reply->integer : -1);
+	csync_debug(3, "csync_redis_del failed to delete one key: %d\n",
+		    redis_reply ? redis_reply->integer : -1);
     } else
 	rc = redis_reply->integer;
     buffer_destroy(buffer);
@@ -198,6 +209,9 @@ int csync_redis_unlock_status(filename_p filename, time_t lock_time, int status)
 }
 
 void csync_redis_close() {
+    csync_debug(3, "Redis closing: %p\n", redis_context);
     if (redis_context)
 	redisFree(redis_context);
+    redis_context = NULL;
+    csync_debug(3, "Redis closed.\n");
 }

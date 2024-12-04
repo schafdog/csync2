@@ -92,7 +92,7 @@ enum {
 	MODE_SERVER = 16,
 	MODE_SINGLE = 32,
 	MODE_NOFORK = 64,
-	MODE_STANDALONE = MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
+	MODE_STANDALONE = MODE_SERVER|MODE_SINGLE|MODE_NOFORK,
 	MODE_DAEMON  = MODE_INETD|MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
 	MODE_FORCE = 256,
 	MODE_LIST_HINT = 512,
@@ -180,11 +180,11 @@ extern int conn_activate_ssl(int server_role, int in, int out);
 extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal);
 extern int conn_close(int conn);
 
-extern int conn_read(int fd, void *buf, size_t count);
-extern int conn_read_get_content_length(int fd, long *size);
-extern int conn_write(int fd, const void *buf, size_t count);
-size_t gets_newline(int filedesc, char *s, size_t size, int remove_newline);
-size_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);
+extern ssize_t conn_read(int fd, void *buf, size_t count);
+extern ssize_t conn_read_get_content_length(int fd, long long *size);
+extern ssize_t conn_write(int fd, const void *buf, size_t count);
+ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline);
+ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);
 
 extern void conn_printf(int fd, const char *fmt, ...);
 extern int conn_fgets(int fd, char *s, int size);
@@ -194,7 +194,7 @@ extern size_t conn_gets(int fd, char *s, size_t size);
 /* db.c */
 
 extern db_conn_p csync_db_open(const char *file);
-extern void csync_db_close();
+extern void csync_db_close(db_conn_p db);
 
 extern long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...);
 extern void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...);
@@ -220,6 +220,7 @@ extern const char* (*db_decode) (const char *value);
 	char *SQL_ERR = e; \
 	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
 	int SQL_COUNT = 0; \
+	(void) SQL_COUNT; \
 \
 	if (SQL_VM) { \
 		while (1) { \
@@ -260,14 +261,19 @@ extern int csync_rs_patch(int conn, filename_p filename);
 //extern const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
 extern const char *csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version);
 extern int csync_cmpchecktxt(const char *a, const char *b);
-extern int csync_cmpchecktxt_component(const char *a, const char *b);
+extern int csync_cmpchecktxt_component(const char *a, const char *b, int flags);
 int csync_get_checktxt_version(const char *value);
 time_t csync_checktxt_get_time(const char *checktxt);
 long long csync_checktxt_get_size(const char *checktxt);
 long long csync_checktxt_get_long_long(const char *checktxt, const char *token);
 
 /* check.c */
-int update_dev_inode(struct stat *file_stat, const char *dev, const char *ino);
+#define DEV_INO_SAME 0
+#define DEV_CHANGED 1
+#define INO_CHANGED 2
+#define DEV_MISSING 4
+#define INO_MISSING 8
+int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
 int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
 
 struct textlist;
@@ -287,9 +293,11 @@ struct textlist;
 #define OP_SYNC     (OP_MOD|OP_MOD2)
 #define OP_FILTER   (~(OP_SYNC) & 1023) 
 
-#define IS_UPGRADE 1
-#define IS_DIRTY   2
+#define IS_UPGRADE  1
+#define IS_DIRTY    2
 #define CALC_DIGEST 4
+#define DEV_CHANGE  8
+
 #define PATH_NOT_FOUND "ERROR (Path not found): "
 #define PATH_NOT_FOUND_LEN sizeof(PATH_NOT_FOUND)-1
 
@@ -397,6 +405,18 @@ const char *prefixencode(filename_p filename);
 
 /* textlist implementation */
 
+struct dirty_by_name {
+    char *filename;
+    char *op;
+    int operation;
+    char *other;
+    char *checktxt;
+    char *digest;
+    int forced;
+};
+
+typedef struct dirty_by_peer *dirty_by_peer_p;
+
 struct textlist {
     struct textlist *next;
     int operation;
@@ -409,6 +429,9 @@ struct textlist {
     int num;
     char **values;
     void *data;
+    union {
+	dirty_by_peer_p *dirty_by_peer;
+    };
     void (*destroy)(void *data);
 };
 
