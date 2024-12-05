@@ -241,16 +241,12 @@ static FILE *paranoid_tmpfile()
 
 int csync_send_file_chunked(int conn, FILE *in)
 {
-  char buffer[CHUNK_SIZE];
-  int rc, chunk;
   long size;
-
   fflush(in);
   size = ftell(in);
   rewind(in);
-
-  csync_log(LOG_DEBUG, 2, "Sending chunked stream of %ld bytes\n", size);
-  conn_printf(conn, "chunked %ld\n", size);
+  csync_log(LOG_DEBUG, 1, "Sending chunked stream of %ld bytes\n", size);
+  conn_printf(conn, "octet-stream %ld\n", size);
   return conn_send_file_chunked(conn, in);
 }
 
@@ -264,7 +260,7 @@ void csync_send_file_octet_stream(int conn, FILE *in)
   size = ftell(in);
   rewind(in);
 
-  csync_log(LOG_DEBUG, 2, "Sending octet-stream of %ld bytes\n", size);
+  csync_log(LOG_DEBUG, 1, "Sending octet-stream of %ld bytes\n", size);
   conn_printf(conn, "octet-stream %ld\n", size);
 
   while ( size > 0 ) {
@@ -284,7 +280,7 @@ void csync_send_file_octet_stream(int conn, FILE *in)
 }
 
 void  csync_send_file(int conn, FILE *in) {
-     csync_send_file_chunked(conn, in);
+     csync_send_file_octet_stream(conn, in);
 }
 
 int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) 
@@ -304,6 +300,8 @@ void csync_send_error(int conn)
     conn_printf(conn, "ERROR\n");
 }
 
+const char *typestr[2] = { "octet-stream", "chunked"};
+
 int csync_recv_file_chunked(int conn, FILE *out)
 {
   long long size;
@@ -316,7 +314,7 @@ int csync_recv_file_chunked(int conn, FILE *out)
       return -2;
   }
 
-  csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes ..\n", size);
+  csync_log(LOG_DEBUG, 1, "Receiving %Ld bytes (%s)..\n", size, typestr[2-1]);
   conn_read_file_chunked(conn, out);
 
   fflush(out);
@@ -338,8 +336,7 @@ int csync_recv_file_octet_stream(int conn, FILE *out)
       return -2;
   }
 
-  csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes ..\n", size);
-
+  csync_log(LOG_DEBUG, 1, "Receiving %Ld bytes (%s)..\n", size, typestr[type-1]);
   while ( size > 0 ) {
     chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
     bytes = conn_read(conn, buffer, chunk);
@@ -364,7 +361,7 @@ int csync_recv_file_octet_stream(int conn, FILE *out)
 }
 
 int csync_recv_file(int conn, FILE *out) {
-    return csync_recv_file_chunked(conn, out);
+    return csync_recv_file_octet_stream(conn, out);
 }
     
 int csync_rs_check(int conn, filename_p filename, int isreg)
