@@ -455,7 +455,7 @@ static inline void textlist_add_var(struct textlist **listhandle, int intitem, i
     *listhandle = malloc(sizeof(struct textlist));
     (*listhandle)->intvalue = intitem;
     (*listhandle)->num = num;
-    (*listhandle)->values = calloc(sizeof(char*),num);
+    (*listhandle)->values = calloc(num,sizeof(char*));
     (*listhandle)->data = NULL;
     (*listhandle)->destroy = NULL;
     va_start ( arguments, num );           
