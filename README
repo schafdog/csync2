@@ -5,19 +5,19 @@ I have been using csync2 for many years to sync my cluster of tiny linux machine
 (geographical distributed), as well as between macs. 
 
 While distributed / cluster file systems is of great interest;
-I have tried both GlusterFS and Ceph; I perfer the loosy coupled 
+I have tried both GlusterFS and Ceph; I prefer the loosly coupled 
 of csync2, and I can live with manual fixing replication problem once in a while 
 
-I did my first patches for csync2 in 2010, and sugested some ideas around
+I did my first patches for csync2 in 2010, and suggested some ideas around
 furture development without getting any feedback I decided to continue on my own.
 
 Difference from LINBIT are many. Many code cleanups, but also new features: 
 
-- Attempting to track FS operations correct to elliminate redundant operations, 
+- Attempting to track FS operations correct to eliminate redundant operations, 
 - Extended with a MOVE operation. Detect it locally and perform it on peers
-- Supporting hardlinks
+- Supporting hardlinks (with bugs)
 - Implement a Storage layer so it could be extended with NoSQL storages
-- SQL Layet that implements SQL common between SQL "drivers"
+- SQL Layer that implements SQL common between SQL "drivers"
 - Much fewer global variables that prevented multiple instance of connections 
   and threading
 - Added tests to ensure functionality when refactoring 
@@ -25,12 +25,18 @@ Difference from LINBIT are many. Many code cleanups, but also new features:
 - Begining of a "sync" tool that would fix inconsistencies
 
 Broken stuff
-===== 
+============ 
 - Database format has change. Now stored un-encoded. Only url encoded over wire
 - Wire protocol: Minimal but minor things has changed. Dont use with older versions
 - Windows support via CYGWIN has not been maintained and is for sure broken.
 - Database creating is not 100% correct.
 - sqlite 2/3 has not been tested for a long time. Mostly mysql, and some PostgreSQL
+
+Building on Mac:
+================
+Will most likely require some homebrew versions of tools:
+- macOS bison with -W fails. Set YACC='<location of homebrew bison> -y' before ./autogen.sh
+
 
 Future
 ======
