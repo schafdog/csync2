@@ -337,7 +337,9 @@ Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
 CONN local > 'octet-stream 20'
-Content length in buffer: 'octet-stream 20' size: 20 rc: 0 
+Got octet-stream 20
+Content length in buffer: 'octet-stream 20' size: 20 rc: 0 (octet-stream)
+Receiving 20 bytes (octet-stream)..
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both rc = 0 time: 1625695200 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both  

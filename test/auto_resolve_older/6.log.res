@@ -30,7 +30,8 @@ Auto resolve method OLDER 3 for peer:/export/home/dennis/Projects/csync2/csync2/
 File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both: Lost autoresolve OLDER (3)
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both', 1 [regular file])
 CONN peer > 'octet-stream 32'
-Content length in buffer: 'octet-stream 32' size: 32 rc: 0 
+Got octet-stream 32
+Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
 rs_check: Found diff in sig at -32:-0
 File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'

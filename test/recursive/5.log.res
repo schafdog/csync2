@@ -8,3 +8,4 @@ mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
+Got octet-stream 0

@@ -28,7 +28,8 @@ File is different on peer (cktxt char #-2).
 >>> LOCAL:	v2:mtime=1625695200:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
-Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
+Got octet-stream 0
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
 CONN peer < MOD %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
@@ -44,7 +45,8 @@ File is different on peer (cktxt char #-2).
 >>> LOCAL:	v2:mtime=1625695200:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
-Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
+Got octet-stream 0
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 CONN peer < MOD %25test%25/auto - 1234 1000 dennis schafroth 16877 - 4096 
@@ -63,7 +65,8 @@ File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younge
 Sould send FLUSH peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger (won auto resolved)
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
-Content length in buffer: 'octet-stream 0' size: 0 rc: 0 
+Got octet-stream 0
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
 CONN peer < MOD %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 
@@ -82,7 +85,8 @@ File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younge
 Sould send FLUSH peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest (won auto resolved)
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest', 1 [regular file])
 CONN peer > 'octet-stream 32'
-Content length in buffer: 'octet-stream 32' size: 32 rc: 0 
+Got octet-stream 32
+Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
 rs_check: Found diff in sig at -32:-0
 File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
@@ -90,7 +94,9 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < PATCH %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 14 
 CONN peer > 'OK (send_data).'
 CONN peer > 'octet-stream 32'
-Content length in buffer: 'octet-stream 32' size: 32 rc: 0 
+Got octet-stream 32
+Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
+Receiving 32 bytes (octet-stream)..
 Sending octet-stream of 20 bytes
 CONN peer < octet-stream 20
 

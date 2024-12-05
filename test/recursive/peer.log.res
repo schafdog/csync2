@@ -40,6 +40,9 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.
+Sending octet-stream of 12 bytes
+Got octet-stream 17
+Receiving 17 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c  
 IDENT (cmd_finished).
 goto nofork.
