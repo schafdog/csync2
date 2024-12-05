@@ -189,7 +189,8 @@ ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline
 extern void conn_printf(int fd, const char *fmt, ...);
 extern int conn_fgets(int fd, char *s, int size);
 extern size_t conn_gets(int fd, char *s, size_t size);
-
+extern int conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
+extern int conn_write_chunk(int fd, char *buffer, size_t n_bytes);
 
 /* db.c */
 
