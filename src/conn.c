@@ -436,12 +436,25 @@ void conn_debug(const char *name, const char*buf, size_t count)
 	fprintf(csync_out_debug, "\n");
 }
 
-ssize_t conn_read_get_content_length(int fd, long long *size) 
+ssize_t conn_read_get_content_length(int fd, long long *size, int *type)
 {
    char buffer[200];
    *size = 0;
-   int rc = !conn_gets(fd, buffer, 200) || sscanf(buffer, "octet-stream %zu\n", size) != 1;
-   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %zu rc: %d \n", buffer, *size, rc);
+   int rc = !conn_gets(fd, buffer, 200);
+   char *typestr;
+   if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
+       *type = 1;
+       typestr = "octet-stream";
+   }
+   else if (sscanf(buffer, "chunked %lld\n", size) == 1) {
+       *type = 2;
+       typestr = "chunked";
+   } else {
+       csync_error(0, "Failed to content-length: %s", buffer);
+       return -1;
+   }
+
+   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %lld rc: %d \n", buffer, *size, rc);
    if (!strcmp(buffer, "ERROR\n")) {
       errno=EIO;
       return -1;
@@ -518,7 +531,7 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 }
 
 
-int conn_write_file_chunked(int sockfd, FILE *file) {
+int conn_send_file_chunked(int sockfd, FILE *file) {
     char buffer[CHUNK_SIZE];
     size_t bytes_read;
     while ((bytes_read = fread(buffer, 1, CHUNK_SIZE, file)) > 0) {
