@@ -639,8 +639,105 @@ int csync_rs_patch(int conn, filename_p filename)
       // inotify also sends this?
       return 0;
   }
-  errstr="renaming tmp file to to be patched file"; 
-  return rsync_patch_io_error(errstr, filename, delta_file, basis_file, new_file);
+  return rsync_patch_io_error("renaming tmp file to to be patched file", filename, delta_file, basis_file, new_file);
 }
 
- 
+
+static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE *old, FILE *new, rs_job_t *job, int err_no) {
+    csync_error(0, errstr, filename, err_no);
+    rs_file_close(old);
+    rs_file_close(new);
+    rs_job_free(job);
+    return errno;
+}
+
+#define BUF_SIZE (4*4096)
+static int recv_delta_and_patch_file(int sock, const char *fname) {
+    char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
+    char newfname[MAXPATHLEN];
+    /* Open new file */
+    FILE *new = open_temp_file(newfname, fname);
+    csync_redis_set_int(newfname, "CREATE", time(NULL), 0, 300);
+
+    /* Open basis file */
+    FILE *old = rs_file_open(fname, "rb", 0);
+
+    rs_job_t *job = rs_patch_begin(rs_file_copy_cb, old);
+
+    /* Setup RSYNC buffers */
+    rs_buffers_t bufs = { 0 };
+    bufs.next_in = in_buf;
+    bufs.next_out = out_buf;
+    bufs.avail_out = sizeof(out_buf);
+
+    rs_result res;
+    int iter = 0;
+    do {
+        if (bufs.eof_in == 0) {
+            if (bufs.avail_in > BUF_SIZE) {
+                /* The job requires more data, but we cannot fit another
+                 * message into the input buffer */
+		return csync_delta_patch_error("Insufficient buffer capacity: %s %d", fname, old, new, job, -1);
+            }
+
+            if (bufs.avail_in > 0) {
+                /* Left over tail data, move to front */
+                memmove(in_buf, bufs.next_in, bufs.avail_in);
+            }
+
+            size_t n_bytes;
+            char *buffer = NULL;
+            int ret = conn_read_chunk(sock, &buffer, &n_bytes);
+            if (ret == -1) {
+		return csync_delta_patch_error("Failed to read chunk: %s %d", fname, old, new, job, ret);
+            }
+            printf("Recieved %zu bytes\n", n_bytes);
+            // FAIL check size
+            if (n_bytes > 0) {
+                memcpy(in_buf + bufs.avail_in, buffer, n_bytes);
+                free(buffer);
+            }
+            bufs.eof_in = n_bytes == 0;
+
+            bufs.next_in = in_buf;
+            bufs.avail_in += n_bytes;
+        }
+        res = rs_job_iter(job, &bufs);
+        if (res != RS_DONE && res != RS_BLOCKED) {
+            csync_error(0, "Failed job %d iteration: %d", iter, res);
+	    return csync_delta_patch_error("Failed job iteration: %s %d",fname,  old, new, job, res);
+        }
+
+        /* Drain output buffer, if there is data */
+        size_t present = bufs.next_out - out_buf;
+        if (present > 0) {
+            size_t n_bytes = fwrite(out_buf, present, 1, new);
+
+            if (n_bytes == 0) {
+		return csync_delta_patch_error("Failed to write to tmp file: %s %d", fname, old, new, job, -1);
+            }
+
+            bufs.next_out = out_buf;
+            bufs.avail_out = sizeof(out_buf);
+        }
+        iter++;
+    } while (res != RS_DONE);
+
+    rs_file_close(new);
+    rs_file_close(old);
+    rs_job_free(job);
+
+    // TODO this will break any hardlink to filename. 
+    // DS: That is not what we want IMHO
+
+  if (rename(newfname, fname) == 0) {
+      csync_redis_set_int(fname, "MOVED_TO", time(NULL), 0, 300);
+      csync_info(3, "File '%s' has been patched successfully.\n", fname);
+      // And a CLOSE_WRITE,CLOSE 
+      csync_redis_set_int(fname, "CLOSE_WRITE,CLOSE", time(NULL), 0, 300);
+      // inotify also sends this?
+      return 0;
+  }
+  csync_error(0, "Renaming tmp to %s failed", fname);
+  return -1;
+}
