@@ -450,79 +450,105 @@ ssize_t conn_read_get_content_length(int fd, long long *size)
 }
 
 #define CHUNK_SIZE 16*1024
+int conn_write_chunk(int sockfd, char *buffer, size_t size) {
+    char header[16];
+    snprintf(header, sizeof(header), "%zx\r\n", size);  // Chunk size in hex
+    if (send(sockfd, header, strlen(header), 0) == -1) {
+        perror("Error sending chunk header");
+        return -1;
+    }
+
+    if (send(sockfd, buffer, size, 0) == -1) {
+        perror("Error sending chunk");
+        return -1;
+    }
+
+    if (send(sockfd, "\r\n", 2, 0) == -1) {  // Chunk delimiter
+        perror("Error sending chunk delimiter");
+        return -1;
+    }
+    //printf("Chunk %zu sent .\n", size);
+    return 0;
+}
+
+int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
+
+    char header[16];
+    size_t chunk_size;
+    // read header
+    while (1) {
+        ssize_t header_len = recv(sockfd, header, sizeof(header) - 1, MSG_PEEK);
+        if (header_len <= 0) {
+            perror("Error receiving chunk header");
+	    return -1;
+        }
+        
+        char *end_of_header = strstr(header, "\r\n");
+        if (!end_of_header) {
+	    // try again
+	    continue;
+	}
+        // Only once
+        *end_of_header = '\0';  // Null-terminate the header
+        sscanf(header, "%zx", &chunk_size);  // Read the chunk size in hexadecimal
+        recv(sockfd, header, end_of_header - header + 2, 0);  // Consume the header
+        *end_of_header = '\0';
+        break;
+    }
+
+    *size = chunk_size;
+    *buffer = NULL;
+    if (chunk_size > 0) {
+        size_t bytes_received = 0;
+        *buffer = malloc(chunk_size);
+        while (bytes_received < chunk_size) {
+            ssize_t n = recv(sockfd, *buffer + bytes_received,
+                             chunk_size - bytes_received > CHUNK_SIZE ? CHUNK_SIZE : chunk_size - bytes_received, 0);
+            if (n <= 0) {
+                perror("Error receiving file chunk");
+                return -1;
+            }
+            bytes_received += n;
+        }
+    }
+    // Consume the trailing "\r\n" after each chunk
+    char tmp[2]; 
+    recv(sockfd, tmp, 2, 0);
+    return 0;
+}
+
 
 int conn_write_file_chunked(int sockfd, FILE *file) {
     char buffer[CHUNK_SIZE];
     size_t bytes_read;
     while ((bytes_read = fread(buffer, 1, CHUNK_SIZE, file)) > 0) {
-        char header[16];
-        snprintf(header, sizeof(header), "%zx\r\n", bytes_read);  // Chunk size in hex
-
-        if (send(sockfd, header, strlen(header), 0) == -1) {
-            perror("Error sending chunk header");
-            break;
-        }
-
-        if (send(sockfd, buffer, bytes_read, 0) == -1) {
-            perror("Error sending file chunk");
-            break;
-        }
-
-        if (send(sockfd, "\r\n", 2, 0) == -1) {  // Chunk delimiter
-            perror("Error sending chunk delimiter");
-            break;
-        }
+	if (!conn_write_chunk(sockfd, buffer, bytes_read)) {
+	    csync_error(0, "Failed to send chunk");
+	    return -1;
+	}
     }
-
-    // Send final zero-length chunk to indicate EOF
-    send(sockfd, "0\r\n\r\n", 5, 0);
-
+    // eof chunk
+    conn_write_chunk(sockfd, "", 0);    
     fclose(file);
     printf("File sent using chunked encoding.\n");
     return 0;
 }
 
 int conn_read_file_chunked(int sockfd, FILE *file) {
-    char buffer[CHUNK_SIZE];
     while (1) {
-        char header[16];
-        ssize_t header_len = recv(sockfd, header, sizeof(header) - 1, MSG_PEEK);
-        if (header_len <= 0) {
-            perror("Error receiving chunk header");
+	char *buffer;
+	size_t n_bytes;
+	if (!conn_read_chunk(sockfd, &buffer, &n_bytes)) {
+	    csync_error(0, "Failed to read chunk\n");
 	    return -1;
-        }
-
-        char *end_of_header = strstr(header, "\r\n");
-        if (!end_of_header) {
-	    // try again
-	    continue;
 	}
-
-        size_t chunk_size;
-        *end_of_header = '\0';  // Null-terminate the header
-        sscanf(header, "%zx", &chunk_size);  // Read the chunk size in hexadecimal
-
-        recv(sockfd, header, end_of_header - header + 2, 0);  // Consume the header
-
-        if (chunk_size == 0) {
-	    // End of transmission
+	if (n_bytes > 0) {
+	    fwrite(buffer, n_bytes, 1, file);
+	    free(buffer);
 	    break;
 	}
-        size_t bytes_received = 0;
-        while (bytes_received < chunk_size) {
-            ssize_t n = recv(sockfd, buffer,
-                             chunk_size - bytes_received > CHUNK_SIZE ? CHUNK_SIZE : chunk_size - bytes_received, 0);
-            if (n <= 0) {
-                perror("Error receiving file chunk");
-                return -1;
-            }
-            fwrite(buffer, 1, n, file);
-            bytes_received += n;
-        }
-        // Consume the trailing "\r\n" after each chunk
-        recv(sockfd, buffer, 2, 0);
     }
-
+    fclose(file);
     printf("File received using chunked encoding.\n");
     return 0;
 }
