@@ -604,7 +604,7 @@ void cmd_printf(int conn, const char *cmd, const char *key,
     }
 
     if (st) {
-	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %Ld %Ld\n",
+	conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %zu %zu\n",
 		    cmd, key, filename, secondname,
 		    st->st_uid, st->st_gid,
 		    uid, gid,
@@ -946,7 +946,7 @@ int csync_update_directory(int conn,
 		return rc;
 	    }
 	}	
-	csync_info(3, "update_directory: Setting directory time %s %Ld.\n", dirname, dir_st.st_mtime);
+	csync_info(3, "update_directory: Setting directory time %s %zu.\n", dirname, dir_st.st_mtime);
 	rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
 	return rc;
     }
@@ -1511,7 +1511,7 @@ int csync_update_file_settime(int conn, peername_p peername, const char *key_enc
 			      filename_p filename, filename_p filename_enc,
 			      const struct stat *st)
 {
-    conn_printf(conn, "SETTIME %s %s %Ld\n",
+    conn_printf(conn, "SETTIME %s %s %zu\n",
 		key_enc, filename_enc,
 		(long long)st->st_mtime);
     if ( read_conn_status(conn, filename, peername) )
