@@ -53,8 +53,16 @@ AC_ARG_WITH([librsync-source],
 	AS_HELP_STRING([--with-librsync-source=source-tar-file],
 		[build this librsync and link statically against it (hack! hack!)]),
 	AC_SUBST([librsync_source_file], $withval),
+	CFLAGS_backup="${CFLAGS}"
+	LDFLAGS_backup="${LDFLAGS}"
+	CFLAGS="-I/opt/homebrew/include/ ${CFLAGS}"
+	LDFLAGS="-L/opt/homebrew/lib/ ${LDFLAGS}"
 	AC_CHECK_LIB([rsync], [rs_sig_file], , [AC_MSG_ERROR(librsync is required)])
+	## reset CFLAGS and LDFLAGS
+#	CFLAGS="${CFLAGS_backup}"
+#a	LDFLAGS="${LDFLAGS_backup}"
 )
+
 AM_CONDITIONAL([PRIVATE_LIBRSYNC], [test -n "$librsync_source_file"])
 
 AC_ARG_ENABLE([sqlite],
