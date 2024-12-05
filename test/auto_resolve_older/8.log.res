@@ -91,6 +91,7 @@ CONN peer < PATCH %25test%25/auto/older/update_both - 1234 1000 dennis schafroth
 CONN peer > 'OK (send_data).'
 CONN peer > 'octet-stream 32'
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 
+Sending octet-stream of 20 bytes
 CONN peer < octet-stream 20
 
 CONN peer > 'IDENT (cmd_finished).'
