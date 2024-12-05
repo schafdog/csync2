@@ -239,7 +239,22 @@ static FILE *paranoid_tmpfile()
 }
 #endif
 
-void csync_send_file(int conn, FILE *in)
+int csync_send_file_chunked(int conn, FILE *in)
+{
+  char buffer[CHUNK_SIZE];
+  int rc, chunk;
+  long size;
+
+  fflush(in);
+  size = ftell(in);
+  rewind(in);
+
+  csync_log(LOG_DEBUG, 2, "Sending chunked stream of %ld bytes\n", size);
+  conn_printf(conn, "chunked %ld\n", size);
+  return conn_send_file_chunked(conn, in);
+}
+
+void csync_send_file_octet_stream(int conn, FILE *in)
 {
   char buffer[CHUNK_SIZE];
   int rc, chunk;
@@ -268,6 +283,10 @@ void csync_send_file(int conn, FILE *in)
   }
 }
 
+void  csync_send_file(int conn, FILE *in) {
+     csync_send_file_chunked(conn, in);
+}
+
 int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) 
 {
   if ( delta_file ) 
@@ -285,13 +304,33 @@ void csync_send_error(int conn)
     conn_printf(conn, "ERROR\n");
 }
 
-int csync_recv_file(int conn, FILE *out)
+int csync_recv_file_chunked(int conn, FILE *out)
+{
+  long long size;
+  int type; 
+  if (conn_read_get_content_length(conn, &size, &type)) {
+      if (errno == EIO)
+	  return -1;
+      csync_fatal("Format-error while receiving data length for file (%ld) .\n", size);
+      size = 0;
+      return -2;
+  }
+
+  csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes ..\n", size);
+  conn_read_file_chunked(conn, out);
+
+  fflush(out);
+  rewind(out);
+  return 0;
+}
+
+int csync_recv_file_octet_stream(int conn, FILE *out)
 {
   char buffer[CHUNK_SIZE];
   int bytes, chunk;
   long long size;
-
-  if (conn_read_get_content_length(conn, &size)) {
+  int type;
+  if (conn_read_get_content_length(conn, &size, &type)) {
       if (errno == EIO)
 	  return -1;
       csync_fatal("Format-error while receiving data length for file (%ld) .\n", size);
@@ -324,6 +363,10 @@ int csync_recv_file(int conn, FILE *out)
   return 0;
 }
 
+int csync_recv_file(int conn, FILE *out) {
+    return csync_recv_file_chunked(conn, out);
+}
+    
 int csync_rs_check(int conn, filename_p filename, int isreg)
 {
     FILE *basis_file = 0, *sig_file = 0;
@@ -364,8 +407,9 @@ int csync_rs_check(int conn, filename_p filename, int isreg)
     basis_file = 0;
 
     {
+	int type;
 	csync_log(LOG_DEBUG, 3, "rs_check: Reading signature size from peer....\n");
-	if (conn_read_get_content_length(conn, &size)) {
+	if (conn_read_get_content_length(conn, &size, &type)) {
 	    csync_fatal("Format-error while receiving data length for signature (%Ld) \n", size);
 	    return -1;
 	}
@@ -532,6 +576,7 @@ int csync_rs_delta(int conn, filename_p filename)
     csync_fatal("Got an error from librsync, too bad!\n");
 
   csync_log(LOG_DEBUG, 3, "Sending delta_file to peer..\n");
+  
   csync_send_file(conn, delta_file);
   
   csync_log(LOG_DEBUG, 3, "Delta has been created successfully.\n");
