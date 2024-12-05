@@ -441,20 +441,21 @@ ssize_t conn_read_get_content_length(int fd, long long *size, int *type)
    char buffer[200];
    *size = 0;
    int rc = !conn_gets(fd, buffer, 200);
-   char *typestr;
+   char *typestr = "Nope";
    if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
+       csync_info(1, "Got octet-stream %lld\n", *size);
        *type = 1;
        typestr = "octet-stream";
    }
    else if (sscanf(buffer, "chunked %lld\n", size) == 1) {
+       csync_info(1, "Got chuncked-stream %lld\n", *size);
        *type = 2;
        typestr = "chunked";
    } else {
-       csync_error(0, "Failed to content-length: %s", buffer);
-       return -1;
+       csync_error(0, "Failed to content-length: '%s'\n", buffer);
    }
 
-   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %lld rc: %d \n", buffer, *size, rc);
+   csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %lld rc: %d (%s)\n", buffer, *size, rc, typestr);
    if (!strcmp(buffer, "ERROR\n")) {
       errno=EIO;
       return -1;
