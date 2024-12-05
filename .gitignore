@@ -4,6 +4,8 @@ configure-stamp
 *~
 .DS_Store
 .deps/
+.autotools
+.cproject
 Makefile
 Makefile.in
 aclocal.m4
