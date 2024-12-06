@@ -51,7 +51,7 @@
 #include <w32api/windows.h>
 #endif
 
-#define CHUNK_SIZE 4*4096
+#define OCTET_STREAM 1
 
 /* This has been taken from rsync:lib/compat.c */
 
@@ -280,7 +280,10 @@ void csync_send_file_octet_stream(int conn, FILE *in)
 }
 
 void  csync_send_file(int conn, FILE *in) {
-     csync_send_file_octet_stream(conn, in);
+    if (OCTET_STREAM) 
+	csync_send_file_octet_stream(conn, in);
+    else
+	csync_send_file_chunked(conn, in);
 }
 
 int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) 
@@ -361,7 +364,10 @@ int csync_recv_file_octet_stream(int conn, FILE *out)
 }
 
 int csync_recv_file(int conn, FILE *out) {
-    return csync_recv_file_octet_stream(conn, out);
+    if (OCTET_STREAM)
+	return csync_recv_file_octet_stream(conn, out);
+    else
+	return csync_recv_file_chunked(conn, out);
 }
     
 int csync_rs_check(int conn, filename_p filename, int isreg)

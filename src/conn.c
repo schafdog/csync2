@@ -463,7 +463,6 @@ ssize_t conn_read_get_content_length(int fd, long long *size, int *type)
    return rc;
 }
 
-#define CHUNK_SIZE 16*1024
 int conn_write_chunk(int sockfd, char *buffer, size_t size) {
     char header[16];
     snprintf(header, sizeof(header), "%zx\r\n", size);  // Chunk size in hex

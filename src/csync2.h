@@ -71,6 +71,8 @@ typedef const char * peername_p;
 #define FLAG_DO_ALL          2048
 
 
+#define CHUNK_SIZE 16*1024
+
 
 #if __DARWIN_C_LEVEL
 #define DEV_FORMAT "%u"
