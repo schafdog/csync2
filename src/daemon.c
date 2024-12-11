@@ -346,7 +346,7 @@ void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername) 
 	} else {
 		char *digest = NULL;
 		const char *checktxt = csync_genchecktxt_version(&st, filename,
-				SET_USER | SET_GROUP, db->version);
+		SET_USER | SET_GROUP, db->version);
 		if (S_ISREG(st.st_mode)) {
 			int size = 2 * DIGEST_MAX_SIZE + 1;
 			digest = malloc(size);
@@ -1434,7 +1434,7 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
 		if (rc != OK)
 			return rc;
 	}
-	/* no break */
+		/* no break */
 	case A_MOD: {
 		int rc = csync_daemon_setown(filename, params->uid, params->gid,
 				params->user, params->group, cmd_error);
@@ -1588,7 +1588,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db,
 	address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
 	socklen_t peerlen = sizeof(peeraddr);
 	char line[4096], *peername = 0, *tag[32];
-		const char *cmd_error = NULL;
+	const char *cmd_error = NULL;
 	//TODO only valid for INETD mode since we do not set fd 0 otherwise.
 	if (MODE_INETD == mode)
 		csync_daemon_stdin_check(0, &peeraddr, &peerlen);

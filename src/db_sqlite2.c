@@ -24,10 +24,11 @@
 #ifndef HAVE_SQLITE
 /* dummy function to implement a open that fails */
 int db_sqlite2_open(const char *file, db_conn_p *conn_p) {
-    // unused
-    (void) file; (void) conn_p;
+	// unused
+	(void) file;
+	(void) conn_p;
 
-    return DB_ERROR;
+	return DB_ERROR;
 }
 #else 
 

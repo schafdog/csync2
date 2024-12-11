@@ -26,6 +26,5 @@ csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 
 /* asprintf with test for no memory */
 
-
 #endif
 

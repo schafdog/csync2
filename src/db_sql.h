@@ -3,7 +3,6 @@
 
 #include "db_api.h"
 
-int  db_sql_init(db_conn_p conn);
-
+int db_sql_init(db_conn_p conn);
 
 #endif

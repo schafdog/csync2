@@ -86,7 +86,7 @@ static void db_sqlite3_dlopen(void) {
 }
 
 static int sqlite_errors[] = { SQLITE_OK, SQLITE_ERROR, SQLITE_BUSY, SQLITE_ROW,
-		SQLITE_DONE, -1 };
+SQLITE_DONE, -1 };
 static int db_errors[] = { DB_OK, DB_ERROR, DB_BUSY, DB_ROW, DB_DONE, -1 };
 
 int db_sqlite_error_map(int sqlite_err) {
@@ -233,7 +233,7 @@ const char* db_my_escape(const char *string) {
 		case '\'':
 		case '\\':
 			*(e++) = '\'';
-		/* No break */
+			/* No break */
 		default:
 			*(e++) = *(p++);
 		}

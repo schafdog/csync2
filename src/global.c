@@ -1,4 +1,3 @@
-
 #include "csync2.h"
 
 int csync_error_count = 0;

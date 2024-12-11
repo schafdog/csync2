@@ -513,7 +513,7 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername,
 			}
 		} else { // LINK, not MV
 			db_checktxt = csync_genchecktxt_version(&file_stat, db_filename,
-					SET_USER | SET_GROUP, db->version);
+			SET_USER | SET_GROUP, db->version);
 			int i;
 			if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 				csync_info(1,
@@ -702,7 +702,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 		// operation does not reflect result/change in mark_other (which marks dirty)
 		// But only whether it was found in File. This is a race-condition
 		// TODO clean no need for if else when using insert_update...
-		if (is_upgrade || operation & OP_MOD || operation & OP_MOD2) {
+		if (is_upgrade || (operation & OP_MOD) || (operation & OP_MOD2)) {
 			count = db->update_file(db, encoded, checktxt_encoded, file_stat,
 					digest);
 		} else {
