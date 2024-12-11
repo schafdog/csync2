@@ -1193,7 +1193,7 @@ nofork:
 	};
     };
     
-    if (mode & MODE_UPDATE || mode & MODE_EQUAL ) {
+    if ((mode & MODE_UPDATE) || (mode & MODE_EQUAL) ) {
 	if ( argc <= optind )
 	{
 	    csync_update(db, myhostname, active_peers, 0, 0, 
