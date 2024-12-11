@@ -233,7 +233,7 @@ const char* db_my_escape(const char *string) {
 		case '\'':
 		case '\\':
 			*(e++) = '\'';
-			;
+		/* No break */
 		default:
 			*(e++) = *(p++);
 		}

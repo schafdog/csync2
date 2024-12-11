@@ -941,7 +941,7 @@ int response_ok_not_found(int conn) {
 
 int csync_daemon_sig(int conn, char *filename, const char *user_group,
 		time_t ftime, long long size, db_conn_p db, const char **cmd_error) {
-	csync_debug(3, "csync_daemon_sig: unused parameters: ftime %ld size %zu",
+	csync_debug(3, "csync_daemon_sig: unused parameters: ftime %ld size %lld",
 			ftime, size);
 	struct stat st;
 	if (lstat_strict(filename, &st) != 0) {
@@ -1330,7 +1330,7 @@ int daemon_check_auto_resolve(const char *peername, filename_p filename,
 			return 0;
 		}
 	}
-	csync_info(3, "daemon: Auto resolve %s:%s time: %ld %ld size: %zu %zu \n",
+	csync_info(3, "daemon: Auto resolve %s:%s time: %ld %ld size: %lld %lld \n",
 			peername, filename, ftime, stat.st_mtime, size, stat.st_size);
 	auto_resolved = csync_auto_resolve_time_size(auto_method, ftime,
 			stat.st_mtime, size, stat.st_size);
@@ -1433,8 +1433,8 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename,
 				errno, (*cmd_error ? *cmd_error : ""));
 		if (rc != OK)
 			return rc;
-		// fall through on OK
 	}
+	/* no break */
 	case A_MOD: {
 		int rc = csync_daemon_setown(filename, params->uid, params->gid,
 				params->user, params->group, cmd_error);
@@ -1588,7 +1588,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db,
 	address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
 	socklen_t peerlen = sizeof(peeraddr);
 	char line[4096], *peername = 0, *tag[32];
-	const char *cmd_error = NULL;
+		const char *cmd_error = NULL;
 	//TODO only valid for INETD mode since we do not set fd 0 otherwise.
 	if (MODE_INETD == mode)
 		csync_daemon_stdin_check(0, &peeraddr, &peerlen);
