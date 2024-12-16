@@ -245,7 +245,7 @@ int csync_send_file_chunked(int conn, FILE *in)
   fflush(in);
   size = ftell(in);
   rewind(in);
-  csync_log(LOG_DEBUG, 1, "Sending chunked stream of %ld bytes\n", size);
+  csync_info(1, "Sending chunked stream of %ld bytes\n", size);
   conn_printf(conn, "octet-stream %ld\n", size);
   return conn_send_file_chunked(conn, in);
 }
@@ -260,7 +260,7 @@ void csync_send_file_octet_stream(int conn, FILE *in)
   size = ftell(in);
   rewind(in);
 
-  csync_log(LOG_DEBUG, 1, "Sending octet-stream of %ld bytes\n", size);
+  csync_debug(1, "Sending octet-stream of %ld bytes\n", size);
   conn_printf(conn, "octet-stream %ld\n", size);
 
   while ( size > 0 ) {
@@ -502,10 +502,10 @@ void csync_rs_sig(int conn, filename_p filename)
   if (result != RS_DONE)
       csync_fatal("Got an error from librsync, too bad!\n");
 
-  csync_log(LOG_DEBUG, 3, "Sending sig_file to peer..\n");
+  csync_log(LOG_DEBUG, 2, "Sending sig_file to peer..\n");
   csync_send_file(conn, sig_file);
   
-  csync_log(LOG_DEBUG, 3, "Signature has been created successfully.\n");
+  csync_log(LOG_DEBUG, 2, "Signature has send to peer successfully.\n");
   fclose(basis_file);
   fclose(sig_file);
 
@@ -700,7 +700,7 @@ static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE
 }
 
 #define BUF_SIZE (4*4096)
-static int recv_delta_and_patch_file(int sock, const char *fname) {
+static int rsync_rs_recv_delta_and_patch_file(int sock, const char *fname) {
     char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
     char newfname[MAXPATHLEN];
     /* Open new file */
