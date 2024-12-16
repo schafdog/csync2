@@ -531,7 +531,8 @@ const char* csync_decode_v2(const char *value) {
 
 extern int cfg_ip_version; 
 extern int cfg_db_version; 
-extern int cfg_protocol_version; 
+extern int cfg_protocol_version;
+int csync_zero_mtime_debug = 0;
 int protocol_version;
 
 const char* (*db_decode) (const char *value); 
@@ -685,7 +686,7 @@ int main(int argc, char ** argv)
     int cmd_ip_version = 0;
     update_func update_func;
     int csync_port_cmdline = 0;
-    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEY")) != -1 ) {
+    while ( (opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEYy")) != -1 ) {
 
 	switch (opt) {
 	case 'V':
@@ -880,7 +881,11 @@ int main(int argc, char ** argv)
 	    break;
 	case 'Y':
 	    flags |= FLAG_IGN_MTIME;
-	    csync_debug(1, "Ignoring MTIME: %d", flags);
+	    csync_debug(1, "Ignoring MTIME: %d\n", flags);
+	    break;
+	case 'y':
+	    csync_debug(1, "Zero MTIME for tests.\n");
+	    csync_zero_mtime_debug = 1;
 	    break;
 	case 'E':
 	{
