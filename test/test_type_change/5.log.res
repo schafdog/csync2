@@ -46,8 +46,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 File is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=1733439457:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=1733439458:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=1733504316:mode=16877:user=dennis:group=schafroth:type=dir
+>>> LOCAL:	v2:mtime=1733504317:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
@@ -63,8 +63,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=9'
 File is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=1733439457:mode=33188:user=dennis:group=schafroth:type=reg:size=9
->>> LOCAL:	v2:mtime=1733439458:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=1733504316:mode=33188:user=dennis:group=schafroth:type=reg:size=9
+>>> LOCAL:	v2:mtime=1733504317:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change', 0 [non-regular file])
 CONN peer > 'octet-stream 32'
 Got octet-stream 32
@@ -82,7 +82,7 @@ CONN peer < SIG %25test%25/type_change/new_file%20%27N%27%20all user/group 1234 
 CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change/new_file 'N' all RC 32
 CONN peer < PATCH %25test%25/type_change/new_file%20%27N%27%20all - 1234 1000 dennis schafroth 33188 - 4 
-CONN peer > 'OK (send_data).'
+CONN peer > 'OK (sending sig).'
 CONN peer > 'octet-stream 12'
 Got octet-stream 12
 Content length in buffer: 'octet-stream 12' size: 12 rc: 0 (octet-stream)

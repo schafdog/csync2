@@ -27,18 +27,18 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
 
 CONN peer > 'v2:mtime=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all [v2:mtime=1733439453:mode=33188:user=dennis:group=schafroth:type=reg:size=4]
+Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all [v2:mtime=1733504311:mode=33188:user=dennis:group=schafroth:type=reg:size=4]
 db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
 D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
 '/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
->>> v2:mtime=1733439453:mode=33188:user=dennis:group=schafroth:type=reg:size=4 peer
+>>> v2:mtime=1733504311:mode=33188:user=dennis:group=schafroth:type=reg:size=4 peer
 >>> --- local
 CONN peer > 'v2:mtime=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer [v2:mtime=1733439453:mode=16877:user=dennis:group=schafroth:type=dir]
+Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer [v2:mtime=1733504311:mode=16877:user=dennis:group=schafroth:type=dir]
 db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer
 D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer
 '/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
->>> v2:mtime=1733439453:mode=16877:user=dennis:group=schafroth:type=dir peer
+>>> v2:mtime=1733504311:mode=16877:user=dennis:group=schafroth:type=dir peer
 >>> --- local
 CONN peer > 'OK (cmd_finished).'
 End of query results: OK (cmd_finished).CONN peer < BYE

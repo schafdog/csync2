@@ -41,8 +41,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 File is different on peer (cktxt char #1).
->>> peer:	v2:mtime=1733439439:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=1733439438:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=1733504298:mode=16877:user=dennis:group=schafroth:type=dir
+>>> LOCAL:	v2:mtime=1733504297:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
@@ -58,8 +58,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 File is different on peer (cktxt char #1).
->>> peer:	v2:mtime=1733439439:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=1733439438:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=1733504298:mode=16877:user=dennis:group=schafroth:type=dir
+>>> LOCAL:	v2:mtime=1733504297:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Got octet-stream 0

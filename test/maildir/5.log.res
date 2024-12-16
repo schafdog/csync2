@@ -51,9 +51,9 @@ CONN peer < SIG %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 168
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=1733439417:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=1733439420:mode=16877:user=dennis:group=schafroth:type=dir
+File is different on peer (cktxt char #-3).
+>>> peer:	v2:mtime=1733504275:mode=16877:user=dennis:group=schafroth:type=dir
+>>> LOCAL:	v2:mtime=1733504278:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Got octet-stream 0

@@ -12,7 +12,6 @@ db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
-CONN (null) > DEBUG          
 DEBUG from (null) 2
 CONN (null) < OK (cmd_finished).
 
@@ -22,12 +21,10 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
@@ -37,18 +34,16 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer  i
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1733439413 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1733504271 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir - 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir - 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 
@@ -58,18 +53,16 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Ma
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733439413 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733504271 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash - 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash - 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 
@@ -79,18 +72,16 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Ma
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733439413 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733504271 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 
@@ -100,18 +91,16 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Ma
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733439413 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733504271 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 
@@ -121,18 +110,16 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Ma
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439413 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1590962400 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 
@@ -142,18 +129,16 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Ma
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733439413 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1590962400 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 1733439413'
-CONN local > MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 1733439413
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 
@@ -163,32 +148,28 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Ma
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 time: 1733439413 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 time: 1590962400 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
-CONN local > BYE          
 CONN local < OK (cu_later).
 
 goto nofork.
@@ -203,7 +184,6 @@ db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
-CONN (null) > DEBUG          
 DEBUG from (null) 2
 CONN (null) < OK (cmd_finished).
 
@@ -213,8 +193,7 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 1733439416'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 1733439416
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -224,8 +203,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 1733439416'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 1733439416
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 
@@ -233,14 +211,13 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733439416 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733504274 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 1733439416'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 1733439416
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -250,8 +227,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 1733439416'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 1733439416
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 
@@ -259,26 +235,23 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 time: 1733439416 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp rc = 0 time: 1733504274 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new/1434.M21,S=6631,W=6764 user/group 1234 1000 dennis schafroth 33188 - 8 1733439415'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 user/group 1234 1000 dennis schafroth 33188 - 8 1733439415
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new/1434.M21,S=6631,W=6764 user/group 1234 1000 dennis schafroth 33188 - 8 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new/1434.M21,S=6631,W=6764 - 1234 1000 dennis schafroth 33188 - 8 1733439415'
-CONN local > PATCH /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 - 1234 1000 dennis schafroth 33188 - 8 1733439415
+CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new/1434.M21,S=6631,W=6764 - 1234 1000 dennis schafroth 33188 - 8 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 
 check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764' .
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  is clean
-CONN local < OK (send_data).
-
+CONN local < OK 
 Sending octet-stream of 12 bytes
 CONN local < octet-stream 12
 
@@ -286,26 +259,23 @@ CONN local > 'octet-stream 14'
 Got octet-stream 14
 Content length in buffer: 'octet-stream 14' size: 14 rc: 0 (octet-stream)
 Receiving 14 bytes (octet-stream)..
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 rc = 0 time: 1733439415 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 rc = 0 time: 1591567200 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new 1733439416'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 1733439416        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733439416 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733504274 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
-CONN local > BYE          
 CONN local < OK (cu_later).
 
 goto nofork.
@@ -320,7 +290,6 @@ db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
-CONN (null) > DEBUG          
 DEBUG from (null) 2
 CONN (null) < OK (cmd_finished).
 
@@ -330,8 +299,7 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439417'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439417
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -341,8 +309,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439417'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439417
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 
@@ -350,14 +317,13 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439417 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733504275 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 1733439417'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 1733439417
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -367,8 +333,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 1733439417'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 1733439417
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 
@@ -376,21 +341,19 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733439417 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733504275 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new/1434.M21,S=6631,W=6764 %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,'
-CONN local > MV /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,        
 NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2, user/group 1234 1000 dennis schafroth 33188 - 8 1733439415'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, user/group 1234 1000 dennis schafroth 33188 - 8 1733439415
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2, user/group 1234 1000 dennis schafroth 33188 - 8 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -401,26 +364,22 @@ CONN local < octet-stream 32
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new 1733439417'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 1733439417        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733439417 errno = 0 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/new xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new rc = 0 time: 1733504275 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur 1733439417'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 1733439417        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439417 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733504275 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
-CONN local > BYE          
 CONN local < OK (cu_later).
 
 goto nofork.
@@ -435,7 +394,6 @@ db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
-CONN (null) > DEBUG          
 DEBUG from (null) 2
 CONN (null) < OK (cmd_finished).
 
@@ -445,8 +403,7 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439420'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439420
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -456,8 +413,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439420'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439420
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 
@@ -465,21 +421,19 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439420 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733504278 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2, %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,S'
-CONN local > MV /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S        
 NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,S user/group 1234 1000 dennis schafroth 33188 - 8 1733439415'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S user/group 1234 1000 dennis schafroth 33188 - 8 1733439415
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,S user/group 1234 1000 dennis schafroth 33188 - 8 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -490,20 +444,17 @@ CONN local < octet-stream 32
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur 1733439420'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 1733439420        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439420 errno = 0 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733504278 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
-CONN local > BYE          
 CONN local < OK (cu_later).
 
 goto nofork.
@@ -518,7 +469,6 @@ db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
-CONN (null) > DEBUG          
 DEBUG from (null) 2
 CONN (null) < OK (cmd_finished).
 
@@ -528,8 +478,7 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439421'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439421
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -539,8 +488,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439421'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439421
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 
@@ -548,14 +496,13 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733439421 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733504279 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439421'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439421
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -565,8 +512,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439421'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439421
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 
@@ -574,21 +520,19 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439421 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733504279 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,S %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST'
-CONN local > MV /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST        
 NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST user/group 1234 1000 dennis schafroth 33188 - 8 1733439415'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group 1234 1000 dennis schafroth 33188 - 8 1733439415
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST user/group 1234 1000 dennis schafroth 33188 - 8 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -599,12 +543,10 @@ CONN local < octet-stream 32
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S user/group 1234 1000 dennis schafroth 33188 - 8 1733439415'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S user/group 1234 1000 dennis schafroth 33188 - 8 1733439415
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S user/group 1234 1000 dennis schafroth 33188 - 8 xxxxxxxxxx'
 CONN local < OK (not_found).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST user/group 1234 1000 dennis schafroth 33188 - 8 1733439415'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group 1234 1000 dennis schafroth 33188 - 8 1733439415
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST user/group 1234 1000 dennis schafroth 33188 - 8 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -616,7 +558,6 @@ CONN local < octet-stream 32
 CONN local < OK (cmd_finished).
 
 CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S '
-CONN local > MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S        
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
@@ -628,32 +569,27 @@ daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projec
 Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur 1733439421'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 1733439421        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733439421 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733504279 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur 1733439421'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 1733439421        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439421 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733504279 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
-CONN local > BYE          
 CONN local < OK (cu_later).
 
 goto nofork.
@@ -668,7 +604,6 @@ db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
-CONN (null) > DEBUG          
 DEBUG from (null) 2
 CONN (null) < OK (cmd_finished).
 
@@ -678,8 +613,7 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439422'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439422
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -689,8 +623,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439422'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439422
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 
@@ -698,14 +631,13 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733439422 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur rc = 0 time: 1733504281 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439422'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 1733439422
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -715,8 +647,7 @@ CONN local < octet-stream 0
 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439422'
-CONN local > MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 1733439422
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 
@@ -724,14 +655,13 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733439422 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur rc = 0 time: 1733504281 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S user/group'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S user/group        
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -743,7 +673,6 @@ CONN local < octet-stream 32
 CONN local < OK (cmd_finished).
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S '
-CONN local > DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S         
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
@@ -761,7 +690,6 @@ Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Mai
 CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST user/group'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group        
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -773,7 +701,6 @@ CONN local < octet-stream 32
 CONN local < OK (cmd_finished).
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST '
-CONN local > DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST         
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
@@ -790,20 +717,17 @@ renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/tes
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST  
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash 1733439413'
-CONN local > SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 1733439413        
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733439413 errno = 11 err = 
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash xxxxxxxxxx'
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash rc = 0 time: 1733504271 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
-CONN local > BYE          
 CONN local < OK (cu_later).
 
 goto nofork.
@@ -818,7 +742,6 @@ db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
-CONN (null) > DEBUG          
 DEBUG from (null) 2
 CONN (null) < OK (cmd_finished).
 
@@ -829,7 +752,6 @@ HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group'
-CONN local > SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -840,7 +762,6 @@ CONN local < octet-stream 0
 CONN local < OK (cmd_finished).
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 '
-CONN local > DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer         
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
@@ -871,7 +792,6 @@ IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'BYE'
-CONN local > BYE          
 CONN local < OK (cu_later).
 
 goto nofork.

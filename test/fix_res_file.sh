@@ -1,4 +1,8 @@
 #!/bin/bash
+DIR=$1
+if [ "$1" == "" ] ;  then
+    DIR="*"
+fi
 
 for d in `ls $1/*.diff` ; do
     res_file=${d/.diff/.res}

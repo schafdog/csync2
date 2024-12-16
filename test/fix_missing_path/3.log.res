@@ -77,7 +77,7 @@ CONN peer < SIG %25test%25/recursive/1/2/3/4/5/file.c user/group 1234 1000 denni
 CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c RC 32
 CONN peer < PATCH %25test%25/recursive/1/2/3/4/5/file.c - 1234 1000 dennis schafroth 33188 - 11 
-CONN peer > 'OK (send_data).'
+CONN peer > 'OK (sending sig).'
 CONN peer > 'octet-stream 12'
 Got octet-stream 12
 Content length in buffer: 'octet-stream 12' size: 12 rc: 0 (octet-stream)

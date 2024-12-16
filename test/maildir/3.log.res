@@ -51,9 +51,9 @@ CONN peer < SIG %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 168
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-3).
->>> peer:	v2:mtime=1733439413:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=1733439416:mode=16877:user=dennis:group=schafroth:type=dir
+File is different on peer (cktxt char #-2).
+>>> peer:	v2:mtime=1590962400:mode=16877:user=dennis:group=schafroth:type=dir
+>>> LOCAL:	v2:mtime=1733504274:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
@@ -68,9 +68,9 @@ CONN peer < SIG %25test%25/Maildir/tmp user/group 1234 1000 dennis schafroth 168
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-3).
->>> peer:	v2:mtime=1733439413:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=1733439416:mode=16877:user=dennis:group=schafroth:type=dir
+File is different on peer (cktxt char #-2).
+>>> peer:	v2:mtime=1590962400:mode=16877:user=dennis:group=schafroth:type=dir
+>>> LOCAL:	v2:mtime=1733504274:mode=16877:user=dennis:group=schafroth:type=dir
 Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp', 0 [non-regular file])
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
@@ -85,7 +85,7 @@ CONN peer < SIG %25test%25/Maildir/new/1434.M21,S=6631,W=6764 user/group 1234 10
 CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764 RC 32
 CONN peer < PATCH %25test%25/Maildir/new/1434.M21,S=6631,W=6764 - 1234 1000 dennis schafroth 33188 - 8 
-CONN peer > 'OK (send_data).'
+CONN peer > 'OK (sending sig).'
 CONN peer > 'octet-stream 12'
 Got octet-stream 12
 Content length in buffer: 'octet-stream 12' size: 12 rc: 0 (octet-stream)

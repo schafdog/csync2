@@ -92,7 +92,7 @@ File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
 ?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
 CONN peer < PATCH %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 14 
-CONN peer > 'OK (send_data).'
+CONN peer > 'OK (sending sig).'
 CONN peer > 'octet-stream 32'
 Got octet-stream 32
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
