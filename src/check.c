@@ -590,9 +590,9 @@ int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino,
 	if (!ino)
 		return 8;
 
-	unsigned long long dev_no;
-	unsigned long long ino_no;
-	sscanf(dev, "%llu", &dev_no);
+	dev_t dev_no;
+	ino64_t ino_no;
+	sscanf(dev, "%d", &dev_no);
 	sscanf(ino, "%llu", &ino_no);
 
 	if (old_stat) {
