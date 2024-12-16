@@ -64,6 +64,8 @@
 #define ERROR_PATH_MISSING -13
 #define ERROR_HARDLINK     -14
 
+extern int csync_zero_mtime_debug;
+
 int csync_update_file_settime(int conn, peername_p peername, const char *key_enc,
 			      filename_p filename, filename_p filename_enc,
 			      const struct stat *st);
@@ -992,7 +994,7 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname,
     if ((rc_status = read_conn_status(conn, filename, peername)) < OK) {
 	if (rc_status == CONN_CLOSE)
 	    return rc_status;
-	csync_error(0, "Error while reading status: %d ", rc_status);
+	csync_error(0, "sig_rs_diff: Error while reading status: %d ", rc_status);
     }
 
     // Only when both file and meta data is same (differs from earlier behavior)
@@ -2085,6 +2087,10 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 		if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
 		    csync_info(1, "D\t%s\t%s\t%s\n", myname, peername, r_file);
 		    csync_log(LOG_DEBUG, 2, "'%s' is different:\n", filename);
+		    if (csync_zero_mtime_debug) {
+			filter_mtime(r_checktxt, 0);
+			filter_mtime(chk_local, 0);
+		    }
 		    csync_log(LOG_DEBUG, 2, ">>> %s %s\n>>> %s %s\n",
 				r_checktxt, peername, chk_local, myname);
 		    count_diff++;
