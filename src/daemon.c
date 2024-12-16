@@ -85,6 +85,8 @@ enum action_t {
 	A_BYE
 };
 
+extern int csync_zero_mtime_debug;
+
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 int csync_file_backup(filename_p filename, const char **cmd_error);
 
@@ -807,11 +809,11 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 
 	// Only try to backup if the file exists already.
 	if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
-		conn_printf(conn, "OK (send_data).\n");
+		conn_printf(conn, "OK (sending sig).\n");
 		csync_rs_sig(conn, filename);
-		if (csync_rs_patch(conn, filename)) {
-			*cmd_error = strerror(errno);
-			return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+		if (csync_rs_patch(conn, filename)) { //if (recieve_delta_and_patch(conn, filename)) {
+		    *cmd_error = strerror(errno);
+		    return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 		}
 
 		// TODO restore hardlinks
@@ -1036,6 +1038,8 @@ int csync_daemon_settime(char *filename, time_t time, const char **cmd_error) {
 	if (rc) {
 		*cmd_error = strerror(errno);
 	}
+	if (csync_zero_mtime_debug)
+	    time = 0;
 	csync_info(2, "settime %s rc = %d time: %d errno = %d err = %s\n", filename,
 			rc, time, errno, (*cmd_error ? *cmd_error : ""));
 	return result;
@@ -1615,11 +1619,14 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db,
 			if (active_peer)
 				free(active_peer);
 			active_peer = strdup(tag[1]);
-		} else
+		} else {
+		    /*
 			csync_log(LOG_DEBUG, 2,
 					"CONN %s > %s %s %s %s %s %s %s %s %s %s %s\n", active_peer,
 					tag[0], filename, other, tag[4], tag[5], tag[6], tag[7],
 					tag[8], tag[9], tag[10], tag[11]);
+		    */
+		}
 
 		cmd_error = 0;
 
