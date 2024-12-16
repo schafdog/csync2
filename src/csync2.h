@@ -195,6 +195,7 @@ extern int conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
 extern int conn_write_chunk(int fd, char *buffer, size_t n_bytes);
 extern int conn_read_file_chunked(int sockfd, FILE *file);
 extern int conn_send_file_chunked(int sockfd, FILE *file);
+extern char *filter_mtime(char *chktxt, int make_copy);
 
 /* db.c */
 
