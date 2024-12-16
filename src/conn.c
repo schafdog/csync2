@@ -470,7 +470,7 @@ int conn_write_chunk(int sockfd, char *buffer, size_t size) {
         perror("Error sending chunk header");
         return -1;
     }
-
+    printf("Chunk header %zx %lu\n",  size, size);
     if (send(sockfd, buffer, size, 0) == -1) {
         perror("Error sending chunk");
         return -1;
@@ -480,7 +480,7 @@ int conn_write_chunk(int sockfd, char *buffer, size_t size) {
         perror("Error sending chunk delimiter");
         return -1;
     }
-    //printf("Chunk %zu sent .\n", size);
+    printf("Chunk %lu sent.\n", size);
     return 0;
 }
 
@@ -506,6 +506,7 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
         sscanf(header, "%zx", &chunk_size);  // Read the chunk size in hexadecimal
         recv(sockfd, header, end_of_header - header + 2, 0);  // Consume the header
         *end_of_header = '\0';
+	printf("CHUNK header %zx %lu\n", *size, *size);
         break;
     }
 
@@ -523,10 +524,11 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
             }
             bytes_received += n;
         }
-    }
+    }    
     // Consume the trailing "\r\n" after each chunk
     char tmp[2]; 
     recv(sockfd, tmp, 2, 0);
+    printf("Chunk read  %zx %lu\n", *size, *size);    
     return 0;
 }
 
@@ -626,13 +628,31 @@ char *filter_mtime(char *buffer, int make_copy) {
     char *str = buffer;
     if (make_copy)
 	str = strdup(buffer);
-    if (csync_level_debug == 2) {
+    if (csync_level_debug >= 2) {
 	char *pos = strstr(str, "mtime=");
 	if (pos != NULL) {
 	    pos += 6;
 	    while (*pos != '\0' && *pos != '%') {
 		*pos = 'x';
 		pos++;
+	    }
+	}
+	// remove mtime at end of end of line
+	int len = strlen(str);
+	if (len > 0) {
+	    if (!strncmp(str, "PATCH", 5) ||
+		!strncmp(str, "SETTIME", 6) ||
+		!strncmp(str, "MKDIR", 5) ||
+		!strncmp(str, "SIG", 3) ||
+		!strncmp(str, "MOD", 3))
+	    {
+		char *ptr = str + strlen(str) -1;
+		// csync_debug(0, "Remove time: %s\n", str);
+		while (*ptr >= '0' && *ptr <= '9' && ptr >= str) { //  || (*ptr >= '0' && *ptr <= '9')) {
+		    *ptr = 'x';
+		    --ptr;
+		}
+		// csync_debug(0, "Removed time: %s\n", str);
 	    }
 	}
     }
