@@ -323,7 +323,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
 	int rc, chunk, found_diff = 0;
 	rs_stats_t stats;
-	rs_result result = 0;
+	rs_result result = (rs_result) 0;
 	long long size = 0;
 
 	csync_log(LOG_DEBUG, 2,
@@ -553,7 +553,7 @@ int csync_rs_patch(int conn, filename_p filename) {
 	FILE *basis_file = 0, *delta_file = 0, *new_file = 0;
 	rs_stats_t stats;
 	rs_result result;
-	char *errstr = "?";
+	const char *errstr = "?";
 	char newfname[MAXPATHLEN];
 
 	csync_log(LOG_DEBUG, 3, "Csync2 / Librsync: csync_rs_patch('%s')\n",
@@ -648,10 +648,10 @@ int csync_rs_patch(int conn, filename_p filename) {
 }
 
 static int csync_delta_patch_error(const char *errstr, filename_p filename,
-		FILE *old, FILE *new, rs_job_t *job, int err_no) {
+		FILE *old, FILE *new_file, rs_job_t *job, int err_no) {
 	csync_error(0, errstr, filename, err_no);
 	rs_file_close(old);
-	rs_file_close(new);
+	rs_file_close(new_file);
 	rs_job_free(job);
 	return errno;
 }
@@ -661,7 +661,7 @@ static int recv_delta_and_patch_file(int sock, const char *fname) {
 	char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
 	char newfname[MAXPATHLEN];
 	/* Open new file */
-	FILE *new = open_temp_file(newfname, fname);
+	FILE *new_file = open_temp_file(newfname, fname);
 	csync_redis_set_int(newfname, "CREATE", time(NULL), 0, 300);
 
 	/* Open basis file */
@@ -683,7 +683,7 @@ static int recv_delta_and_patch_file(int sock, const char *fname) {
 				/* The job requires more data, but we cannot fit another
 				 * message into the input buffer */
 				return csync_delta_patch_error(
-						"Insufficient buffer capacity: %s %d", fname, old, new,
+						"Insufficient buffer capacity: %s %d", fname, old, new_file,
 						job, -1);
 			}
 
@@ -697,7 +697,7 @@ static int recv_delta_and_patch_file(int sock, const char *fname) {
 			int ret = conn_read_chunk(sock, &buffer, &n_bytes);
 			if (ret == -1) {
 				return csync_delta_patch_error("Failed to read chunk: %s %d",
-						fname, old, new, job, ret);
+						fname, old, new_file, job, ret);
 			}
 			printf("Recieved %zu bytes\n", n_bytes);
 			// FAIL check size
@@ -714,17 +714,17 @@ static int recv_delta_and_patch_file(int sock, const char *fname) {
 		if (res != RS_DONE && res != RS_BLOCKED) {
 			csync_error(0, "Failed job %d iteration: %d", iter, res);
 			return csync_delta_patch_error("Failed job iteration: %s %d", fname,
-					old, new, job, res);
+					old, new_file, job, res);
 		}
 
 		/* Drain output buffer, if there is data */
 		size_t present = bufs.next_out - out_buf;
 		if (present > 0) {
-			size_t n_bytes = fwrite(out_buf, present, 1, new);
+			size_t n_bytes = fwrite(out_buf, present, 1, new_file);
 
 			if (n_bytes == 0) {
 				return csync_delta_patch_error(
-						"Failed to write to tmp file: %s %d", fname, old, new,
+						"Failed to write to tmp file: %s %d", fname, old, new_file,
 						job, -1);
 			}
 
@@ -734,7 +734,7 @@ static int recv_delta_and_patch_file(int sock, const char *fname) {
 		iter++;
 	} while (res != RS_DONE);
 
-	rs_file_close(new);
+	rs_file_close(new_file);
 	rs_file_close(old);
 	rs_job_free(job);
 

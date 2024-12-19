@@ -252,7 +252,7 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 }
 
 const char* csync_db_get_column_text(void *stmt, int column) {
-	return db_stmt_get_column_text(stmt, column);
+	return db_stmt_get_column_text((db_stmt_p) stmt, column);
 }
 
 int csync_db_get_column_int(void *stmt, int column) {
@@ -266,7 +266,7 @@ int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue,
 	(void) pazValue;
 	(void) pazColName;
 
-	db_stmt_p stmt = vmx;
+	db_stmt_p stmt = (db_stmt_p) vmx;
 	int rc, busyc = 0;
 
 	csync_info(4, "Trying to fetch a row from the database.\n");
@@ -292,7 +292,7 @@ int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue,
 }
 
 const void* csync_db_colblob(void *stmtx, int col) {
-	db_stmt_p stmt = stmtx;
+	db_stmt_p stmt = (db_stmt_p) stmtx;
 	const void *ptr = stmt->get_column_blob(stmt, col);
 	if (stmt->db && stmt->db->logger) {
 		stmt->db->logger(LOG_DEBUG, 4, "DB get blob: %s ", (char*) ptr);
@@ -348,7 +348,7 @@ void csync_db_fin(void *vmx, const char *err) {
 #define DBEXTENSION ""
 #endif
 
-char* db_default_database(char *dbdir, char *myhostname, char *cfg_name) {
+char* db_default_database(const char *dbdir, const char *myhostname, const char *cfg_name) {
 	char *db;
 
 #if defined(HAVE_SQLITE3)

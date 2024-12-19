@@ -58,7 +58,7 @@ void yyerror(char *text)
 static void new_group(char *name)
 {
 	int static autonum = 1;
-	struct csync_group *t =
+	struct csync_group *t = (struct csync_group *)
 		calloc(sizeof(struct csync_group), 1);
 
 	if (name == 0)
@@ -90,7 +90,7 @@ static void add_host(char *hostname, char *peername, int slave)
 	else
 	    free(peername);
     } else {
-	struct csync_group_host *t =
+      struct csync_group_host *t = (struct csync_group_host *)
 	    calloc(sizeof(struct csync_group_host), 1);
 	t->hostname = peername;
 	t->on_left_side = !csync_group->myname;
@@ -104,9 +104,9 @@ static void add_host(char *hostname, char *peername, int slave)
 
 static void add_patt(int patterntype, char *pattern)
 {
-	struct csync_group_pattern *t =
-		calloc(sizeof(struct csync_group_pattern), 1);
-	int i;
+     struct csync_group_pattern *t = (struct csync_group_pattern *)
+       calloc(sizeof(struct csync_group_pattern), 1);
+     int i;
 
 #if __CYGWIN__
 	if (isalpha(pattern[0]) && pattern[1] == ':' &&
@@ -298,8 +298,8 @@ found_asactive:	;
 
 static void new_action()
 {
-    struct csync_group_action *t =
-	calloc(sizeof(struct csync_group_action), 1);
+    struct csync_group_action *t = (struct csync_group_action *)
+      calloc(sizeof(struct csync_group_action), 1);
     t->next = csync_group->action;
     t->logfile = strdup("/dev/null");
     csync_group->action = t;
@@ -377,8 +377,8 @@ void csync_config_destroy_group(struct csync_group *group) {
 
 static void add_action_pattern(char *pattern)
 {
-    struct csync_group_action_pattern *t =
-	calloc(sizeof(struct csync_group_action_pattern), 1);
+    struct csync_group_action_pattern *t = (struct csync_group_action_pattern *)
+      calloc(sizeof(struct csync_group_action_pattern), 1);
     t->star_matches_slashes = !!strstr(pattern, "**");
     t->pattern = pattern;
     t->next = csync_group->action->pattern;
@@ -387,11 +387,11 @@ static void add_action_pattern(char *pattern)
 
 static void add_action_exec(char *command)
 {
-	struct csync_group_action_command *t =
-		calloc(sizeof(struct csync_group_action_command), 1);
-	t->command = command;
-	t->next = csync_group->action->command;
-	csync_group->action->command = t;
+    struct csync_group_action_command *t = (struct csync_group_action_command *)
+      calloc(sizeof(struct csync_group_action_command), 1);
+    t->command = command;
+    t->next = csync_group->action->command;
+    csync_group->action->command = t;
 }
 
 static void set_action_logfile(const char *logfile)
@@ -453,23 +453,23 @@ static void set_ip_version(char *version)
 
 static void new_hostinfo_entry(char *name, char *host, char *service)
 {
-     struct csync_hostinfo *p =
-	 calloc(sizeof(struct csync_hostinfo), 1);
-     p->next = csync_hostinfo;
-     p->name = name;
-     p->host = host;
-     p->port = service;
-     csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
-     csync_hostinfo = p;
+    struct csync_hostinfo *p = (struct csync_hostinfo *)
+      calloc(sizeof(struct csync_hostinfo), 1);
+    p->next = csync_hostinfo;
+    p->name = name;
+    p->host = host;
+    p->port = service;
+    csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
+    csync_hostinfo = p;
 }
 
 static void new_prefix(const char *pname)
 {
-	struct csync_prefix *p =
-		calloc(sizeof(struct csync_prefix), 1);
-	p->name = pname;
-	p->next = csync_prefix;
-	csync_prefix = p;
+    struct csync_prefix *p = (struct csync_prefix *)
+      calloc(sizeof(struct csync_prefix), 1);
+    p->name = pname;
+    p->next = csync_prefix;
+    csync_prefix = p;
 }
 
 static void prefix_destroy(struct csync_prefix  *prefix)
@@ -517,12 +517,12 @@ static void new_prefix_entry(char *pattern, char *path)
 
 static void new_nossl(const char *from, const char *to)
 {
-	struct csync_nossl *t =
-		calloc(sizeof(struct csync_nossl), 1);
-	t->pattern_from = from;
-	t->pattern_to = to;
-	t->next = csync_nossl;
-	csync_nossl = t;
+    struct csync_nossl *t = (struct csync_nossl *)
+      calloc(sizeof(struct csync_nossl), 1);
+    t->pattern_from = from;
+    t->pattern_to = to;
+    t->next = csync_nossl;
+    csync_nossl = t;
 }
 
 

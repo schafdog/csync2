@@ -35,7 +35,7 @@ typedef textlist_p (*check_old_operation_f)(const char *file, int mode,
 		peername_p peername, BUF_P buffer);
 
 struct db_conn_t {
-	void *private;
+	void *private_data;
 	int version;
 	int (*exec)(db_conn_p conn, const char *exec);
 	int (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt,
@@ -143,7 +143,7 @@ struct db_conn_t {
 };
 
 struct db_stmt_t {
-	void *private;
+	void *private_data;
 	void *private2;
 	db_conn_p db;
 	const char* (*get_column_text)(db_stmt_p vmx, int column);

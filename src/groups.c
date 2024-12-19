@@ -179,7 +179,7 @@ struct peer* csync_find_peers(const char *file, const char *thispeer) {
 			while (plist && plist[i].peername)
 				if (!strcmp(plist[i++].peername, h->hostname))
 					goto next_host;
-			plist = realloc(plist, sizeof(struct peer) * (++pl_size + 1));
+			plist = (struct peer *) realloc(plist, sizeof(struct peer) * (++pl_size + 1));
 			plist[pl_size - 1].peername = h->hostname;
 			plist[pl_size - 1].myname = g->myname;
 			plist[pl_size].peername = 0;

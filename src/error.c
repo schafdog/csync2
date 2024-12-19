@@ -91,8 +91,8 @@ void csync_printtime_prefix() {
 	fprintf(csync_out_debug, "[%s] ", ftbuffer);
 }
 
-char *syslog_prio[] = { "EMERG ", "ALERT ", "CRIT  ", "ERROR ", "WARN  ",
-		"NOTICE", "INFO  ", "DEBUG " };
+const char *syslog_prio[] =
+	{ "EMERG ", "ALERT ", "CRIT  ", "ERROR ", "WARN  ", "NOTICE", "INFO  ", "DEBUG " };
 
 void csync_log(int priority, int lv, const char *fmt, ...) {
 	va_list ap;

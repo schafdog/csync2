@@ -51,7 +51,7 @@ int conn_connect(peername_p peername, int ip_version) {
 	struct addrinfo *result, *rp;
 	int sfd, s;
 	struct csync_hostinfo *p = csync_hostinfo;
-	char *port = csync_port;
+	const char *port = csync_port;
 	while (p) {
 		if (!strcmp(peername, p->name)) {
 			peername = p->host;
@@ -272,7 +272,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 		SQL_BEGIN(db, "Checking peer x509 certificate.",
 				"SELECT certdata FROM x509_cert WHERE peername = '%s'",
 				url_encode(peername))
-{				if (!strcmp(SQL_V(0), certdata))
+{				if (!strcmp((char *) SQL_V(0), certdata))
 				cert_is_ok = 1;
 				else
 				cert_is_ok = 0;
@@ -437,7 +437,7 @@ ssize_t conn_read_get_content_length(int fd, long long *size) {
 }
 
 #define CHUNK_SIZE 16*1024
-int conn_write_chunk(int sockfd, char *buffer, size_t size) {
+int conn_write_chunk(int sockfd, const char *buffer, size_t size) {
 	char header[16];
 	snprintf(header, sizeof(header), "%zx\r\n", size);  // Chunk size in hex
 	if (send(sockfd, header, strlen(header), 0) == -1) {
@@ -487,7 +487,7 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	*buffer = NULL;
 	if (chunk_size > 0) {
 		size_t bytes_received = 0;
-		*buffer = malloc(chunk_size);
+		*buffer = (char *) malloc(chunk_size);
 		while (bytes_received < chunk_size) {
 			ssize_t n = recv(sockfd, *buffer + bytes_received,
 					chunk_size - bytes_received > CHUNK_SIZE ?
@@ -617,7 +617,7 @@ void conn_printf(int fd, const char *fmt, ...) {
 
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = alloca(size + 1);
+	buffer = (char *) alloca(size + 1);
 	va_end(ap);
 
 	va_start(ap, fmt);
@@ -641,7 +641,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file,
 			cmd, file, key_enc);
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = alloca(size + 1);
+	buffer = (char *) alloca(size + 1);
 	va_end(ap);
 
 	va_start(ap, fmt);

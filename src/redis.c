@@ -66,9 +66,9 @@ int csync_redis_check_connection() {
 }
 
 const char* build_key(const char *key, const char *domain, BUF_P buffer) {
-	char *spacer = "";
+	char *spacer = (char *) "";
 	if (domain && domain[0] != 0) {
-		spacer = ":";
+		spacer = (char *)  ":";
 	}
 	char *str = buffer_malloc(buffer,
 			strlen(not_null(domain)) + strlen(key) + strlen(spacer) + 100);
@@ -87,7 +87,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 
 	const char *domain_key = build_key(key, domain, buffer);
 	const char *argv[] = { "GET", domain_key };
-	redis_reply = redisCommandArgv(redis_context, 2, argv, NULL);
+	redis_reply = (redisReply *) redisCommandArgv(redis_context, 2, argv, NULL);
 	csync_debug(3, "Redis reply: GET '%s' -> %s\n", domain_key,
 			redis_str(redis_reply));
 	buffer_destroy(buffer);
@@ -126,7 +126,7 @@ int csync_redis_set(const char *key, const char *domain, const char *value,
 		argc++;
 
 	}
-	redis_reply = redisCommandArgv(redis_context, argc, argv, NULL);
+	redis_reply = (redisReply *) redisCommandArgv(redis_context, argc, argv, NULL);
 	csync_debug(3, "Redis reply: SET '%s' '%s' %s %s %s -> %s\n", domain_key,
 			value, nx ? "NX" : "", expire > 0 ? "EX" : "",
 			expire > 0 ? time : "", redis_str(redis_reply));
@@ -181,7 +181,7 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 	csync_debug(3, "Deleting key '%s'\n", domain_key);
 	const char *argv[] = { "DEL", domain_key };
 
-	redis_reply = redisCommandArgv(redis_context, 2, argv, NULL);
+	redis_reply = (redisReply *) redisCommandArgv(redis_context, 2, argv, NULL);
 	csync_debug(3, "Redis Reply: DEL '%s' -> %d\n", domain_key,
 			redis_reply ? redis_reply->integer : -1);
 	if (redis_reply == NULL || redis_reply->integer != 1) {

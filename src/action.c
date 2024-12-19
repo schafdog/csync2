@@ -81,7 +81,7 @@ void csync_run_single_command(db_conn_p db, const char *command,
 		for (t = tl; t != 0; t = t->next)
 			len += strlen(t->value) + 1;
 
-		pos = real_command = malloc(len);
+		pos = real_command = (char *) malloc(len);
 		memcpy(real_command, command_clr, mark - command_clr);
 		real_command[mark - command_clr] = 0;
 

@@ -28,7 +28,7 @@ AC_CONFIG_HEADERS(src/config.h)
 # test "$sysconfdir" = '${prefix}/etc' && sysconfdir=/etc
 
 # Checks for programs.
-AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_YACC
 AM_PROG_LEX

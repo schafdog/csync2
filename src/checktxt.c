@@ -35,7 +35,7 @@
 #define xxprintf(...) \
 	{ char buffer; /* needed for older glibc */	\
 	int t = snprintf(&buffer, 1, ##__VA_ARGS__);	\
-	elements[elidx]=alloca(t+1);			\
+	elements[elidx]= (char *) alloca(t+1);		\
 	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
 	len+=t; elidx++; }
 
@@ -125,7 +125,7 @@ const char* csync_genchecktxt_version(const struct stat *st,
 
 	if (buffer)
 		free(buffer);
-	buffer = malloc(len);
+	buffer = (char *) malloc(len);
 
 	for (i = j = 0; j < elidx; j++)
 		for (k = 0; elements[j][k]; k++)

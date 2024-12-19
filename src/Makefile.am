@@ -22,7 +22,7 @@ sbin_SCRIPTS = csync2-compare
 bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
-CC = clang
+CC = clang++
 csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
                  checktxt.c csync2.c global.c daemon.c db.c \
 		 error.c error.h getrealfn.c	\
@@ -65,7 +65,7 @@ dist-clean-local:
 AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) \
-	-std=c11 -O0 -Wno-deprecated-declarations -Wall -Wextra
+	-std=c++11 -O0 -Wno-deprecated-declarations -Wno-deprecated -Wall -Wextra
 AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) \
 	$(LIBBSD_LIBS)
 

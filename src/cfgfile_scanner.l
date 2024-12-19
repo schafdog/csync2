@@ -93,7 +93,7 @@ int include_stack_ptr = 0;
 				exit(1);
 			}
 			include_stack[include_stack_ptr++] = YY_CURRENT_BUFFER;
-                        char *conffile = malloc(strlen(csync_confdir) + 3 + strlen(yytext));
+                        char *conffile = (char *) malloc(strlen(csync_confdir) + 3 + strlen(yytext));
                         conffile[0] = 0;
                         if (yytext[0] != '/') {
                             strcpy(conffile, csync_confdir);

@@ -284,7 +284,7 @@ int auto_resolve_error(const char *cmd, peername_p peername,
 	return rc;
 }
 
-char *autoresolve_str[] = { "NONE", "FIRST", "YOUNGER", "OLDER", "BIGGER",
+const char *autoresolve_str[] = { "NONE", "FIRST", "YOUNGER", "OLDER", "BIGGER",
 		"SMALLER", "LEFT", "RIGHT", "LEFT_RIGHT_LOST" };
 
 int csync_check_auto_resolve(int conn, peername_p peername, const char *key_enc,
@@ -331,7 +331,8 @@ int csync_check_auto_resolve(int conn, peername_p peername, const char *key_enc,
 			break;
 		}
 
-		char buffer[1024], *type, *cmd;
+		char buffer[1024];
+		const char *type, *cmd;
 		long remotedata, localdata;
 		struct stat sbuf;
 
@@ -739,9 +740,9 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername,
 	int flag = IGNORE_LINK;
 	const char *chk_peer_decoded = url_decode(chk_peer);
 	// TODO generate chk text that matches remote usage of uid/user and gid/gid
-	char *has_user = strstr(chk_peer_decoded, ":user=");
+	const char *has_user = strstr(chk_peer_decoded, ":user=");
 	flag |= (has_user != NULL ? SET_USER : 0);
-	char *has_group = strstr(chk_peer_decoded, ":group=");
+	const char *has_group = strstr(chk_peer_decoded, ":group=");
 	flag |= (has_group != NULL ? SET_GROUP : 0);
 	/*
 	 if (st && !S_ISDIR(st->st_mode))
@@ -1388,9 +1389,9 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname,
 			 }
 			 */
 			break;
-		case DIR_TYPE:
+		case DIR_TYPE: {
 			csync_info(3, "MKDIR rc: %d\n", sig_rc);
-			char *op = "MOD";
+			const char *op = "MOD";
 			if (sig_rc & (OK_MISSING | DIFF_FILE)) {
 				op = "MKDIR";
 			} else if (sig_rc & DIFF_META) {
@@ -1403,6 +1404,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname,
 			rc = csync_update_file_dir(conn, peername, filename,
 					&last_conn_status);
 			break;
+		}
 		case CHR_TYPE:
 			conn_printf(conn, "MKCHR %s %s\n", key_enc, filename_enc);
 			rc = read_conn_status(conn, filename, peername);
@@ -1560,11 +1562,13 @@ int compare_files(filename_p filename, const char *pattern, int recursive) {
 }
 
 void csync_directory_add(textlist_p *directory_list, const char *directory) {
-	char *pos = strrchr(directory, '/');
+	const char *pos = strrchr(directory, '/');
 	if (pos) {
-		pos[0] = 0;
-		csync_log(LOG_DEBUG, 3, "Directory %s\n", directory);
-		textlist_add_new(directory_list, directory, 0);
+		char buffer[pos - directory + 1];
+		strncpy(buffer, directory, pos - directory);
+		buffer[pos-directory] = 0;
+		csync_log(LOG_DEBUG, 3, "Directory %s\n", buffer);
+		textlist_add_new(directory_list, buffer, 0);
 	}
 }
 
@@ -1713,7 +1717,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
 						db->remove_dirty(db, peername, filename, 1);
 						db->remove_file(db, filename, 1);
 						size_t len = strlen(filename);
-						last_dir_deleted = malloc(len + 2);
+						last_dir_deleted = (char *) malloc(len + 2);
 						strcpy(last_dir_deleted, filename);
 						strcat(last_dir_deleted, "/");
 						// Skip following files if from sub-directory
@@ -1787,7 +1791,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
 		conn_close(conn);
 		return;
 	}
-	char *status = "";
+	const char *status = "";
 	if (dry_run)
 		status = "(DRY RUN)";
 
@@ -1921,7 +1925,7 @@ int csync_insynctest_file(int conn, const char *myname, peername_p peername,
 int csync_diff(db_conn_p db, const char *myname, peername_p peername,
 		filename_p filename, int ip_version) {
 	FILE *p;
-	void *old_sigpipe_handler;
+	void (*old_sigpipe_handler)(int);
 	const struct csync_group *g = 0;
 	const struct csync_group_host *h;
 	int last_conn_status = 0;
@@ -2117,7 +2121,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername,
 				textlist_add(&diff_list, r_file, 0);
 			else {
 				textlist_p tl = db->list_file(db, r_file, myname, peername, 0);
-				char *chk_local = "---";
+				const char *chk_local = "---";
 				if (tl) {
 					chk_local = tl->value;
 				}

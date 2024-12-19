@@ -1,4 +1,5 @@
-/*
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005, 2006  Clifford Wolf <clifford@clifford.at>
@@ -16,6 +17,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *
  */
 
 #include "csync2.h"
@@ -62,13 +65,13 @@ int db_type = DB_SQLITE3;
 
 static char *file_config = 0;
 static char *cfgfile = 0;
-static char *dbdir = DBDIR;
-char *cfgname = "";
+static const char *dbdir = DBDIR;
+const char *cfgname = "";
 
 char *active_grouplist = 0;
 char *active_peerlist = 0;
 char **active_peers = 0;
-char *update_format = 0;
+const char *update_format = 0;
 char *allow_peer = 0;
 int db_version = 1;
 int ip_version = AF_UNSPEC;
@@ -79,7 +82,7 @@ extern FILE *yyin;
 char *log_file = 0;
 
 void csync_version() {
-	printf("\n"
+  printf("\n"
 	PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 	"LINBIT Information Technologies GmbH <http://www.linbit.com>\n"
 	"Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>\n"
@@ -93,18 +96,17 @@ void csync_version() {
 }
 void help(char *cmd) {
 	csync_version();
-	printf(
-			"\n"
-					"This program is free software under the terms of the GNU GPL.\n"
-					"\n"
-					"Usage: %s [-v..] [-C config-name|-K config-file] \\\n"
-					"		[-D database-dir] [-N hostname] [-p port] ..\n"
-					"\n"
-					"With file parameters:\n"
-					"	-h [-r] file..		Add (recursive) hints for check to db\n"
-					"	-c [-r] file..		Check files and maybe add to dirty db\n"
-					"	-u [-d] [-r] file..	Updates files if listed in dirty db\n"
-					"	-o [-r] file..		Create list of files in compare-mode\n"
+	printf("\n"
+	       "This program is free software under the terms of the GNU GPL.\n"
+	       "\n"
+	       "Usage: %s [-v..] [-C config-name|-K config-file] \\\n"
+	       "		[-D database-dir] [-N hostname] [-p port] ..\n"
+	       "\n"
+	       "With file parameters:\n"
+	       "	-h [-r] file..		Add (recursive) hints for check to db\n"
+	       "	-c [-r] file..		Check files and maybe add to dirty db\n"
+	       "	-u [-d] [-r] file..	Updates files if listed in dirty db\n"
+	       "	-o [-r] file..		Create list of files in compare-mode\n"
 					"	-f [-r] file..		Force files to win next conflict resolution\n"
 					"	-m file..		Mark files in database as dirty\n"
 					"\n"
@@ -367,7 +369,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	}
 }
 
-static int csync_bind(char *service_port, int ip_version) {
+static int csync_bind(const char *service_port, int ip_version) {
 	struct linger sl = { 1, 5 };
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
@@ -431,7 +433,7 @@ void csync_openlog() {
 	openlog(program_pid, LOG_ODELAY, LOG_LOCAL0);
 }
 
-static int csync_server_bind(char *service_port, int ip_version) {
+static int csync_server_bind(const char *service_port, int ip_version) {
 	csync_log(LOG_DEBUG, 1, "Binding to %s IPv%d \n", service_port, ip_version);
 	int listenfd = csync_bind(service_port, ip_version);
 	if (listenfd < 0)
@@ -463,7 +465,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 	while (1) {
 		unsigned addrlen = sizeof(addr);
 		*conn = accept(listenfd, &addr.sa, &addrlen);
-		if (conn < 0)
+		if (*conn < 0)
 			goto error;
 
 		struct timeval tv;
@@ -544,7 +546,7 @@ char **peers = NULL;
 char** parse_peerlist(char *peerlist) {
 	if (peerlist == NULL)
 		return peers;
-	peers = calloc(sizeof(peers), 100);
+	peers = (char **) calloc(sizeof(peers), 100);
 	int i = 0;
 	char *saveptr = NULL;
 	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
@@ -580,14 +582,14 @@ int match_peer(char **active_peers, const char *peer) {
 
 void csync_config_destroy();
 
-void free_realname(char *real_name) {
+void free_realname(const char *real_name) {
 	if (real_name == NULL) {
 		return;
 	}
 	if (!strcmp("", real_name)) {
 		return;
 	}
-	free(real_name);
+	free((char *) real_name);
 }
 
 int check_file_args(db_conn_p db, char *files[], int file_count,
@@ -626,7 +628,7 @@ void select_recursive(char *db_encoded, char **where_rec) {
 			" and filename < '%s0'", db_encoded, db_encoded);
 }
 
-int csync_read_config(char *cfgname, int conn, int mode) {
+int csync_read_config(const char *cfgname, int conn, int mode) {
 	if (cfgfile) {
 		ASPRINTF(&file_config, "%s", cfgfile);
 	} else if (!*cfgname) {
@@ -637,7 +639,7 @@ int csync_read_config(char *cfgname, int conn, int mode) {
 		for (i = 0; cfgname[i]; i++)
 			if (!(cfgname[i] >= '0' && cfgname[i] <= '9')
 					&& !(cfgname[i] >= 'a' && cfgname[i] <= 'z')) {
-				char *error = "Config names are limited to [a-z0-9]+.\n";
+				const char *error = "Config names are limited to [a-z0-9]+.\n";
 				if (mode & MODE_INETD)
 					conn_printf(conn, error);
 				else
@@ -930,7 +932,7 @@ int main(int argc, char **argv) {
 
 	int listenfd = 0;
 	long server_standalone = mode & MODE_STANDALONE;
-	char *myport = csync_port;
+	const char *myport = csync_port;
 	csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
 	csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone > 0: %d\n",
 			server_standalone, server_standalone > 0);
@@ -1004,7 +1006,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 	// print time (if -t is set)
 	csync_printtime();
 	int conn_out = 1;
-
+	db_conn_p db = NULL;
 	/* In inetd (actually any server) mode we need to read the module name from the peer
 	 * before we open the config file and database
 	 */
@@ -1112,7 +1114,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 					myhostname);
 	}
 
-	db_conn_p db = csync_db_open(csync_database);
+	db = csync_db_open(csync_database);
 	db->version = db_version;
 	// Handles NULL
 	csync_redis_connect(csync_redis);
@@ -1249,7 +1251,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 
 	if (mode == MODE_LIST_FILE) {
 		retval = 2;
-		char *realname = "";
+		const char *realname = "";
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}
@@ -1319,7 +1321,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 	csync_debug(3, "MODE %ld\n", mode);
 	if (mode == MODE_LIST_DIRTY) {
 		retval = 0;
-		char *realname = "";
+		const char *realname = "";
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}
@@ -1328,7 +1330,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 
 	}
 	if (mode == MODE_REMOVE_OLD) {
-		char *realname = "";
+		const char *realname = "";
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}

@@ -71,18 +71,20 @@ static void db_sqlite3_dlopen(void) {
 	csync_log(LOG_DEBUG, 3,
 			"Reading symbols from shared library " SO_FILE "\n");
 
-	LOOKUP_SYMBOL(dl_handle, sqlite3_open);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_close);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_errmsg);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_exec);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_prepare_v2);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_column_text);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_column_blob);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_column_int);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_step);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_finalize);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_mprintf);
-	LOOKUP_SYMBOL(dl_handle, sqlite3_free);
+	LOOKUP_SYMBOL(dl_handle, sqlite3_open, int (*)(const char*, sqlite3**));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_close, int (*)(sqlite3*));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_errmsg, const char* (*)(sqlite3*));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_exec, int (*)(sqlite3*, const char*,
+			int (*)(void*, int, char**, char**), void*, char**));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_prepare_v2, int (*)(sqlite3*, const char*, int, sqlite3_stmt**,
+			const char **pzTail));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_column_text, const unsigned char* (*)(sqlite3_stmt*, int));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_column_blob, const void* (*)(sqlite3_stmt*, int));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_column_int, int (*)(sqlite3_stmt*, int));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_step, int (*)(sqlite3_stmt*));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_finalize, int (*)(sqlite3_stmt*));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_mprintf, char* (*)(const char*, ...));
+	LOOKUP_SYMBOL(dl_handle, sqlite3_free, const char* (*)(void*));
 }
 
 static int sqlite_errors[] = { SQLITE_OK, SQLITE_ERROR, SQLITE_BUSY, SQLITE_ROW,
@@ -109,13 +111,13 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p) {
 	if (rc != SQLITE_OK) {
 		return db_sqlite_error_map(rc);
 	};
-	db_conn_p conn = calloc(1, sizeof(*conn));
+	db_conn_p conn = (db_conn_p) calloc(1, sizeof(*conn));
 	if (conn == NULL) {
 		return DB_ERROR;
 	}
 	db_sql_init(conn);
 	*conn_p = conn;
-	conn->private = db;
+	conn->private_data = db;
 	conn->close = db_sqlite_close;
 	conn->exec = db_sqlite_exec;
 	conn->prepare = db_sqlite_prepare;
@@ -128,18 +130,18 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p) {
 void db_sqlite_close(db_conn_p conn) {
 	if (!conn)
 		return;
-	if (!conn->private)
+	if (!conn->private_data)
 		return;
-	f.sqlite3_close_fn(conn->private);
-	conn->private = 0;
+	f.sqlite3_close_fn( (sqlite3 *) conn->private_data);
+	conn->private_data = 0;
 }
 
 const char* db_sqlite_errmsg(db_conn_p conn) {
 	if (!conn)
 		return "(no connection)";
-	if (!conn->private)
+	if (!conn->private_data)
 		return "(no private data in conn)";
-	return f.sqlite3_errmsg_fn(conn->private);
+	return f.sqlite3_errmsg_fn( (sqlite3 *) conn->private_data);
 }
 
 int db_sqlite_exec(db_conn_p conn, const char *sql) {
@@ -147,11 +149,11 @@ int db_sqlite_exec(db_conn_p conn, const char *sql) {
 	if (!conn)
 		return DB_NO_CONNECTION;
 
-	if (!conn->private) {
+	if (!conn->private_data) {
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
-	rc = f.sqlite3_exec_fn(conn->private, sql, 0, 0, 0);
+	rc = f.sqlite3_exec_fn( (sqlite3 *) conn->private_data, sql, 0, 0, 0);
 	return db_sqlite_error_map(rc);
 }
 
@@ -164,18 +166,18 @@ int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
 	if (!conn)
 		return DB_NO_CONNECTION;
 
-	if (!conn->private) {
+	if (!conn->private_data) {
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
-	db_stmt_p stmt = malloc(sizeof(*stmt));
+	db_stmt_p stmt = (db_stmt_p) malloc(sizeof(*stmt));
 	sqlite3_stmt *sqlite_stmt = 0;
 	/* TODO avoid strlen, use configurable limit? */
-	rc = f.sqlite3_prepare_v2_fn(conn->private, sql, strlen(sql), &sqlite_stmt,
+	rc = f.sqlite3_prepare_v2_fn( (sqlite3 *) conn->private_data, sql, strlen(sql), &sqlite_stmt,
 			(const char**) pptail);
 	if (rc != SQLITE_OK)
 		return db_sqlite_error_map(rc);
-	stmt->private = sqlite_stmt;
+	stmt->private_data = sqlite_stmt;
 	*stmt_p = stmt;
 	stmt->get_column_text = db_sqlite_stmt_get_column_text;
 	stmt->get_column_blob = db_sqlite_stmt_get_column_blob;
@@ -187,10 +189,10 @@ int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
 }
 
 const char* db_sqlite_stmt_get_column_text(db_stmt_p stmt, int column) {
-	if (!stmt || !stmt->private) {
+	if (!stmt || !stmt->private_data) {
 		return 0;
 	}
-	sqlite3_stmt *sqlite_stmt = stmt->private;
+	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt *) stmt->private_data;
 	const unsigned char *result = f.sqlite3_column_text_fn(sqlite_stmt, column);
 	/* error handling */
 	return (const char*) result;
@@ -198,25 +200,25 @@ const char* db_sqlite_stmt_get_column_text(db_stmt_p stmt, int column) {
 
 #if defined(HAVE_SQLITE3)
 const void* db_sqlite_stmt_get_column_blob(db_stmt_p stmtx, int col) {
-	sqlite3_stmt *stmt = stmtx->private;
+	sqlite3_stmt *stmt = (sqlite3_stmt *) stmtx->private_data;
 	return f.sqlite3_column_blob_fn(stmt, col);
 }
 #endif
 
 int db_sqlite_stmt_get_column_int(db_stmt_p stmt, int column) {
-	sqlite3_stmt *sqlite_stmt = stmt->private;
+	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt *) stmt->private_data;
 	int rc = f.sqlite3_column_int_fn(sqlite_stmt, column);
 	return db_sqlite_error_map(rc);
 }
 
 int db_sqlite_stmt_next(db_stmt_p stmt) {
-	sqlite3_stmt *sqlite_stmt = stmt->private;
+	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt *) stmt->private_data;
 	int rc = f.sqlite3_step_fn(sqlite_stmt);
 	return db_sqlite_error_map(rc);
 }
 
 int db_sqlite_stmt_close(db_stmt_p stmt) {
-	sqlite3_stmt *sqlite_stmt = stmt->private;
+	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt *) stmt->private_data;
 	int rc = f.sqlite3_finalize_fn(sqlite_stmt);
 	free(stmt);
 	return db_sqlite_error_map(rc);
@@ -225,7 +227,7 @@ int db_sqlite_stmt_close(db_stmt_p stmt) {
 const char* db_my_escape(const char *string) {
 	if (string == NULL)
 		return string;
-	char *escaped = malloc(strlen(string) * 2 + 1);
+	char *escaped = (char *) malloc(strlen(string) * 2 + 1);
 	const char *p = string;
 	char *e = escaped;
 	while (*p != 0) {

@@ -16,6 +16,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+ * -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+
  */
 
 #ifndef CSYNC2_H
@@ -72,10 +75,10 @@ typedef const char *peername_p;
 
 #if __DARWIN_C_LEVEL
 #define DEV_FORMAT "%u"
-#define INO_FORMAT "%"PRIu64
+#define INO_FORMAT "%" PRIu64
 #else
-#define DEV_FORMAT "%"PRIu64
-#define INO_FORMAT "%"PRIu64
+#define DEV_FORMAT "%" PRIu64
+#define INO_FORMAT "%" PRIu64
 #endif
 
 #define DB_SCHEMA_VERSION 2
@@ -195,7 +198,7 @@ extern void conn_printf(int fd, const char *fmt, ...);
 extern int conn_fgets(int fd, char *s, int size);
 extern size_t conn_gets(int fd, char *s, size_t size);
 extern int conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
-extern int conn_write_chunk(int fd, char *buffer, size_t n_bytes);
+extern int conn_write_chunk(int fd, const char *buffer, size_t n_bytes);
 
 /* db.c */
 
@@ -210,7 +213,7 @@ extern int csync_db_next(void *vmx, const char *err, int *pN,
 extern void csync_db_fin(void *vmx, const char *err);
 extern const void* csync_db_colblob(void *stmtx, int col);
 extern long csync_db_long(void *stmtx, int col, long *result);
-extern char* db_default_database(char *dbdir, char *myhostname, char *cfg_name);
+extern char* db_default_database(const char *dbdir, const char *myhostname, const char *cfg_name);
 extern const char* csync_db_escape(const char*);
 extern const char* csync_db_quote(filename_p filename);
 extern const char* csync_db_escape_quote(filename_p filename);
@@ -222,7 +225,7 @@ extern const char* (*db_decode)(const char *value);
 
 #define SQL_BEGIN(db, e, s, ...)			\
 { \
-	char *SQL_ERR = e; \
+	const char *SQL_ERR = e; \
 	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
 	int SQL_COUNT = 0; \
 	(void) SQL_COUNT; \
@@ -236,7 +239,7 @@ extern const char* (*db_decode)(const char *value);
 			SQL_COUNT++;
 
 #define SQL_V(col)				\
-    (csync_db_colblob(SQL_VM,(col)))
+    ((char *) csync_db_colblob(SQL_VM,(col)))
 
 #define SQL_V_long(col, result)			\
     (csync_db_long(SQL_VM,(col), (result)))
@@ -455,7 +458,7 @@ typedef struct text_list *text_list_p;
 static inline void textlist_add_struct(struct textlist **listhandle, void *data,
 		void (*destroy)(void*)) {
 	struct textlist *tmp = *listhandle;
-	*listhandle = malloc(sizeof(struct textlist));
+	*listhandle = (struct textlist *) malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = 0;
 	(*listhandle)->data = data;
 	(*listhandle)->destroy = destroy;
@@ -468,10 +471,10 @@ static inline void textlist_add_var(struct textlist **listhandle, int intitem,
 	struct textlist *tmp = *listhandle;
 	va_list arguments;
 
-	*listhandle = malloc(sizeof(struct textlist));
+	*listhandle = (struct textlist *) malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
 	(*listhandle)->num = num;
-	(*listhandle)->values = calloc(num, sizeof(char*));
+	(*listhandle)->values = (char **) calloc(num, sizeof(char*));
 	(*listhandle)->data = NULL;
 	(*listhandle)->destroy = NULL;
 	va_start(arguments, num);
@@ -489,7 +492,7 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 		const char *item2, const char *item3, const char *item4,
 		const char *item5, int intitem, int operation) {
 	struct textlist *tmp = *listhandle;
-	*listhandle = malloc(sizeof(struct textlist));
+	*listhandle = (struct textlist *) malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
 	(*listhandle)->operation = operation;
 	(*listhandle)->value = (item ? strdup(item) : 0);
@@ -701,13 +704,13 @@ extern int csync_new_force;
 
 extern char myhostname[];
 extern char *myport;
-extern char *csync_port;
+extern const char *csync_port;
 extern int csync_port_cmdline;
-extern char *csync_confdir;
+extern const char *csync_confdir;
 extern char *active_grouplist;
 extern char *active_peerlist;
 
-extern char *cfgname;
+extern const char *cfgname;
 
 extern int csync_ignore_uid;
 extern int csync_ignore_gid;
