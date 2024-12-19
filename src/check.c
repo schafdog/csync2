@@ -39,9 +39,11 @@
 
 #include <w32api/windows.h>
 
+
 /* This does only check the case of the last filename element. But that should
  * be OK for us now...
  */
+
 int csync_cygwin_case_check(filename_p filename)
 {
 	if (!strcmp(filename, "/cygdrive"))
@@ -89,6 +91,8 @@ check_failed:
 #define CHECK_RM_MV  0
 #define CHECK_HARDLINK 0
 #define CHECK_NEW_MV 1
+
+extern int csync_zero_mtime_debug;
 
 const char* csync_mode_op_str(int st_mode, int op) {
 	if (op == OP_RM)
@@ -525,9 +529,19 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername,
 						"check_link: other file with same dev/inode, but different checktxt.");
 				csync_info(1, "File is different on peer (cktxt char #%d).\n",
 						i);
-				csync_info(1, ">>> %s: %s\n", db_checktxt, db_filename);
-				csync_info(1, ">>> %s: %s\n", checktxt, filename);
+				char *db_checktxt_log = (char *) db_checktxt, *checktxt_log = (char *) checktxt;
+				if (csync_zero_mtime_debug) {
+					db_checktxt_log = filter_mtime((char *) db_checktxt, 1);
+					checktxt_log = filter_mtime((char *) checktxt, 1);
+				}
+				//csync_debug(1, "ZERO time %d\n", csync_zero_mtime_debug);
 
+				csync_info(1, ">>> %s: %s\n", db_checktxt_log, db_filename);
+				csync_info(1, ">>> %s: %s\n", checktxt_log, filename);
+				if (csync_zero_mtime_debug) {
+					free(db_checktxt_log);
+					free(checktxt_log);
+				}
 				if (count > 1) {
 					csync_warn(0, "Multiple files with same inode: %s %s",
 							filename, db_filename);
@@ -592,8 +606,8 @@ int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino,
 
 	dev_t dev_no;
 	ino64_t ino_no;
-	sscanf(dev, "%d", &dev_no);
-	sscanf(ino, "%llu", &ino_no);
+	sscanf(dev, "%lu", &dev_no);
+	sscanf(ino, "%lu", &ino_no);
 
 	if (old_stat) {
 		old_stat->st_dev = dev_no;

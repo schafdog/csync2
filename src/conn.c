@@ -590,7 +590,7 @@ char* filter_mtime(char *buffer, int make_copy) {
 		char *pos = strstr(str, "mtime=");
 		if (pos != NULL) {
 			pos += 6;
-			while (*pos != '\0' && *pos != '%') {
+			while (*pos != '\0' && *pos != '%' && *pos != ':') {
 				*pos = 'x';
 				pos++;
 			}

@@ -441,6 +441,8 @@ int check_auto_resolve_peer(const char *peername, filename_p filename, const cha
 	return auto_resolved;
 }
 
+extern int csync_zero_mtime_debug;
+
 int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_p filename, int force, int flags) {
 	int auto_resolve_run = 0;
 	const char *key = csync_key(peername, filename);
@@ -498,8 +500,18 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 			differs = csync_cmpchecktxt(chk_peer_decoded, chk_local);
 		}
 		if (differs) {
+			char *peer_log = (char *) chk_peer_decoded, *local_log = (char *) chk_local;
+			if (csync_zero_mtime_debug) {
+				peer_log  = filter_mtime(peer_log, 1);
+				local_log = filter_mtime(local_log, 1);
+			}
+			//csync_info(1, "ZERO time %d\n", csync_zero_mtime_debug);
 			csync_info(3, "File is different on peer (cktxt char #%d).\n", differs);
-			csync_info(3, ">>> PEER:  %s\n>>> LOCAL: %s\n", chk_peer_decoded, chk_local);
+			csync_info(3, ">>> PEER:  %s\n>>> LOCAL: %s\n", peer_log, local_log);
+			if (csync_zero_mtime_debug) {
+				free(peer_log);
+				free(local_log);
+			}
 			found_diff = 1;
 			// We should be able to figure auto resolve from checktxt
 			flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
@@ -705,8 +717,16 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername, file
 
 	if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 		csync_info(log_level, "File is different on peer (cktxt char #%d).\n", i);
-		csync_info(log_level, ">>> %s:\t%s\n>>> %s:\t%s\n", peername, chk_peer_decoded, "LOCAL", chk_local);
-
+		char *peer_log = (char *) chk_peer_decoded, *local_log = (char *) chk_local;
+		if (csync_zero_mtime_debug) {
+			peer_log = filter_mtime(peer_log, 1);
+			local_log = filter_mtime(local_log, 1);
+		}
+		csync_info(log_level, ">>> %s:\t%s\n>>> %s:\t%s\n", peername, peer_log, "LOCAL", local_log);
+		if (csync_zero_mtime_debug) {
+			free(peer_log);
+			free(local_log);
+		}
 		// We should be able to figure auto resolve from checktxt
 		int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
 		if (flush) {

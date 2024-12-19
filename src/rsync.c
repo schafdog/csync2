@@ -363,7 +363,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	rs_result result = 0;
 	long long size = 0;
 
-	csync_log(LOG_DEBUG, 2, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n", filename, isreg,
+	csync_log(LOG_DEBUG, 3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n", filename, isreg,
 			isreg ? "regular file" : "non-regular file");
 
 	csync_log(LOG_DEBUG, 3, "rs_check: Opening basis_file and sig_file..\n");
@@ -481,7 +481,7 @@ void csync_rs_sig(int conn, filename_p filename) {
 	csync_log(LOG_DEBUG, 2, "Sending sig_file to peer..\n");
 	csync_send_file(conn, sig_file);
 
-	csync_log(LOG_DEBUG, 2, "Signature has send to peer successfully.\n");
+	csync_log(LOG_DEBUG, 2, "Signature has been sent to peer successfully.\n");
 	fclose(basis_file);
 	fclose(sig_file);
 
