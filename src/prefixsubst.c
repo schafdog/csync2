@@ -42,8 +42,7 @@ const char* prefixsubst(const char *in) {
 		path++;
 
 	for (p = csync_prefix; p; p = p->next) {
-		if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len)
-				&& p->path) {
+		if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len) && p->path) {
 			ringbuff_counter = (ringbuff_counter + 1) % RINGBUFF_LEN;
 			if (ringbuff[ringbuff_counter])
 				free(ringbuff[ringbuff_counter]);
@@ -52,8 +51,7 @@ const char* prefixsubst(const char *in) {
 		}
 	}
 
-	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn,
-			myhostname);
+	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, myhostname);
 	return 0;
 }
 
@@ -80,8 +78,7 @@ const char* prefixencode(filename_p filename) {
 					ringbuff_counter = (ringbuff_counter + 1) % RINGBUFF_LEN;
 					if (ringbuff[ringbuff_counter])
 						free(ringbuff[ringbuff_counter]);
-					ASPRINTF(&ringbuff[ringbuff_counter], "%%%s%%%s", p->name,
-							filename + p_len);
+					ASPRINTF(&ringbuff[ringbuff_counter], "%%%s%%%s", p->name, filename + p_len);
 					return ringbuff[ringbuff_counter];
 				}
 			}

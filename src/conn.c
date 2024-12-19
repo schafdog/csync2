@@ -70,8 +70,7 @@ int conn_connect(peername_p peername, int ip_version) {
 
 	s = getaddrinfo(peername, port, &hints, &result);
 	if (s != 0) {
-		csync_warn(1, "Cannot resolve peername, getaddrinfo: %s\n",
-				gai_strerror(s));
+		csync_warn(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
 		return -1;
 	}
 
@@ -109,8 +108,7 @@ int conn_open(peername_p peername, int ip_version) {
 	}
 
 	if (setsockopt(conn_fd_in, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on)) < 0) {
-		csync_error(1,
-				"conn_open: Can't set TCP_NODELAY option on TCP socket.\n");
+		csync_error(1, "conn_open: Can't set TCP_NODELAY option on TCP socket.\n");
 		close(conn_fd_in);
 		conn_fd_in = -1;
 		return -1;
@@ -140,11 +138,8 @@ int conn_set(int infd, int outfd) {
 	// when running in server mode, this has been done already
 	// in csync2.c with more restrictive error handling..
 	// FIXME don't even try in "ssh" mode
-	if (setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on))
-			< 0)
-		csync_error(1,
-				"Can't set TCP_NODELAY option on TCP socket (outfd): %d.\n",
-				outfd);
+	if (setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0)
+		csync_error(1, "Can't set TCP_NODELAY option on TCP socket (outfd): %d.\n", outfd);
 
 	return 0;
 }
@@ -171,46 +166,37 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 
 	gnutls_certificate_allocate_credentials(&conn_x509_cred);
 
-	err = gnutls_certificate_set_x509_key_file(conn_x509_cred, ssl_certfile,
-			ssl_keyfile, GNUTLS_X509_FMT_PEM);
+	err = gnutls_certificate_set_x509_key_file(conn_x509_cred, ssl_certfile, ssl_keyfile, GNUTLS_X509_FMT_PEM);
 	if (err != GNUTLS_E_SUCCESS) {
 		gnutls_certificate_free_credentials(conn_x509_cred);
 		gnutls_global_deinit();
 
-		csync_fatal(
-				"SSL: failed to use key file %s and/or certificate file %s: %s (%s)\n",
-				ssl_keyfile, ssl_certfile, gnutls_strerror(err),
-				gnutls_strerror_name(err));
+		csync_fatal("SSL: failed to use key file %s and/or certificate file %s: %s (%s)\n", ssl_keyfile, ssl_certfile,
+				gnutls_strerror(err), gnutls_strerror_name(err));
 	}
 
 	if (server_role) {
 		gnutls_certificate_free_cas(conn_x509_cred);
 
-		if (gnutls_certificate_set_x509_trust_file(conn_x509_cred, ssl_certfile,
-				GNUTLS_X509_FMT_PEM) < 1) {
+		if (gnutls_certificate_set_x509_trust_file(conn_x509_cred, ssl_certfile, GNUTLS_X509_FMT_PEM) < 1) {
 			gnutls_certificate_free_credentials(conn_x509_cred);
 			gnutls_global_deinit();
 
-			csync_fatal("SSL: failed to use certificate file %s as CA.\n",
-					ssl_certfile);
+			csync_fatal("SSL: failed to use certificate file %s as CA.\n", ssl_certfile);
 		}
 	} else
 	gnutls_certificate_free_ca_names(conn_x509_cred);
 
-	gnutls_init(&conn_tls_session,
-			(server_role ? GNUTLS_SERVER : GNUTLS_CLIENT));
+	gnutls_init(&conn_tls_session, (server_role ? GNUTLS_SERVER : GNUTLS_CLIENT));
 	gnutls_priority_set_direct(conn_tls_session, "PERFORMANCE", NULL);
-	gnutls_credentials_set(conn_tls_session, GNUTLS_CRD_CERTIFICATE,
-			conn_x509_cred);
+	gnutls_credentials_set(conn_tls_session, GNUTLS_CRD_CERTIFICATE, conn_x509_cred);
 
 	if (server_role) {
 		gnutls_certificate_send_x509_rdn_sequence(conn_tls_session, 0);
-		gnutls_certificate_server_set_request(conn_tls_session,
-				GNUTLS_CERT_REQUIRE);
+		gnutls_certificate_server_set_request(conn_tls_session, GNUTLS_CERT_REQUIRE);
 	}
 
-	gnutls_transport_set_ptr2(conn_tls_session,
-			(gnutls_transport_ptr_t) (size_t) conn_fd_in,
+	gnutls_transport_set_ptr2(conn_tls_session, (gnutls_transport_ptr_t) (size_t) conn_fd_in,
 			(gnutls_transport_ptr_t) (size_t) conn_fd_out);
 
 	err = gnutls_handshake(conn_tls_session);
@@ -220,16 +206,13 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 
 	case GNUTLS_E_WARNING_ALERT_RECEIVED:
 		alrt = gnutls_alert_get(conn_tls_session);
-		fprintf(csync_out_debug,
-				"SSL: warning alert received from peer: %d (%s).\n", alrt,
+		fprintf(csync_out_debug, "SSL: warning alert received from peer: %d (%s).\n", alrt,
 				gnutls_alert_get_name(alrt));
 		break;
 
 	case GNUTLS_E_FATAL_ALERT_RECEIVED:
 		alrt = gnutls_alert_get(conn_tls_session);
-		fprintf(csync_out_debug,
-				"SSL: fatal alert received from peer: %d (%s).\n", alrt,
-				gnutls_alert_get_name(alrt));
+		fprintf(csync_out_debug, "SSL: fatal alert received from peer: %d (%s).\n", alrt, gnutls_alert_get_name(alrt));
 		/* No break */
 	default:
 		gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
@@ -237,8 +220,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 		gnutls_certificate_free_credentials(conn_x509_cred);
 		gnutls_global_deinit();
 
-		csync_fatal("SSL: handshake failed: %s (%s)\n", gnutls_strerror(err),
-				gnutls_strerror_name(err))
+		csync_fatal("SSL: handshake failed: %s (%s)\n", gnutls_strerror(err), gnutls_strerror_name(err))
 ;	}
 
 	csync_conn_usessl = 1;
@@ -279,11 +261,10 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 			}SQL_END;
 
 		if (cert_is_ok < 0) {
-			csync_log(LOG_DEBUG, 1, "Adding peer x509 certificate to db: %s\n",
-					certdata);
+			csync_log(LOG_DEBUG, 1, "Adding peer x509 certificate to db: %s\n", certdata);
 			SQL(db, "Adding peer x509 sha1 hash to database.",
-					"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')",
-					url_encode(peername), url_encode(certdata));
+					"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')", url_encode(peername),
+					url_encode(certdata));
 			return 1;
 		}
 
@@ -357,8 +338,7 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 			csync_error(2, "Interupted while reading\n");
 		else {
 			if (length < 0)
-				csync_error(3, "Error in READ: %d %s\n", errno,
-						strerror(errno));
+				csync_error(3, "Error in READ: %d %s\n", errno, strerror(errno));
 			return length;
 		}
 	}
@@ -424,11 +404,8 @@ void conn_debug(const char *name, const char *buf, size_t count) {
 ssize_t conn_read_get_content_length(int fd, long long *size) {
 	char buffer[200];
 	*size = 0;
-	int rc = !conn_gets(fd, buffer, 200)
-			|| sscanf(buffer, "octet-stream %lld\n", size) != 1;
-	csync_log(LOG_DEBUG, 2,
-			"Content length in buffer: '%s' size: %lld rc: %d \n", buffer,
-			*size, rc);
+	int rc = !conn_gets(fd, buffer, 200) || sscanf(buffer, "octet-stream %lld\n", size) != 1;
+	csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %lld rc: %d \n", buffer, *size, rc);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
 		return -1;
@@ -487,11 +464,12 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	*buffer = NULL;
 	if (chunk_size > 0) {
 		size_t bytes_received = 0;
-		*buffer = (char *) malloc(chunk_size);
+		*buffer = (char*) malloc(chunk_size);
 		while (bytes_received < chunk_size) {
 			ssize_t n = recv(sockfd, *buffer + bytes_received,
 					chunk_size - bytes_received > CHUNK_SIZE ?
-							CHUNK_SIZE : chunk_size - bytes_received, 0);
+					CHUNK_SIZE :
+																chunk_size - bytes_received, 0);
 			if (n <= 0) {
 				perror("Error receiving file chunk");
 				return -1;
@@ -562,8 +540,7 @@ ssize_t conn_write(int fd, const void *buf, size_t count) {
 }
 
 void conn_remove_key(char *buf) {
-	if (!strncmp(buf, "HELLO", 5) || !strncmp(buf, "CONFIG", 6)
-			|| !strncmp(buf, "BYE", 3) ||
+	if (!strncmp(buf, "HELLO", 5) || !strncmp(buf, "CONFIG", 6) || !strncmp(buf, "BYE", 3) ||
 //	!strncmp(buf, "DEL", 3)   ||
 			!strncmp(buf, "LIST", 4))
 		return;
@@ -617,7 +594,7 @@ void conn_printf(int fd, const char *fmt, ...) {
 
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = (char *) alloca(size + 1);
+	buffer = (char*) alloca(size + 1);
 	va_end(ap);
 
 	va_start(ap, fmt);
@@ -631,17 +608,14 @@ void conn_printf(int fd, const char *fmt, ...) {
 	csync_info(2, "CONN %s < %s\n", active_peer, str);
 }
 
-void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file,
-		const char *key_enc, const char *fmt, ...) {
+void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...) {
 	char dummy = 0, *buffer = 0;
 	va_list ap;
 	int size;
-	csync_debug(2,
-			"conn_printf_cmd_filepath: unused parameters cmd %s file %s key_enc %s",
-			cmd, file, key_enc);
+	csync_debug(2, "conn_printf_cmd_filepath: unused parameters cmd %s file %s key_enc %s", cmd, file, key_enc);
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = (char *) alloca(size + 1);
+	buffer = (char*) alloca(size + 1);
 	va_end(ap);
 
 	va_start(ap, fmt);
@@ -671,12 +645,10 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 	return rc ? rc : i;
 }
 
-ssize_t conn_gets_newline(int filedesc, char *s, size_t size,
-		int remove_newline) {
+ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 	int rc = gets_newline(filedesc, s, size, remove_newline);
 	if (rc == -1) {
-		csync_error(0, "CONN %s > %s failed with error '%s' \n", active_peer, s,
-				strerror(errno));
+		csync_error(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
 		return rc;
 	}
 	// Filter mtime but on a copy.

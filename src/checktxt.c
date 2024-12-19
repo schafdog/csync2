@@ -39,13 +39,11 @@
 	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
 	len+=t; elidx++; }
 
-const char* csync_genchecktxt(const struct stat *st, filename_p filename,
-		int flags) {
+const char* csync_genchecktxt(const struct stat *st, filename_p filename, int flags) {
 	return csync_genchecktxt_version(st, filename, flags, 1);
 }
 
-const char* csync_genchecktxt_version(const struct stat *st,
-		filename_p filename, int flags, int version) {
+const char* csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version) {
 	static char *buffer = 0;
 	char *elements[64];
 	int elidx = 0, len = 1;
@@ -57,8 +55,7 @@ const char* csync_genchecktxt_version(const struct stat *st,
 	xxprintf("v%d", version);
 
 	//	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode))
-	xxprintf(":mtime=%llu",
-			flags & IGNORE_MTIME ? (long long)0 : (long long)st->st_mtime);
+	xxprintf(":mtime=%llu", flags & IGNORE_MTIME ? (long long)0 : (long long)st->st_mtime);
 
 	if (!csync_ignore_mod)
 		xxprintf(":mode=%d", (int )st->st_mode);
@@ -125,7 +122,7 @@ const char* csync_genchecktxt_version(const struct stat *st,
 
 	if (buffer)
 		free(buffer);
-	buffer = (char *) malloc(len);
+	buffer = (char*) malloc(len);
 
 	for (i = j = 0; j < elidx; j++)
 		for (k = 0; elements[j][k]; k++)
@@ -147,9 +144,7 @@ int csync_cmpchecktxt(const char *a, const char *b) {
 	int i;
 	for (i = 0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++) {
 		if (a[i] != b[i]) {
-			csync_log(LOG_DEBUG, 3,
-					"csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a,
-					b);
+			csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
 			return i;
 		}
 	}

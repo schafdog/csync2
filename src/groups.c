@@ -23,8 +23,7 @@
 
 int csync_compare_mode = 0;
 
-int match_pattern_list(filename_p filename, const char *basename,
-		const struct csync_group_pattern *p, int compare_mode) {
+int match_pattern_list(filename_p filename, const char *basename, const struct csync_group_pattern *p, int compare_mode) {
 	// unused
 	(void) compare_mode;
 
@@ -50,16 +49,14 @@ int match_pattern_list(filename_p filename, const char *basename,
 			}
 		}
 		if (matched) {
-			csync_log(LOG_DEBUG, 3, "Match (%c): %s on %s\n",
-					p->isinclude ? '+' : '-', p->pattern, filename);
+			csync_log(LOG_DEBUG, 3, "Match (%c): %s on %s\n", p->isinclude ? '+' : '-', p->pattern, filename);
 		}
 		next_pattern: p = p->next;
 	}
 	return match_path && match_base;
 }
 
-const struct csync_group* csync_find_next(const struct csync_group *g,
-		const char *file, int compare_mode) {
+const struct csync_group* csync_find_next(const struct csync_group *g, const char *file, int compare_mode) {
 	const char *basename = strrchr(file, '/');
 
 	if (basename)
@@ -93,8 +90,7 @@ int csync_step_into(const char *file, int compare_mode) {
 		for (p = g->pattern; p; p = p->next) {
 			if (p->iscompare && !compare_mode)
 				continue;
-			if ((p->pattern[0] == '/' || p->pattern[0] == '%')
-					&& p->isinclude) {
+			if ((p->pattern[0] == '/' || p->pattern[0] == '%') && p->isinclude) {
 				char t[strlen(p->pattern) + 1], *l;
 				int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
 				strcpy(t, p->pattern);
@@ -109,8 +105,7 @@ int csync_step_into(const char *file, int compare_mode) {
 	return 0;
 }
 
-int csync_match_file(const char *file, int compare_mode,
-		const struct csync_group **g) {
+int csync_match_file(const char *file, int compare_mode, const struct csync_group **g) {
 	*g = NULL;
 	if ((*g = csync_find_next(0, file, compare_mode)))
 		return MATCH_NEXT;
@@ -126,13 +121,11 @@ int csync_check_usefullness(const char *file, int recursive) {
 		return 0; // OK
 
 	// TODO make it optional if we want to log
-	csync_log(LOG_WARNING, 2, "groups: %s did not match any configuration.\n",
-			file);
+	csync_log(LOG_WARNING, 2, "groups: %s did not match any configuration.\n", file);
 	return -1;
 }
 
-int csync_match_file_host(const char *file, const char *myname,
-		peername_p peername, const char **keys) {
+int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys) {
 	const struct csync_group *g = NULL;
 
 	while ((g = csync_find_next(g, file, 0))) {
@@ -179,7 +172,7 @@ struct peer* csync_find_peers(const char *file, const char *thispeer) {
 			while (plist && plist[i].peername)
 				if (!strcmp(plist[i++].peername, h->hostname))
 					goto next_host;
-			plist = (struct peer *) realloc(plist, sizeof(struct peer) * (++pl_size + 1));
+			plist = (struct peer*) realloc(plist, sizeof(struct peer) * (++pl_size + 1));
 			plist[pl_size - 1].peername = h->hostname;
 			plist[pl_size - 1].myname = g->myname;
 			plist[pl_size].peername = 0;
@@ -203,8 +196,7 @@ const char* csync_key(const char *hostname, filename_p filename) {
 	return 0;
 }
 
-int csync_perm(filename_p filename, const char *key, const char *hostname,
-		int compare_mode) {
+int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode) {
 	const struct csync_group *g = NULL;
 	struct csync_group_host *h;
 	int false_retcode = 1;

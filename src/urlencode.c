@@ -29,10 +29,9 @@ static char *ringbuff[RINGBUFF_LEN];
 static int ringbuff_counter = 0;
 
 // perl -e 'printf("\\%03o", $_) for(1..040)' | fold -64; echo
-static char badchars[] =
-		"\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020"
-				"\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040"
-				"\177\"'%$:|";
+static char badchars[] = "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020"
+		"\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040"
+		"\177\"'%$:|";
 
 const char* url_encode(const char *in) {
 	char *out;
@@ -45,7 +44,7 @@ const char* url_encode(const char *in) {
 				break;
 			}
 
-	out = (char *) malloc(len + 1);
+	out = (char*) malloc(len + 1);
 
 	for (i = k = 0; in[i]; i++) {
 		for (j = 0; badchars[j]; j++)
@@ -79,7 +78,7 @@ const char* url_decode(const char *in) {
 		if (in[i] == '%' && in[i + 1] && in[i + 2])
 			i += 2;
 
-	out = (char *) malloc(len + 1);
+	out = (char*) malloc(len + 1);
 
 	for (i = k = 0; in[i]; i++)
 		if (in[i] == '%' && in[i + 1] && in[i + 2]) {

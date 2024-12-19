@@ -82,7 +82,7 @@ extern FILE *yyin;
 char *log_file = 0;
 
 void csync_version() {
-  printf("\n"
+	printf("\n"
 	PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 	"LINBIT Information Technologies GmbH <http://www.linbit.com>\n"
 	"Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>\n"
@@ -97,130 +97,129 @@ void csync_version() {
 void help(char *cmd) {
 	csync_version();
 	printf("\n"
-	       "This program is free software under the terms of the GNU GPL.\n"
-	       "\n"
-	       "Usage: %s [-v..] [-C config-name|-K config-file] \\\n"
-	       "		[-D database-dir] [-N hostname] [-p port] ..\n"
-	       "\n"
-	       "With file parameters:\n"
-	       "	-h [-r] file..		Add (recursive) hints for check to db\n"
-	       "	-c [-r] file..		Check files and maybe add to dirty db\n"
-	       "	-u [-d] [-r] file..	Updates files if listed in dirty db\n"
-	       "	-o [-r] file..		Create list of files in compare-mode\n"
-					"	-f [-r] file..		Force files to win next conflict resolution\n"
-					"	-m file..		Mark files in database as dirty\n"
-					"\n"
-					"Simple mode:\n"
-					"	-x [-d] [[-r] file..]	Run checks for all given files and update\n"
-					"				remote hosts.\n"
-					"\n"
-					"Without file parameters:\n"
-					"	-c	Check all hints in db and eventually mark files as dirty\n"
-					"	-u [-d]	Update (transfer dirty files to peers and mark as clear)\n"
-					"\n"
-					"	-H	List all pending hints from status db\n"
-					"	-L	List all file-entries from status db\n"
-					"	-M	List all dirty files from status db\n"
-					"\n"
-					"	-S myname peername	List file-entries from status db for this\n"
-					"				synchronization pair.\n"
-					"\n"
-					"	-T  			Test if everything is in sync with all peers.\n"
-					"\n"
-					"	-T filename 		Test if this file is in sync with all peers.\n"
-					"\n"
-					"	-T myname peername	Test if this synchronization pair is in sync.\n"
-					"\n"
-					"	-T myname peer file	Test only this file in this sync pair.\n"
-					"\n"
-					"	-TT	As -T, but print the unified diffs.\n"
-					"\n"
-					"	The modes -H, -L, -M and -S return 2 if the requested db is empty.\n"
-					"	The mode -T returns 2 if both hosts are in sync.\n"
-					"\n"
-					"	-i	Run in inetd server mode.\n"
-					"	-ii	Run in stand-alone server mode.\n"
-					"	-iii	Run in stand-alone server mode (one connect only, no forking).\n"
-					"	-iiii	Run in stand-alone server mode (multi connects, no forking).\n"
-					"\n"
-					"	-R	Remove files from database which do not match config entries.\n"
-					"\n"
-					"Modifiers:\n"
-					"	-r	Recursive operation over subdirectories\n"
-					"	-d	Dry-run on all remote update operations\n"
-					"\n"
-					"	-B	Do not block everything into big SQL transactions. This\n"
-					"		slows down csync2 but allows multiple csync2 processes to\n"
-					"		access the database at the same time. Use e.g. when slow\n"
-					"		lines are used or huge files are transferred.\n"
-					"\n"
-					"	-A	Open database in asynchronous mode. This will cause data\n"
-					"		corruption if the operating system crashes or the computer\n"
-					"		loses power.\n"
-					"\n"
-					"	-I	Init-run. Use with care and read the documentation first!\n"
-					"		You usually do not need this option unless you are\n"
-					"		initializing groups with really large file lists.\n"
-					"\n"
-					"	-X	Also add removals to dirty db when doing a -TI run.\n"
-					"	-U	Don't mark all other peers as dirty when doing a -TI run.\n"
-					"\n"
-					"	-G Group1,Group2,Group3,...\n"
-					"		Only use these groups from config-file.\n"
-					"\n"
-					"	-P peer1,peer1,...\n"
-					"		Only update these peers (still mark all as dirty).\n"
-					"		Only show files for these peers in -o (compare) mode.\n"
-					"\n"
-					"	-F	Add new entries to dirty database with force flag set.\n"
-					"\n"
-					"	-t	Print timestamps to debug output (e.g. for profiling).\n"
-					"\n"
-					"	-s filename\n"
-					"		Print timestamps also to this file.\n"
-					"\n"
-					"	-W fd	Write a list of directories in which relevant files can be\n"
-					"		found to the specified file descriptor (when doing a -c run).\n"
-					"		The directory names in this output are zero-terminated.\n"
-					"\n"
-					"       -z peer Force the daemon to accept this peer without verifying.\n"
-					"\n"
-					"Database switches:\n"
-					"\n"
-					"	-D database-dir\n"
-					"		Use sqlite database in database dir (default: /var/lib/csync2)\n"
-					"\n"
-					"	-a mysql-url\n"
-					"		Use mysql database in URL:\n"
-					"		mysql://[<user>:<password>@]<hostname>/<database>\n"
-					"\n"
-					"Options:"
-					"       -l \n"
-					"              Use syslog local0 facility\n"
-					"       -O logfile\n"
-					"              Use logfile for logging\n"
-					"       -K configfile\n"
-					"              Use this config file\n"
-					"\n"
-					"Test Options: NEVER use in production \n"
-					"       -N myname \n"
-					"              Override hostname \n"
-					"       -Z peername\n"
-					"              Allow connections from peername without checking \n"
-					"\n"
-					"Creating key file:\n"
-					"	%s -k filename\n"
-					"\n"
-					"Csync2 will refuse to do anything when a " ETCDIR "/csync2.lock file is found.\n"
-			"\n", cmd, cmd);
+			"This program is free software under the terms of the GNU GPL.\n"
+			"\n"
+			"Usage: %s [-v..] [-C config-name|-K config-file] \\\n"
+			"		[-D database-dir] [-N hostname] [-p port] ..\n"
+			"\n"
+			"With file parameters:\n"
+			"	-h [-r] file..		Add (recursive) hints for check to db\n"
+			"	-c [-r] file..		Check files and maybe add to dirty db\n"
+			"	-u [-d] [-r] file..	Updates files if listed in dirty db\n"
+			"	-o [-r] file..		Create list of files in compare-mode\n"
+			"	-f [-r] file..		Force files to win next conflict resolution\n"
+			"	-m file..		Mark files in database as dirty\n"
+			"\n"
+			"Simple mode:\n"
+			"	-x [-d] [[-r] file..]	Run checks for all given files and update\n"
+			"				remote hosts.\n"
+			"\n"
+			"Without file parameters:\n"
+			"	-c	Check all hints in db and eventually mark files as dirty\n"
+			"	-u [-d]	Update (transfer dirty files to peers and mark as clear)\n"
+			"\n"
+			"	-H	List all pending hints from status db\n"
+			"	-L	List all file-entries from status db\n"
+			"	-M	List all dirty files from status db\n"
+			"\n"
+			"	-S myname peername	List file-entries from status db for this\n"
+			"				synchronization pair.\n"
+			"\n"
+			"	-T  			Test if everything is in sync with all peers.\n"
+			"\n"
+			"	-T filename 		Test if this file is in sync with all peers.\n"
+			"\n"
+			"	-T myname peername	Test if this synchronization pair is in sync.\n"
+			"\n"
+			"	-T myname peer file	Test only this file in this sync pair.\n"
+			"\n"
+			"	-TT	As -T, but print the unified diffs.\n"
+			"\n"
+			"	The modes -H, -L, -M and -S return 2 if the requested db is empty.\n"
+			"	The mode -T returns 2 if both hosts are in sync.\n"
+			"\n"
+			"	-i	Run in inetd server mode.\n"
+			"	-ii	Run in stand-alone server mode.\n"
+			"	-iii	Run in stand-alone server mode (one connect only, no forking).\n"
+			"	-iiii	Run in stand-alone server mode (multi connects, no forking).\n"
+			"\n"
+			"	-R	Remove files from database which do not match config entries.\n"
+			"\n"
+			"Modifiers:\n"
+			"	-r	Recursive operation over subdirectories\n"
+			"	-d	Dry-run on all remote update operations\n"
+			"\n"
+			"	-B	Do not block everything into big SQL transactions. This\n"
+			"		slows down csync2 but allows multiple csync2 processes to\n"
+			"		access the database at the same time. Use e.g. when slow\n"
+			"		lines are used or huge files are transferred.\n"
+			"\n"
+			"	-A	Open database in asynchronous mode. This will cause data\n"
+			"		corruption if the operating system crashes or the computer\n"
+			"		loses power.\n"
+			"\n"
+			"	-I	Init-run. Use with care and read the documentation first!\n"
+			"		You usually do not need this option unless you are\n"
+			"		initializing groups with really large file lists.\n"
+			"\n"
+			"	-X	Also add removals to dirty db when doing a -TI run.\n"
+			"	-U	Don't mark all other peers as dirty when doing a -TI run.\n"
+			"\n"
+			"	-G Group1,Group2,Group3,...\n"
+			"		Only use these groups from config-file.\n"
+			"\n"
+			"	-P peer1,peer1,...\n"
+			"		Only update these peers (still mark all as dirty).\n"
+			"		Only show files for these peers in -o (compare) mode.\n"
+			"\n"
+			"	-F	Add new entries to dirty database with force flag set.\n"
+			"\n"
+			"	-t	Print timestamps to debug output (e.g. for profiling).\n"
+			"\n"
+			"	-s filename\n"
+			"		Print timestamps also to this file.\n"
+			"\n"
+			"	-W fd	Write a list of directories in which relevant files can be\n"
+			"		found to the specified file descriptor (when doing a -c run).\n"
+			"		The directory names in this output are zero-terminated.\n"
+			"\n"
+			"       -z peer Force the daemon to accept this peer without verifying.\n"
+			"\n"
+			"Database switches:\n"
+			"\n"
+			"	-D database-dir\n"
+			"		Use sqlite database in database dir (default: /var/lib/csync2)\n"
+			"\n"
+			"	-a mysql-url\n"
+			"		Use mysql database in URL:\n"
+			"		mysql://[<user>:<password>@]<hostname>/<database>\n"
+			"\n"
+			"Options:"
+			"       -l \n"
+			"              Use syslog local0 facility\n"
+			"       -O logfile\n"
+			"              Use logfile for logging\n"
+			"       -K configfile\n"
+			"              Use this config file\n"
+			"\n"
+			"Test Options: NEVER use in production \n"
+			"       -N myname \n"
+			"              Override hostname \n"
+			"       -Z peername\n"
+			"              Allow connections from peername without checking \n"
+			"\n"
+			"Creating key file:\n"
+			"	%s -k filename\n"
+			"\n"
+			"Csync2 will refuse to do anything when a " ETCDIR "/csync2.lock file is found.\n"
+	"\n", cmd, cmd);
 	exit(1);
 }
 
 int create_keyfile(filename_p filename) {
 	int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0600);
 	int rand = open("/dev/urandom", O_RDONLY);
-	char matrix[] =
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
+	char matrix[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
 	unsigned char n;
 	int i;
 	assert(sizeof(matrix) == 65);
@@ -301,8 +300,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			continue;
 		}
 		if (duplicated) {
-			csync_debug(1, "monitor: Last operation was repeated %d times",
-					duplicated);
+			csync_debug(1, "monitor: Last operation was repeated %d times", duplicated);
 			duplicated = 0;
 		}
 		int match = csync_read_buffer(buffer, time_str);
@@ -313,8 +311,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 		const char *rest = strptime(time_str, "%F_%T", &tm);
 		if (rest) {
 			log_time = timelocal(&tm);
-			csync_debug(2, "monitor: Parsed %s to %d. %s", time_str, log_time,
-					rest);
+			csync_debug(2, "monitor: Parsed %s to %d. %s", time_str, log_time, rest);
 		} else {
 			csync_debug(0, "monitor: failed to parse %s as %F_%T", time_str);
 		}
@@ -328,8 +325,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			buffer[len] = 0;
 		strcpy(file, buffer);
 		if (csync_check_usefullness(file, flags)) {
-			csync_debug(1, "monitor: Skip %s not matched at %d\n", file,
-					log_time);
+			csync_debug(1, "monitor: Skip %s not matched at %d\n", file, log_time);
 			continue;
 		}
 		// Check if file is "just" made by daemon
@@ -338,18 +334,14 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			csync_redis_del_custom(file, operation);
 
 		if (lock_time != -1 && log_time <= lock_time) {
-			csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation,
-					file, lock_time, log_time);
+			csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 		} else {
-			csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation,
-					file, time_str);
+			csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
 			if (strcmp(operation, "CREATE") == 0) {
-				csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n",
-						operation, file, time_str);
+				csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
 			} else if (strcmp(operation, "DELETE") == 0) {
 				csync_check_del(db, file, flags);
-			} else if (strcmp(operation, "CREATE")
-					== 0|| strstr(operation, "CLOSE_WRITE") != NULL) {
+			} else if (strcmp(operation, "CREATE") == 0 || strstr(operation, "CLOSE_WRITE") != NULL) {
 				const struct csync_group *g = NULL;
 				int count_dirty;
 				csync_check_mod(db, file, flags, &count_dirty, &g);
@@ -359,8 +351,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			const char *patlist[1];
 			patlist[0] = file;
 			// Delay until we dont get more files or have enough and do it on common path
-			csync_update(db, myhostname, active_peers, (const char**) patlist,
-					1, ip_version, csync_update_host, flags);
+			csync_update(db, myhostname, active_peers, (const char**) patlist, 1, ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -382,8 +373,7 @@ static int csync_bind(const char *service_port, int ip_version) {
 
 	s = getaddrinfo(NULL, service_port, &hints, &result);
 	if (s != 0) {
-		csync_error(0, "Cannot prepare local socket, getaddrinfo: %s\n",
-				gai_strerror(s));
+		csync_error(0, "Cannot prepare local socket, getaddrinfo: %s\n", gai_strerror(s));
 		return ERROR;
 	}
 
@@ -397,14 +387,11 @@ static int csync_bind(const char *service_port, int ip_version) {
 		if (sfd == -1)
 			continue;
 
-		if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on,
-				(socklen_t) sizeof(on)) < 0)
+		if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, (socklen_t) sizeof(on)) < 0)
 			goto error;
-		if (setsockopt(sfd, SOL_SOCKET, SO_LINGER, &sl, (socklen_t) sizeof(sl))
-				< 0)
+		if (setsockopt(sfd, SOL_SOCKET, SO_LINGER, &sl, (socklen_t) sizeof(sl)) < 0)
 			goto error;
-		if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, &on,
-				(socklen_t) sizeof(on)) < 0)
+		if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0)
 			goto error;
 
 		if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
@@ -485,9 +472,8 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 			 * as we may need to wait on them in action.c */
 			signal(SIGCHLD, SIG_DFL);
 			csync_server_child_pid = getpid();
-			if (getnameinfo(&addr.sa, addrlen, hbuf, sizeof(hbuf), sbuf,
-					sizeof(sbuf),
-					NI_NUMERICHOST | NI_NUMERICSERV) != 0)
+			if (getnameinfo(&addr.sa, addrlen, hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
+			NI_NUMERICHOST | NI_NUMERICSERV) != 0)
 				goto error;
 
 			if (csync_syslog) {
@@ -495,8 +481,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 				csync_info(1, "New connection from %s:%s.\n", hbuf, sbuf);
 			} else {
 				//Stupid this is not using csync_log(..)
-				fprintf(stdout, "<%d> New connection from %s:%s.\n",
-						csync_server_child_pid, hbuf, sbuf);
+				fprintf(stdout, "<%d> New connection from %s:%s.\n", csync_server_child_pid, hbuf, sbuf);
 				fflush(stdout);
 			}
 			//dup2(conn, 0);
@@ -546,7 +531,7 @@ char **peers = NULL;
 char** parse_peerlist(char *peerlist) {
 	if (peerlist == NULL)
 		return peers;
-	peers = (char **) calloc(sizeof(peers), 100);
+	peers = (char**) calloc(sizeof(peers), 100);
 	int i = 0;
 	char *saveptr = NULL;
 	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
@@ -589,24 +574,21 @@ void free_realname(const char *real_name) {
 	if (!strcmp("", real_name)) {
 		return;
 	}
-	free((char *) real_name);
+	free((char*) real_name);
 }
 
-int check_file_args(db_conn_p db, char *files[], int file_count,
-		char *realnames[], int flags) {
+int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
 	int count = 0;
 	for (int i = 0; i < file_count; i++) {
 		char *real_name = getrealfn(files[i]);
 		if (real_name == NULL) {
-			csync_warn(0, "%s did not match a real path. Skipping.\n",
-					files[i]);
+			csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 		} else {
 			if (!csync_check_usefullness(real_name, flags)) {
 				realnames[count] = real_name;
 				if (flags & FLAG_DO_CHECK) {
 					csync_check(db, realnames[count], flags);
-					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n",
-							realnames[count], flags);
+					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
 				}
 				count++;
 			} else {
@@ -637,8 +619,7 @@ int csync_read_config(const char *cfgname, int conn, int mode) {
 		int i;
 
 		for (i = 0; cfgname[i]; i++)
-			if (!(cfgname[i] >= '0' && cfgname[i] <= '9')
-					&& !(cfgname[i] >= 'a' && cfgname[i] <= 'z')) {
+			if (!(cfgname[i] >= '0' && cfgname[i] <= '9') && !(cfgname[i] >= 'a' && cfgname[i] <= 'z')) {
 				const char *error = "Config names are limited to [a-z0-9]+.\n";
 				if (mode & MODE_INETD)
 					conn_printf(conn, error);
@@ -653,8 +634,7 @@ int csync_read_config(const char *cfgname, int conn, int mode) {
 	csync_info(2, "Config-File:   %s\n", file_config);
 	yyin = fopen(file_config, "r");
 	if (!yyin)
-		csync_fatal("Can not open config file `%s': %s\n", file_config,
-				strerror(errno));
+		csync_fatal("Can not open config file `%s': %s\n", file_config, strerror(errno));
 	yyparse();
 	fclose(yyin);
 	yylex_destroy();
@@ -686,9 +666,7 @@ int main(int argc, char **argv) {
 	int cmd_ip_version = 0;
 	update_func update_func;
 	int csync_port_cmdline = 0;
-	while ((opt = getopt(argc, argv,
-			"01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEY"))
-			!= -1) {
+	while ((opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEY")) != -1) {
 
 		switch (opt) {
 		case 'V':
@@ -722,8 +700,7 @@ int main(int argc, char **argv) {
 		case 'W':
 			csync_dump_dir_fd = atoi(optarg);
 			if (write(csync_dump_dir_fd, 0, 0) < 0)
-				csync_fatal("Invalid dump_dir_fd %d: %s\n", csync_dump_dir_fd,
-						strerror(errno))
+				csync_fatal("Invalid dump_dir_fd %d: %s\n", csync_dump_dir_fd, strerror(errno))
 ;			break;
 			case 's':
 			csync_timestamp_out = fopen(optarg, "a");
@@ -895,19 +872,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (optind < argc && mode != MODE_HINT && mode != MODE_MARK
-			&& !(mode & MODE_FORCE) && mode != MODE_SIMPLE
-			&& !(mode & MODE_UPDATE) && mode != MODE_CHECK
-			&& mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE
-			&& mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC
-			&& mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE
-			&& mode != MODE_LIST_DIRTY && mode != MODE_EQUAL
-			&& mode != MODE_REMOVE_OLD && mode != MODE_TAIL
+	if (optind < argc && mode != MODE_HINT && mode != MODE_MARK && !(mode & MODE_FORCE) && mode != MODE_SIMPLE
+			&& !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE
+			&& mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE
+			&& mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL
 			&& update_format == 0)
 		help(argv[0]);
 
-	if (mode == MODE_TEST_SYNC && optind != argc && optind + 1 != argc
-			&& optind + 2 != argc && optind + 3 != argc)
+	if (mode == MODE_TEST_SYNC && optind != argc && optind + 1 != argc && optind + 2 != argc && optind + 3 != argc)
 		help(argv[0]);
 
 	if (mode == MODE_LIST_SYNC && optind + 2 != argc)
@@ -934,11 +906,9 @@ int main(int argc, char **argv) {
 	long server_standalone = mode & MODE_STANDALONE;
 	const char *myport = csync_port;
 	csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
-	csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone > 0: %d\n",
-			server_standalone, server_standalone > 0);
+	csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 	if (server_standalone > 0) {
-		csync_info(3, "server standalone %ld server_standalone > 0: %d\n",
-				server_standalone, server_standalone > 0);
+		csync_info(3, "server standalone %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 		if (!csync_port_cmdline) {
 			// We need to read the config file to determine a eventual port override
 			// port override needs to be consistent over all configurations
@@ -947,8 +917,7 @@ int main(int argc, char **argv) {
 			struct csync_hostinfo *myhostinfo = csync_hostinfo;
 			while (myhostinfo != NULL) {
 				if (!strcmp(myhostinfo->name, myhostname)) {
-					csync_log(LOG_DEBUG, 1, "Found my alias %s %s %s \n",
-							myhostinfo->name, myhostinfo->host,
+					csync_log(LOG_DEBUG, 1, "Found my alias %s %s %s \n", myhostinfo->name, myhostinfo->host,
 							myhostinfo->port);
 					myport = strdup(myhostinfo->port);
 					break;
@@ -965,8 +934,7 @@ int main(int argc, char **argv) {
 		};
 	};
 
-	return csync_start(mode, flags, argc, argv, update_func, listenfd,
-			cmd_db_version, cmd_ip_version);
+	return csync_start(mode, flags, argc, argv, update_func, listenfd, cmd_db_version, cmd_ip_version);
 }
 ;
 
@@ -974,8 +942,7 @@ int main(int argc, char **argv) {
  Responsible for looping in server mode. Need rewrite
  */
 
-int csync_start(int mode, int flags, int argc, char *argv[],
-		update_func update_func, int listenfd, int cmd_db_version,
+int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version,
 		int cmd_ip_version) {
 	int start_time = time(NULL);
 	int server = mode & MODE_DAEMON;
@@ -987,8 +954,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 	nofork:
 	csync_debug(3, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
 	// init syslog if needed. 
-	if (first && csync_syslog
-			&& csync_server_child_pid == 0 /* client or child ? */) {
+	if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
 		csync_openlog();
 		first = 0;
 	}
@@ -998,8 +964,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 #ifdef HAVE_LIBSYSTEMD
 	sd_pid_notify(getpid(), 0, "READY=1");
 #endif
-		if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK),
-				listenfd, &conn))
+		if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK), listenfd, &conn))
 			return 1; // Parent returns
 	}
 
@@ -1046,8 +1011,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 		}
 
 		if (!cmd || strcasecmp(cmd, "config")) {
-			conn_printf(conn,
-					"Expecting SSL (optional) and CONFIG as first commands.\n");
+			conn_printf(conn, "Expecting SSL (optional) and CONFIG as first commands.\n");
 			goto handle_error;
 		}
 
@@ -1060,9 +1024,8 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 	// Move configuration versions into place, if configured.
 	if (cfg_db_version != -1) {
 		if (cmd_db_version)
-			csync_info(0,
-					"Command line overrides configuration DB protocol version: %d -> %d\n",
-					cfg_db_version, cmd_db_version);
+			csync_info(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version,
+					cmd_db_version);
 		else
 			db_version = cfg_db_version;
 	}
@@ -1076,9 +1039,8 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 
 	if (cfg_ip_version != -1) {
 		if (cmd_ip_version)
-			csync_info(0,
-					"Command line overrides configuration ip protocol version: %d -> %d\n",
-					cfg_ip_version, ip_version);
+			csync_info(0, "Command line overrides configuration ip protocol version: %d -> %d\n", cfg_ip_version,
+					ip_version);
 		else if (cfg_ip_version == 4)
 			ip_version = AF_INET;
 		else if (cfg_ip_version == 6)
@@ -1096,8 +1058,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 	csync_info(2, "My hostname is %s.\n", myhostname);
 	csync_info(2, "Database File: %s\n", csync_database);
 	csync_info(2, "DB Version:    %d\n", db_version);
-	csync_info(2, "IP Version:    %s\n",
-			(ip_version == AF_INET6 ? "IPv6" : "IPv4"));
+	csync_info(2, "IP Version:    %s\n", (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
 	csync_info(3, "GIT:           %s\n", CSYNC_GIT_VERSION);
 
 	{
@@ -1109,9 +1070,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 				break;
 			}
 		if (!found)
-			csync_fatal(
-					"This host (%s) is not a member of any configured group.\n",
-					myhostname);
+			csync_fatal("This host (%s) is not a member of any configured group.\n", myhostname);
 	}
 
 	db = csync_db_open(csync_database);
@@ -1143,14 +1102,12 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 	if (mode == MODE_SIMPLE) {
 		if (argc == optind) {
 			csync_check(db, "/", flags);
-			csync_update(db, myhostname, active_peers, 0, 0, ip_version,
-					csync_update_host, flags);
+			csync_update(db, myhostname, active_peers, 0, 0, ip_version, csync_update_host, flags);
 		} else {
 			char *realnames[argc - optind];
-			int count = check_file_args(db, argv + optind, argc - optind,
-					realnames, flags | FLAG_DO_CHECK);
-			csync_update(db, myhostname, active_peers, (const char**) realnames,
-					count, ip_version, csync_update_host, flags);
+			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
+			csync_update(db, myhostname, active_peers, (const char**) realnames, count, ip_version, csync_update_host,
+					flags);
 			csync_realnames_free(realnames, count);
 		}
 	}
@@ -1161,8 +1118,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 				if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE))
 					db->add_hint(db, realname, flags & FLAG_RECURSIVE);
 			} else {
-				csync_warn(0, "%s did not match a real path. Skipping.\n",
-						argv[i]);
+				csync_warn(0, "%s did not match a real path. Skipping.\n", argv[i]);
 			};
 			free_realname(realname);
 		};
@@ -1172,15 +1128,13 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 		if (argc == optind) {
 			tl = db->get_hints(db);
 			for (t = tl; t != 0; t = t->next) {
-				csync_check(db, t->value,
-						(t->intvalue ? flags | FLAG_RECURSIVE : flags));
+				csync_check(db, t->value, (t->intvalue ? flags | FLAG_RECURSIVE : flags));
 				db->remove_hint(db, t->value, t->intvalue);
 			}
 			textlist_free(tl);
 		} else {
 			char *realnames[argc - optind];
-			int count = check_file_args(db, argv + optind, argc - optind,
-					realnames, flags | FLAG_DO_CHECK);
+			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
 			if (count > 0)
 				csync_realnames_free(realnames, count);
 			else {
@@ -1199,15 +1153,12 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 
 	if ((mode & MODE_UPDATE) || (mode & MODE_EQUAL)) {
 		if (argc <= optind) {
-			csync_update(db, myhostname, active_peers, 0, 0, ip_version,
-					update_func, flags);
+			csync_update(db, myhostname, active_peers, 0, 0, ip_version, update_func, flags);
 		} else {
 			char *realnames[argc - optind];
-			int count = check_file_args(db, argv + optind, argc - optind,
-					realnames, flags);
+			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags);
 			if (count > 0) {
-				csync_update(db, myhostname, active_peers,
-						(const char**) realnames, argc - optind, ip_version,
+				csync_update(db, myhostname, active_peers, (const char**) realnames, argc - optind, ip_version,
 						update_func, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
@@ -1220,8 +1171,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 		for (i = optind; i < argc; i++) {
 			char *realname = getrealfn(argv[i]);
 			if (realname != NULL) {
-				if (!csync_check_usefullness(realname,
-						flags & FLAG_RECURSIVE)) {
+				if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
 					csync_compare_mode = 1;
 					csync_check(db, realname, flags);
 				}
@@ -1263,8 +1213,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 		int fileno = 0;
 		if (optind < argc) {
 			fileno = open(argv[optind], O_RDONLY);
-			csync_log(LOG_DEBUG, 1, "monitor: Opening %s %d \n", argv[optind],
-					fileno);
+			csync_log(LOG_DEBUG, 1, "monitor: Opening %s %d \n", argv[optind], fileno);
 			// TODO load "saved position" in cases of restart
 			lseek(fileno, 0, SEEK_END);
 		} else {
@@ -1292,23 +1241,19 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 			realname = getrealfn(argv[optind + 2]);
 			if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
 				if (flags & FLAG_TEST_AUTO_DIFF) {
-					retval = csync_diff(db, argv[optind], argv[optind + 1],
-							realname, ip_version);
-				} else if (csync_insynctest(db, argv[optind], argv[optind + 1],
-						realname, ip_version, flags))
+					retval = csync_diff(db, argv[optind], argv[optind + 1], realname, ip_version);
+				} else if (csync_insynctest(db, argv[optind], argv[optind + 1], realname, ip_version, flags))
 					retval = 2;
 			}
 			break;
 		case 2:
-			if (csync_insynctest(db, argv[optind], argv[optind + 1], 0,
-					ip_version, flags))
+			if (csync_insynctest(db, argv[optind], argv[optind + 1], 0, ip_version, flags))
 				retval = 2;
 			break;
 		case 1:
 			realname = getrealfn(argv[optind]);
 			if (!csync_check_usefullness(realname, 0)) {
-				if (csync_insynctest_all(db, realname, ip_version, active_peers,
-						flags))
+				if (csync_insynctest_all(db, realname, ip_version, active_peers, flags))
 					retval = 2;
 			}
 			break;
@@ -1350,8 +1295,7 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 		free(active_peers);
 	}
 	if (mode & MODE_DAEMON) {
-		csync_log(LOG_INFO, 3, "Connection closed. Pid %d mode %d \n",
-				csync_server_child_pid, mode);
+		csync_log(LOG_INFO, 3, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 
 		if (mode & MODE_NOFORK) {
 			csync_log(LOG_DEBUG, 1, "goto nofork.\n");
@@ -1359,12 +1303,10 @@ int csync_start(int mode, int flags, int argc, char *argv[],
 		}
 	}
 
-	if (csync_error_count != 0
-			|| (csync_messages_printed && csync_level_debug)) {
+	if (csync_error_count != 0 || (csync_messages_printed && csync_level_debug)) {
 		int run_time = time(NULL) - start_time;
 		if (csync_error_count > 0)
-			csync_warn(1, "Finished with %d errors in %d seconds.\n",
-					csync_error_count, run_time);
+			csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
 		else
 			csync_info(1, "Finished succesfully in %d seconds.\n", run_time);
 	}

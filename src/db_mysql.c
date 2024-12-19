@@ -42,8 +42,8 @@
 
 static struct db_mysql_fns {
 	MYSQL* (*mysql_init_fn)(MYSQL*);
-	MYSQL* (*mysql_real_connect_fn)(MYSQL*, const char*, const char*,
-			const char*, const char*, unsigned int, const char*, unsigned long);
+	MYSQL* (*mysql_real_connect_fn)(MYSQL*, const char*, const char*, const char*, const char*, unsigned int,
+			const char*, unsigned long);
 	int (*mysql_errno_fn)(MYSQL*);
 	int (*mysql_query_fn)(MYSQL*, const char*);
 	void (*mysql_close_fn)(MYSQL*);
@@ -53,8 +53,7 @@ static struct db_mysql_fns {
 	MYSQL_ROW (*mysql_fetch_row_fn)(MYSQL_RES*);
 	void (*mysql_free_result_fn)(MYSQL_RES*);
 	unsigned int (*mysql_warning_count_fn)(MYSQL*);
-	unsigned long (*mysql_real_escape_string_fn)(MYSQL *mysql, char *to,
-			const char *from, unsigned long length);
+	unsigned long (*mysql_real_escape_string_fn)(MYSQL *mysql, char *to, const char *from, unsigned long length);
 	void (*mysql_library_end_fn)();
 	long (*mysql_affected_rows_fn)(MYSQL*);
 } f;
@@ -67,19 +66,18 @@ static void *dl_handle;
 static void db_mysql_dlopen(void) {
 	csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
-	if (dl_handle == NULL
-			&& (dl_handle = dlopen(SO_FILE_ALT, RTLD_LAZY)) == NULL) {
+	if (dl_handle == NULL && (dl_handle = dlopen(SO_FILE_ALT, RTLD_LAZY)) == NULL) {
 		csync_fatal(
 				"Could not open " SO_FILE ": %s\nPlease install Mysql/Mariadb client library or use other database (sqlite, postgresql)\n",
 				dlerror());
 	}
 
-	csync_log(LOG_DEBUG, 3,
-			"Reading symbols from shared library " SO_FILE "\n");
+	csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
 
 	LOOKUP_SYMBOL(dl_handle, mysql_init, MYSQL* (*)(MYSQL*));
-	LOOKUP_SYMBOL(dl_handle, mysql_real_connect, MYSQL* (*)(MYSQL*, const char*, const char*,
-			const char*, const char*, unsigned int, const char*, unsigned long));
+	LOOKUP_SYMBOL(dl_handle, mysql_real_connect,
+			MYSQL* (*)(MYSQL*, const char*, const char*, const char*, const char*, unsigned int, const char*,
+					unsigned long));
 	LOOKUP_SYMBOL(dl_handle, mysql_errno, int (*)(MYSQL*));
 	LOOKUP_SYMBOL(dl_handle, mysql_query, int (*)(MYSQL*, const char*));
 	LOOKUP_SYMBOL(dl_handle, mysql_close, void (*)(MYSQL*));
@@ -89,14 +87,14 @@ static void db_mysql_dlopen(void) {
 	LOOKUP_SYMBOL(dl_handle, mysql_fetch_row, MYSQL_ROW (*)(MYSQL_RES*));
 	LOOKUP_SYMBOL(dl_handle, mysql_free_result, void (*)(MYSQL_RES*));
 	LOOKUP_SYMBOL(dl_handle, mysql_warning_count, unsigned int (*)(MYSQL*));
-	LOOKUP_SYMBOL(dl_handle, mysql_real_escape_string, unsigned long (*)(MYSQL *mysql, char *to,
-			const char *from, unsigned long length));
+	LOOKUP_SYMBOL(dl_handle, mysql_real_escape_string,
+			unsigned long (*)(MYSQL *mysql, char *to, const char *from, unsigned long length));
 	LOOKUP_SYMBOL(dl_handle, mysql_affected_rows, long (*)(MYSQL*));
 	//LOOKUP_SYMBOL(dl_handle, mysql_library_end);
 }
 
-int db_mysql_parse_url(char *url, char **host, char **user, char **pass,
-		char **database, unsigned int *port, char **unix_socket) {
+int db_mysql_parse_url(char *url, char **host, char **user, char **pass, char **database, unsigned int *port,
+		char **unix_socket) {
 	char *pos = strchr(url, '@');
 	if (pos) {
 		// Optional user/passwd
@@ -142,7 +140,7 @@ void db_mysql_close(db_conn_p conn) {
 		return;
 	if (!conn->private_data)
 		return;
-	f.mysql_close_fn( (MYSQL *) conn->private_data);
+	f.mysql_close_fn((MYSQL*) conn->private_data);
 	conn->private_data = 0;
 }
 
@@ -151,7 +149,7 @@ const char* db_mysql_errmsg(db_conn_p conn) {
 		return "(no connection)";
 	if (!conn->private_data)
 		return "(no private data in conn)";
-	return f.mysql_error_fn( (MYSQL *) conn->private_data);
+	return f.mysql_error_fn((MYSQL*) conn->private_data);
 }
 
 static void print_warnings(int level, MYSQL *m) {
@@ -169,13 +167,11 @@ static void print_warnings(int level, MYSQL *m) {
 
 	res = f.mysql_store_result_fn(m);
 	if (res == NULL)
-		csync_fatal(
-				"print_warnings: Failed to get result set for warning messages");
+		csync_fatal("print_warnings: Failed to get result set for warning messages");
 
 	fields = f.mysql_num_fields_fn(res);
 	if (fields < 2)
-		csync_fatal(
-				"print_warnings: Strange: show warnings result set has less than 2 rows");
+		csync_fatal("print_warnings: Strange: show warnings result set has less than 2 rows");
 
 	row = f.mysql_fetch_row_fn(res);
 
@@ -196,11 +192,11 @@ int db_mysql_exec(db_conn_p conn, const char *sql) {
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
-	rc = f.mysql_query_fn( (MYSQL *) conn->private_data, sql);
+	rc = f.mysql_query_fn((MYSQL*) conn->private_data, sql);
 	/* Treat warnings as errors. For example when a column is too short this should
 	 be an error. */
 
-	conn->affected_rows = f.mysql_affected_rows_fn((MYSQL *) conn->private_data);
+	conn->affected_rows = f.mysql_affected_rows_fn((MYSQL*) conn->private_data);
 
 	if (rc == 0) {
 		return DB_OK;
@@ -208,8 +204,8 @@ int db_mysql_exec(db_conn_p conn, const char *sql) {
 	if (rc == ER_LOCK_DEADLOCK) {
 		return DB_BUSY;
 	}
-	if (f.mysql_warning_count_fn((MYSQL *) conn->private_data) > 0) {
-		print_warnings(1, (MYSQL *) conn->private_data);
+	if (f.mysql_warning_count_fn((MYSQL*) conn->private_data) > 0) {
+		print_warnings(1, (MYSQL*) conn->private_data);
 		return DB_ERROR;
 	}
 	/* On error parse, create DB ERROR element */
@@ -217,8 +213,7 @@ int db_mysql_exec(db_conn_p conn, const char *sql) {
 	return rc > 0 ? -rc : rc;
 }
 
-int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
-		char **pptail) {
+int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, char **pptail) {
 	// unused
 	(void) pptail;
 
@@ -235,28 +230,27 @@ int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
 	}
 	db_stmt_p stmt = (db_stmt_p) malloc(sizeof(*stmt));
 	/* TODO avoid strlen, use configurable limit? */
-	rc = f.mysql_query_fn((MYSQL *) conn->private_data, sql);
+	rc = f.mysql_query_fn((MYSQL*) conn->private_data, sql);
 	(void) rc;
 	/* Treat warnings as errors. For example when a column is too short this should
 	 be an error. */
 
-	if (f.mysql_warning_count_fn((MYSQL *) conn->private_data) > 0) {
-		print_warnings(1, (MYSQL *) conn->private_data);
+	if (f.mysql_warning_count_fn((MYSQL*) conn->private_data) > 0) {
+		print_warnings(1, (MYSQL*) conn->private_data);
 		return DB_ERROR;
 	}
 
-	MYSQL_RES *mysql_stmt = f.mysql_store_result_fn((MYSQL *) conn->private_data);
+	MYSQL_RES *mysql_stmt = f.mysql_store_result_fn((MYSQL*) conn->private_data);
 	if (mysql_stmt == NULL) {
-		csync_error(2, "Error in mysql_store_result: %s",
-				f.mysql_error_fn((MYSQL *) conn->private_data));
+		csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn((MYSQL* ) conn->private_data));
 		return DB_ERROR;
 	}
 
 	/* Treat warnings as errors. For example when a column is too short this should
 	 be an error. */
 
-	if (f.mysql_warning_count_fn((MYSQL *) conn->private_data) > 0) {
-		print_warnings(1, (MYSQL *) conn->private_data);
+	if (f.mysql_warning_count_fn((MYSQL*) conn->private_data) > 0) {
+		print_warnings(1, (MYSQL*) conn->private_data);
 		return DB_ERROR;
 	}
 
@@ -297,7 +291,7 @@ int db_mysql_stmt_get_column_int(db_stmt_p stmt, int column) {
 }
 
 int db_mysql_stmt_next(db_stmt_p stmt) {
-	MYSQL_RES *mysql_stmt = (MYSQL_RES *) stmt->private_data;
+	MYSQL_RES *mysql_stmt = (MYSQL_RES*) stmt->private_data;
 	stmt->private2 = f.mysql_fetch_row_fn(mysql_stmt);
 	/* error mapping */
 	if (stmt->private2)
@@ -306,32 +300,27 @@ int db_mysql_stmt_next(db_stmt_p stmt) {
 }
 
 int db_mysql_stmt_close(db_stmt_p stmt) {
-	MYSQL_RES *mysql_stmt = (MYSQL_RES *) stmt->private_data;
+	MYSQL_RES *mysql_stmt = (MYSQL_RES*) stmt->private_data;
 	f.mysql_free_result_fn(mysql_stmt);
 	free(stmt);
 	return DB_OK;
 }
 
 unsigned long long fstat_dev(struct stat *file_stat);
-int db_mysql_replace_file(db_conn_p db, filename_p encoded,
-		const char *checktxt_encoded, struct stat *file_stat,
+int db_mysql_replace_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 		const char *digest) {
 	BUF_P buf = buffer_init();
 	char *digest_quote = buffer_quote(buf, digest);
-	int count =
-			SQL(db, "Add or update file entry",
-					"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
-							"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON DUPLICATE KEY UPDATE "
-							"checktxt = '%s', device = %lu, inode = %llu, "
-							"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u",
-					myhostname, encoded, checktxt_encoded, fstat_dev(file_stat),
-					file_stat->st_ino, digest_quote, file_stat->st_mode,
-					file_stat->st_size, file_stat->st_mtime,
-					get_file_type(file_stat->st_mode),
-					// SET
-					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino,
-					digest_quote, file_stat->st_mode, file_stat->st_size,
-					file_stat->st_mtime, get_file_type(file_stat->st_mode));
+	int count = SQL(db, "Add or update file entry",
+			"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+					"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON DUPLICATE KEY UPDATE "
+					"checktxt = '%s', device = %lu, inode = %llu, "
+					"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", myhostname, encoded, checktxt_encoded,
+			fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode, file_stat->st_size,
+			file_stat->st_mtime, get_file_type(file_stat->st_mode),
+			// SET
+			checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
+			file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
 	buffer_destroy(buf);
 	return count;
 }
@@ -339,8 +328,7 @@ int db_mysql_replace_file(db_conn_p db, filename_p encoded,
 #define FILE_LENGTH 250
 #define HOST_LENGTH  50
 int db_mysql_upgrade_to_schema(db_conn_p conn, int version) {
-	csync_log(LOG_DEBUG, 2, "Upgrading database schema to version %d.\n",
-			version);
+	csync_log(LOG_DEBUG, 2, "Upgrading database schema to version %d.\n", version);
 
 	/* We want proper logging, so use the csync sql function instead
 	 * of that from the database layer.
@@ -431,8 +419,7 @@ const char* db_mysql_escape(db_conn_p conn, const char *string) {
 
 	size_t length = strlen(string);
 	char *escaped_buffer = ringbuffer_malloc(2 * length + 1);
-	f.mysql_real_escape_string_fn((MYSQL *) conn->private_data, escaped_buffer, string,
-			length);
+	f.mysql_real_escape_string_fn((MYSQL*) conn->private_data, escaped_buffer, string, length);
 	return escaped_buffer;
 }
 
@@ -447,37 +434,30 @@ int db_mysql_open(const char *file, db_conn_p *conn_p) {
 	char *create_database_statement = 0;
 
 	strcpy(db_url, file);
-	int rc = db_mysql_parse_url(db_url, &host, &user, &pass, &database, &port,
-			&unix_socket);
+	int rc = db_mysql_parse_url(db_url, &host, &user, &pass, &database, &port, &unix_socket);
 	if (rc != DB_OK) {
 		return rc;
 	}
 
-	if (f.mysql_real_connect_fn(db, host, user, pass, database, port,
-			unix_socket, CLIENT_FOUND_ROWS) == NULL) {
+	if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, CLIENT_FOUND_ROWS) == NULL) {
 		if (f.mysql_errno_fn(db) == ER_BAD_DB_ERROR) {
-			if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port,
-					unix_socket, 0) != NULL) {
-				ASPRINTF(&create_database_statement, "create database %s",
-						database);
+			if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
+				ASPRINTF(&create_database_statement, "create database %s", database);
 
 				csync_log(LOG_DEBUG, 2, "creating database %s\n", database);
 				if (f.mysql_query_fn(db, create_database_statement) != 0)
-					csync_fatal("Cannot create database %s: Error: %s\n",
-							database, f.mysql_error_fn(db));
+					csync_fatal("Cannot create database %s: Error: %s\n", database, f.mysql_error_fn(db));
 				free(create_database_statement);
 
 				f.mysql_close_fn(db);
 				db = f.mysql_init_fn(0);
 
-				if (f.mysql_real_connect_fn(db, host, user, pass, database,
-						port, unix_socket, 0) == NULL)
+				if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL)
 					goto fatal;
 			}
 		} else
 			fatal:
-			csync_fatal("Failed to connect to database: Error: %s\n",
-					f.mysql_error_fn(db));
+			csync_fatal("Failed to connect to database: Error: %s\n", f.mysql_error_fn(db));
 	}
 	const char *encoding = mysql_character_set_name(db);
 	csync_log(LOG_DEBUG, 2, "Default encoding %s\n", encoding);

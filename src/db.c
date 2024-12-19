@@ -108,9 +108,8 @@ void csync_db_maycommit(db_conn_p db) {
 	if (wait_length && (now - last_wait_cycle) > 10) {
 		SQL(db, "COMMIT", "COMMIT ");
 		if (wait_length) {
-			csync_info(2,
-					"Waiting %d secs so others can lock the database (%d - %d)...\n",
-					wait_length, (int )now, (int )last_wait_cycle);
+			csync_info(2, "Waiting %d secs so others can lock the database (%d - %d)...\n", wait_length, (int )now,
+					(int )last_wait_cycle);
 			sleep(wait_length);
 		}
 		last_wait_cycle = 0;
@@ -147,9 +146,8 @@ db_conn_p csync_db_open(const char *file) {
 
 	if (db_schema_version(global_db) < DB_SCHEMA_VERSION)
 		if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) == DB_SCHEMA_VERSION)
-			csync_fatal(
-					"Cannot create database tables (version requested = %d): %s\n",
-					DB_SCHEMA_VERSION, db_errmsg(global_db));
+			csync_fatal("Cannot create database tables (version requested = %d): %s\n", DB_SCHEMA_VERSION,
+					db_errmsg(global_db));
 
 	if (!db_sync_mode)
 		db_exec(db, "PRAGMA synchronous = OFF");
@@ -196,14 +194,12 @@ long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...) {
 			db = 0;
 			csync_fatal(DEADLOCK_MESSAGE);
 		}
-		csync_warn(1, "Database is busy, sleeping before retry of SQL: '%s'\n",
-				sql);
+		csync_warn(1, "Database is busy, sleeping before retry of SQL: '%s'\n", sql);
 		sleep(1);
 	}
 	long count = 0;
 	if (rc != DB_OK && err) {
-		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc,
-				db_errmsg(db), sql);
+		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
 	}
 	else {
 		if (rc == DB_OK)
@@ -244,8 +240,7 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 	}
 
 	if (rc != DB_OK && err)
-		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc,
-				db_errmsg(db), sql);
+		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
 	free(sql);
 
 	return stmt;
@@ -259,8 +254,7 @@ int csync_db_get_column_int(void *stmt, int column) {
 	return db_stmt_get_column_int((db_stmt_p) stmt, column);
 }
 
-int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue,
-		const char ***pazColName) {
+int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue, const char ***pazColName) {
 	// unused
 	(void) pN;
 	(void) pazValue;
@@ -284,8 +278,7 @@ int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue,
 	}
 
 	if (rc != DB_OK && rc != DB_ROW && rc != DB_DONE && err) {
-		csync_fatal("Database Error: %s [%d]: %s\n", err, rc,
-				db_errmsg(global_db));
+		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(global_db));
 	}
 
 	return rc == DB_ROW;
@@ -332,8 +325,7 @@ void csync_db_fin(void *vmx, const char *err) {
 	}
 
 	if (rc != DB_OK && err)
-		csync_fatal("Database Error: %s [%d]: %s\n", err, rc,
-				db_errmsg(global_db));
+		csync_fatal("Database Error: %s [%d]: %s\n", err, rc, db_errmsg(global_db));
 
 	csync_db_maycommit(global_db);
 	in_sql_query--;
@@ -353,8 +345,7 @@ char* db_default_database(const char *dbdir, const char *myhostname, const char 
 
 #if defined(HAVE_SQLITE3)
 	if (cfg_name[0] != '\0')
-		ASPRINTF(&db, "sqlite3://%s/%s_%s" DBEXTENSION, dbdir, myhostname,
-				cfgname);
+		ASPRINTF(&db, "sqlite3://%s/%s_%s" DBEXTENSION, dbdir, myhostname, cfgname);
 	else
 		ASPRINTF(&db, "sqlite3://%s/%s" DBEXTENSION, dbdir, myhostname);
 #elif defined(HAVE_SQLITE)

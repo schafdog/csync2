@@ -575,45 +575,30 @@ struct csync_command {
 struct csync_command cmdtab[] = {
 /*      command,   perm,
  * 					  dirty,
-                         unlink,
-                            update,
- 	 	 	 	 	 	     need_ident,
- 	 	 	 	 	 	 	 	 	   action
+ unlink,
+ update,
+ need_ident,
+ action
  */
-		{ "sig",    DO_PERM, 0, 0, NOP, YES, A_SIG },
-		{ "mark",   DO_PERM, 0, 0, NOP, YES, A_MARK },
-		{ "type",   COMPARE_MODE, 0, 0, NOP, YES, A_TYPE },
-		{ "gettm",  DO_PERM, 0, 0, NOP, YES, A_GETTM },
-		{ "getsz",  DO_PERM, 0, 0, NOP, YES, A_GETSZ },
-		{ "flush",  DO_PERM, 1, 0, NOP, YES, A_FLUSH },
-		{ "del",    DO_PERM, 1, 0, UPD, YES, A_DEL },
-		{ "patch",  DO_PERM, 1, S_IFREG, UPD, YES, A_PATCH },
-		{ "create", DO_PERM, 1, S_IFREG, UPD, YES, A_CREATE },
-		{ "mkdir",  DO_PERM, 1, S_IFDIR, UPD, YES, A_MKDIR },
-		{ "moddir", DO_PERM, 1, S_IFDIR, UPD, YES, A_MKDIR },
-		{ "mod",    DO_PERM, 1, 0, UPD, YES, A_MOD },
+{ "sig", DO_PERM, 0, 0, NOP, YES, A_SIG }, { "mark", DO_PERM, 0, 0, NOP, YES, A_MARK }, { "type", COMPARE_MODE, 0, 0,
+		NOP, YES, A_TYPE }, { "gettm", DO_PERM, 0, 0, NOP, YES, A_GETTM },
+		{ "getsz", DO_PERM, 0, 0, NOP, YES, A_GETSZ }, { "flush", DO_PERM, 1, 0, NOP, YES, A_FLUSH }, { "del", DO_PERM,
+				1, 0, UPD, YES, A_DEL }, { "patch", DO_PERM, 1, S_IFREG, UPD, YES, A_PATCH }, { "create", DO_PERM, 1,
+				S_IFREG, UPD, YES, A_CREATE }, { "mkdir", DO_PERM, 1, S_IFDIR, UPD, YES, A_MKDIR }, { "moddir", DO_PERM,
+				1, S_IFDIR, UPD, YES, A_MKDIR }, { "mod", DO_PERM, 1, 0, UPD, YES, A_MOD },
 		// TODO add/use  mod operations for these
-		{ "mkchr",  DO_PERM, 1, -1, UPD, YES, A_MKCHR },
-		{ "mkblk",  DO_PERM, 1, -1, UPD, YES, A_MKBLK },
-		{ "mkfifo", DO_PERM, 1, -1, UPD,YES, A_MKFIFO },
-		{ "mklink", DO_PERM, 1, S_IFLNK, UPD, YES, A_MKLINK },
-		{ "mkhardlink", DO_PERM, 1, 0, UPD, YES, A_MKHLINK },
-		{ "mksock", DO_PERM, 1, S_IFSOCK, UPD, YES, A_MKSOCK },
-		{ "mv",     DO_PERM, 0, 0, UPD, YES, A_MV },
-		{ "setown", DO_PERM, 1, 0, UPD, YES, A_SETOWN },
-		{ "setmod", DO_PERM, 1, 0, NOLOG, YES, A_SETMOD },
-		{ "setime", DO_PERM, 0, 0, NOLOG, YES, A_SETTIME },
-		{ "settime",DO_PERM, 0, 0, NOLOG, YES, A_SETTIME },
-		{ "list",   NO_PERM, 0, 0, NOP, YES, A_LIST },
+		{ "mkchr", DO_PERM, 1, -1, UPD, YES, A_MKCHR }, { "mkblk", DO_PERM, 1, -1, UPD, YES, A_MKBLK }, { "mkfifo",
+				DO_PERM, 1, -1, UPD, YES, A_MKFIFO }, { "mklink", DO_PERM, 1, S_IFLNK, UPD, YES, A_MKLINK }, {
+				"mkhardlink", DO_PERM, 1, 0, UPD, YES, A_MKHLINK },
+		{ "mksock", DO_PERM, 1, S_IFSOCK, UPD, YES, A_MKSOCK }, { "mv", DO_PERM, 0, 0, UPD, YES, A_MV }, { "setown",
+				DO_PERM, 1, 0, UPD, YES, A_SETOWN }, { "setmod", DO_PERM, 1, 0, NOLOG, YES, A_SETMOD }, { "setime",
+				DO_PERM, 0, 0, NOLOG, YES, A_SETTIME }, { "settime", DO_PERM, 0, 0, NOLOG, YES, A_SETTIME }, { "list",
+				NO_PERM, 0, 0, NOP, YES, A_LIST },
 #if 1
-		{ "debug",  NO_PERM, 0, 0, NOP, NO, A_DEBUG },
+		{ "debug", NO_PERM, 0, 0, NOP, NO, A_DEBUG },
 #endif
-		{ "group",  NO_PERM, 0, 0, NOP, NO, A_GROUP },
-		{ "ping",   NO_PERM, 0, 0, NOP, NO, A_PING },
-		{ "hello",  NO_PERM, 0, 0, NOP, NO, A_HELLO },
-		{ "bye",    NO_PERM, 0, 0, NOP, NO, A_BYE },
-		{ 0,        NO_PERM, 0, 0, NOP, NO, A_BYE }
-};
+		{ "group", NO_PERM, 0, 0, NOP, NO, A_GROUP }, { "ping", NO_PERM, 0, 0, NOP, NO, A_PING }, { "hello", NO_PERM, 0,
+				0, NOP, NO, A_HELLO }, { "bye", NO_PERM, 0, 0, NOP, NO, A_BYE }, { 0, NO_PERM, 0, 0, NOP, NO, A_BYE } };
 
 /*
  * Loops (to cater for multihomed peers) through the address list returned by
@@ -731,7 +716,7 @@ static int setup_tag(const char *tag[32], char *line) {
 static void destroy_tag(const char *tag[32]) {
 	int i = 0;
 	for (i = 0; i < 32; i++)
-		free((char *) tag[i]);
+		free((char*) tag[i]);
 }
 
 int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error);
@@ -847,7 +832,8 @@ int csync_daemon_check_identify(int conn, struct csync_command *cmd, peername_p 
 	return 0;
 }
 
-const char* csync_daemon_check_perm(db_conn_p db, struct csync_command *cmd, char *filename, char *peername, const char *key) {
+const char* csync_daemon_check_perm(db_conn_p db, struct csync_command *cmd, char *filename, char *peername,
+		const char *key) {
 	const char *cmd_error = 0;
 	on_cygwin_lowercase(filename);
 

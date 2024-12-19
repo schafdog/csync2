@@ -24,8 +24,7 @@ int db_sqlite_open(const char *file, db_conn_p *db);
 int db_mysql_open(const char *file, db_conn_p *db);
 
 int db_detect_type(const char **db_str, int type) {
-	const char *db_types[] = { "mysql://", "sqlite3://", "sqlite2://",
-			"pgsql://", 0 };
+	const char *db_types[] = { "mysql://", "sqlite3://", "sqlite2://", "pgsql://", 0 };
 	int types[] = { DB_MYSQL, DB_SQLITE3, DB_SQLITE2, DB_PGSQL };
 	int index;
 	for (index = 0; 1; index++) {
@@ -93,8 +92,7 @@ int db_open(const char *file, int type, db_conn_p *db) {
 	return rc;
 }
 
-void db_set_logger(db_conn_p conn,
-		void (*logger)(int priority, int lv, const char *fmt, ...)) {
+void db_set_logger(db_conn_p conn, void (*logger)(int priority, int lv, const char *fmt, ...)) {
 	if (conn == NULL)
 		csync_fatal("No connection in set_logger.\n");
 
@@ -119,8 +117,7 @@ const char* db_escape(db_conn_p conn, const char *string) {
 		return string;
 	if (conn && conn->escape)
 		return conn->escape(conn, string);
-	csync_error(0, "No Connection (%p) or escape method configured.", conn,
-			(conn ? conn->escape : 0));
+	csync_error(0, "No Connection (%p) or escape method configured.", conn, (conn ? conn->escape : 0));
 	return string;
 }
 
@@ -132,13 +129,11 @@ int db_exec(db_conn_p conn, const char *sql) {
 	return DB_ERROR;
 }
 
-int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt,
-		char **pptail) {
+int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt, char **pptail) {
 	if (conn && conn->prepare)
 		return conn->prepare(conn, sql, stmt, pptail);
 
-	csync_error(0, "No prepare function in db_prepare_stmt %p %p %s.\n", conn,
-			(conn ? conn->prepare : NULL), sql);
+	csync_error(0, "No prepare function in db_prepare_stmt %p %p %s.\n", conn, (conn ? conn->prepare : NULL), sql);
 	return DB_ERROR;
 }
 

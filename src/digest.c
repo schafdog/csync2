@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include "digest.h"
 
-int dsync_digest(int file, const char *digest_name, unsigned char *md_value,
-		unsigned int *md_len) {
+int dsync_digest(int file, const char *digest_name, unsigned char *md_value, unsigned int *md_len) {
 	EVP_MD_CTX *mdctx;
 	const EVP_MD *md;
 
@@ -33,15 +32,13 @@ int dsync_digest(int file, const char *digest_name, unsigned char *md_value,
 	return 0;
 }
 
-void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len,
-		char *digest_str) {
+void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *digest_str) {
 	for (unsigned int i = 0; i < md_len; i++) {
 		sprintf(digest_str + 2 * i, "%02x", md_value[i]);
 	}
 }
 
-int dsync_digest_path_hex(const char *filename, const char *digest_name,
-		char *digest_str, unsigned int size) {
+int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, unsigned int size) {
 	int fileno = open(filename, O_RDONLY);
 	if (fileno < 0)
 		return fileno;
