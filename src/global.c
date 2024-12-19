@@ -1,4 +1,6 @@
-
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ */
 #include "csync2.h"
 
 int csync_error_count = 0;

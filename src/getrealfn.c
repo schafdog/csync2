@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>
@@ -25,8 +25,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-static char *my_get_current_dir_name()
-{
+static char* my_get_current_dir_name() {
 #if defined __CYGWIN__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __NetBSD__ || defined __DARWIN_C_LEVEL
 	char *r = malloc(1024);
 	if (!getcwd(r, 1024))
@@ -40,8 +39,7 @@ static char *my_get_current_dir_name()
 /*
  * glibc's realpath() is broken - so don't use it!
  */
-char *getrealfn(filename_p filename)
-{
+char* getrealfn(filename_p filename) {
 	char *st_mark = 0;
 	struct stat st;
 	char *tempfn;
@@ -50,7 +48,7 @@ char *getrealfn(filename_p filename)
 	tempfn = strdup(filename);
 
 	/* make the path absolute */
-	if ( *tempfn != '/' ) {
+	if (*tempfn != '/') {
 		char *t2, *t1 = my_get_current_dir_name();
 
 		ASPRINTF(&t2, "%s/%s", t1, tempfn);
@@ -62,25 +60,27 @@ char *getrealfn(filename_p filename)
 	/* remove leading slashes from tempfn */
 	{
 		char *tmp = tempfn + strlen(tempfn) - 1;
-		while (tmp > tempfn && *tmp == '/') *(tmp--)=0;
+		while (tmp > tempfn && *tmp == '/')
+			*(tmp--) = 0;
 	}
 
 	/* get rid of the .. and // entries */
 	{
 		char *source = tempfn, *target = tempfn;
 		for (; *source; source++) {
-			if ( *source == '/' ) {
-				if ( *(source+1) == '/' ) continue;
-				if ( !strncmp(source, "/../", 4) ||
-						!strcmp(source, "/..") ) {
+			if (*source == '/') {
+				if (*(source + 1) == '/')
+					continue;
+				if (!strncmp(source, "/../", 4) || !strcmp(source, "/..")) {
 					while (1) {
-					    if ( target == tempfn ) break;
-					    if ( *(--target) == '/' ) break;
+						if (target == tempfn)
+							break;
+						if (*(--target) == '/')
+							break;
 					}
 					source += 2;
 					continue;
-				} else
-				if ( !strncmp(source, "/./", 3) ) {
+				} else if (!strncmp(source, "/./", 3)) {
 					source += 2;
 				}
 			}
@@ -90,7 +90,7 @@ char *getrealfn(filename_p filename)
 	}
 
 	/* this case is trivial */
-	if ( !strcmp(tempfn, "/") )
+	if (!strcmp(tempfn, "/"))
 		goto return_filename;
 
 	/* find the last stat-able directory element, but don't use the */
@@ -98,35 +98,41 @@ char *getrealfn(filename_p filename)
 	do {
 		char *tmp = st_mark;
 		st_mark = strrchr(tempfn, '/');
-		if ( tmp ) *tmp = '/';
-		assert( st_mark != 0 );
-		if ( st_mark == tempfn ) goto return_filename;
+		if (tmp)
+			*tmp = '/';
+		assert(st_mark != 0);
+		if (st_mark == tempfn)
+			goto return_filename;
 		*st_mark = 0;
-	} while ( stat(tempfn, &st) || !S_ISDIR(st.st_mode) );
+	} while (stat(tempfn, &st) || !S_ISDIR(st.st_mode));
 
 	/* ok - this might be ugly, but who cares .. */
 	{
 		char *oldpwd = my_get_current_dir_name();
-		if ( !chdir(tempfn) ) {
+		if (!chdir(tempfn)) {
 			char *t2, *t1 = my_get_current_dir_name();
-			if ( st_mark ) {
-				ASPRINTF(&t2, "%s/%s", t1, st_mark+1);
-				free(tempfn); free(t1); tempfn = t2;
+			if (st_mark) {
+				ASPRINTF(&t2, "%s/%s", t1, st_mark + 1);
+				free(tempfn);
+				free(t1);
+				tempfn = t2;
 			} else {
-				free(tempfn); tempfn = t1;
+				free(tempfn);
+				tempfn = t1;
 			}
 			chdir(oldpwd);
-		} else
-			if ( st_mark ) *st_mark = '/';
+		} else if (st_mark)
+			*st_mark = '/';
 	}
 
-return_filename:
+	return_filename:
 	/* remove a possible "/." from the end */
 	{
 		int len = strlen(tempfn);
-		if ( len >= 2 && !strcmp(tempfn+len-2, "/.") ) {
-			if (len == 2) len++;
-			*(tempfn+len-2) = 0;
+		if (len >= 2 && !strcmp(tempfn + len - 2, "/.")) {
+			if (len == 2)
+				len++;
+			*(tempfn + len - 2) = 0;
 		}
 	}
 

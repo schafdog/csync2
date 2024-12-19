@@ -1,3 +1,6 @@
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -10,13 +13,11 @@
 
 #include "resolv.h"
 
-const char *csync_inet_ntop(address_t *addr, char *buf, size_t size)
-{
+const char* csync_inet_ntop(address_t *addr, char *buf, size_t size) {
 	sa_family_t af = addr->sa.sa_family;
 	return inet_ntop(af,
-			 af == AF_INET  ? (void*)&addr->sa_in.sin_addr :
-			 af == AF_INET6 ? (void*)&addr->sa_in6.sin6_addr : NULL,
-			 buf, size);
+			af == AF_INET ? (void*) &addr->sa_in.sin_addr : af == AF_INET6 ? (void*) &addr->sa_in6.sin6_addr : NULL,
+			buf, size);
 }
 
 #ifdef RESOLV_STANDALONE

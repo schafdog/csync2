@@ -1,3 +1,7 @@
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -5,58 +9,54 @@
 #include <stdio.h>
 #include "digest.h"
 
-int dsync_digest(int file, const char *digest_name, unsigned char *md_value, unsigned int *md_len) 
-{
-  EVP_MD_CTX *mdctx;
-  const EVP_MD *md;
+int dsync_digest(int file, const char *digest_name, unsigned char *md_value, unsigned int *md_len) {
+	EVP_MD_CTX *mdctx;
+	const EVP_MD *md;
 
-  OpenSSL_add_all_digests();
+	OpenSSL_add_all_digests();
 
-  md = EVP_get_digestbyname(digest_name);
-  
-  if(!md) {
-    printf("Unknown message digest %s\n", digest_name);
-    return 1;
-  }
+	md = EVP_get_digestbyname(digest_name);
 
-  mdctx = EVP_MD_CTX_create();
-  EVP_DigestInit_ex(mdctx, md, NULL);
-  char buffer[4096];
-  ssize_t n;
-  while ((n = read(file, buffer, 4096)) > 0) {
-    EVP_DigestUpdate(mdctx, buffer, n);
-  }
-  EVP_DigestFinal_ex(mdctx, md_value, md_len);
+	if (!md) {
+		printf("Unknown message digest %s\n", digest_name);
+		return 1;
+	}
 
-  EVP_MD_CTX_destroy(mdctx);
+	mdctx = EVP_MD_CTX_create();
+	EVP_DigestInit_ex(mdctx, md, NULL);
+	char buffer[4096];
+	ssize_t n;
+	while ((n = read(file, buffer, 4096)) > 0) {
+		EVP_DigestUpdate(mdctx, buffer, n);
+	}
+	EVP_DigestFinal_ex(mdctx, md_value, md_len);
 
-  return 0;
+	EVP_MD_CTX_destroy(mdctx);
+
+	return 0;
 }
 
-void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *digest_str)
-{
-  for (unsigned int i = 0; i < md_len; i++) {
-    sprintf(digest_str+2*i, "%02x", md_value[i]);
-  }
+void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *digest_str) {
+	for (unsigned int i = 0; i < md_len; i++) {
+		sprintf(digest_str + 2 * i, "%02x", md_value[i]);
+	}
 }
-
 
 int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, unsigned int size) {
-  int fileno = open(filename, O_RDONLY);
-  if (fileno < 0)
-    return fileno;
-  unsigned char md_value[EVP_MAX_MD_SIZE];
-  unsigned int md_len = 0;
-  int rc = dsync_digest(fileno, digest_name, md_value, &md_len);
-  close(fileno);
-  if (rc)
-    return rc;
-  if (size < 2*md_len+1)
-    return -1;
-  dsync_digest_hex(md_value, md_len, digest_str);
-  return 0;
+	int fileno = open(filename, O_RDONLY);
+	if (fileno < 0)
+		return fileno;
+	unsigned char md_value[EVP_MAX_MD_SIZE];
+	unsigned int md_len = 0;
+	int rc = dsync_digest(fileno, digest_name, md_value, &md_len);
+	close(fileno);
+	if (rc)
+		return rc;
+	if (size < 2 * md_len + 1)
+		return -1;
+	dsync_digest_hex(md_value, md_len, digest_str);
+	return 0;
 }
-
 
 #ifdef DIGEST_STANDALONE
 int main(int argc, char *argv[])

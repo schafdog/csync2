@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>
@@ -35,36 +35,33 @@ int csync_messages_printed = 0;
 
 time_t csync_startup_time = 0;
 
-void csync_printtime()
-{
-  if (csync_timestamps || csync_timestamp_out) {
-      time_t now = time(0);
-      char ftbuffer[128];
+void csync_printtime() {
+	if (csync_timestamps || csync_timestamp_out) {
+		time_t now = time(0);
+		char ftbuffer[128];
 
-      if (!csync_startup_time)
-	csync_startup_time = now;
+		if (!csync_startup_time)
+			csync_startup_time = now;
 
-      if (csync_last_printtime+300 < now) {
-	csync_last_printtime = now;
+		if (csync_last_printtime + 300 < now) {
+			csync_last_printtime = now;
 
-	strftime(ftbuffer, 128, "%Y-%m-%d %H:%M:%S %Z (GMT%z)", localtime(&now));
+			strftime(ftbuffer, 128, "%Y-%m-%d %H:%M:%S %Z (GMT%z)", localtime(&now));
 
-	if (csync_timestamp_out)
-	  fprintf(csync_timestamp_out, "<%d> TIMESTAMP: %s\n", (int)getpid(), ftbuffer);
+			if (csync_timestamp_out)
+				fprintf(csync_timestamp_out, "<%d> TIMESTAMP: %s\n", (int) getpid(), ftbuffer);
 
-	if (csync_timestamps) {
-	  if (csync_server_child_pid)
-	    fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
-	  fprintf(csync_out_debug, "TIMESTAMP: %s\n", ftbuffer);
+			if (csync_timestamps) {
+				if (csync_server_child_pid)
+					fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
+				fprintf(csync_out_debug, "TIMESTAMP: %s\n", ftbuffer);
+			}
+		}
 	}
-      }
-    }
 }
 
-void csync_printtotaltime()
-{
-	if (csync_timestamps || csync_timestamp_out)
-	{
+void csync_printtotaltime() {
+	if (csync_timestamps || csync_timestamp_out) {
 		time_t now = time(0);
 		int seconds = now - csync_startup_time;
 
@@ -72,74 +69,62 @@ void csync_printtotaltime()
 		csync_printtime();
 
 		if (csync_timestamp_out)
-			fprintf(csync_timestamp_out, "<%d> TOTALTIME: %d:%02d:%02d\n",
-				(int)getpid(), seconds / (60*60), (seconds/60) % 60, seconds % 60);
+			fprintf(csync_timestamp_out, "<%d> TOTALTIME: %d:%02d:%02d\n", (int) getpid(), seconds / (60 * 60),
+					(seconds / 60) % 60, seconds % 60);
 
 		if (csync_timestamps) {
 			if (csync_server_child_pid)
 				fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
-			fprintf(csync_out_debug, "TOTALTIME: %d:%02d:%02d\n",
-				seconds / (60*60), (seconds/60) % 60, seconds % 60);
+			fprintf(csync_out_debug, "TOTALTIME: %d:%02d:%02d\n", seconds / (60 * 60), (seconds / 60) % 60,
+					seconds % 60);
 		}
 	}
 }
 
-void csync_printtime_prefix()
-{
+void csync_printtime_prefix() {
 	time_t now = time(0);
 	char ftbuffer[32];
 	strftime(ftbuffer, 32, "%H:%M:%S", localtime(&now));
 	fprintf(csync_out_debug, "[%s] ", ftbuffer);
 }
 
-char *syslog_prio[] = { 
-    "EMERG ",
-    "ALERT ",
-    "CRIT  ",
-    "ERROR ",
-    "WARN  ",
-    "NOTICE",
-    "INFO  ",
-    "DEBUG "
-};
+char *syslog_prio[] = { "EMERG ", "ALERT ", "CRIT  ", "ERROR ", "WARN  ", "NOTICE", "INFO  ", "DEBUG " };
 
-void csync_log(int priority, int lv, const char *fmt, ...)
-{
+void csync_log(int priority, int lv, const char *fmt, ...) {
 	va_list ap;
-	if ( csync_level_debug < lv )
-	   return;
+	if (csync_level_debug < lv)
+		return;
 	sigset_t x, old;
- 	sigemptyset (&x);
+	sigemptyset(&x);
 	sigaddset(&x, SIGUSR1);
 	sigprocmask(SIG_BLOCK, &x, &old);
 	if (!csync_syslog) {
-	  csync_printtime();
-	
-	  if (csync_timestamps)
-	    csync_printtime_prefix();
+		csync_printtime();
 
-	  if ( csync_server_child_pid )
-	    fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
+		if (csync_timestamps)
+			csync_printtime_prefix();
 
-	  /*
-	  if (LOG_EMERG <= priority && priority <= LOG_DEBUG)
-	      fprintf(csync_out_debug, " %s ", syslog_prio[priority]);
-	  else
-	      fprintf(csync_out_debug, "%d: ", priority);
-	  */
-	  va_start(ap, fmt);
-	  vfprintf(csync_out_debug, fmt, ap);
-	  va_end(ap);
-	}
-	else {
-	  va_start(ap,fmt);
-	  vsyslog(priority, fmt, ap);
-	  va_end(ap);
+		if (csync_server_child_pid)
+			fprintf(csync_out_debug, "<%d> ", csync_server_child_pid);
+
+		/*
+		 if (LOG_EMERG <= priority && priority <= LOG_DEBUG)
+		 fprintf(csync_out_debug, " %s ", syslog_prio[priority]);
+		 else
+		 fprintf(csync_out_debug, "%d: ", priority);
+		 */
+		va_start(ap, fmt);
+		vfprintf(csync_out_debug, fmt, ap);
+		va_end(ap);
+	} else {
+		va_start(ap, fmt);
+		vsyslog(priority, fmt, ap);
+		va_end(ap);
 	}
 	csync_messages_printed++;
 	sigprocmask(SIG_SETMASK, &old, NULL);
 	if (lv < 0)
-	  exit(1);
+		exit(1);
 }
 
 /* Test 3 */

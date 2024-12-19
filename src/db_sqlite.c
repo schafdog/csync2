@@ -1,4 +1,4 @@
-/*
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>>
  *  Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>
  *
@@ -42,10 +42,8 @@ static struct db_sqlite3_fns {
 	int (*sqlite3_open_fn)(const char*, sqlite3**);
 	int (*sqlite3_close_fn)(sqlite3*);
 	const char* (*sqlite3_errmsg_fn)(sqlite3*);
-	int (*sqlite3_exec_fn)(sqlite3*, const char*,
-			int (*)(void*, int, char**, char**), void*, char**);
-	int (*sqlite3_prepare_v2_fn)(sqlite3*, const char*, int, sqlite3_stmt**,
-			const char **pzTail);
+	int (*sqlite3_exec_fn)(sqlite3*, const char*, int (*)(void*, int, char**, char**), void*, char**);
+	int (*sqlite3_prepare_v2_fn)(sqlite3*, const char*, int, sqlite3_stmt**, const char **pzTail);
 	const unsigned char* (*sqlite3_column_text_fn)(sqlite3_stmt*, int);
 	const void* (*sqlite3_column_blob_fn)(sqlite3_stmt*, int);
 	int (*sqlite3_column_int_fn)(sqlite3_stmt*, int);
@@ -68,8 +66,7 @@ static void db_sqlite3_dlopen(void) {
 				"Could not open %s: %s\nPlease install sqlite3 client library (libsqlite3) or use other database (postgres, mysql)\n",
 				SO_FILE, dlerror());
 	}
-	csync_log(LOG_DEBUG, 3,
-			"Reading symbols from shared library " SO_FILE "\n");
+	csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
 
 	LOOKUP_SYMBOL(dl_handle, sqlite3_open);
 	LOOKUP_SYMBOL(dl_handle, sqlite3_close);
@@ -86,7 +83,7 @@ static void db_sqlite3_dlopen(void) {
 }
 
 static int sqlite_errors[] = { SQLITE_OK, SQLITE_ERROR, SQLITE_BUSY, SQLITE_ROW,
-		SQLITE_DONE, -1 };
+SQLITE_DONE, -1 };
 static int db_errors[] = { DB_OK, DB_ERROR, DB_BUSY, DB_ROW, DB_DONE, -1 };
 
 int db_sqlite_error_map(int sqlite_err) {
@@ -155,8 +152,7 @@ int db_sqlite_exec(db_conn_p conn, const char *sql) {
 	return db_sqlite_error_map(rc);
 }
 
-int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
-		char **pptail) {
+int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, char **pptail) {
 	int rc;
 
 	*stmt_p = NULL;
@@ -171,8 +167,7 @@ int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
 	db_stmt_p stmt = malloc(sizeof(*stmt));
 	sqlite3_stmt *sqlite_stmt = 0;
 	/* TODO avoid strlen, use configurable limit? */
-	rc = f.sqlite3_prepare_v2_fn(conn->private, sql, strlen(sql), &sqlite_stmt,
-			(const char**) pptail);
+	rc = f.sqlite3_prepare_v2_fn(conn->private, sql, strlen(sql), &sqlite_stmt, (const char**) pptail);
 	if (rc != SQLITE_OK)
 		return db_sqlite_error_map(rc);
 	stmt->private = sqlite_stmt;
@@ -263,12 +258,12 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version) {
 	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
 	csync_db_sql(db, NULL, /* "Creating file table", */
-			"CREATE TABLE file ("
-					"	filename, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
-					"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-					"	UNIQUE (hostname, filename), "
-					"       ON CONFLICT REPLACE); "
-					"       CREATE INDEX idx_file_device_inode on file (device, inode);");
+	"CREATE TABLE file ("
+			"	filename, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
+			"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
+			"	UNIQUE (hostname, filename), "
+			"       ON CONFLICT REPLACE); "
+			"       CREATE INDEX idx_file_device_inode on file (device, inode);");
 
 	csync_db_sql(db, NULL, /* "Creating dirty table", */
 			"CREATE TABLE dirty ("

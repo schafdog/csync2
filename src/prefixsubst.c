@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2005  Clifford Wolf <clifford@clifford.at>
@@ -26,8 +26,7 @@
 static char *ringbuff[RINGBUFF_LEN];
 static int ringbuff_counter = 0;
 
-const char *prefixsubst(const char *in)
-{
+const char* prefixsubst(const char *in) {
 	struct csync_prefix *p;
 	const char *pn, *path;
 	size_t pn_len;
@@ -35,15 +34,16 @@ const char *prefixsubst(const char *in)
 	if (!in || *in != '%')
 		return in;
 
-	pn = in+1;
+	pn = in + 1;
 	pn_len = strcspn(pn, "%");
 
-	path = pn+pn_len;
-	if (*path == '%') path++;
+	path = pn + pn_len;
+	if (*path == '%')
+		path++;
 
 	for (p = csync_prefix; p; p = p->next) {
 		if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len) && p->path) {
-			ringbuff_counter = (ringbuff_counter+1) % RINGBUFF_LEN;
+			ringbuff_counter = (ringbuff_counter + 1) % RINGBUFF_LEN;
 			if (ringbuff[ringbuff_counter])
 				free(ringbuff[ringbuff_counter]);
 			ASPRINTF(&ringbuff[ringbuff_counter], "%s%s", p->path, path);
@@ -51,12 +51,11 @@ const char *prefixsubst(const char *in)
 		}
 	}
 
-	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n",
-			pn_len, pn, myhostname);
+	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, myhostname);
 	return 0;
 }
 
-const char *prefixencode(filename_p filename) {
+const char* prefixencode(filename_p filename) {
 #if __CYGWIN__
 	if (!strcmp(filename, "/")) {
 		filename = "/cygdrive";
@@ -74,12 +73,12 @@ const char *prefixencode(filename_p filename) {
 				int p_len = strlen(p->path);
 				int f_len = strlen(filename);
 
-				if (p_len <= f_len && !strncmp(p->path, filename, p_len) &&
-						(filename[p_len] == '/' || !filename[p_len])) {
-					ringbuff_counter = (ringbuff_counter+1) % RINGBUFF_LEN;
+				if (p_len <= f_len && !strncmp(p->path, filename, p_len)
+						&& (filename[p_len] == '/' || !filename[p_len])) {
+					ringbuff_counter = (ringbuff_counter + 1) % RINGBUFF_LEN;
 					if (ringbuff[ringbuff_counter])
 						free(ringbuff[ringbuff_counter]);
-					ASPRINTF(&ringbuff[ringbuff_counter], "%%%s%%%s", p->name, filename+p_len);
+					ASPRINTF(&ringbuff[ringbuff_counter], "%%%s%%%s", p->name, filename + p_len);
 					return ringbuff[ringbuff_counter];
 				}
 			}

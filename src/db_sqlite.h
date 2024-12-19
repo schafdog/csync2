@@ -1,4 +1,6 @@
-
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ */
 #ifndef DB_SQLITE_H
 #define DB_SQLITE_H
 

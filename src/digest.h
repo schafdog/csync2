@@ -1,3 +1,6 @@
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ */
 #ifndef DIGEST_H
 #define DIGEST_H
 
