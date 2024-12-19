@@ -73,7 +73,8 @@ function cmd {
 	killdaemon $1
 	return 
     fi
-    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${COUNT}.log
+    mkdir -p ${TESTNAME}/${DEBUG}
+    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${DEBUG}/${COUNT}.log
     OPTS="$CSYNC2_OPT -y -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG"
     if [ "$LLDB" != "" ] ; then 
 	$LLDB -f ${PROG} -- ${OPTS} "${TESTPATH}"
@@ -81,20 +82,20 @@ function cmd {
 	$GDB --args ${PROG} ${OPTS} "${TESTPATH}"
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-	$PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${COUNT}.log
+	$PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
-       testing ${TESTNAME}/${COUNT}.log
+       testing ${TESTNAME}/${DEBUG}/${COUNT}.log
     fi
-    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
-    testing ${TESTNAME}/${COUNT}.${DATABASE}
+    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE} 2> /dev/null
+    testing ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
-	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${COUNT}.rsync
-	testing ${TESTNAME}/${COUNT}.rsync
+	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${DEBUG}/${COUNT}.rsync
+	testing ${TESTNAME}/${DEBUG}/${COUNT}.rsync
     else
 	if [ "$CMD" == "c" ] ; then
 	    # clean up if step has changed
-	    rm -f ${TESTNAME}/${COUNT}.rsync ${TESTNAME}/${COUNT}.rsync.res
+	    rm -f ${TESTNAME}/${DEBUG}/${COUNT}.rsync ${TESTNAME}/${DEBUG}/${COUNT}.rsync.res
 	fi
     fi
     echo "${COUNT}. END $CMD ${DESC}" 
@@ -133,8 +134,9 @@ function daemon {
     mkdir -p /tmp/csync2 
     CMD="$1"
     echo $DCFG $DNAME
+    mkdir  -p $TESTNAME/${DEBUG}
     if [ "$CMD" == "d" ] ; then 
-	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > $TESTNAME/$DCFG.log  2>&1 &
+	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > ${TESTNAME}/${DEBUG}/$DCFG.log  2>&1 &
 	echo "$!" > ${DCFG}.pid
     elif [ "$CMD" == "i" ] ; then
 	if [ "LLDB" != "" ]; then
@@ -198,10 +200,10 @@ for d in $* ; do
     fi
 done
 echo "DAEMON:"
-cat ${TESTNAME}/peer.log | sed "s/<[0-9]*> //" | grep -v connection > ${TESTNAME}/peer.log.tmp
-mv ${TESTNAME}/peer.log.tmp ${TESTNAME}/peer.log
-testing ${TESTNAME}/peer.log
-./compare_sql.sh $TESTNAME
+#cat ${TESTNAME}/${DEBUG}/peer.log | sed "s/<[0-9]*> //" | grep -v connection > ${TESTNAME}/${DEBUG}/peer.log.tmp
+#mv ${TESTNAME}/${DEBUG}/peer.log.tmp ${TESTNAME}/${DEBUG}/peer.log
+testing ${TESTNAME}/${DEBUG}/peer.log
+./compare_sql.sh $TESTNAME/${DEBUG}
 echo "END DAEMON"
 echo "Result $RES"
 exit $RES
