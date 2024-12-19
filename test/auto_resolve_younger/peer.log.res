@@ -34,7 +34,7 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer  i
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1620424800 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
@@ -53,7 +53,7 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/au
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 1620424800 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  
 IDENT (cmd_finished).
@@ -78,19 +78,19 @@ daemon_check_auto_resolve: /export/home/dennis/Projects/csync2/csync2/test/test/
 mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 errno = 2 err = 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 1620424800 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger  
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 1620424800 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 0 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1620424800 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 CONN local < OK (cmd_finished).
 
@@ -125,9 +125,11 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13
 
+Sending sig_file to peer..
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
+Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
 CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 12 xxxxxxxxxx'
@@ -154,7 +156,7 @@ CONN local < 1623103200
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger xxxxxxxxxx'
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 1620424800 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 0 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 CONN local < OK (cmd_finished).
 
@@ -201,7 +203,7 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1625695200 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
@@ -226,7 +228,7 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 1625695200 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  
 IDENT (cmd_finished).
@@ -258,7 +260,7 @@ check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger won auto resolved. clear dirty
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 1625695200 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger  
 IDENT (cmd_finished).
@@ -273,9 +275,11 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13
 
+Sending sig_file to peer..
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
+Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
 CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 14 xxxxxxxxxx'
@@ -298,14 +302,16 @@ renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/tes
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.1' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.2'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest.1'. rc = 0
 CONN local < OK 
+Sending sig_file to peer..
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
+Signature has been sent to peer successfully.
 CONN local > 'octet-stream 20'
 Got octet-stream 20
 Content length in buffer: 'octet-stream 20' size: 20 rc: 0 (octet-stream)
 Receiving 20 bytes (octet-stream)..
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest rc = 0 time: 1625695200 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest  
 IDENT (cmd_finished).
@@ -313,17 +319,17 @@ CONN local < IDENT (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger xxxxxxxxxx'
 daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 1625695200 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 0 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 1625695200 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 0 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 1625695200 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 11 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 CONN local < OK (cmd_finished).
 
