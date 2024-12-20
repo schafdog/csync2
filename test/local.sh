@@ -200,8 +200,8 @@ for d in $* ; do
     fi
 done
 echo "DAEMON:"
-#cat ${TESTNAME}/${DEBUG}/peer.log | sed "s/<[0-9]*> //" | grep -v connection > ${TESTNAME}/${DEBUG}/peer.log.tmp
-#mv ${TESTNAME}/${DEBUG}/peer.log.tmp ${TESTNAME}/${DEBUG}/peer.log
+cat ${TESTNAME}/${DEBUG}/peer.log | sed "s/<[0-9]*> //" | grep -v connection > ${TESTNAME}/${DEBUG}/peer.log.tmp
+mv ${TESTNAME}/${DEBUG}/peer.log.tmp ${TESTNAME}/${DEBUG}/peer.log
 testing ${TESTNAME}/${DEBUG}/peer.log
 ./compare_sql.sh $TESTNAME/${DEBUG}
 echo "END DAEMON"
