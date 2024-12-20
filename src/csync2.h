@@ -71,6 +71,7 @@ typedef const char * peername_p;
 #define FLAG_DO_ALL          2048
 
 
+#define OCTET_STREAM 1
 #define CHUNK_SIZE 16*1024
 
 
@@ -191,7 +192,7 @@ ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline
 extern void conn_printf(int fd, const char *fmt, ...);
 extern int conn_fgets(int fd, char *s, int size);
 extern size_t conn_gets(int fd, char *s, size_t size);
-extern int conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
+extern ssize_t conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
 extern int conn_write_chunk(int fd, char *buffer, size_t n_bytes);
 extern int conn_read_file_chunked(int sockfd, FILE *file);
 extern int conn_send_file_chunked(int sockfd, FILE *file);

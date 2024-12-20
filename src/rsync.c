@@ -51,8 +51,6 @@
 #include <w32api/windows.h>
 #endif
 
-#define OCTET_STREAM 1
-
 /* This has been taken from rsync:lib/compat.c */
 
 /**
@@ -238,10 +236,12 @@ int csync_send_file_chunked(int conn, FILE *in) {
 	rewind(in);
 	csync_info(1, "Sending chunked stream of %ld bytes\n", size);
 	conn_printf(conn, "octet-stream %ld\n", size);
-	return conn_send_file_chunked(conn, in);
+	if (size > 0) 
+		return conn_send_file_chunked(conn, in);
+	return 0;
 }
 
-void csync_send_file_octet_stream(int conn, FILE *in) {
+int csync_send_file_octet_stream(int conn, FILE *in) {
 	char buffer[CHUNK_SIZE];
 	int rc, chunk;
 	long size;
@@ -267,6 +267,7 @@ void csync_send_file_octet_stream(int conn, FILE *in) {
 
 		size -= chunk;
 	}
+	return 0;
 }
 
 void csync_send_file(int conn, FILE *in) {
@@ -303,11 +304,14 @@ int csync_recv_file_chunked(int conn, FILE *out) {
 		size = 0;
 		return -2;
 	}
-
-	csync_log(LOG_DEBUG, 1, "Receiving %Ld bytes (%s)..\n", size, typestr[2 - 1]);
-	conn_read_file_chunked(conn, out);
-
-	fflush(out);
+	if (size > 0) {
+		csync_log(LOG_DEBUG, 1, "Receiving %Ld bytes (%s)..\n", size, typestr[2 - 1]);	
+		conn_read_file_chunked(conn, out);
+	} else {
+		csync_log(LOG_DEBUG, 1, "Skipping chunked reading when zero\n");
+	}
+				
+	fflush(out); 
 	rewind(out);
 	return 0;
 }
@@ -358,7 +362,9 @@ int csync_recv_file(int conn, FILE *out) {
 int csync_rs_check(int conn, filename_p filename, int isreg) {
 	FILE *basis_file = 0, *sig_file = 0;
 	char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
-	int rc, chunk, found_diff = 0;
+	int found_diff = 0;
+	size_t chunk;
+	ssize_t read;
 	rs_stats_t stats;
 	rs_result result = 0;
 	long long size = 0;
@@ -414,14 +420,19 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 		found_diff = 1;
 	}
 	csync_info(3, "rs_check: Receiving signature %Ld bytes ..\n", size);
-
+	
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
-		rc = conn_read(conn, buffer1, chunk);
-
-		if (rc <= 0)
+		if (OCTET_STREAM) 
+		    read = conn_read(conn, buffer1, chunk);
+		else
+			read = conn_read_chunk(conn, (char **) &buffer1, &chunk);
+		if (read == 0) {
+			break;
+		}
+		if (read < 0)
 			csync_fatal("Read-error while receiving signature data.\n");
-		chunk = rc;
+		chunk = read;
 
 		if (sig_file) {
 			if (fread(buffer2, chunk, 1, sig_file) != 1) {
@@ -435,8 +446,16 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 		}
 		size -= chunk;
 		csync_info(3, "Got %d bytes, %Ld bytes left ..\n", chunk, size);
+		if (!OCTET_STREAM) {
+			if (size == 0) {
+				// conn_read_chunk needs to read the zero size chunk
+				read = conn_read_chunk(conn, (char **) &buffer1, &chunk);
+			} else {
+				free(buffer1);
+			}			
+		}	
 	}
-
+		
 	csync_info(3, "File has been checked successfully (%s).\n", found_diff ? "difference found" : "files are equal");
 	if (sig_file)
 		fclose(sig_file);
@@ -515,7 +534,7 @@ int csync_rs_delta(int conn, filename_p filename) {
 	if (!sig_file)
 		return rsync_delta_io_error(errno, filename, new_file, delta_file, sig_file);
 
-	if (csync_recv_file(conn, sig_file)) {
+	if (csync_recv_file(conn, sig_file) < 0) {
 		fclose(sig_file);
 		return -1;
 	}
