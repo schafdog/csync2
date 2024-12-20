@@ -138,13 +138,17 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
  * WARNING: Inverted to return the n'th character.
  */
 int csync_cmpchecktxt(const char *a, const char *b) {
-	csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt A: %s \n", a);
-	csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", b);
-	return strcmp(a, b);
+	int rc = strcmp(a, b);
+	if (rc != 0) {
+		csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt A: %s \n", a);
+		csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", b);
+	}
+	return rc;
+
 	int i;
 	for (i = 0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++) {
 		if (a[i] != b[i]) {
-			csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
+			csync_log(LOG_DEBUG, 2, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
 			return i;
 		}
 	}
