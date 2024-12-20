@@ -533,18 +533,18 @@ int conn_read_file_chunked(int sockfd, FILE *file) {
 
 /* Rewritten not to mask errors */
 ssize_t conn_read(int fd, void *buf, size_t count) {
-	size_t pos;
-	ssize_t rc;
-	for (pos = 0; pos < count; pos += rc) {
-		rc = conn_raw_read(fd, (char*) buf + pos, count - pos);
-		if (rc < 0)
-			return rc;
+	size_t size = 0;
+	while ((size < count)) {
+		ssize_t bytes_read = conn_raw_read(fd, (char*) buf + size, count - size);
+		if (bytes_read < 0)
+			return bytes_read;
 		/* End of file */
-		if (rc == 0)
+		if (bytes_read == 0)
 			break;
+		size += bytes_read;
 	}
 	//	conn_debug(active_peer, buf, pos);
-	return pos;
+	return size;
 }
 
 ssize_t conn_write(int fd, const void *buf, size_t count) {
