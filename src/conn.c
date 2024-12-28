@@ -531,7 +531,7 @@ int conn_read_file_chunked(int sockfd, FILE *file) {
 	return 0;
 }
 
-/* Rewritten not to mask errors */
+/* Rewritten not to mask errors, read in batch */
 ssize_t conn_read(int fd, void *buf, size_t count) {
 	size_t size = 0;
 	while ((size < count)) {
