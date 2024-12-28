@@ -80,9 +80,12 @@ function cmd {
 	$LLDB -f ${PROG} -- ${OPTS} "${TESTPATH}"
     elif [ "$GDB" != "" ] ; then 
 	$GDB --args ${PROG} ${OPTS} "${TESTPATH}"
+    elif [ "$TIME" != "" ] ; then
+	echo time $PROG ${OPTS} "${TESTPATH}"
+	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-	$PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
+        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${DEBUG}/${COUNT}.log
@@ -109,7 +112,7 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${COUNT}.${DATABASE} 2> /dev/null
+    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE} 2> /dev/null
     rm -f csync_$CNAME.log ${DATABASE}_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1
