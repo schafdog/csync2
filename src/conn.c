@@ -407,11 +407,11 @@ ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
 	int rc = !conn_gets(fd, buffer, 200);
 	char *typestr = "Nope";
 	if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
-		csync_info(1, "Got octet-stream %lld\n", *size);
+		csync_info(2, "Got octet-stream %lld\n", *size);
 		*type = 1;
 		typestr = "octet-stream";
 	} else if (sscanf(buffer, "chunked %lld\n", size) == 1) {
-		csync_info(1, "Got chuncked-stream %lld\n", *size);
+		csync_info(2, "Got chuncked-stream %lld\n", *size);
 		*type = 2;
 		typestr = "chunked";
 	} else {

@@ -250,7 +250,7 @@ int csync_send_file_octet_stream(int conn, FILE *in) {
 	size = ftell(in);
 	rewind(in);
 
-	csync_debug(1, "Sending octet-stream of %ld bytes\n", size);
+	csync_debug(2, "Sending octet-stream of %ld bytes\n", size);
 	conn_printf(conn, "octet-stream %ld\n", size);
 
 	while (size > 0) {
@@ -329,7 +329,7 @@ int csync_recv_file_octet_stream(int conn, FILE *out) {
 		return -2;
 	}
 
-	csync_log(LOG_DEBUG, 1, "Receiving %Ld bytes (%s)..\n", size, typestr[type - 1]);
+	csync_log(LOG_DEBUG, 2, "Receiving %Ld bytes (%s)..\n", size, typestr[type - 1]);
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		bytes = conn_read(conn, buffer, chunk);
