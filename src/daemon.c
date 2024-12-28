@@ -96,6 +96,7 @@ int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 	time_t lock_time = csync_redis_lock(filename);
 	if (buffer && lock_time == -1) {
 		buffer_strdup(buffer, filename);
+		csync_debug(1, "daemon RM: Failed to lock %s", filename);
 		return ABORT_CMD;
 	}
 	if (db) {
@@ -251,7 +252,7 @@ int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int rec
 	if (S_ISDIR(st.st_mode)) {
 		rc = csync_rmdir(db, filename, peername, recursive);
 	} else {
-		csync_redis_set_int(filename, "DELETE", time(NULL), 0, 0);
+		csync_redis_lock_custom(filename, 300, "DELETE");
 		rc = unlink(filename);
 		if (rc) {
 			csync_redis_del_custom(filename, "DELETE");
@@ -752,7 +753,7 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
 		conn_printf(conn, "OK (sending sig).\n");
 		csync_rs_sig(conn, filename);
-		if (csync_rs_patch(conn, filename)) { //if (recieve_delta_and_patch(conn, filename)) {
+		if (csync_rs_patch(conn, filename)) { // _recv_delta_and_
 			*cmd_error = strerror(errno);
 			return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 		}
@@ -1490,7 +1491,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 		char *filename = NULL;
 		if (tag[2])
 			filename = (char*) prefixsubst(tag[2]);
-		const char *other = prefixsubst(tag[3]);
+		//const char *other = prefixsubst(tag[3]);
 		if (cmd->action == A_HELLO) {
 			csync_log(LOG_DEBUG, 1, "Command: %s %s\n", tag[0], tag[1]);
 			if (active_peer)
