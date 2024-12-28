@@ -339,7 +339,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 				csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
 			} else if (strcmp(operation, "DELETE") == 0) {
 				csync_check_del(db, file, flags);
-			} else if (strcmp(operation, "CREATE") == 0 || strstr(operation, "CLOSE_WRITE") != NULL) {
+			} else if (strstr(operation, "CLOSE_WRITE") != NULL) {
 				const struct csync_group *g = NULL;
 				int count_dirty;
 				csync_check_mod(db, file, flags, &count_dirty, &g);
