@@ -181,7 +181,9 @@ static FILE* open_temp_file(char *fnametmp, const char *fname) {
 	// Let csync2 tail ignore this file for 10 minutes
 	fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
 	if (fd >= 0) {
-		csync_redis_lock_custom(fnametmp, 600, "CREATE");
+		// we are prob. renaming the file before closing so might be nessesary
+		csync_redis_lock_custom(fnametmp, 600, "CLOSE_WRITE,CLOSE");
+
 		f = fdopen(fd, "wb+");
 		/* not unlinking since rename wouldn't work then */
 	}
@@ -586,7 +588,7 @@ int rsync_patch_io_error(const char *errstr, filename_p filename, FILE *delta_fi
 }
 
 int csync_rs_patch(int conn, filename_p filename) {
-	FILE *basis_file = 0, *delta_file = 0, *new_file = 0;
+	FILE *basis_file = 0, *delta_file = 0, *patched_file = 0;
 	rs_stats_t stats;
 	rs_result result;
 	char *errstr = "?";
@@ -598,11 +600,11 @@ int csync_rs_patch(int conn, filename_p filename) {
 	delta_file = paranoid_tmpfile();
 	if (!delta_file) {
 		errstr = "creating delta temp file";
-		return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
+		return rsync_patch_io_error(errstr, filename, basis_file, delta_file, patched_file);
 	}
 	if (csync_recv_file(conn, delta_file)) {
 
-		return rsync_close_error(errno, basis_file, delta_file, new_file);
+		return rsync_close_error(errno, basis_file, delta_file, patched_file);
 	}
 	csync_log(LOG_DEBUG, 3, "Opening to be patched file on local host..\n");
 	basis_file = fopen(filename, "rb");
@@ -610,25 +612,25 @@ int csync_rs_patch(int conn, filename_p filename) {
 		basis_file = paranoid_tmpfile();
 		if (!basis_file) {
 			errstr = "opening data file for reading";
-			return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
+			return rsync_patch_io_error(errstr, filename, basis_file, delta_file, patched_file);
 		}
 	}
 	csync_log(LOG_DEBUG, 3, "Opening temp file for new data on local host..\n");
-	new_file = open_temp_file(tmpfname, filename);
+	patched_file = open_temp_file(tmpfname, filename);
 
-	if (!new_file) {
+	if (!patched_file) {
 		errstr = "creating new data temp file";
-		return rsync_patch_io_error(errstr, filename, basis_file, delta_file, new_file);
+		return rsync_patch_io_error(errstr, filename, basis_file, delta_file, patched_file);
 	}
 	csync_log(LOG_DEBUG, 3, "Running rs_patch_file() from librsync..\n", filename);
-	result = rs_patch_file(basis_file, delta_file, new_file, &stats);
+	result = rs_patch_file(basis_file, delta_file, patched_file, &stats);
 	if (result != RS_DONE) {
 		csync_log(LOG_DEBUG, 0, "Internal error from rsync library!\n");
-		rsync_close_error(errno, basis_file, delta_file, new_file);
+		rsync_close_error(errno, basis_file, delta_file, patched_file);
 	}
 
 	fclose(basis_file);
-
+	basis_file = NULL;
 #ifdef __CYGWIN__
 
   /* TODO: needed? */
@@ -659,21 +661,18 @@ int csync_rs_patch(int conn, filename_p filename) {
     CloseHandle(winfh);
   }
 #endif
-	csync_log(LOG_DEBUG, 3, "Renaming tmp file to data file..\n");
-	// TODO this will break any hardlink to filename. 
-	// DS: That is not what we want IMHO
-
+  
+    fclose(patched_file); 
+	fclose(delta_file);
+	patched_file = delta_file = NULL;
+	csync_log(LOG_DEBUG, 3, "Renaming tmp file to orig. filename..\n");
+	//  This will break any hardlink to filename. 
 	if (rename(tmpfname, filename) == 0) {
 		csync_redis_lock_custom(filename, 300, "MOVED_TO");
 		csync_info(3, "File '%s' has been patched successfully.\n", filename);
-		fclose(delta_file);
-		// And a CLOSE_WRITE,CLOSE 
-		csync_redis_lock_custom(tmpfname, 300, "CLOSE_WRITE,CLOSE");
-		fclose(new_file);
-		// inotify also sends this?
 		return 0;
 	}
-	return rsync_patch_io_error("renaming tmp file to to be patched file", filename, delta_file, basis_file, new_file);
+	return rsync_patch_io_error("renaming tmp file to to orig file", filename, delta_file, basis_file, patched_file);
 }
 
 static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE *old, FILE *new, rs_job_t *job,
@@ -689,8 +688,8 @@ static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE
 int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
 	char tmpfname[MAXPATHLEN];
-	/* Open new file */
-	FILE *new = open_temp_file(tmpfname, fname);
+	/* Open tmp  file */
+	FILE *tmp = open_temp_file(tmpfname, fname);
 	csync_redis_lock_custom(tmpfname, 600, "CREATE");
 
 	/* Open basis file */
@@ -717,7 +716,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 			if (bufs.avail_in > BUF_SIZE) {
 				/* The job requires more data, but we cannot fit another
 				 * message into the input buffer */
-				return csync_delta_patch_error("Insufficient buffer capacity: %s %d\n", fname, old, new, job, -1);
+				return csync_delta_patch_error("Insufficient buffer capacity: %s %d\n", fname, old, tmp, job, -1);
 			}
 
 			if (bufs.avail_in > 0) {
@@ -728,7 +727,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 			char *buffer[CHUNK_SIZE];
 			ssize_t read = conn_read(sock, buffer, size > CHUNK_SIZE ? CHUNK_SIZE : size);
 			if (read == -1) {
-				return csync_delta_patch_error("Failed to read chunk: %s %d", fname, old, new, job, read);
+				return csync_delta_patch_error("Failed to read chunk: %s %d", fname, old, tmp, job, read);
 			}
 			size -= read;
 			printf("Recieved %zu bytes\n", read);
@@ -744,16 +743,16 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 		res = rs_job_iter(job, &bufs);
 		if (res != RS_DONE && res != RS_BLOCKED) {
 			csync_error(0, "Failed job %d iteration: %d\n", iter, res);
-			return csync_delta_patch_error("Failed job iteration: %s %d\n", fname, old, new, job, res);
+			return csync_delta_patch_error("Failed job iteration: %s %d\n", fname, old, tmp, job, res);
 		}
 
 		/* Drain output buffer, if there is data */
 		size_t present = bufs.next_out - out_buf;
 		if (present > 0) {
-			size_t n_bytes = fwrite(out_buf, present, 1, new);
+			size_t n_bytes = fwrite(out_buf, present, 1, tmp);
 
 			if (n_bytes == 0) {
-				return csync_delta_patch_error("Failed to write to tmp file: %s %d\n", fname, old, new, job, -1);
+				return csync_delta_patch_error("Failed to write to tmp file: %s %d\n", fname, old, tmp, job, -1);
 			}
 
 			bufs.next_out = out_buf;
@@ -762,20 +761,16 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 		iter++;
 	} while (res != RS_DONE);
 
-	rs_file_close(new);
+	// CLOSE_WRITE is masked for tmp file
+	rs_file_close(tmp);
 	rs_file_close(old);
 	rs_job_free(job);
 
-	// TODO this will break any hardlink to filename. 
-	// DS: That is not what we want IMHO
-
+	// MOVED_TO
+	csync_redis_lock_custom(fname, 300, "MOVED_TO");
+	// This will break any hardlink to filename. Restore 
 	if (rename(tmpfname, fname) == 0) {
 		csync_info(2, "File '%s' has been patched successfully.\n", fname);
-		// MOVED_TO
-		csync_redis_lock_custom(fname, 300, "MOVED_TO");
-		// And a CLOSE_WRITE,CLOSE on tmp file
-		csync_redis_lock_custom(tmpfname, 300, "CLOSE_WRITE,CLOSE");
-		// inotify also sends this?
 		return 0;
 	}
 	csync_error(0, "Renaming tmp to %s failed", fname);
