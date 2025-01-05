@@ -236,10 +236,10 @@ int csync_send_file_chunked(int conn, FILE *in) {
 	fflush(in);
 	size = ftell(in);
 	rewind(in);
-	csync_info(1, "Sending chunked stream of %ld bytes\n", size);
+	csync_info(3, "Sending chunked stream of %ld bytes\n", size);
 	conn_printf(conn, "octet-stream %ld\n", size);
 	if (size > 0) 
-		return conn_send_file_chunked(conn, in);
+		return conn_send_file_chunked(conn, in, size);
 	return 0;
 }
 
@@ -252,7 +252,7 @@ int csync_send_file_octet_stream(int conn, FILE *in) {
 	size = ftell(in);
 	rewind(in);
 
-	csync_debug(2, "Sending octet-stream of %ld bytes\n", size);
+	csync_debug(3, "Sending octet-stream of %ld bytes\n", size);
 	conn_printf(conn, "octet-stream %ld\n", size);
 
 	while (size > 0) {
@@ -307,7 +307,7 @@ int csync_recv_file_chunked(int conn, FILE *out) {
 		return -2;
 	}
 	if (size > 0) {
-		csync_log(LOG_DEBUG, 1, "Receiving %Ld bytes (%s)..\n", size, typestr[2 - 1]);	
+		csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes (%s)..\n", size, typestr[2 - 1]);	
 		conn_read_file_chunked(conn, out);
 	} else {
 		csync_log(LOG_DEBUG, 1, "Skipping chunked reading when zero\n");
@@ -331,7 +331,7 @@ int csync_recv_file_octet_stream(int conn, FILE *out) {
 		return -2;
 	}
 
-	csync_log(LOG_DEBUG, 2, "Receiving %Ld bytes (%s)..\n", size, typestr[type - 1]);
+	csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes (%s)..\n", size, typestr[type - 1]);
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		bytes = conn_read(conn, buffer, chunk);
@@ -361,15 +361,23 @@ int csync_recv_file(int conn, FILE *out) {
 		return csync_recv_file_chunked(conn, out);
 }
 
+char *to_hex(const char str[], size_t length, char result[]) {
+    for (size_t index = 0; index < length ; index++) {
+        sprintf(result+index*2, "%02x", (unsigned char) str[index]);
+    }
+	return result;
+}
+
 int csync_rs_check(int conn, filename_p filename, int isreg) {
 	FILE *basis_file = 0, *sig_file = 0;
-	char buffer1[CHUNK_SIZE], buffer2[CHUNK_SIZE];
+	char peerbuf[CHUNK_SIZE], local[CHUNK_SIZE];
 	int found_diff = 0;
 	size_t chunk;
 	ssize_t read;
 	rs_stats_t stats;
 	rs_result result = 0;
 	long long size = 0;
+	char *peer = peerbuf;
 
 	csync_log(LOG_DEBUG, 3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n", filename, isreg,
 			isreg ? "regular file" : "non-regular file");
@@ -421,14 +429,15 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 		csync_info(2, "rs_check: Signature size differs: local don't exist, peer=%Ld\n", size);
 		found_diff = 1;
 	}
-	csync_info(3, "rs_check: Receiving signature %Ld bytes ..\n", size);
-	
+
+	csync_info(2, "rs_check: Receiving signature %Ld bytes for %s\n", size, filename);
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		if (OCTET_STREAM) 
-		    read = conn_read(conn, buffer1, chunk);
-		else
-			read = conn_read_chunk(conn, (char **) &buffer1, &chunk);
+			read = conn_read(conn, peer, chunk);
+		else {
+			read = conn_read_chunk(conn, &peer, &chunk);
+		}
 		if (read == 0) {
 			break;
 		}
@@ -437,23 +446,24 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 		chunk = read;
 
 		if (sig_file) {
-			if (fread(buffer2, chunk, 1, sig_file) != 1) {
-				csync_info(2, "rs_check: Found EOF in local sig file (%s) before reading chuck (%d) .\n", filename,
-						chunk);
+			if (fread(local, read, 1, sig_file) != 1) {
+				csync_info(2, "rs_check: Found EOF in local sig file (%s) before reading chuck (%d) .\n", filename, read);
 				found_diff = 1;
-			} else if (memcmp(buffer1, buffer2, chunk)) {
-				csync_info(2, "rs_check: Found diff in sig at -%Ld:-%Ld\n", size, size - chunk);
+			} else if (memcmp(peer, local, read) != 0) {
+				csync_info(2, "rs_check: Found diff in sig at -%Ld:-%Ld\n", size, size - read);
+				char peerstr[2*read+1], localstr[2*read+1];
+				csync_info(3, "DUMP: %s\n      %s\n", to_hex(peer, read, peerstr), to_hex(local, read, localstr));
 				found_diff = 1;
 			}
 		}
-		size -= chunk;
-		csync_info(3, "Got %d bytes, %Ld bytes left ..\n", chunk, size);
+		size -= read;
+		csync_info(3, "Got %d bytes, %Ld bytes left ..\n", read, size);
 		if (!OCTET_STREAM) {
 			if (size == 0) {
 				// conn_read_chunk needs to read the zero size chunk
-				read = conn_read_chunk(conn, (char **) &buffer1, &chunk);
+				read = conn_read_chunk(conn, &peer, &chunk);
 			} else {
-				free(buffer1);
+				free(peer);
 			}			
 		}	
 	}
@@ -499,7 +509,7 @@ void csync_rs_sig(int conn, filename_p filename) {
 	if (result != RS_DONE)
 		csync_fatal("Got an error from librsync, too bad!\n");
 
-	csync_log(LOG_DEBUG, 2, "Sending sig_file to peer..\n");
+	csync_log(LOG_DEBUG, 2, "Sending sig_file for %s to peer.\n", filename);
 	csync_send_file(conn, sig_file);
 
 	csync_log(LOG_DEBUG, 2, "Signature has been sent to peer successfully.\n");
