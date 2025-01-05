@@ -10,8 +10,6 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test 
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-Got octet-stream 0
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' ''
-Got octet-stream 0
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp

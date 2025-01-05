@@ -10,9 +10,6 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.
-Sending octet-stream of 12 bytes
-Got octet-stream 10
-Receiving 10 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all  
 IDENT (cmd_finished).
 goto nofork.

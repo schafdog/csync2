@@ -35,9 +35,6 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123.
-Sending octet-stream of 12 bytes
-Got octet-stream 10
-Receiving 10 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123  
 IDENT (cmd_finished).
 goto nofork.
@@ -60,8 +57,6 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Mai
 IDENT (cmd_finished).
 NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
-Sending octet-stream of 32 bytes
-Sending octet-stream of 32 bytes
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab.

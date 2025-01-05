@@ -53,9 +53,6 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764.
-Sending octet-stream of 12 bytes
-Got octet-stream 14
-Receiving 14 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
 IDENT (cmd_finished).
 goto nofork.
@@ -73,7 +70,6 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Mai
 IDENT (cmd_finished).
 NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 
-Sending octet-stream of 32 bytes
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
@@ -84,7 +80,6 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Mai
 IDENT (cmd_finished).
 NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
-Sending octet-stream of 32 bytes
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
@@ -100,8 +95,6 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Mai
 IDENT (cmd_finished).
 NOT IMPLEMENTED: csync_db_update_path (update DB recursive)
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
-Sending octet-stream of 32 bytes
-Sending octet-stream of 32 bytes
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.
@@ -120,14 +113,12 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur  
 IDENT (cmd_finished).
-Sending octet-stream of 32 bytes
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S  
-Sending octet-stream of 32 bytes
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.

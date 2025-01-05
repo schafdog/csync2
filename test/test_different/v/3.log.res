@@ -10,9 +10,7 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test 
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-Got octet-stream 0
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/different' ''
-Got octet-stream 32
 ?F: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/different
 While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/different
 ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/different) rc: -11 

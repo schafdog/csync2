@@ -20,7 +20,6 @@ IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
-Sending octet-stream of 32 bytes
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
 mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
@@ -57,7 +56,6 @@ Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/aut
 IDENT (cmd_finished).
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
-Sending octet-stream of 32 bytes
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
@@ -69,9 +67,6 @@ check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
-Sending octet-stream of 32 bytes
-Got octet-stream 20
-Receiving 20 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both  
 IDENT (cmd_finished).
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older won auto resolve

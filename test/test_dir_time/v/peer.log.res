@@ -49,9 +49,6 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej.
-Sending octet-stream of 12 bytes
-Got octet-stream 10
-Receiving 10 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej  
 IDENT (cmd_finished).
 goto nofork.
@@ -62,7 +59,6 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
-Sending octet-stream of 32 bytes
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej.

@@ -15,9 +15,6 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
-Sending octet-stream of 12 bytes
-Got octet-stream 10
-Receiving 10 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
 goto nofork.
@@ -49,9 +46,6 @@ Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/n
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 1 
-Sending octet-stream of 12 bytes
-Got octet-stream 15
-Receiving 15 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
 IDENT (cmd_finished).
 ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change: 33188
@@ -63,7 +57,6 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
-Sending octet-stream of 32 bytes
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
@@ -75,9 +68,6 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
-Sending octet-stream of 12 bytes
-Got octet-stream 10
-Receiving 10 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
 goto nofork.
@@ -105,9 +95,6 @@ Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/n
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. RC: 1 11
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 1 
-Sending octet-stream of 12 bytes
-Got octet-stream 17
-Receiving 17 bytes (octet-stream)..
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
 IDENT (cmd_finished).
 ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change: 33188
