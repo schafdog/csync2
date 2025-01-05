@@ -253,14 +253,12 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  is clean
 CONN local < OK 
 Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 to peer.
-Sending octet-stream of 12 bytes
 CONN local < octet-stream 12
 
 Signature has been sent to peer successfully.
 CONN local > 'octet-stream 14'
 Got octet-stream 14
 Content length in buffer: 'octet-stream 14' size: 14 rc: 0 (octet-stream)
-Receiving 14 bytes (octet-stream)..
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
@@ -362,7 +360,6 @@ Flags for gencheck: 48
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
 Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, to peer.
-Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
@@ -444,7 +441,6 @@ Flags for gencheck: 48
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
 Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S to peer.
-Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
@@ -545,7 +541,6 @@ Flags for gencheck: 48
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
 Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
-Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
@@ -561,7 +556,6 @@ Flags for gencheck: 48
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
 Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
-Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
@@ -678,7 +672,6 @@ Flags for gencheck: 48
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
 Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S to peer.
-Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
@@ -708,7 +701,6 @@ Flags for gencheck: 48
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
 Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
-Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.

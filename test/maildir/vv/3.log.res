@@ -89,8 +89,6 @@ CONN peer > 'OK (sending sig).'
 CONN peer > 'octet-stream 12'
 Got octet-stream 12
 Content length in buffer: 'octet-stream 12' size: 12 rc: 0 (octet-stream)
-Receiving 12 bytes (octet-stream)..
-Sending octet-stream of 14 bytes
 CONN peer < octet-stream 14
 
 CONN peer > 'IDENT (cmd_finished).'
