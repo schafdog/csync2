@@ -71,7 +71,7 @@ typedef const char * peername_p;
 #define FLAG_DO_ALL          2048
 
 
-#define OCTET_STREAM 1
+#define OCTET_STREAM 0
 #define CHUNK_SIZE 16*1024
 
 
@@ -133,7 +133,7 @@ enum {
 
 
 typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
-			    const char **patlist, int patnum, int ip_version, int flags);
+							const char **patlist, int patnum, int ip_version, int flags);
 
 /* csync2.c */
 
@@ -195,7 +195,7 @@ extern size_t conn_gets(int fd, char *s, size_t size);
 extern ssize_t conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
 extern int conn_write_chunk(int fd, char *buffer, size_t n_bytes);
 extern int conn_read_file_chunked(int sockfd, FILE *file);
-extern int conn_send_file_chunked(int sockfd, FILE *file);
+extern int conn_send_file_chunked(int sockfd, FILE *file, size_t size);
 extern char *filter_mtime(char *chktxt, int make_copy);
 
 /* db.c */
@@ -263,6 +263,7 @@ extern int csync_rs_delta(int conn, filename_p filename);
 extern int csync_rs_patch(int conn, filename_p filename);
 extern int csync_rs_recv_delta_and_patch(int sock, const char *fname);
 
+extern char *to_hex(const char str[], size_t length, char hexbuffer[]);
 /* checktxt.c */
 
 //extern const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
