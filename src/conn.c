@@ -433,8 +433,8 @@ int conn_write_chunk(int sockfd, char *buffer, size_t size) {
 		csync_error(0, "Error sending chunk header");
 		return -1;
 	}
-
 	csync_debug(3,"Chunk header %zx %lu\n", size, size);
+
 	if (size > 0) {
 		if (send(sockfd, buffer, size, 0) == -1) {
 			csync_error(1, "Error sending chunk of size %lu", size);
@@ -445,7 +445,7 @@ int conn_write_chunk(int sockfd, char *buffer, size_t size) {
 		csync_error(1, "Error sending chunk delimiter\n");
 		return -1;
 	}
-	csync_info(3,"Chunk %lu sent.\n", size);
+	csync_debug(3,"Chunk %lu sent.\n", size);
 	return 0;
 }
 
@@ -481,8 +481,8 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 		size_t bytes_received = 0;
 		*buffer = malloc(chunk_size);
 		while (bytes_received < chunk_size) {
-			ssize_t n = recv(sockfd, *buffer + bytes_received,
-					chunk_size - bytes_received > CHUNK_SIZE ? CHUNK_SIZE : chunk_size - bytes_received, 0);
+			ssize_t n = recv(sockfd, *buffer + bytes_received, chunk_size - bytes_received, 0);
+			csync_debug(3, "Read %ld bytes from peer", n);
 			if (n <= 0) {
 				csync_debug(1, "Error receiving file chunk %ld %ld %ld", n, chunk_size - bytes_received, CHUNK_SIZE);
 				return -1;
@@ -497,18 +497,26 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	return (ssize_t) *size;
 }
 
-int conn_send_file_chunked(int sockfd, FILE *file) {
+int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 	char buffer[CHUNK_SIZE];
-	size_t bytes_read;
-	while ((bytes_read = fread(buffer, 1, CHUNK_SIZE, file)) > 0) {
-		if (conn_write_chunk(sockfd, buffer, bytes_read) != 0) {
-			csync_error(0, "Failed to send file chunked %ld\n", bytes_read);
+   	while (size > 0) {
+		size_t chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
+		int rc  = fread(buffer, chunk, 1, file);
+		char hexbuf[chunk*2+1];
+		if (rc <= 0) {
+			csync_error(0, "Failed reading file while sending");
 			return -1;
 		}
+		csync_debug(3, "DUMP: %s\n", to_hex(buffer, chunk, hexbuf));
+		if (conn_write_chunk(sockfd, buffer, chunk) != 0) {
+			csync_error(0, "Failed to send file chunked %ld\n", chunk);
+			return -1;
+		}
+		size -= chunk;
 	}
 	// eof chunk
 	conn_write_chunk(sockfd, "", 0);
-	printf("File sent using chunked encoding.\n");
+	csync_debug(3, "File sent using chunked encoding.\n");
 	return 0;
 }
 
@@ -527,7 +535,7 @@ int conn_read_file_chunked(int sockfd, FILE *file) {
 		free(buffer);
 	}
 	//fclose(file);
-	csync_error(0,"File received using chunked encoding.\n");
+	csync_debug(3,"File received using chunked encoding.\n");
 	return 0;
 }
 
@@ -599,7 +607,7 @@ char* filter_mtime(char *buffer, int make_copy) {
 		// remove mtime at end of end of line
 		int len = strlen(str);
 		if (len > 0) {
-			if (!strncmp(str, "PATCH", 5) || !strncmp(str, "SETTIME", 6) || !strncmp(str, "MKDIR", 5)
+			if (!strncmp(str, "PATCH", 5) || !strncmp(str, "SET", 3) || !strncmp(str, "MKDIR", 5)
 					|| !strncmp(str, "SIG", 3) || !strncmp(str, "MOD", 3)) {
 				char *ptr = str + strlen(str) - 1;
 				// csync_debug(0, "Remove time: %s\n", str);
