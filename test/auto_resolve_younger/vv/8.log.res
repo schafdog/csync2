@@ -23,7 +23,7 @@ CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-2).
+/export/home/dennis/Projects/csync2/csync2/test/test/local is different on peer (cktxt char #-1).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 CONN peer > 'octet-stream 0'
@@ -39,7 +39,7 @@ CONN peer < SIG %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 40
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-2).
+/export/home/dennis/Projects/csync2/csync2/test/test/local/auto is different on peer (cktxt char #-1).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 CONN peer > 'octet-stream 0'
@@ -55,7 +55,7 @@ CONN peer < SIG %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-5).
+/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger is different on peer (cktxt char #-1).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 
@@ -74,7 +74,7 @@ CONN peer < SIG %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13'
-File is different on peer (cktxt char #-2).
+/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest is different on peer (cktxt char #-1).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=13
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=14
 Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest 

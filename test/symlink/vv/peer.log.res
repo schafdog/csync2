@@ -80,7 +80,7 @@ daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projec
 Updated(mklink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link new_file 'N' all 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETOWN 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new_file%20%27N%27%20all.link user/group 1234 1000 dennis schafroth 41471 - 16 1734653580'
+CONN local > 'SETOWN 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new_file%20%27N%27%20all.link user/group 1234 1000 dennis schafroth 41471 - 16 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link 
@@ -91,12 +91,12 @@ Updated(setown) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new_file%20%27N%27%20all.link xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link rc = 0 time: 0 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 CONN local < OK (cmd_finished).
 
@@ -162,7 +162,7 @@ daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projec
 Updated(mklink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link missing 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SETOWN 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/bad.link user/group 1234 1000 dennis schafroth 41471 - 7 1734653581'
+CONN local > 'SETOWN 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/bad.link user/group 1234 1000 dennis schafroth 41471 - 7 xxxxxxxxxx'
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link 
@@ -173,12 +173,12 @@ Updated(setown) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/bad.link xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link rc = 0 time: 0 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 11 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 CONN local < OK (cmd_finished).
 

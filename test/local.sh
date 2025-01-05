@@ -82,10 +82,10 @@ function cmd {
 	$GDB --args ${PROG} ${OPTS} "${TESTPATH}"
     elif [ "$TIME" != "" ] ; then
 	echo time $PROG ${OPTS} "${TESTPATH}"
-	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
+	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
+        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${DEBUG}/${COUNT}.log
@@ -93,7 +93,7 @@ function cmd {
     echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE} 2> /dev/null
     testing ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
-	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -v "building file list ... done" | grep -v "bytes/sec" |grep -v "(DRY RUN)" |grep -v "sending incremental" > ${TESTNAME}/${DEBUG}/${COUNT}.rsync
+	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" > ${TESTNAME}/${DEBUG}/${COUNT}.rsync
 	testing ${TESTNAME}/${DEBUG}/${COUNT}.rsync
     else
 	if [ "$CMD" == "c" ] ; then
@@ -203,7 +203,7 @@ for d in $* ; do
     fi
 done
 echo "DAEMON:"
-cat ${TESTNAME}/${DEBUG}/peer.log | sed "s/<[0-9]*> //" | grep -v connection > ${TESTNAME}/${DEBUG}/peer.log.tmp
+cat ${TESTNAME}/${DEBUG}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection > ${TESTNAME}/${DEBUG}/peer.log.tmp
 mv ${TESTNAME}/${DEBUG}/peer.log.tmp ${TESTNAME}/${DEBUG}/peer.log
 testing ${TESTNAME}/${DEBUG}/peer.log
 ./compare_sql.sh $TESTNAME/${DEBUG}

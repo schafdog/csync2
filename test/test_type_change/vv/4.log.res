@@ -43,7 +43,7 @@ CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-2).
+/export/home/dennis/Projects/csync2/csync2/test/test/local is different on peer (cktxt char #-1).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 CONN peer > 'octet-stream 0'
@@ -59,7 +59,7 @@ CONN peer < SIG %25test%25/type_change user/group 1234 1000 dennis schafroth 331
 CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/type_change RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
-File is different on peer (cktxt char #-2).
+/export/home/dennis/Projects/csync2/csync2/test/test/local/type_change is different on peer (cktxt char #-1).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=9
 CONN peer > 'octet-stream 0'
