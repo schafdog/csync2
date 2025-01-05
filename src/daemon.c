@@ -957,6 +957,25 @@ void csync_daemon_get_size_time(int conn, char *filename, struct csync_command *
 
 }
 
+int set_file_link_times(const char *symlink, const struct timeval times[2]) {
+    int attempts = 0;
+    const int max_attempts = 5;
+    const useconds_t delay = 100000; // 100 milliseconds
+
+    while (attempts < max_attempts) {
+        if (lutimes(symlink, times) == 0) {
+            return 0; // Success
+        } else if (errno == EAGAIN) {
+            attempts++;
+            usleep(delay); // Wait before retrying
+        } else {
+            return -1; // Failure
+        }
+    }
+    csync_info(1, "lutimes failed after %d attempts\n", attempts);
+    return -1;
+}
+
 int csync_daemon_settime(char *filename, time_t time, const char **cmd_error) {
 	int result = OK;
 	struct timeval times[2];
@@ -964,7 +983,8 @@ int csync_daemon_settime(char *filename, time_t time, const char **cmd_error) {
 	times[1].tv_usec = 0;
 	times[0].tv_sec = time;
 	times[1].tv_sec = times[0].tv_sec;
-	int rc = lutimes(filename, times);
+	errno = 0;
+	int rc = set_file_link_times(filename, times);
 	if (rc) {
 		*cmd_error = strerror(errno);
 	}
