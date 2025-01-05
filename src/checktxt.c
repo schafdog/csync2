@@ -143,6 +143,11 @@ int csync_cmpchecktxt(const char *a, const char *b) {
 		csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt A: %s \n", a);
 		csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", b);
 	}
+	if (rc < 0) {
+		return -1;
+	} else if (rc > 0) {
+		return 1;
+	}
 	return rc;
 
 	int i;
