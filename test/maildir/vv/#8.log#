@@ -66,8 +66,27 @@ CONN peer > 'octet-stream 32'
 Got octet-stream 32
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
 rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
+Chunk read 20 32
+rs_check: Found diff in sig at -32:-0
+DUMP: 20b7277814560000000000000000000000000000000000000000000000000000
+         727301360000080000000010117b03afcdd4813ff8e184a51dac0b7c9b544288Chunk read 0 0
+File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
-?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
+?F: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
+CONN peer < PATCH %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST - 1234 1000 dennis schafroth 33188 - 8 
+CONN peer > 'OK (sending sig).'
+CONN peer > 'octet-stream 32'
+Got octet-stream 32
+Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
+Receiving 32 bytes (chunked)..
+Chunk read 20 32
+Chunk read 0 0
+File received using chunked encoding.
+Sending chunked stream of 8 bytes
+CONN peer < octet-stream 8
+
+File sent using chunked encoding.
+CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST (0)
 Updating (HARDLINK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
 CONN peer < SIG %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S user/group 1234 1000 dennis schafroth 33188 - 8 
@@ -82,12 +101,14 @@ CONN peer > 'octet-stream 32'
 Got octet-stream 32
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
 rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
+Chunk read 20 32
+rs_check: Found diff in sig at -32:-0
+DUMP: a0b6277814560000000000000000000000000000000000000000000000000000
+    727301360000080000000010117b03afcdd4813ff8e184a51dac0b7c9b544288Chunk read 0 0
+File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
-?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
-Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST -> /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S
-CONN peer < MKHARDLINK %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S 
-CONN peer > 'OK (cmd_finished).'
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S (0)
+?F: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
+Remote HARDLINK file (/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST) not identical. Need patching. RC = 8
 clear dirty HARDLINK
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S (0)
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST (0)

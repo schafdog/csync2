@@ -252,7 +252,7 @@ check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/pe
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  is clean
 CONN local < OK 
-Sending sig_file to peer..
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 to peer.
 Sending octet-stream of 12 bytes
 CONN local < octet-stream 12
 
@@ -361,7 +361,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
-Sending sig_file to peer..
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, to peer.
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
@@ -443,7 +443,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
-Sending sig_file to peer..
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S to peer.
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
@@ -544,7 +544,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
-Sending sig_file to peer..
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
@@ -560,7 +560,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
-Sending sig_file to peer..
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
@@ -677,7 +677,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
-Sending sig_file to peer..
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S to peer.
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 
@@ -707,7 +707,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
 
-Sending sig_file to peer..
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
 Sending octet-stream of 32 bytes
 CONN local < octet-stream 32
 

@@ -61,6 +61,7 @@ delete flags: 0
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
+rs_check: Receiving signature 0 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local
 CONN peer > 'OK (cmd_finished).'
 CONN peer < DEL %25test%25 
 CONN peer > 'IDENT (cmd_finished).'
