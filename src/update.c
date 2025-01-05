@@ -506,7 +506,7 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 				local_log = filter_mtime(local_log, 1);
 			}
 			//csync_info(1, "ZERO time %d\n", csync_zero_mtime_debug);
-			csync_info(3, "File is different on peer (cktxt char #%d).\n", differs);
+			csync_info(3, "%s is different on peer (cktxt char #%d).\n", filename, differs);
 			csync_info(3, ">>> PEER:  %s\n>>> LOCAL: %s\n", peer_log, local_log);
 			if (csync_zero_mtime_debug) {
 				free(peer_log);
@@ -716,7 +716,7 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername, file
 		chk_local = csync_genchecktxt_version(st, filename, flag, peer_version);
 
 	if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
-		csync_info(log_level, "File is different on peer (cktxt char #%d).\n", i);
+		csync_info(log_level, "%s is different on peer (cktxt char #%d).\n", filename, i);
 		char *peer_log = (char *) chk_peer_decoded, *local_log = (char *) chk_local;
 		if (csync_zero_mtime_debug) {
 			peer_log = filter_mtime(peer_log, 1);
@@ -1887,7 +1887,7 @@ int csync_insynctest_readline(int conn, char **file, char **checktxt) {
 		return 1;
 	}
 
-	csync_info(2, "Fetched tuple from peer: %s [%s]\n", *file, *checktxt);
+	csync_info(3, "Fetched tuple from peer: %s [%s]\n", *file, *checktxt);
 
 	return 0;
 }
