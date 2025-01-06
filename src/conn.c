@@ -507,7 +507,7 @@ int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 			csync_error(0, "Failed reading file while sending");
 			return -1;
 		}
-		csync_debug(3, "DUMP: %s\n", to_hex(buffer, chunk, hexbuf));
+		//csync_debug(3, "DUMP: %s\n", to_hex(buffer, chunk, hexbuf));
 		if (conn_write_chunk(sockfd, buffer, chunk) != 0) {
 			csync_error(0, "Failed to send file chunked %ld\n", chunk);
 			return -1;

@@ -451,8 +451,8 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 				found_diff = 1;
 			} else if (memcmp(peer, local, read) != 0) {
 				csync_info(2, "rs_check: Found diff in sig at -%Ld:-%Ld\n", size, size - read);
-				char peerstr[2*read+1], localstr[2*read+1];
-				csync_info(3, "DUMP: %s\n      %s\n", to_hex(peer, read, peerstr), to_hex(local, read, localstr));
+				//char peerstr[2*read+1], localstr[2*read+1];
+				//csync_info(3, "DUMP: %s\n      %s\n", to_hex(peer, read, peerstr), to_hex(local, read, localstr));
 				found_diff = 1;
 			}
 		}
