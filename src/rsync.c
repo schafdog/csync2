@@ -51,6 +51,8 @@
 #include <w32api/windows.h>
 #endif
 
+extern int cfg_patch_mode;
+
 /* This has been taken from rsync:lib/compat.c */
 
 /**
@@ -273,10 +275,10 @@ int csync_send_file_octet_stream(int conn, FILE *in) {
 }
 
 void csync_send_file(int conn, FILE *in) {
-	if (OCTET_STREAM)
-		csync_send_file_octet_stream(conn, in);
-	else
+	if (cfg_patch_mode == CHUNKED_MODE)
 		csync_send_file_chunked(conn, in);
+	else
+		csync_send_file_octet_stream(conn, in);
 }
 
 int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) {
@@ -355,10 +357,11 @@ int csync_recv_file_octet_stream(int conn, FILE *out) {
 }
 
 int csync_recv_file(int conn, FILE *out) {
-	if (OCTET_STREAM)
-		return csync_recv_file_octet_stream(conn, out);
-	else
+	if (cfg_patch_mode == CHUNKED_MODE)
 		return csync_recv_file_chunked(conn, out);
+	else
+		return csync_recv_file_octet_stream(conn, out);
+
 }
 
 char *to_hex(const char str[], size_t length, char result[]) {
@@ -433,10 +436,10 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	csync_info(2, "rs_check: Receiving signature %Ld bytes for %s\n", size, filename);
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
-		if (OCTET_STREAM) 
-			read = conn_read(conn, peer, chunk);
-		else {
+		if (cfg_patch_mode == CHUNKED_MODE) 
 			read = conn_read_chunk(conn, &peer, &chunk);
+		else {
+			read = conn_read(conn, peer, chunk);
 		}
 		if (read == 0) {
 			break;
@@ -458,7 +461,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 		}
 		size -= read;
 		csync_info(3, "Got %d bytes, %Ld bytes left ..\n", read, size);
-		if (!OCTET_STREAM) {
+		if (cfg_patch_mode == CHUNKED_MODE) {
 			if (size == 0) {
 				// conn_read_chunk needs to read the zero size chunk
 				read = conn_read_chunk(conn, &peer, &chunk);
@@ -686,11 +689,14 @@ int csync_rs_patch(int conn, filename_p filename) {
 }
 
 static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE *old, FILE *new, rs_job_t *job,
-		int err_no) {
+								   int err_no) {
 	csync_error(0, errstr, filename, err_no);
-	rs_file_close(old);
-	rs_file_close(new);
-	rs_job_free(job);
+	if (old)
+		rs_file_close(old);
+	if (new)
+		rs_file_close(new);
+	if (job)
+		rs_job_free(job);
 	return errno;
 }
 
@@ -698,12 +704,15 @@ static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE
 int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
 	char tmpfname[MAXPATHLEN];
-	/* Open tmp  file */
+	/* Open tmp file */
 	FILE *tmp = open_temp_file(tmpfname, fname);
 	csync_redis_lock_custom(tmpfname, 600, "CREATE");
 
 	/* Open basis file */
-	FILE *old = rs_file_open(fname, "rb", 0);
+	FILE *old = fopen(fname, "rb");
+	if (!old) {
+		old = fopen("/dev/null", "rb");
+	}
 
 	rs_job_t *job = rs_patch_begin(rs_file_copy_cb, old);
 
@@ -722,6 +731,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	rs_result res;
 	int iter = 0;
 	do {
+		csync_debug(3, "rs_recv_delta_and_patch: Patching %s size left:  %ld\n", fname, size);
 		if (bufs.eof_in == 0) {
 			if (bufs.avail_in > BUF_SIZE) {
 				/* The job requires more data, but we cannot fit another
@@ -735,12 +745,14 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 			}
 
 			char *buffer[CHUNK_SIZE];
-			ssize_t read = conn_read(sock, buffer, size > CHUNK_SIZE ? CHUNK_SIZE : size);
+			size_t avail = BUF_SIZE - bufs.avail_in;
+			avail = avail > CHUNK_SIZE ? CHUNK_SIZE : avail;
+			ssize_t read = conn_read(sock, buffer, (size_t) size > avail ? avail : size);
 			if (read == -1) {
 				return csync_delta_patch_error("Failed to read chunk: %s %d", fname, old, tmp, job, read);
 			}
 			size -= read;
-			printf("Recieved %zu bytes\n", read);
+			csync_debug(3, "rs_delta_and_patch: Recieved %zu bytes\n", read);
 			if (read > 0) {
 				memcpy(in_buf + bufs.avail_in, buffer, read);
 			}
@@ -779,10 +791,10 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	// MOVED_TO
 	csync_redis_lock_custom(fname, 300, "MOVED_TO");
 	// This will break any hardlink to filename. Restore 
-	if (rename(tmpfname, fname) == 0) {
-		csync_info(2, "File '%s' has been patched successfully.\n", fname);
-		return 0;
+	if (rename(tmpfname, fname) != 0) {
+		csync_error(0, "Renaming tmp to %s failed", fname);
+		return -1;	
 	}
-	csync_error(0, "Renaming tmp to %s failed", fname);
-	return -1;
+	csync_info(3, "File '%s' has been patched successfully.\n", fname);
+	return 0;
 }

@@ -86,6 +86,7 @@ enum action_t {
 };
 
 extern int csync_zero_mtime_debug;
+extern int cfg_patch_mode;
 
 int csync_set_backup_file_status(char *filename, int backupDirLength);
 int csync_file_backup(filename_p filename, const char **cmd_error);
@@ -740,6 +741,17 @@ textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl) {
 	return 0;
 }
 
+int csync_patch(int conn, filename_p filename) {
+
+	switch (cfg_patch_mode) {
+	case DELTA_PATCH:
+		return csync_rs_recv_delta_and_patch(conn, filename);
+	case OCTET_STREAM:
+	case CHUNKED_MODE:
+		return csync_rs_patch(conn, filename);
+	}
+}
+	
 int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	struct stat st;
 	int rc = stat(filename, &st);
@@ -753,7 +765,7 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
 		conn_printf(conn, "OK (sending sig).\n");
 		csync_rs_sig(conn, filename);
-		if (csync_rs_patch(conn, filename)) { // _recv_delta_and_
+		if (csync_patch(conn, filename)) {
 			*cmd_error = strerror(errno);
 			return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 		}
@@ -1321,7 +1333,7 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 	case A_CREATE: {
 		int rc = csync_daemon_patch(conn_out, filename, cmd_error);
 		if (rc != OK) {
-			csync_error(1, "Failed to patch %s", filename);
+			csync_error(1, "Failed to patch %s\n", filename);
 			return rc;
 		}
 		rc = csync_daemon_setown(filename, params->uid, params->gid, params->user, params->group, cmd_error);

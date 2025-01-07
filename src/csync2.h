@@ -71,7 +71,10 @@ typedef const char * peername_p;
 #define FLAG_DO_ALL          2048
 
 
-#define OCTET_STREAM 0
+#define OCTET_STREAM 0  // orginal format
+#define CHUNKED_MODE 1  // chunked format
+#define DELTA_PATCH  2  // orginal format but direct patching while receiving
+
 #define CHUNK_SIZE 16*1024
 
 

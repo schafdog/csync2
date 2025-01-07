@@ -335,29 +335,31 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version) {
 			"  type   int    	      ,"
 			"  file_id   bigint      ,"
 			"  timestamp timestamp   DEFAULT current_timestamp,"
-			"  UNIQUE (filename,peername,myname), "
-			"); CREATE INDEX idx_dirty_device_inode on drity (device, inode);",
+			"  UNIQUE (filename,peername,myname)"
+			");"
+			"CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
 	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
 	"CREATE TABLE file ("
 //		     "  id     serial        ,"
-					"  parent bigint        ,"
-					"  filename varchar(%u) ,"
-					"  basename varchar(%u) ,"
-					"  hostname varchar(%u) ,"
-					"  checktxt varchar(%u),"
-					"  device bigint        ,"
-					"  inode  bigint        ,"
-					"  size   bigint        ,"
-					"  mode   int           ,"
-					"  mtime  int    	     ,"
-					"  type   int    	     ,"
-					"  digest varchar(130)  ,"
-					"  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
+				 "  parent bigint        ,"
+				 "  filename varchar(%u) ,"
+				 "  basename varchar(%u) ,"
+				 "  hostname varchar(%u) ,"
+				 "  checktxt varchar(%u),"
+				 "  device bigint        ,"
+				 "  inode  bigint        ,"
+				 "  size   bigint        ,"
+				 "  mode   int           ,"
+				 "  mtime  int    	     ,"
+				 "  type   int    	     ,"
+				 "  digest varchar(130)  ,"
+				 "  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
 //		     "  UNIQUE (id),"
-					"  UNIQUE (filename,hostname), "
-					"); CREATE INDEX idx_file_device_inode ON FILE (device, inode); ",
+				 "  UNIQUE (filename,hostname)"
+				 "); "
+				 "CREATE INDEX idx_file_device_inode ON FILE (device, inode); ",
 	FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50);
 
 	csync_db_sql(conn, NULL, /* "Creating hint table", */
