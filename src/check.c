@@ -606,8 +606,8 @@ int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino,
 
 	dev_t dev_no;
 	ino64_t ino_no;
-	sscanf(dev, "%lu", &dev_no);
-	sscanf(ino, "%lu", &ino_no);
+	sscanf(dv, DEV_FORMAT, &dev_no);
+	sscanf(ino, INO_FORMAT, &ino_no);
 
 	if (old_stat) {
 		old_stat->st_dev = dev_no;
