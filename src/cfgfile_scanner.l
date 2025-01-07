@@ -55,7 +55,7 @@ int include_stack_ptr = 0;
 "database-version" { return TK_DB_VERSION;       }
 "protocol-version" { return TK_PROTOCOL_VERSION; }
 "ip-version"       { return TK_IP_VERSION;       }
-
+"patch-mode"       { return TK_PATCH_MODE;       }
 
 "group"		{ return TK_GROUP; }
 "host"		{ return TK_HOST; }

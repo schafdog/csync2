@@ -40,6 +40,7 @@ char *csync_tempdir = NULL;
 int cfg_db_version = -1;
 int cfg_protocol_version = -1;
 int cfg_ip_version = -1;
+int cfg_patch_mode = 0;
 
 #ifdef __CYGWIN__
 int csync_lowercyg_disable = 0;
@@ -434,6 +435,12 @@ static void set_database_version(char *version)
   free(version);
 }
 
+static void set_patch_mode(char *mode)
+{
+  cfg_patch_mode = atoi(mode);
+  free(mode);
+}
+
 static void set_redis(filename_p filename)
 {
     csync_redis = (char*) filename;
@@ -591,7 +598,7 @@ static void disable_cygwin_lowercase_hack()
 
 %token TK_BLOCK_BEGIN TK_BLOCK_END TK_STEND TK_AT TK_AUTO
 %token TK_NOSSL TK_IGNORE TK_GROUP TK_HOST TK_EXCL TK_INCL TK_COMP TK_KEY TK_DATABASE
-%token TK_DB_VERSION TK_PROTOCOL_VERSION TK_IP_VERSION TK_REDIS
+%token TK_DB_VERSION TK_PROTOCOL_VERSION TK_PATCH_MODE TK_IP_VERSION TK_REDIS
 %token TK_ACTION TK_PATTERN TK_EXEC TK_DOLOCAL TK_LOGFILE TK_NOCYGLOWER
 %token TK_PREFIX TK_ON TK_COLON TK_POPEN TK_PCLOSE
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
@@ -626,6 +633,8 @@ block:
 		{ set_redis($2); }
 |	TK_PROTOCOL_VERSION TK_STRING TK_STEND
 		{ set_protocol_version($2); }
+|	TK_PATCH_MODE TK_STRING TK_STEND
+		{ set_patch_mode($2); }
 |	TK_IP_VERSION TK_STRING TK_STEND
 		{ set_ip_version($2); }
 |	TK_TEMPDIR TK_STRING TK_STEND
