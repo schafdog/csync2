@@ -750,6 +750,9 @@ int csync_patch(int conn, filename_p filename) {
 	case CHUNKED_MODE:
 		return csync_rs_patch(conn, filename);
 	}
+	// Should not happen
+	csync_fatal("Wrong value of patch-mode\n");
+	return 0;
 }
 	
 int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
