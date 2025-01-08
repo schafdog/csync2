@@ -84,7 +84,7 @@ Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recu
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive 0
-Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive. RC: 1 11
+Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive): 6 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive  
 IDENT (cmd_finished).
@@ -98,7 +98,7 @@ Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csy
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
-Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
+Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 0 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
