@@ -613,15 +613,18 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 			OP_FILTER,
 			filter_sql,
 			db_escape(db, peername),
-			db_escape(db, myhostname))
-;	{
+			db_escape(db, myhostname));
+	{
 		filename_p filename = db_decode(SQL_V(0));
 		const char *op_str = db_decode(SQL_V(1));
 		operation_t operation = (SQL_V(2) ? atoi(SQL_V(2)) : 0);
 		const char *other = db_decode(SQL_V(3));
 		const char *checktxt = db_decode(SQL_V(4));
+		// For some reason it is¨'' in the tests using postgres but correctly null on mysql
+		// But seems to work (sometime) on db csync2. Doesnt make sense
 		const char *digest = db_decode(SQL_V(5));
 		const char *forced_str= db_decode(SQL_V(6));
+		csync_debug(1, "DIRTY LOOKUP: '%s' '%s'\n", filename, SQL_V(5));
 		int forced = forced_str ? atoi(forced_str) : 0;
 		int found = 0;
 		for (int i = 0; i < numpat && !found; i++) {
@@ -632,7 +635,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 			}
 		}
 		if (found)
-		csync_info(3, "dirty: %s:%s %d %s\n", peername, filename, found, checktxt);
+			csync_info(1, "dirty: %s:%s %s ‰s\n", peername, filename, checktxt, digest);
 
 	}SQL_END;
 
@@ -873,7 +876,7 @@ textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, c
 				textlist_add_new2(&tl, db_filename, db_checktxt, operation);
 			}
 			else {
-				csync_info(0, "Different digest for %s %s ", digest, db_digest);
+				csync_info(0, "Different digest\n%s: %s \n%s: %s\n", filename, digest, db_filename, db_digest);
 			}
 		}SQL_FIN {
 			if (SQL_COUNT > 0) {

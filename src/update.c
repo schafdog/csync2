@@ -1143,10 +1143,11 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 				}
 
 				char *calc_digest = NULL;
-				if (!digest) {
+				if (!digest || digest[0] == 0) {
 					csync_calc_digest(filename, buffer, &calc_digest);
 					digest = calc_digest;
 				};
+				csync_debug(1, "CHECKING SAME DEV INODE %s '%s'\n", filename, digest);
 				textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
 				textlist_p ptr = tl;
 				while (ptr != NULL) {
@@ -1530,6 +1531,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 		const char *op_str = t->value2, *checktxt = t->value4, *digest = t->value5;
 		int operation = t->operation, forced = t->intvalue;
 		next_t = t->next;
+		csync_debug(1, "DIRTY %s '%s'\n", filename, digest);
 		if (lstat_strict(filename, &st) == 0 && !csync_check_pure(filename)) {
 			rc = csync_update_file_mod(conn, db, myname, peername, filename, operation, other, checktxt, digest, forced,
 					flags & FLAG_DRY_RUN);

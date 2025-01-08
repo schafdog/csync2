@@ -296,11 +296,11 @@ void csync_send_error(int conn) {
 	conn_printf(conn, "ERROR\n");
 }
 
-const char *typestr[2] = { "octet-stream", "chunked" };
+const char *typestr[2] = { "octet-stream", "chunked", "ERROR" };
 
 int csync_recv_file_chunked(int conn, FILE *out) {
 	long long size;
-	int type;
+	int type = 2;
 	if (conn_read_get_content_length(conn, &size, &type)) {
 		if (errno == EIO)
 			return -1;
@@ -309,7 +309,7 @@ int csync_recv_file_chunked(int conn, FILE *out) {
 		return -2;
 	}
 	if (size > 0) {
-		csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes (%s)..\n", size, typestr[2 - 1]);	
+		csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes (%s)..\n", size, typestr[type]);
 		conn_read_file_chunked(conn, out);
 	} else {
 		csync_log(LOG_DEBUG, 1, "Skipping chunked reading when zero\n");
@@ -324,7 +324,7 @@ int csync_recv_file_octet_stream(int conn, FILE *out) {
 	char buffer[CHUNK_SIZE];
 	int bytes, chunk;
 	long long size;
-	int type;
+	int type = 3;
 	if (conn_read_get_content_length(conn, &size, &type)) {
 		if (errno == EIO)
 			return -1;
@@ -333,7 +333,7 @@ int csync_recv_file_octet_stream(int conn, FILE *out) {
 		return -2;
 	}
 
-	csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes (%s)..\n", size, typestr[type - 1]);
+	csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes (%s)..\n", size, typestr[type]);
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		bytes = conn_read(conn, buffer, chunk);
