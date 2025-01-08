@@ -405,7 +405,7 @@ ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
 	char buffer[200];
 	*size = 0;
 	int rc = !conn_gets(fd, buffer, 200);
-	char *typestr = "Nope";
+	char *typestr = "None";
 	if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
 		csync_info(2, "Got octet-stream %lld\n", *size);
 		*type = 1;
