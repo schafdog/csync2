@@ -168,13 +168,16 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 		}
 		free(namelist);
 	}
-	/* time_t lock_time = */csync_redis_lock_custom(file, 300, "DELETE,IS_DIR");
+	/* time_t lock_time = */
+	csync_redis_lock_custom(file, 300, "DELETE,IS_DIR");
+	errno = 0;
 	int rc = rmdir(file);
 	csync_info(1 + backup, "Removed directory %s %d\n", file, rc);
 	if (db)
 		db->remove_file(db, file, 1);
 	if (rc == -1) {
 		csync_redis_del_custom(file, "DELETE,IS_DIR");
+		csync_info(0, "Failed to delete directory %s recursively", fileno, errno);
 		/* Accept if we already deleted it */
 		if (errno == ENOTDIR || errno == ENOENT) {
 			rc = 0;
