@@ -1045,7 +1045,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 			db_version = cfg_db_version;
 	}
 	if (db_version == 2) {
-//	db_encode = csync_db_escape;
+        //	db_encode = csync_db_escape;
 		db_decode = csync_decode_v2;
 	}
 
