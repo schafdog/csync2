@@ -182,8 +182,10 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 		if (errno == ENOTDIR || errno == ENOENT) {
 			rc = 0;
 		}
-	} else
+	} else {
 		rc = IDENTICAL;
+//		errno = 0;
+	}
 	return rc;
 }
 
@@ -223,6 +225,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 		 tl = 0;
 		 */
 		rc = ERROR;
+		errno = 0;
 		/* Above could fail due to ignore files. Do recursive on scandir  */
 		if (rc == ERROR) {
 			csync_warn(1, "Calling csync_rmdir_recursive %s:%s. Errors %d\n", peername, filename, errors);
