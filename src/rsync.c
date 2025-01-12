@@ -296,7 +296,7 @@ void csync_send_error(int conn) {
 	conn_printf(conn, "ERROR\n");
 }
 
-const char *typestr[2] = { "octet-stream", "chunked", "ERROR" };
+const char *typestr[3] = { "octet-stream", "chunked", "ERROR" };
 
 int csync_recv_file_chunked(int conn, FILE *out) {
 	long long size;
