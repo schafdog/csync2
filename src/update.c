@@ -61,6 +61,7 @@
 // #define CLEAR_DIRTY
 #define ERROR_DIRTY        -11
 #define ERROR_OTHER        -12
+#define ERROR_LOCKED       -12
 #define ERROR_PATH_MISSING -13
 #define ERROR_HARDLINK     -14
 
@@ -118,6 +119,7 @@ const char* csync_operation_str(operation_t op) {
 	csync_error(1, "No mapping for operation: %u %u\n", op, OP_FILTER);
 	return "?";
 }
+
 int read_conn_status_raw(int fd, const char *file, const char *host, char *line, int maxlength) {
 	if (conn_gets(fd, line, maxlength)) {
 		if (!strncmp(line, "OK (not_found", 12))
@@ -126,6 +128,8 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 			return OK;
 		if (!strncmp(line, "IDENT (", 7))
 			return IDENTICAL;
+		if (!strncmp(line, ERROR_LOCKED_STR, ERROR_LOCKED_STR_LEN))
+			return ERROR_LOCKED;
 	} else {
 		strcpy(line, "ERROR: Read conn status: Connection closed.\n");
 		csync_error(0, line);
@@ -1108,7 +1112,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 				if (rc == OK) {
 					csync_clear_dirty(db, peername, filename, auto_resolve_run);
 					csync_clear_dirty(db, peername, other, auto_resolve_run);
-					// return? 
+					return rc;
 				}
 				if (rc == CONN_CLOSE) {
 					csync_error(0, "Connection closed while moving  %s:%s", peername, filename);
@@ -1147,7 +1151,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 					csync_calc_digest(filename, buffer, &calc_digest);
 					digest = calc_digest;
 				};
-				csync_debug(1, "CHECKING SAME DEV INODE %s '%s'\n", filename, digest);
+				csync_debug(2, "CHECKING SAME DEV INODE %s '%s'\n", filename, digest);
 				textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
 				textlist_p ptr = tl;
 				while (ptr != NULL) {
@@ -1276,7 +1280,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			else
 				csync_info(2, "Skipping file patch '%s' (same)", filename);
 
-			if (rc == CONN_CLOSE)
+			if (rc == CONN_CLOSE || rc == ERROR_LOCKED)
 				return rc;
 			/*	    
 			 if (st.st_nlink > 0) {
@@ -1378,6 +1382,9 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			}
 			csync_info(1, "Attempting autoresolve on %s:%s\n", peername, filename);
 			break;
+		case ERROR_LOCKED:
+			csync_info(1, "Locked file on %s:%s. Keep dirty\n", peername, filename);
+			return rc;
 		default:
 			csync_warn(1, "csync_update_file_mod: Unhandled rc: %d\n", rc);
 			return rc;
@@ -1531,7 +1538,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 		const char *op_str = t->value2, *checktxt = t->value4, *digest = t->value5;
 		int operation = t->operation, forced = t->intvalue;
 		next_t = t->next;
-		csync_debug(1, "DIRTY %s '%s'\n", filename, digest);
+		//csync_debug(1, "DIRTY %s '%s'\n", filename, digest);
 		if (lstat_strict(filename, &st) == 0 && !csync_check_pure(filename)) {
 			rc = csync_update_file_mod(conn, db, myname, peername, filename, operation, other, checktxt, digest, forced,
 					flags & FLAG_DRY_RUN);
