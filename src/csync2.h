@@ -311,6 +311,9 @@ struct textlist;
 
 #define PATH_NOT_FOUND "ERROR (Path not found): "
 #define PATH_NOT_FOUND_LEN sizeof(PATH_NOT_FOUND)-1
+#define ERROR_LOCKED_STR "ERROR (locked)"
+#define ERROR_LOCKED_STR_LEN sizeof(ERROR_LOCKED_STR)-1
+
 
 int get_file_type(int st_mode);
 int compare_files(filename_p filename, const char *pattern, int recursive);
@@ -522,13 +525,13 @@ static inline void textlist_add_new2(struct textlist **listhandle,
 				     const char *item, const char *item2, int intitem)
 {
     if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem)) {
-	textlist_add(listhandle, item, intitem);
-	(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
-	csync_log(LOG_DEBUG, 3, "Adding textlist_add_new: %s\n", item);
+		textlist_add(listhandle, item, intitem);
+		(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
+		csync_log(LOG_DEBUG, 3, "Adding textlist_add_new: %s\n", item);
     }
     else {
-	csync_log(LOG_DEBUG, 3, "Skipping textlist_add_new: %s\n", item);
-  }
+		csync_log(LOG_DEBUG, 3, "Skipping textlist_add_new: %s\n", item);
+	}
 }
 
 static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
