@@ -793,7 +793,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	// This will break any hardlink to filename. Restore 
 	if (rename(tmpfname, fname) != 0) {
 		csync_error(0, "Renaming tmp to %s failed", fname);
-		return -1;	
+		return -1;
 	}
 	csync_info(3, "File '%s' has been patched successfully.\n", fname);
 	return 0;

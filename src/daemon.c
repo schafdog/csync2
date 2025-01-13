@@ -760,7 +760,7 @@ int csync_patch(int conn, filename_p filename) {
 	csync_fatal("Wrong value of patch-mode\n");
 	return 0;
 }
-	
+
 int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	struct stat st;
 	int rc = stat(filename, &st);

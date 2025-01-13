@@ -499,7 +499,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 
 int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 	char buffer[CHUNK_SIZE];
-   	while (size > 0) {
+	while (size > 0) {
 		size_t chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		int rc  = fread(buffer, chunk, 1, file);
 		char hexbuf[chunk*2+1];
