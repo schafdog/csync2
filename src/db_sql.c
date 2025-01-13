@@ -624,7 +624,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 		// But seems to work (sometime) on db csync2. Doesnt make sense
 		const char *digest = db_decode(SQL_V(5));
 		const char *forced_str= db_decode(SQL_V(6));
-		csync_debug(1, "DIRTY LOOKUP: '%s' '%s'\n", filename, SQL_V(5));
+		csync_debug(2, "DIRTY LOOKUP: '%s' '%s'\n", filename, SQL_V(5));
 		int forced = forced_str ? atoi(forced_str) : 0;
 		int found = 0;
 		for (int i = 0; i < numpat && !found; i++) {
@@ -635,7 +635,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 			}
 		}
 		if (found)
-			csync_info(1, "dirty: %s:%s %s ‰s\n", peername, filename, checktxt, digest);
+			csync_info(2, "dirty: %s:%s %s '%s'\n", peername, filename, checktxt, digest);
 
 	}SQL_END;
 
