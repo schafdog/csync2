@@ -81,7 +81,7 @@ Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
-Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
+Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
