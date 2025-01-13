@@ -50,3 +50,4 @@ debian/debhelper-build-stamp
 src/check_link_move.c
 src/fsantize.txt
 src/regfile_check_link.c
+installed.txt
