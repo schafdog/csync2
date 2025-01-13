@@ -38,6 +38,7 @@ install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/csync2
 	test -e $(CONFDIR)/csync2.cfg || \
 		$(INSTALL_DATA) csync2.cfg $(CONFDIR)/csync2.cfg
+	./csync2 -V |grep git >> installed.txt
 
 cert:
 	$(mkinstalldirs) $(CONFDIR)
