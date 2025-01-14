@@ -97,8 +97,8 @@ int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 	time_t lock_time = csync_redis_lock(filename);
 	if (buffer && lock_time == -1) {
 		buffer_strdup(buffer, filename);
-		csync_debug(1, "daemon RM: Failed to lock %s", filename);
-		return ABORT_CMD;
+		csync_debug(1, "daemon RM: Failed to lock %s\n", filename);
+		//return ABORT_CMD;
 	}
 	if (db) {
 		rc = csync_file_backup(filename, &cmd_error);
@@ -113,7 +113,7 @@ int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 		if (rc) {
 			if (lock_time != -1)
 				csync_redis_del_custom(filename, "DELETE");
-			csync_error(1, "Failed to delete  %s !\n", filename);
+			csync_error(1, "Failed to delete %s !\n", filename);
 		}
 	} else {
 		csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
@@ -177,7 +177,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 		db->remove_file(db, file, 1);
 	if (rc == -1) {
 		csync_redis_del_custom(file, "DELETE,IS_DIR");
-		csync_info(0, "Failed to delete directory %s recursively", fileno, errno);
+		csync_info(0, "Failed to delete directory %s recursively\n", file, errno);
 		/* Accept if we already deleted it */
 		if (errno == ENOTDIR || errno == ENOENT) {
 			rc = 0;
@@ -230,6 +230,7 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 		if (rc == ERROR) {
 			csync_warn(1, "Calling csync_rmdir_recursive %s:%s. Errors %d\n", peername, filename, errors);
 			rc = csync_rmdir_recursive(db, filename, peername, &tl, 0);
+
 			if (rc == -1 && errno == EAGAIN) {
 				rc = OK;
 			}
@@ -761,13 +762,44 @@ int csync_patch(int conn, filename_p filename) {
 	return 0;
 }
 
+int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
+	csync_info(1, "daemon CREATE %s\n", filename);
+	struct stat st;
+	int rc = stat(filename, &st);
+	if (rc != -1) {
+		*cmd_error = "ERROR (exist).\n";
+		return ABORT_CMD;
+	}
+	time_t lock_time = csync_redis_lock(filename);
+	if (lock_time == -1) {
+		*cmd_error = "ERROR (locked).\n";
+		csync_error(1, "Create %s: %s");
+		//return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+	}
+	conn_printf(conn, "OK (send data).\n");
+
+	int fd = open(filename, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
+	if (fd < 0) {
+		*cmd_error = "ERROR (create).\n";
+		return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+	}
+	FILE *new_file = fdopen(fd, "wb+");
+	rc = csync_recv_file(conn, new_file);
+	if (rc == -1) {
+		csync_error(0, "ERROR: Failed to stat new file: %s %d", filename, rc);
+		return csync_redis_unlock_status(filename, lock_time, rc);
+	}
+	return OK;
+}
+
 int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	struct stat st;
 	int rc = stat(filename, &st);
 	time_t lock_time = csync_redis_lock(filename);
 	if (lock_time == -1) {
 		*cmd_error = "ERROR (locked).\n";
-		return ABORT_CMD;
+		csync_error(0, "Patching %s: %s", filename, cmd_error);
+		// return ABORT_CMD;
 	}
 
 	// Only try to backup if the file exists already.
@@ -785,9 +817,12 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 		if (!new_rc) {
 			if (st.st_nlink > 1) {
 			}
-		} else
+		} else {
 			csync_error(0, "ERROR: Failed to stat patched file: %s %d", filename, new_rc);
+			return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+		}
 		return csync_redis_unlock_status(filename, lock_time, OK);
+		//return OK;
 	}
 	return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 }
