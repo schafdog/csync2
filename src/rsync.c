@@ -274,11 +274,11 @@ int csync_send_file_octet_stream(int conn, FILE *in) {
 	return 0;
 }
 
-void csync_send_file(int conn, FILE *in) {
+int  csync_send_file(int conn, FILE *in) {
 	if (cfg_patch_mode == CHUNKED_MODE)
-		csync_send_file_chunked(conn, in);
+		return csync_send_file_chunked(conn, in);
 	else
-		csync_send_file_octet_stream(conn, in);
+		return csync_send_file_octet_stream(conn, in);
 }
 
 int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) {

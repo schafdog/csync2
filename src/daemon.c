@@ -64,6 +64,7 @@ enum action_t {
 	A_GETSZ,
 	A_DEL,
 	A_PATCH,
+	A_POST,
 	A_CREATE,
 	A_MKDIR,
 	A_MOD,
@@ -589,23 +590,40 @@ struct csync_command cmdtab[] = {
  update,
  need_ident,
  action */
-{ "sig", 1, 0, 0, NOP, YES, A_SIG }, { "mark", 1, 0, 0, NOP, YES, A_MARK }, { "type", 2, 0, 0, NOP, YES, A_TYPE }, {
-		"gettm", 1, 0, 0, NOP, YES, A_GETTM }, { "getsz", 1, 0, 0, NOP, YES, A_GETSZ }, { "flush", 1, 1, 0, NOP, YES,
-		A_FLUSH }, { "del", 1, 1, 0, UPD, YES, A_DEL }, { "patch", 1, 1, S_IFREG, UPD, YES, A_PATCH }, { "create", 1, 1,
-		S_IFREG, UPD, YES, A_CREATE }, { "mkdir", 1, 1, S_IFDIR, UPD, YES, A_MKDIR }, { "moddir", 1, 1, S_IFDIR, UPD,
-		YES, A_MKDIR }, { "mod", 1, 1, 0, UPD, YES, A_MOD },
+	{ "sig", 1, 0, 0, NOP, YES, A_SIG },
+	{ "mark", 1, 0, 0, NOP, YES, A_MARK },
+	{ "type", 2, 0, 0, NOP, YES, A_TYPE },
+	{ "gettm", 1, 0, 0, NOP, YES, A_GETTM },
+	{ "getsz", 1, 0, 0, NOP, YES, A_GETSZ },
+	{ "flush", 1, 1, 0, NOP, YES, A_FLUSH },
+	{ "del", 1, 1, 0, UPD, YES, A_DEL },
+	{ "patch", 1, 1, S_IFREG, UPD, YES, A_PATCH },
+	{ "create", 1, 1,S_IFREG, UPD, YES, A_CREATE },
+	{ "post", 1, 1,  S_IFREG, UPD, YES, A_POST },
+	{ "mkdir", 1, 1, S_IFDIR, UPD, YES, A_MKDIR },
+	{ "moddir", 1, 1, S_IFDIR, UPD, YES, A_MKDIR },
+	{ "mod", 1, 1, 0, UPD, YES, A_MOD },
 // TODO add/use  mod operations for these
-		{ "mkchr", 1, 1, -1, UPD, YES, A_MKCHR }, { "mkblk", 1, 1, -1, UPD, YES, A_MKBLK }, { "mkfifo", 1, 1, -1, UPD,
-				YES, A_MKFIFO }, { "mklink", 1, 1, S_IFLNK, UPD, YES, A_MKLINK }, { "mkhardlink", 1, 1, 0, UPD, YES,
-				A_MKHLINK }, { "mksock", 1, 1, S_IFSOCK, UPD, YES, A_MKSOCK }, { "mv", 1, 0, 0, UPD, YES, A_MV }, {
-				"setown", 1, 1, 0, UPD, YES, A_SETOWN }, { "setmod", 1, 1, 0, NOLOG, YES, A_SETMOD }, { "setime", 1, 0,
-				0, NOLOG, YES, A_SETTIME }, { "settime", 1, 0, 0, NOLOG, YES, A_SETTIME }, { "list", 0, 0, 0, NOP, YES,
-				A_LIST },
+	{ "mkchr", 1, 1, -1, UPD, YES, A_MKCHR },
+	{ "mkblk", 1, 1, -1, UPD, YES, A_MKBLK },
+	{ "mkfifo", 1, 1, -1, UPD,YES, A_MKFIFO },
+	{ "mklink", 1, 1, S_IFLNK, UPD, YES, A_MKLINK },
+	{ "mkhardlink", 1, 1, 0, UPD, YES, A_MKHLINK },
+	{ "mksock", 1, 1, S_IFSOCK, UPD, YES, A_MKSOCK },
+	{ "mv", 1, 0, 0, UPD, YES, A_MV },
+	{ "setown", 1, 1, 0, UPD, YES, A_SETOWN },
+	{ "setmod", 1, 1, 0, NOLOG, YES, A_SETMOD },
+	{ "setime", 1, 0, 0, NOLOG, YES, A_SETTIME },
+	{ "settime", 1, 0, 0, NOLOG, YES, A_SETTIME },
+	{ "list", 0, 0, 0, NOP, YES, A_LIST },
 #if 1
-		{ "debug", 0, 0, 0, NOP, NO, A_DEBUG },
+	{ "debug", 0, 0, 0, NOP, NO, A_DEBUG },
 #endif
-		{ "group", 0, 0, 0, NOP, NO, A_GROUP }, { "ping", 0, 0, 0, NOP, NO, A_PING }, { "hello", 0, 0, 0, NOP, NO,
-				A_HELLO }, { "bye", 0, 0, 0, NOP, NO, A_BYE }, { 0, 0, 0, 0, 0, 0, 0 } };
+	{ "group", 0, 0, 0, NOP, NO, A_GROUP },
+	{ "ping", 0, 0, 0, NOP, NO, A_PING },
+	{ "hello", 0, 0, 0, NOP, NO, A_HELLO },
+	{ "bye", 0, 0, 0, NOP, NO, A_BYE },
+	{ 0, 0, 0, 0, 0, 0, 0 } };
 
 /*
  * Loops (to cater for multihomed peers) through the address list returned by
@@ -761,6 +779,34 @@ int csync_patch(int conn, filename_p filename) {
 	return 0;
 }
 
+int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
+	struct stat st;
+	int rc = stat(filename, &st);
+	if (rc != -1) {
+		*cmd_error = "ERROR (exist).\n";
+		return ABORT_CMD;
+	}
+	time_t lock_time = csync_redis_lock(filename);
+	if (lock_time == -1) {
+		*cmd_error = "ERROR (locked).\n";
+		return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+	}
+	conn_printf(conn, "OK (send data).\n");
+
+	int fd = open(filename, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
+	if (fd < 0) {
+		*cmd_error = "ERROR (create).\n";
+		return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+	}
+	FILE *new_file = fdopen(fd, "wb+");
+	rc = csync_recv_file(conn, new_file);
+	if (rc == -1) {
+		csync_error(0, "ERROR: Failed to stat new file: %s %d", filename, rc);
+		return csync_redis_unlock_status(filename, lock_time, rc);
+	}
+	return OK;
+}
+
 int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	struct stat st;
 	int rc = stat(filename, &st);
@@ -785,9 +831,11 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 		if (!new_rc) {
 			if (st.st_nlink > 1) {
 			}
-		} else
+		} else {
 			csync_error(0, "ERROR: Failed to stat patched file: %s %d", filename, new_rc);
-		return csync_redis_unlock_status(filename, lock_time, OK);
+			return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);			
+		}
+		return OK;
 	}
 	return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
 }
@@ -1338,9 +1386,16 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 			return csync_unlink(db, filename, *peername, 1, cmd->unlink, cmd_error);
 
 		break;
-	case A_PATCH:
-	case A_CREATE: {
-		int rc = csync_daemon_patch(conn_out, filename, cmd_error);
+
+	case A_CREATE:
+	case A_POST:
+	case A_PATCH: {
+		int rc; 
+		if (cmd->action == A_PATCH)
+			rc = csync_daemon_patch(conn_out, filename, cmd_error);
+		else // A_CREATE or A_POST
+			rc = csync_daemon_create(conn_out, filename, cmd_error);
+
 		if (rc != OK) {
 			csync_error(1, "Failed to patch %s\n", filename);
 			return rc;

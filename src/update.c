@@ -614,6 +614,22 @@ struct update_request {
 	const char *gid;
 };
 
+/* Assume CREATE command has been sent */
+int csync_send_reg_file(int conn, peername_p peername, filename_p filename, int *last_conn_status) {
+	if ((*last_conn_status = read_conn_status(conn, filename, peername))) {
+		return *last_conn_status;
+	}
+	FILE *file = fopen(filename, "rb");
+	if (file > 0) {
+		csync_error(0, "Failed to open file %s: %d", filename, errno);
+		return -1;
+	}
+	int rc = csync_send_file(conn, file);
+	if (rc < -1) {
+		csync_error(0, "Failed to send file %s: %d", filename, errno);
+	}
+	return read_conn_status(conn, filename, peername);
+}
 /* Assume PATCH command has been sent */
 int csync_update_reg_file(int conn, peername_p peername, filename_p filename, int *last_conn_status) {
 	if ((*last_conn_status = read_conn_status(conn, filename, peername))) {
@@ -626,6 +642,7 @@ int csync_update_reg_file(int conn, peername_p peername, filename_p filename, in
 	}
 	return read_conn_status(conn, filename, peername);
 }
+
 
 int csync_update_file_dir(int conn, peername_p peername, filename_p filename, int *last_conn_status) {
 	*last_conn_status = read_conn_status(conn, filename, peername);
@@ -819,6 +836,16 @@ int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myname, pe
 	if (errors)
 		return ERROR_HARDLINK;
 	return OK;
+}
+
+int csync_update_file_send(int conn, const char *key_enc, peername_p peername, filename_p filename,
+        filename_p filename_enc, const struct stat *st, const char *uid, const char *gid, const char *digest,
+        int *last_conn_status) {
+	// unused
+	(void) digest;
+	
+	cmd_printf(conn, "CREATE", key_enc, filename_enc, "-", st, uid, gid, "-");
+	return csync_send_reg_file(conn, peername, filename, last_conn_status);	
 }
 
 int csync_update_file_patch(int conn, const char *key_enc, peername_p peername, filename_p filename,
