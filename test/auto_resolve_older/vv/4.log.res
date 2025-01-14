@@ -1,11 +1,16 @@
 cmd u "4 create directories (update)" local peer test
-Config-File:   csync2_mysql_local.cfg
+Config-File:   csync2_pgsql_local.cfg
 My hostname is local.
-Database File: mysql://csync2_local:csync2_local@127.0.0.1/csync2_local
+Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-Default encoding utf8mb4
 db_schema_version: 2
+DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older v2:mtime=1623175200:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto v2:mtime=1623175200:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=1623175200:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Connecting to localhost:30861 

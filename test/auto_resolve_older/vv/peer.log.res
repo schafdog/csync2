@@ -1,13 +1,12 @@
-Config-File:   csync2_mysql_peer.cfg
+Config-File:   csync2_pgsql_peer.cfg
 Found my alias peer localhost 30861 
 Binding to 30861 IPv0 
 CONN (null) > 'CONFIG '
-Config-File:   csync2_mysql_peer.cfg
+Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
-Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
+Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
@@ -99,12 +98,11 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-Config-File:   csync2_mysql_peer.cfg
+Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
-Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
+Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
@@ -125,8 +123,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=11
 
-Sending sig_file to peer..
-Sending octet-stream of 32 bytes
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both to peer.
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
@@ -141,7 +138,8 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/u
 csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
 mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both rows matched: 1
+INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 4aea1d30b023f66e867e3b001982f19f13d87449
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both rows matched: 0
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both is just marked dirty
 daemon_check_dirty: peer operation  local /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both NEW
@@ -169,12 +167,11 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-Config-File:   csync2_mysql_peer.cfg
+Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
-Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
+Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
@@ -202,7 +199,8 @@ CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFL
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer rows matched: 1
+INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/peer 
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer rows matched: 0
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
@@ -227,7 +225,8 @@ CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFL
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rows matched: 1
+INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rows matched: 0
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  is clean
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
@@ -257,7 +256,8 @@ check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older rows matched: 1
+INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older rows matched: 0
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older  is clean
 daemon: Auto resolve method OLDER 3 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older
@@ -280,8 +280,7 @@ CONN local < OK (data_follows).
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13
 
-Sending sig_file to peer..
-Sending octet-stream of 32 bytes
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both to peer.
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
@@ -295,7 +294,8 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
 mark other operation: 'MOD' 'local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
 mark other operation: 'MOD' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both rows matched: 1
+INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 4aea1d30b023f66e867e3b001982f19f13d87449
+Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both rows matched: 0
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both is just marked dirty
 Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve.
@@ -311,15 +311,13 @@ renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/tes
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.1' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.2'. rc = 0
 renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' to '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.1'. rc = 0
 CONN local < OK 
-Sending sig_file to peer..
-Sending octet-stream of 32 bytes
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both to peer.
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
 CONN local > 'octet-stream 20'
 Got octet-stream 20
 Content length in buffer: 'octet-stream 20' size: 20 rc: 0 (octet-stream)
-Receiving 20 bytes (octet-stream)..
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both  
@@ -349,12 +347,11 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-Config-File:   csync2_mysql_peer.cfg
+Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
-Database File: mysql://csync2_peer:csync2_peer@127.0.0.1/csync2_peer
+Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-Default encoding utf8mb4
 db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
@@ -409,7 +406,7 @@ Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/up
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
-Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 11
+Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).

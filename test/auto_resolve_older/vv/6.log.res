@@ -1,11 +1,12 @@
 cmd u "6 Fail to autoresolve (not older)" local peer test
-Config-File:   csync2_mysql_local.cfg
+Config-File:   csync2_pgsql_local.cfg
 My hostname is local.
-Database File: mysql://csync2_local:csync2_local@127.0.0.1/csync2_local
+Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-Default encoding utf8mb4
 db_schema_version: 2
+DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both v2:mtime=1623175200:mode=33188:user=dennis:group=schafroth:type=reg:size=14 ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Connecting to localhost:30861 
@@ -31,6 +32,7 @@ File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/
 CONN peer > 'octet-stream 32'
 Got octet-stream 32
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
+rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 rs_check: Found diff in sig at -32:-0
 File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
