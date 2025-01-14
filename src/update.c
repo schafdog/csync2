@@ -614,7 +614,7 @@ struct update_request {
 	const char *gid;
 };
 
-/* Assume CREATE command has been sent */
+/* Assume CREATE/POST command has been sent */
 int csync_send_reg_file(int conn, peername_p peername, filename_p filename, int *last_conn_status) {
 	if ((*last_conn_status = read_conn_status(conn, filename, peername))) {
 		return *last_conn_status;
@@ -1301,8 +1301,11 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			rc = OK;
 			// Attempt to find remote hardlinks that hare similar to current local file.
 			// moved into regfile_check_hardlink.c
-			if (sig_rc & (OK_MISSING | DIFF_FILE))
+			if (sig_rc & DIFF_FILE)
 				rc = csync_update_file_patch(conn, key_enc, peername, filename, filename_enc, &st, uid, gid, digest,
+						&last_conn_status);
+			else if (sig_rc & OK_MISSING)
+				rc = csync_update_file_send(conn, key_enc, peername, filename, filename_enc, &st, uid, gid, digest,
 						&last_conn_status);
 			else
 				csync_info(2, "Skipping file patch '%s' (same)", filename);
