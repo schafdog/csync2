@@ -620,7 +620,7 @@ int csync_send_reg_file(int conn, peername_p peername, filename_p filename, int 
 		return *last_conn_status;
 	}
 	FILE *file = fopen(filename, "rb");
-	if (file > 0) {
+	if (file == 0) {
 		csync_error(0, "Failed to open file %s: %d", filename, errno);
 		return -1;
 	}
