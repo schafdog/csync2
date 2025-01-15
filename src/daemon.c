@@ -95,17 +95,11 @@ int csync_file_backup(filename_p filename, const char **cmd_error);
 int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 	const char *cmd_error = 0;
 	int rc = 0;
-	time_t lock_time = csync_redis_lock(filename);
-	if (buffer && lock_time == -1) {
-		buffer_strdup(buffer, filename);
-		csync_debug(1, "daemon RM: Failed to lock %s\n", filename);
-		//return ABORT_CMD;
-	}
 	if (db) {
 		rc = csync_file_backup(filename, &cmd_error);
 	}
 	if (!rc) {
-		lock_time = csync_redis_lock_custom(filename, 300, "DELETE");
+		int lock_time = csync_redis_lock_custom(filename, 60, "DELETE");
 		rc = unlink(filename);
 		if (db && !rc) {
 			csync_info(1, "Removing %s from file db.\n", filename);
@@ -119,7 +113,7 @@ int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 	} else {
 		csync_error(1, "Failed to backup %s before delete: %s \n", filename, cmd_error);
 	}
-	return csync_redis_unlock_status(filename, lock_time, rc);
+	return rc;
 }
 int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd,
 		int auto_resolve, const char **cmd_error);
@@ -170,7 +164,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 		free(namelist);
 	}
 	/* time_t lock_time = */
-	csync_redis_lock_custom(file, 300, "DELETE,IS_DIR");
+	csync_redis_lock_custom(file, 60, "DELETE,IS_DIR");
 	errno = 0;
 	int rc = rmdir(file);
 	csync_info(1 + backup, "Removed directory %s %d\n", file, rc);
@@ -788,7 +782,7 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 		*cmd_error = "ERROR (exist).\n";
 		return ABORT_CMD;
 	}
-	time_t lock_time = csync_redis_lock(filename);
+	time_t lock_time = csync_redis_lock_custom(filename, 300, "CLOSE_WRITE,CLOSE");
 	if (lock_time == -1) {
 		*cmd_error = "ERROR (locked).\n";
 		csync_error(1, "Create %s: %s", filename, *cmd_error);
@@ -799,13 +793,13 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 	int fd = open(filename, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
 	if (fd < 0) {
 		*cmd_error = "ERROR (create).\n";
-		return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+		return ABORT_CMD;
 	}
 	FILE *new_file = fdopen(fd, "wb+");
 	rc = csync_recv_file(conn, new_file);
 	if (rc == -1) {
 		csync_error(0, "ERROR: Failed to stat new file: %s %d", filename, rc);
-		return csync_redis_unlock_status(filename, lock_time, rc);
+		return rc;
 	}
 	return OK;
 }
@@ -813,12 +807,6 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	struct stat st;
 	int rc = stat(filename, &st);
-	time_t lock_time = csync_redis_lock(filename);
-	if (lock_time == -1) {
-		*cmd_error = "ERROR (locked).\n";
-		csync_error(0, "Patching %s: %s", filename, *cmd_error);
-		// return ABORT_CMD;
-	}
 
 	// Only try to backup if the file exists already.
 	if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
@@ -826,7 +814,7 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 		csync_rs_sig(conn, filename);
 		if (csync_patch(conn, filename)) {
 			*cmd_error = strerror(errno);
-			return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+			return ABORT_CMD;
 		}
 
 		// TODO restore hardlinks
@@ -837,12 +825,11 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 			}
 		} else {
 			csync_error(0, "ERROR: Failed to stat patched file: %s %d", filename, new_rc);
-			return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+			return ABORT_CMD;
 		}
-		return csync_redis_unlock_status(filename, lock_time, OK);
-		//return OK;
+		return OK;
 	}
-	return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+	return ABORT_CMD;
 }
 
 int csync_daemon_mkdir(filename_p filename, const char **cmd_error) {
@@ -953,7 +940,7 @@ int response_ok_not_found(int conn) {
 
 int csync_daemon_sig(int conn, char *filename, const char *user_group, time_t ftime, long long size, db_conn_p db,
 		const char **cmd_error) {
-	csync_debug(3, "csync_daemon_sig: unused parameters: ftime %ld size %zu", ftime, size);
+	csync_debug(3, "csync_daemon_sig: unused parameters: ftime %ld size %zu\n", ftime, size);
 	struct stat st;
 	if (lstat_strict(filename, &st) != 0) {
 		char *path;
@@ -1260,7 +1247,7 @@ int csync_daemon_hardlink(filename_p filename, const char *linkname, const char 
 
 int csync_daemon_mv(db_conn_p db, filename_p filename, const char *newname, const char **cmd_error) {
 	const char *operation = "MOVED_TO";
-	time_t lock_time = csync_redis_lock_custom(newname, 300, operation);
+	time_t lock_time = csync_redis_lock_custom(newname, 60, operation);
 	if (rename(filename, newname)) {
 		*cmd_error = strerror(errno);
 		if (lock_time > 0)

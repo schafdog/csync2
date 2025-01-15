@@ -681,12 +681,13 @@ int csync_rs_patch(int conn, filename_p filename) {
 	fclose(delta_file);
 	patched_file = delta_file = NULL;
 	csync_log(LOG_DEBUG, 3, "Renaming tmp file to orig. filename..\n");
-	//  This will break any hardlink to filename. 
+	//  This will break any hardlink to filename.
+	csync_redis_lock_custom(filename, 60, "MOVED_TO");
 	if (rename(tmpfname, filename) == 0) {
-		csync_redis_lock_custom(filename, 300, "MOVED_TO");
 		csync_info(3, "File '%s' has been patched successfully.\n", filename);
 		return 0;
 	}
+	csync_redis_del_custom(filename, "MOVED_TO");
 	return rsync_patch_io_error("renaming tmp file to to orig file", filename, delta_file, basis_file, patched_file);
 }
 
@@ -791,9 +792,10 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	rs_job_free(job);
 
 	// MOVED_TO
-	csync_redis_lock_custom(fname, 300, "MOVED_TO");
+	csync_redis_lock_custom(fname, 60, "MOVED_TO");
 	// This will break any hardlink to filename. Restore 
 	if (rename(tmpfname, fname) != 0) {
+		csync_redis_del_custom(fname, "MOVED_TO");
 		csync_error(0, "Renaming tmp to %s failed", fname);
 		return -1;
 	}

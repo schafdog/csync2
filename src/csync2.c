@@ -311,7 +311,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			log_time = timelocal(&tm);
 			csync_debug(2, "monitor: Parsed %s to %d. %s", time_str, log_time, rest);
 		} else {
-			csync_debug(0, "monitor: failed to parse %s as %F_%T", time_str);
+			csync_debug(0, "monitor: Failed to parse %s as %F_%T", time_str);
 		}
 		buffer += match + 1;
 		match = csync_read_buffer(buffer, operation);
@@ -328,8 +328,10 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 		}
 		// Check if file is "just" made by daemon
 		time_t lock_time = csync_redis_get_custom(file, operation);
-		if (lock_time != -1)
+		if (lock_time != -1) {
 			csync_redis_del_custom(file, operation);
+			csync_info(1, "monitor: remove daemon lock %s:%s at %d %d\n", operation, file, lock_time, log_time);
+		}
 
 		if (lock_time != -1 && log_time <= lock_time) {
 			csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
@@ -967,7 +969,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	int first = 1;
 	int i;
 	nofork:
-	csync_debug(3, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
+	csync_debug(4, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
 	// init syslog if needed. 
 	if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
 		csync_openlog();
@@ -1304,13 +1306,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	csync_redis_close();
 	csync_run_commands(db);
 	csync_db_close(db);
-	csync_info(3, "Closed db: %p\n", db);
 	csync_config_destroy();
 	if (active_peers) {
 		free(active_peers);
 	}
 	if (mode & MODE_DAEMON) {
-		csync_log(LOG_INFO, 3, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+		csync_log(LOG_INFO, 4, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 
 		if (mode & MODE_NOFORK) {
 			csync_log(LOG_DEBUG, 1, "goto nofork.\n");

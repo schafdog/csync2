@@ -1430,22 +1430,9 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 int csync_update_file_mod(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
 		operation_t operation, const char *other, const char *checktxt, const char *digest, int force, int dry_run) {
 	BUF_P buffer = buffer_init();
-	time_t unix_time = csync_redis_lock(filename);
 	int rc = OK;
-	if (unix_time != -1) {
-		rc = csync_update_file_mod_internal(conn, db, myname, peername, filename, operation, other, checktxt, digest,
-				force, dry_run, buffer);
-		csync_redis_unlock(filename, unix_time);
-	} else {
-		csync_info(0, "update_file_mod: Failed to get lock on %s: %d\n", filename, unix_time);
-		if (csync_redis_check_connection() == 0) {
-			csync_info(0, "update_file_mod: redis connection closed. Reconnecting\n");
-			if (csync_redis_connect(csync_redis) == 1) {
-				csync_error(0, "update_file_mod: redis reconnect failed\n");
-			}
-		}
-		rc = ERROR_DIRTY;
-	}
+	rc = csync_update_file_mod_internal(conn, db, myname, peername, filename, operation, other, checktxt, digest,
+										force, dry_run, buffer);
 	buffer_destroy(buffer);
 	return rc;
 }
