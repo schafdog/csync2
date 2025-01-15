@@ -624,7 +624,10 @@ int csync_send_reg_file(int conn, peername_p peername, filename_p filename, int 
 		csync_error(0, "Failed to open file %s: %d", filename, errno);
 		return -1;
 	}
-	int rc = csync_send_file(conn, file);
+	struct stat st;
+	int rc  = lstat_strict(filename, &st); 
+	csync_debug(0, "CREATE %s %llu\n", filename, st.st_size);
+	rc = csync_send_file(conn, file);
 	if (rc < -1) {
 		csync_error(0, "Failed to send file %s: %d", filename, errno);
 	}
@@ -1301,7 +1304,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			rc = OK;
 			// Attempt to find remote hardlinks that hare similar to current local file.
 			// moved into regfile_check_hardlink.c
-			if (sig_rc & (DIFF_FILE | OK_MISSING))
+			if (sig_rc & (DIFF_FILE))
 				rc = csync_update_file_patch(conn, key_enc, peername, filename, filename_enc, &st, uid, gid, digest,
 						&last_conn_status);
 			else if (sig_rc & OK_MISSING)

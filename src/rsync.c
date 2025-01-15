@@ -236,6 +236,7 @@ static FILE* paranoid_tmpfile() {
 int csync_send_file_chunked(int conn, FILE *in) {
 	long size;
 	fflush(in);
+	fseek(in, 0L, SEEK_END);
 	size = ftell(in);
 	rewind(in);
 	csync_info(3, "Sending chunked stream of %ld bytes\n", size);
@@ -251,6 +252,7 @@ int csync_send_file_octet_stream(int conn, FILE *in) {
 	long size;
 
 	fflush(in);
+	fseek(in, 0L, SEEK_END);	
 	size = ftell(in);
 	rewind(in);
 

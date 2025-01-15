@@ -164,9 +164,9 @@ void csync_db_close(db_conn_p db) {
 		SQL(db, "COMMIT (close)", "COMMIT ");
 		tqueries_counter = -10;
 	}
-	csync_info(3, "Closing db: %p\n", db);
+	csync_info(4, "Closing db: %p\n", db);
 	db_conn_close(db);
-	csync_info(3, "Closed db: %p\n", db);
+	csync_info(4, "Closed db: %p\n", db);
 	begin_commit_recursion--;
 	global_db = 0;
 	free(db);
