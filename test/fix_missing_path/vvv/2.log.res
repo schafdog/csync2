@@ -1,7 +1,6 @@
 cmd cI "2. New local/recursive/.. -I" local peer test
 csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
-Mode: 2 Flags: 5 PID: 2810963
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
 New host alias: local: localhost 30860
@@ -51,7 +50,7 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           b8214a6e418039b86e12c87455fe9c31556e815f-dirty
+GIT:           518d46c56fc057db5d6ba8cd2c6115fe2c86aa78-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
 csync2_db_SQL: update file set filename = NULL where filename = NULL 
@@ -68,7 +67,7 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
 INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local', 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53347988, NULL, 16877, 4096, 1736906319, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53347988, digest = NULL, mode = 16877, size = 4096, mtime = 1736906319, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348043, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348043, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows matched: 0
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local 197 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
@@ -78,7 +77,7 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
 INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive', 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53347989, NULL, 16877, 4096, 1736906319, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53347989, digest = NULL, mode = 16877, size = 4096, mtime = 1736906319, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348044, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348044, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive rows matched: 0
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive 197 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/* ..
@@ -88,7 +87,7 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
 INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1', 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53347997, NULL, 16877, 4096, 1736906319, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53347997, digest = NULL, mode = 16877, size = 4096, mtime = 1736906319, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348045, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348045, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1 rows matched: 0
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1 197 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/* ..
@@ -98,7 +97,7 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
 INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2', 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348000, NULL, 16877, 4096, 1736906319, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348000, digest = NULL, mode = 16877, size = 4096, mtime = 1736906319, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348046, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348046, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2 rows matched: 0
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2 197 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/* ..
@@ -108,7 +107,7 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
 INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3', 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348011, NULL, 16877, 4096, 1736906319, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348011, digest = NULL, mode = 16877, size = 4096, mtime = 1736906319, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348047, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348047, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3 rows matched: 0
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3 197 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/* ..
@@ -118,7 +117,7 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
 INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4', 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348013, NULL, 16877, 4096, 1736906319, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348013, digest = NULL, mode = 16877, size = 4096, mtime = 1736906319, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348048, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348048, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4 rows matched: 0
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4 197 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/* ..
@@ -128,7 +127,7 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
 INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5', 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348014, NULL, 16877, 4096, 1736906319, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736906319:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348014, digest = NULL, mode = 16877, size = 4096, mtime = 1736906319, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348049, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348049, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5 rows matched: 0
 csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5 197 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/* ..
@@ -155,6 +154,5 @@ MODE 2
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closed db: 0x56180a5e4180
 csync_config_destroy
 csync_config_destroy end
