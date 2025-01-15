@@ -15,7 +15,8 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
@@ -30,11 +31,12 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
 IDENT (cmd_finished).
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file.
-HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2.
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2  
+IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file.
@@ -51,24 +53,24 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new  
 IDENT (cmd_finished).
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2.
-HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2.
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4.
-HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4.
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked.
+HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked.
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked.
+HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked.
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
 goto nofork.
 Command: HELLO local
 HELLO from local. Response: OK
@@ -80,6 +82,7 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/was_hardlink  
 IDENT (cmd_finished).
 goto nofork.
