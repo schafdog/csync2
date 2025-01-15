@@ -1,7 +1,7 @@
 cmd u "move Maildir/cur/1434.M21,S=6631,W=6764:2,S Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S (2 sec delay)" local peer test
 csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
-Mode: 4 Flags: 1 PID: 2649167
+Mode: 4 Flags: 1 PID: 2798106
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
 New host alias: local: localhost 30860
@@ -51,7 +51,7 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           42ec618cadb2cff3bcf7925107f9c9ae320ed28c-dirty
+GIT:           b8214a6e418039b86e12c87455fe9c31556e815f-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
 csync2_db_SQL: update file set filename = NULL where filename = NULL 
@@ -63,12 +63,12 @@ SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELE
 dirty host other 
 SQL Query finished.
 MODE 4
-Redis closing: 0x55a79083d4a0
+Redis closing: 0x558718f774a0
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x55a79083d180
-Closed db: 0x55a79083d180
-Closed db: 0x55a79083d180
+Closing db: 0x558718f77180
+Closed db: 0x558718f77180
+Closed db: 0x558718f77180
 csync_config_destroy
 csync_config_destroy end
