@@ -1301,7 +1301,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			rc = OK;
 			// Attempt to find remote hardlinks that hare similar to current local file.
 			// moved into regfile_check_hardlink.c
-			if (sig_rc & DIFF_FILE)
+			if (sig_rc & (DIFF_FILE | OK_MISSING))
 				rc = csync_update_file_patch(conn, key_enc, peername, filename, filename_enc, &st, uid, gid, digest,
 						&last_conn_status);
 			else if (sig_rc & OK_MISSING)

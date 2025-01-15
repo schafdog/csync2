@@ -1,7 +1,7 @@
 cmd x "clean" local peer test
 csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
-Mode: 65536 Flags: 1 PID: 2379561
+Mode: 65536 Flags: 1 PID: 2387842
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
 New host alias: local: localhost 30860
@@ -71,12 +71,12 @@ get dirty host
 SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername
 SQL Query finished.
 MODE 65536
-Redis closing: 0x558082ce84a0
+Redis closing: 0x55688e1e34a0
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x558082ce8180
-Closed db: 0x558082ce8180
-Closed db: 0x558082ce8180
+Closing db: 0x55688e1e3180
+Closed db: 0x55688e1e3180
+Closed db: 0x55688e1e3180
 csync_config_destroy
 csync_config_destroy end

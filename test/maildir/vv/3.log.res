@@ -90,7 +90,6 @@ CONN peer > 'octet-stream 12'
 Got octet-stream 12
 Content length in buffer: 'octet-stream 12' size: 12 rc: 0 (octet-stream)
 CONN peer < octet-stream 14
-
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764 (0)
 CONN peer < SETTIME %25test%25/Maildir/new 

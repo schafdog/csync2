@@ -1,7 +1,7 @@
 cmd u "10 not hardlinked when updated" local peer test
 csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
-Mode: 4 Flags: 1 PID: 2561799
+Mode: 4 Flags: 1 PID: 2807888
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
 New host alias: local: localhost 30860
@@ -47,10 +47,10 @@ New group:host: test_action peer
 New group:host: test_action other
 New group:host:pattern test_action other %test%/action
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: pgsql://csync2:csync238@localhost/csync2
 DB Version:    2
 IP Version:    IPv4
-GIT:           05ce04c5b3d5ccab803a6b7fd2cdc1222a60e13d-dirty
+GIT:           4e39c9f1a4ba8dd4471035859699f313dee4972c
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
 csync2_db_SQL: update file set filename = NULL where filename = NULL 
@@ -64,11 +64,11 @@ dirty host peer
 SQL Query finished.
 SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
 compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6 1 v2:mtime=1736285030:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6 1 v2:mtime=1736296707:mode=33188:user=dennis:group=schafroth:type=reg:size=4
 compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink 1 v2:mtime=1736285030:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink 1 v2:mtime=1736296707:mode=33188:user=dennis:group=schafroth:type=reg:size=4
 compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new 1 v2:mtime=1736285031:mode=16877:user=dennis:group=schafroth:type=dir
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new 1 v2:mtime=1736296708:mode=16877:user=dennis:group=schafroth:type=dir
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -87,8 +87,8 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new' 59, cached path: '(null)' 0, 0.
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/new'
-Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/new' '1736285031' NX EX 60 -> OK
-csync_redis_lock: OK /export/home/dennis/Projects/csync2/csync2/test/test/local/new 1736285031
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/new' '1736296718' NX EX 60 -> OK
+csync_redis_lock: OK /export/home/dennis/Projects/csync2/csync2/test/test/local/new 1736296718
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new
 uid dennis gid schafroth
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new' ''
@@ -98,9 +98,9 @@ CONN peer > 'OK (data_follows).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 Flags for gencheck: 112 
-csync_cmpchecktxt A: v2:mtime=1736285028:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736285031:mode=16877:user=dennis:group=schafroth:type=dir 
-/export/home/dennis/Projects/csync2/csync2/test/test/local/new is different on peer (cktxt char #-1).
+csync_cmpchecktxt A: v2:mtime=1736296367:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt B: v2:mtime=1736296718:mode=16877:user=dennis:group=schafroth:type=dir 
+File is different on peer (cktxt char #-4).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new
@@ -112,13 +112,13 @@ rs_check: Reading signature size from peer....
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
-rs_check: Receiving signature 0 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/new
+rs_check: Receiving signature 0 bytes ..
 File has been checked successfully (files are equal).
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new
 END csync_update_file_sig_rs_diff peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new
-has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local/new checktxt 'v2:mtime=1736285031:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local/new checktxt 'v2:mtime=1736296708:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
 MKDIR rc: 16
 Doing MOD 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new' on DIFF_META
 CONN peer < MOD %25test%25/new - 1234 1000 dennis schafroth 16877 - 4096 
@@ -135,8 +135,8 @@ Adding textlist_add_new: /export/home/dennis/Projects/csync2/csync2/test/test/lo
 Skipping textlist_add_new: /export/home/dennis/Projects/csync2/csync2/test/test/local
 check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink' 63, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/local/' 59, 59.
 Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink'
-Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink' '1736285031' NX EX 60 -> OK
-csync_redis_lock: OK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink 1736285031
+Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink' '1736296718' NX EX 60 -> OK
+csync_redis_lock: OK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink 1736296718
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink
 uid dennis gid schafroth
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink' ''
@@ -144,7 +144,7 @@ csync_update_file_sig_rs_diff peer:/export/home/dennis/Projects/csync2/csync2/te
 CONN peer < SIG %25test%25/new/was_hardlink user/group 1234 1000 dennis schafroth 33188 - 4 
 CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink RC 32
-has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink checktxt 'v2:mtime=1736285030:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 1 1
+has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink checktxt 'v2:mtime=1736296707:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 1 1
 CONN peer < PATCH %25test%25/new/was_hardlink - 1234 1000 dennis schafroth 33188 - 4 
 CONN peer > 'OK (sending sig).'
 read_conn_status 'OK (sending sig).' 0
@@ -179,22 +179,22 @@ Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6' '-'.
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6', 0, 'local', 'peer', 'RM', '(null)', NULL, NULL, NULL, 64, 0, -1, 1736285031)
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_6', 0, 'local', 'peer', 'RM', '(null)', NULL, NULL, NULL, 64, 0, -1, 1736296718)
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink
 mark other operation: 'MARK' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink' '-'.
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink', 0, 'local', 'peer', 'MARK', '(null)', NULL, NULL, NULL, 0, 0, -1, 1736285031)
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink', 0, 'local', 'peer', 'MARK', '(null)', NULL, NULL, NULL, 0, 0, -1, 1736296718)
 make other dirty /export/home/dennis/Projects/csync2/csync2/test/test/local/new/was_hardlink
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new
 uid dennis gid schafroth
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/new 1736285031.
+update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/new 1736296718.
 CONN peer < SETTIME %25test%25/new 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
 uid dennis gid schafroth
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local 1736285025.
+update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local 1736296279.
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
@@ -203,12 +203,12 @@ CONN peer < BYE
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 4
-Redis closing: 0x563631cd9470
+Redis closing: 0x555e02173470
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x563631cd9150
-Closed db: 0x563631cd9150
-Closed db: 0x563631cd9150
+Closing db: 0x555e02173150
+Closed db: 0x555e02173150
+Closed db: 0x555e02173150
 csync_config_destroy
 csync_config_destroy end

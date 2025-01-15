@@ -1,8 +1,8 @@
 cmd u "move Maildir/cur/1434.M21,S=6631,W=6764:2,S Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S (2 sec delay)" local peer test
 csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
-Mode: 4 Flags: 1 PID: 3245873
-Config-File:   csync2_mysql_local.cfg
+Mode: 4 Flags: 1 PID: 2649167
+Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
@@ -14,6 +14,7 @@ New group:host:pattern test other %test%
 New group:host:pattern test other %test%/autoresolve
 New group:host:pattern test other *~
 New group:host:pattern test other *.o
+New group:host:pattern test other .*.XXXXXX
 New group: first
 New group:host: first peer
 New group:host: first other
@@ -47,13 +48,12 @@ New group:host: test_action peer
 New group:host: test_action other
 New group:host:pattern test_action other %test%/action
 My hostname is local.
-Database File: mysql://csync2_local:csync2_local@127.0.0.1/csync2_local
+Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           c38fd720d8c494e8586ec4779af7f60e5bb8b39c-dirty
-Opening shared library libmariadb.so
-Reading symbols from shared library libmariadb.so
-Default encoding utf8mb4
+GIT:           42ec618cadb2cff3bcf7925107f9c9ae320ed28c-dirty
+Opening shared library libpq.so
+Reading symbols from shared library libpq.so
 csync2_db_SQL: update file set filename = NULL where filename = NULL 
 csync2_db_SQL: update host set host = NULL where host = NULL
 db_schema_version: 2
@@ -63,12 +63,12 @@ SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELE
 dirty host other 
 SQL Query finished.
 MODE 4
-Redis closing: 0x55c9b0ecc890
+Redis closing: 0x55a79083d4a0
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x55c9b0ec6c80
-Closed db: 0x55c9b0ec6c80
-Closed db: 0x55c9b0ec6c80
+Closing db: 0x55a79083d180
+Closed db: 0x55a79083d180
+Closed db: 0x55a79083d180
 csync_config_destroy
 csync_config_destroy end
