@@ -35,7 +35,8 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local

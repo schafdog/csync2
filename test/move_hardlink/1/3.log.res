@@ -25,3 +25,4 @@ Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/loca
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' ''
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123' ''
+CREATE /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123 4

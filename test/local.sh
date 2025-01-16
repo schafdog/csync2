@@ -22,6 +22,8 @@ fi
 
 : ${DEBUG:=v}
 
+LEVEL=${#DEBUG}
+
 RECURSIVE=rB
 
 COUNT=0
@@ -69,12 +71,16 @@ function cmd {
 	daemon $1 $2 $3
 	return 
     fi
+    if [ "$CMD" == "monitor" ] ; then
+	monitor $1 $2 $3
+	return 
+    fi
     if [ "$CMD" == "killdaemon" ] && [ "$DAEMON" != "NO" ] ; then
 	killdaemon $1
 	return 
     fi
     mkdir -p ${TESTNAME}/${DEBUG}
-    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${DEBUG}/${COUNT}.log
+    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${LEVEL}/${COUNT}.log
     OPTS="$CSYNC2_OPT -y -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG"
     if [ "$LLDB" != "" ] ; then 
 	$LLDB -f ${PROG} -- ${OPTS} "${TESTPATH}"
@@ -82,23 +88,23 @@ function cmd {
 	$GDB --args ${PROG} ${OPTS} "${TESTPATH}"
     elif [ "$TIME" != "" ] ; then
 	echo time $PROG ${OPTS} "${TESTPATH}"
-	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
+	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${DEBUG}/${COUNT}.log
+        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
-       testing ${TESTNAME}/${DEBUG}/${COUNT}.log
+       testing ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
-    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE} 2> /dev/null
-    testing ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE}
+    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
+    testing ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
-	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" > ${TESTNAME}/${DEBUG}/${COUNT}.rsync
-	testing ${TESTNAME}/${DEBUG}/${COUNT}.rsync
+	rsync --delete -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
+	testing ${TESTNAME}/${LEVEL}/${COUNT}.rsync
     else
 	if [ "$CMD" == "c" ] ; then
 	    # clean up if step has changed
-	    rm -f ${TESTNAME}/${DEBUG}/${COUNT}.rsync ${TESTNAME}/${DEBUG}/${COUNT}.rsync.res
+	    rm -f ${TESTNAME}/${LEVEL}/${COUNT}.rsync ${TESTNAME}/${LEVEL}/${COUNT}.rsync.res
 	fi
     fi
     echo "${COUNT}. END $CMD ${DESC}" 
@@ -112,11 +118,17 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${DEBUG}/${COUNT}.${DATABASE} 2> /dev/null
+    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
     rm -f csync_$CNAME.log ${DATABASE}_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1
     ${PAUSE}
+}
+
+function inotify {
+    /usr/bin/inotifywait -r --fromfile inotify_${HOST} -o ${TESTNAME}/${LEVEL}/inotify_${HOST}.log \
+			 -e close_write -e moved_to -e delete --timefmt %F_%T --format=%T %e %w%f -m
+    echo "$!" > inotify_${HOST}.pid
 }
 
 function daemon {
@@ -137,9 +149,12 @@ function daemon {
     mkdir -p /tmp/csync2 
     CMD="$1"
     echo $DCFG $DNAME
-    mkdir  -p $TESTNAME/${DEBUG}
+    mkdir  -p $TESTNAME/${LEVEL}
     if [ "$CMD" == "d" ] ; then 
-	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > ${TESTNAME}/${DEBUG}/$DCFG.log  2>&1 &
+	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > ${TESTNAME}/${LEVEL}/$DCFG.log  2>&1 &
+	echo "$!" > ${DCFG}.pid
+    elif [ "$CMD" == "m" ] ; then 
+	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -E${DEBUG}B .inotify_${DCFG}.log  > ${TESTNAME}/${LEVEL}/${DCFG}_monitor.log  2>&1 &
 	echo "$!" > ${DCFG}.pid
     elif [ "$CMD" == "i" ] ; then
 	if [ "LLDB" != "" ]; then
@@ -167,7 +182,9 @@ function killdaemon {
 	HOST=$1
     fi
     kill `cat ${HOST}.pid`
+    kill `cat ${HOST}_monitor.pid`
     rm ${HOST}.pid
+    rm ${HOST}_monitor.pid
 }
 
 function check {
@@ -203,10 +220,10 @@ for d in $* ; do
     fi
 done
 echo "DAEMON:"
-cat ${TESTNAME}/${DEBUG}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection > ${TESTNAME}/${DEBUG}/peer.log.tmp
-mv ${TESTNAME}/${DEBUG}/peer.log.tmp ${TESTNAME}/${DEBUG}/peer.log
-testing ${TESTNAME}/${DEBUG}/peer.log
-./compare_sql.sh $TESTNAME/${DEBUG}
+cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection > ${TESTNAME}/${LEVEL}/peer.log.tmp
+mv ${TESTNAME}/${LEVEL}/peer.log.tmp ${TESTNAME}/${LEVEL}/peer.log
+testing ${TESTNAME}/${LEVEL}/peer.log
+./compare_sql.sh $TESTNAME/${LEVEL}
 echo "END DAEMON"
 echo "Result $RES"
 exit $RES

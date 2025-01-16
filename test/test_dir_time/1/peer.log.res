@@ -49,7 +49,8 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local
