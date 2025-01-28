@@ -79,7 +79,7 @@ function cmd {
 	killdaemon $1
 	return 
     fi
-    mkdir -p ${TESTNAME}/${DEBUG}
+    mkdir -p ${TESTNAME}/${LEVEL}
     echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${LEVEL}/${COUNT}.log
     OPTS="$CSYNC2_OPT -y -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG"
     if [ "$LLDB" != "" ] ; then 
@@ -182,9 +182,11 @@ function killdaemon {
 	HOST=$1
     fi
     kill `cat ${HOST}.pid`
-    kill `cat ${HOST}_monitor.pid`
     rm ${HOST}.pid
-    rm ${HOST}_monitor.pid
+    if [ -f "${HOST}_monitor.pid" ] ; then 
+	kill `cat ${HOST}_monitor.pid`
+	rm ${HOST}_monitor.pid
+    fi
 }
 
 function check {
