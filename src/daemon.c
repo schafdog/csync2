@@ -782,11 +782,9 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 		*cmd_error = "ERROR (exist).\n";
 		return ABORT_CMD;
 	}
-	time_t lock_time = csync_redis_lock_custom(filename, 300, "CLOSE_WRITE,CLOSE");
+	time_t lock_time = csync_redis_lock_custom(filename, 600, "CLOSE_WRITE,CLOSE");
 	if (lock_time == -1) {
-		*cmd_error = "ERROR (locked).\n";
-		csync_error(1, "Create %s: %s", filename, *cmd_error);
-		//return csync_redis_unlock_status(filename, lock_time, ABORT_CMD);
+		csync_error(1, "Create %s: %s. Continue", filename, "ERROR (locked).\n");
 	}
 	conn_printf(conn, "OK (send data).\n");
 
@@ -807,6 +805,8 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 	struct stat st;
 	int rc = stat(filename, &st);
+
+	// TODO The lock is created by the patch routines. Should be here and lock tile based on size..
 
 	// Only try to backup if the file exists already.
 	if (rc == -1 || !csync_file_backup(filename, cmd_error)) {
