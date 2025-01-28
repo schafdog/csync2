@@ -56,6 +56,7 @@ int include_stack_ptr = 0;
 "protocol-version" { return TK_PROTOCOL_VERSION; }
 "ip-version"       { return TK_IP_VERSION;       }
 "patch-mode"       { return TK_PATCH_MODE;       }
+"lock-time"        { return TK_LOCK_TIME;        }
 
 "group"		{ return TK_GROUP; }
 "host"		{ return TK_HOST; }

@@ -35,6 +35,7 @@ int csync_ignore_uid = 0;
 int csync_ignore_gid = 0;
 int csync_ignore_mod = 0;
 unsigned csync_lock_timeout = 12;
+unsigned csync_lock_time = 60;
 char *csync_tempdir = NULL;
 
 int cfg_db_version = -1;
@@ -416,7 +417,12 @@ static void set_action_dolocal_only()
 
 static void set_lock_timeout(const char *timeout)
 {
-	csync_lock_timeout = atoi(timeout);
+	csync_lock_time = atoi(timeout);
+}
+
+static void set_lock_time(const char *time)
+{
+	csync_lock_time = atoi(time);
 }
 
 static void set_tempdir(const char *tempdir)
@@ -604,7 +610,7 @@ static void disable_cygwin_lowercase_hack()
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
 %token TK_FLAGS
 %token TK_TEMPDIR
-%token TK_LOCK_TIMEOUT TK_HOSTS
+%token TK_LOCK_TIMEOUT TK_HOSTS TK_LOCK_TIME
 %token <txt> TK_STRING
 
 %%
@@ -644,6 +650,8 @@ block:
 		{ disable_cygwin_lowercase_hack(); }
 |	TK_LOCK_TIMEOUT TK_STRING TK_STEND
 		{ set_lock_timeout($2); }
+|	TK_LOCK_TIME TK_STRING TK_STEND
+		{ set_lock_time($2); }
 ;
 
 ignore_list:
