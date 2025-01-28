@@ -181,15 +181,15 @@ static FILE* open_temp_file(char *fnametmp, const char *fname) {
 	f = NULL;
 	//fd = mkstemp(fnametmp);
 	// Let csync2 tail ignore this file for 10 minutes
+	csync_redis_lock_custom(fnametmp, 600, "CLOSE_WRITE,CLOSE");
 	fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
 	if (fd >= 0) {
 		// we are prob. renaming the file before closing so might not be nessesary
-		csync_redis_lock_custom(fnametmp, 600, "CLOSE_WRITE,CLOSE");
-
 		f = fdopen(fd, "wb+");
 		/* not unlinking since rename wouldn't work then */
 	}
 	if (fd < 0 || !f) {
+		csync_redis_del_custom(fnametmp, "CLOSE_WRITE,CLOSE");
 		csync_error(1, "ERROR: Could not open result from tempnam(%s)!\n", fnametmp);
 		return NULL;
 	}
