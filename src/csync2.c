@@ -330,7 +330,8 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 		time_t lock_time = csync_redis_get_custom(file, operation);
 		if (lock_time != -1) {
 			csync_redis_del_custom(file, operation);
-			csync_info(1, "monitor: remove daemon lock %s:%s at %d %d\n", operation, file, lock_time, log_time);
+			csync_info(1, "monitor: remove daemon lock %s:%s at %d %d %d\n",
+					   operation, file, lock_time, log_time, log_time-lock_time);
 		}
 
 		if (lock_time != -1 && log_time <= lock_time) {

@@ -316,6 +316,8 @@ struct textlist;
 #define PATH_NOT_FOUND_LEN sizeof(PATH_NOT_FOUND)-1
 #define ERROR_LOCKED_STR "ERROR (locked)"
 #define ERROR_LOCKED_STR_LEN sizeof(ERROR_LOCKED_STR)-1
+#define ERROR_NOT_FOUND_STR "No such file or directory"
+#define	ERROR_NOT_FOUND_STR_LEN	sizeof(ERROR_NOT_FOUND)-1
 
 
 int get_file_type(int st_mode);
@@ -691,6 +693,7 @@ extern struct csync_nossl  *csync_nossl;
 extern struct csync_hostinfo  *csync_hostinfo;
 
 extern unsigned csync_lock_timeout;
+extern unsigned csync_lock_time;
 extern char *csync_tempdir;
 
 extern char *csync_database;

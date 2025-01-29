@@ -60,10 +60,11 @@
 #define SETTIME -8
 // #define CLEAR_DIRTY
 #define ERROR_DIRTY        -11
-#define ERROR_OTHER        -12
-#define ERROR_LOCKED       -12
+#define ERROR_NOT_FOUND    -12
 #define ERROR_PATH_MISSING -13
 #define ERROR_HARDLINK     -14
+#define ERROR_LOCKED       -15
+#define ERROR_OTHER        -16
 
 extern int csync_zero_mtime_debug;
 
@@ -130,6 +131,8 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 			return IDENTICAL;
 		if (!strncmp(line, ERROR_LOCKED_STR, ERROR_LOCKED_STR_LEN))
 			return ERROR_LOCKED;
+		if (!strncmp(line, ERROR_NOT_FOUND_STR, ERROR_NOT_FOUND_STR_LEN))
+			return ERROR_NOT_FOUND;
 	} else {
 		strcpy(line, "ERROR: Read conn status: Connection closed.\n");
 		csync_error(0, line);
@@ -987,7 +990,8 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peerna
 }
 
 int csync_update_file_move(int conn, db_conn_p db, const char *myname, peername_p peername, const char *key,
-		filename_p filename, const char *other) {
+						   filename_p filename, const char *other, const struct stat *st, const char *uid, const char *gid,
+						   const char *digest, int  *last_conn_status) {
 	// unused
 	(void) myname;
 
@@ -1005,8 +1009,23 @@ int csync_update_file_move(int conn, db_conn_p db, const char *myname, peername_
 		db->remove_dirty(db, peername, other, 0);
 		return rc;
 	}
+	if (rc == ERROR_NOT_FOUND) {
+		csync_error(0, "Failed to MV %s: %s %s. Source not found. Patching target.\n", peername, other, filename);
+	    // Other (source) not found
+		db->remove_dirty(db, peername, other, 0);
+		// Filename should be new, but for now patch
+		rc = csync_update_file_patch(conn,  url_encode(key), peername, filename, url_encode(prefixencode(filename)),
+									 st, uid, gid, digest, last_conn_status);
+		if (rc >= OK) {
+			db->remove_dirty(db, peername, filename, 0);
+		} else {
+			csync_error(0, "Failed to patch(MV) %s: %s %s.\n", peername, other, filename);
+		}	
+		return rc;
+		// Asumming 
+	}
 	csync_error(0, "Failed to MV %s: %s %s \n", peername, other, filename);
-	return DIFF_FILE;
+	return rc;
 }
 
 int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname, peername_p peername, const char *key_enc,
@@ -1137,7 +1156,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 				return rc;
 		}
 		if (operation == OP_MOVE) {
-			rc = csync_update_file_move(conn, db, myname, peername, key, filename, other);
+			rc = csync_update_file_move(conn, db, myname, peername, key, filename, other, &st, uid, gid, digest, &last_conn_status);
 			if (rc == CONN_CLOSE || rc == OK) {
 				if (rc == OK) {
 					csync_clear_dirty(db, peername, filename, auto_resolve_run);
@@ -1247,7 +1266,8 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			case OK_MISSING:
 			case DIFF_BOTH:
 			case DIFF_FILE:
-				rc = csync_update_file_move(conn, db, myname, peername, key, filename, other);
+				rc = csync_update_file_move(conn, db, myname, peername, key, filename, other,
+											&st, uid, gid, digest, &last_conn_status);
 				if (rc == CONN_CLOSE)
 					return rc;
 				if (rc == OK)

@@ -99,7 +99,7 @@ int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 		rc = csync_file_backup(filename, &cmd_error);
 	}
 	if (!rc) {
-		int lock_time = csync_redis_lock_custom(filename, 60, "DELETE");
+		int lock_time = csync_redis_lock_custom(filename, csync_lock_time, "DELETE");
 		rc = unlink(filename);
 		if (db && !rc) {
 			csync_info(1, "Removing %s from file db.\n", filename);
@@ -164,7 +164,7 @@ int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peername, te
 		free(namelist);
 	}
 	/* time_t lock_time = */
-	csync_redis_lock_custom(file, 60, "DELETE,IS_DIR");
+	csync_redis_lock_custom(file, csync_lock_time, "DELETE,IS_DIR");
 	errno = 0;
 	int rc = rmdir(file);
 	csync_info(1 + backup, "Removed directory %s %d\n", file, rc);
@@ -255,7 +255,7 @@ int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int rec
 	if (S_ISDIR(st.st_mode)) {
 		rc = csync_rmdir(db, filename, peername, recursive);
 	} else {
-		csync_redis_lock_custom(filename, 300, "DELETE");
+		csync_redis_lock_custom(filename, csync_lock_time, "DELETE");
 		rc = unlink(filename);
 		if (rc) {
 			csync_redis_del_custom(filename, "DELETE");
@@ -782,9 +782,9 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 		*cmd_error = "ERROR (exist).\n";
 		return ABORT_CMD;
 	}
-	time_t lock_time = csync_redis_lock_custom(filename, 600, "CLOSE_WRITE,CLOSE");
+	time_t lock_time = csync_redis_lock_custom(filename, csync_lock_time, "CLOSE_WRITE,CLOSE");
 	if (lock_time == -1) {
-		csync_error(1, "Create %s: %s. Continue", filename, "ERROR (locked).\n");
+		csync_error(1, "Create %s: %s. Continue\n", filename, "ERROR (locked)");
 	}
 	conn_printf(conn, "OK (send data).\n");
 
@@ -1247,7 +1247,7 @@ int csync_daemon_hardlink(filename_p filename, const char *linkname, const char 
 
 int csync_daemon_mv(db_conn_p db, filename_p filename, const char *newname, const char **cmd_error) {
 	const char *operation = "MOVED_TO";
-	time_t lock_time = csync_redis_lock_custom(newname, 60, operation);
+	time_t lock_time = csync_redis_lock_custom(newname, csync_lock_time, operation);
 	if (rename(filename, newname)) {
 		*cmd_error = strerror(errno);
 		if (lock_time > 0)

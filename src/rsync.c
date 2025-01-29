@@ -52,6 +52,7 @@
 #endif
 
 extern int cfg_patch_mode;
+extern unsigned csync_lock_time;
 
 /* This has been taken from rsync:lib/compat.c */
 
@@ -181,7 +182,7 @@ static FILE* open_temp_file(char *fnametmp, const char *fname) {
 	f = NULL;
 	//fd = mkstemp(fnametmp);
 	// Let csync2 tail ignore this file for 10 minutes
-	csync_redis_lock_custom(fnametmp, 600, "CLOSE_WRITE,CLOSE");
+	csync_redis_lock_custom(fnametmp, csync_lock_time, "CLOSE_WRITE,CLOSE");
 	fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
 	if (fd >= 0) {
 		// we are prob. renaming the file before closing so might not be nessesary
@@ -682,7 +683,7 @@ int csync_rs_patch(int conn, filename_p filename) {
 	patched_file = delta_file = NULL;
 	csync_log(LOG_DEBUG, 3, "Renaming tmp file to orig. filename..\n");
 	//  This will break any hardlink to filename.
-	csync_redis_lock_custom(filename, 60, "MOVED_TO");
+	csync_redis_lock_custom(filename, csync_lock_time, "MOVED_TO");
 	if (rename(tmpfname, filename) == 0) {
 		csync_info(3, "File '%s' has been patched successfully.\n", filename);
 		return 0;
@@ -709,7 +710,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	char tmpfname[MAXPATHLEN];
 	/* Open tmp file */
 	FILE *tmp = open_temp_file(tmpfname, fname);
-	csync_redis_lock_custom(tmpfname, 600, "CREATE");
+	csync_redis_lock_custom(tmpfname, csync_lock_time, "CREATE");
 
 	/* Open basis file */
 	FILE *old = fopen(fname, "rb");
@@ -792,7 +793,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	rs_job_free(job);
 
 	// MOVED_TO
-	csync_redis_lock_custom(fname, 60, "MOVED_TO");
+	csync_redis_lock_custom(fname, csync_lock_time, "MOVED_TO");
 	// This will break any hardlink to filename. Restore 
 	if (rename(tmpfname, fname) != 0) {
 		csync_redis_del_custom(fname, "MOVED_TO");
