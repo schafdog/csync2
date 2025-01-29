@@ -334,7 +334,8 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 					   operation, file, lock_time, log_time, log_time-lock_time);
 		}
 
-		if (lock_time != -1 && log_time <= lock_time) {
+		if (lock_time != -1) { //  && log_time <= lock_time) Perhaps made sense if lock_time = time when locked + expire
+			// Now if the monitor is behind it will make more files unmatched
 			csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
 		} else {
 			csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
