@@ -17,3 +17,4 @@ Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/lo
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764' ''
+CREATE /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new/1434.M21,S=6631,W=6764 8

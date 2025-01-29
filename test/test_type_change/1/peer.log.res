@@ -15,7 +15,8 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local
@@ -68,7 +69,9 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
+Create /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all: ERROR (locked). Continue
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local

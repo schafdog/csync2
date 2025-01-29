@@ -10,7 +10,8 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local

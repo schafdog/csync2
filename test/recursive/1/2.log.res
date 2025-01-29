@@ -28,3 +28,4 @@ Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/loca
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4' ''
 Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5' ''
 Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c' ''
+CREATE /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5/file.c 11

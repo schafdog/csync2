@@ -53,7 +53,8 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local

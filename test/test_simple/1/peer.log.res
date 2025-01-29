@@ -10,17 +10,20 @@ IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/A ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/A 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/A.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/A  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/A
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/A  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all  
 IDENT (cmd_finished).
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test.
-Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test  
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
+Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test  
 IDENT (cmd_finished).
 goto nofork.
 Command: HELLO local
