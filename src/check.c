@@ -634,8 +634,7 @@ int csync_calc_digest(const char *file, BUF_P buffer, char **digest) {
 	return rc;
 }
 
-int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
-		int flags) {
+int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat, int flags) {
 	BUF_P buffer = buffer_init();
 	int count = 0;
 	int init_run = flags & FLAG_INIT_RUN;
@@ -654,9 +653,8 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	int is_dirty = db_flags & IS_DIRTY;
 	int is_upgrade = db_flags & IS_UPGRADE;
 	int dev_change = db_flags & DEV_CHANGE;
-	csync_info(3,
-			"check_file: calc_digest: %d dirty: %d is_upgrade %d dev_change: %d\n",
-			calc_digest, is_dirty, is_upgrade, dev_change);
+	csync_info(3, "check_file: calc_digest: %d dirty: %d is_upgrade %d dev_change: %d\n",
+			   calc_digest, is_dirty, is_upgrade, dev_change);
 	if (calc_digest) {
 		csync_calc_digest(file, buffer, &digest);
 	}
@@ -669,7 +667,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 				old_no, file_stat->st_dev);
 	}
 	if ((is_upgrade || is_dirty) && !csync_compare_mode) {
-		if (operation == OP_NEW && digest) {
+		if ((operation == OP_NEW && digest) || operation == OP_MKDIR) {
 			textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt,
 					digest, file_stat);
 			textlist_p ptr = tl;
@@ -748,6 +746,7 @@ int csync_check_mod(db_conn_p db, const char *file, int flags, int *count,
 
 	if (lstat_strict(file, &st) != 0) {
 		if (flags & FLAG_IGN_NOENT)
+
 			return MATCH_NONE;
 		csync_log(LOG_DEBUG, 2, "check_mod: No such file '%s' .\n", file, g);
 		return MATCH_NONE;
