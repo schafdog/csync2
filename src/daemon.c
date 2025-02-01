@@ -1581,12 +1581,12 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 			filename = (char*) prefixsubst(tag[2]);
 		const char *other = prefixsubst(tag[3]);
 		if (cmd->action == A_HELLO) {
-			csync_log(LOG_DEBUG, 1, "Command: %s: %s\n", tag[1], tag[0]);
+			csync_log(LOG_DEBUG, 1, "Command: %s %s\n", tag[0], tag[1]);
 			if (active_peer)
 				free(active_peer);
 			active_peer = strdup(tag[1]);
 		} else {
-			 csync_log(LOG_DEBUG, 1,
+			 csync_log(LOG_DEBUG, 2,
 			 "Command %s: %s %s %s %s %s %s %s %s %s %s %s\n", active_peer,
 			 tag[0], filename, other, tag[4], tag[5], tag[6], tag[7],
 			 tag[8], tag[9], tag[10], tag[11]);
