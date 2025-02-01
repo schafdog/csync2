@@ -84,17 +84,17 @@ int db_sql_check_file(db_conn_p db, const char *file, const char *encoded, char 
 					db_flags |= IS_UPGRADE;
 				}
 				if (S_ISDIR(file_mode))
-				*operation = OP_MKDIR|flag;
+					*operation = OP_MKDIR|flag;
 				else
-				*operation = OP_NEW|flag;
+					*operation = OP_NEW|flag;
 
 				csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
 						file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
 				csync_info(3, "ignore flags: %d\n", ignore_flags);
 				if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
-				db_flags |= IS_UPGRADE;
+					db_flags |= IS_UPGRADE;
 				else
-				db_flags |= IS_DIRTY;
+					db_flags |= IS_DIRTY;
 			}
 		}SQL_FIN {
 			if ( SQL_COUNT == 0 ) {
@@ -729,7 +729,7 @@ int db_sql_insert_file(db_conn_p db, filename_p encoded, const char *checktxt_en
 		const char *digest) {
 	BUF_P buf = buffer_init();
 	int count = SQL(db, "Adding new file entry",
-			"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+					"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
 					"values ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ", myhostname, encoded,
 			checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, buffer_quote(buf, digest), file_stat->st_mode,
 			file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode), encoded);
