@@ -7,6 +7,8 @@ mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync
 mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local (not synced) .
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '-'.
+WARN: operation changed: MKDIR(1) => MKDIR(129)
 mark operation MKDIR -> RM peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '-'.
+WARN: operation changed: MKDIR(1) => MKDIR(129)
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir deleted before syncing. Removing from dirty.
