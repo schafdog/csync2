@@ -622,7 +622,7 @@ int csync_read_config(char *cfgname, int conn, int mode) {
 		int i;
 
 		for (i = 0; cfgname[i]; i++)
-			if (!(cfgname[i] >= '0' && cfgname[i] <= '9') && !(cfgname[i] >= 'a' && cfgname[i] <= 'z' && cfgname[i] == '_')) {
+			if (!(cfgname[i] >= '0' && cfgname[i] <= '9') && !(cfgname[i] >= 'a' && cfgname[i] <= 'z') && !cfgname[i] == '_') {
 				char *error = "Config names are limited to [a-z0-9_]+.\n";
 				if (mode & MODE_INETD)
 					conn_printf(conn, error);
