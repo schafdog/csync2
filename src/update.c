@@ -636,6 +636,7 @@ int csync_send_reg_file(int conn, peername_p peername, filename_p filename, int 
 	}
 	return read_conn_status(conn, filename, peername);
 }
+
 /* Assume PATCH command has been sent */
 int csync_update_reg_file(int conn, peername_p peername, filename_p filename, int *last_conn_status) {
 	if ((*last_conn_status = read_conn_status(conn, filename, peername))) {
