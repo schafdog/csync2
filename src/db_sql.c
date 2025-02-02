@@ -443,20 +443,21 @@ int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {
 	(void) db;
 	(void) filename;
 	(void) newname;
-	/*    
-	 char *update_sql = 0;
-	 filename_p filename_encoded = db_escape(db, filename);
-	 const char *newname_encoded  = db_escape(db, newname);
-	 int filename_length = strlen(filename_encoded);
-	 int newname_length  = strlen(filename_encoded);
-	 */
-	//  ASPRINTF(&update_sql, "")
-	//csync_log(LOG_DEBUG, 1, "SQL UPDATE PATH: %s\n", update_sql);
-	/*
-	 SQL(db, "Update moved files in DB ", "UPDATE file set filename = concat('%s',substring(filename,%d)) where filename = '%s' or filename like '%s/%%'",
-	 newname_encoded, filename_length+1, filename_encoded, filename_encoded);
-	 */
-	//  free(update_sql);
+
+	char *update_sql = 0;
+	filename_p filename_encoded = db_escape(db, filename);
+	const char *newname_encoded  = db_escape(db, newname);
+	int filename_length = strlen(filename_encoded);
+	//int newname_length  = strlen(filename_encoded);
+	const char *update_sql_format =
+		"UPDATE file set filename = concat('%s',substring(filename,%d)) "
+		"WHERE filename = '%s' or filename like '%s/%%'";
+	ASPRINTF(&update_sql, update_sql_format,
+			 newname_encoded, filename_length+1, filename_encoded, filename_encoded);
+	csync_log(LOG_DEBUG, 1, "SQL MOVE: %s\n", update_sql);
+	SQL(db, "Update moved files in DB ", update_sql_format,
+		newname_encoded, filename_length+1, filename_encoded, filename_encoded);
+	free(update_sql);
 	csync_warn(0, "NOT IMPLEMENTED: csync_db_update_path (update DB recursive)\n");
 	return 0;
 }
