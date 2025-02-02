@@ -127,7 +127,7 @@ function clean {
 
 function inotify {
     /usr/bin/inotifywait -r --fromfile inotify_${HOST} -o ${TESTNAME}/${LEVEL}/inotify_${HOST}.log \
-			 -e close_write -e moved_to -e delete --timefmt %F_%T --format=%T %e %w%f -m
+			 -e create -e close_write -e moved_to -e delete --timefmt %F_%T --format=%T %e %w%f -m
     echo "$!" > inotify_${HOST}.pid
 }
 
