@@ -814,6 +814,7 @@ int csync_daemon_patch(int conn, filename_p filename, const char **cmd_error) {
 		csync_rs_sig(conn, filename);
 		if (csync_patch(conn, filename)) {
 			*cmd_error = strerror(errno);
+			csync_error(1, "PATCH failed: %d %s", errno, cmd_error);
 			return ABORT_CMD;
 		}
 
