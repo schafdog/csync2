@@ -1,37 +1,54 @@
 Found my alias peer localhost 30861 
 Binding to 30861 IPv0 
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1739095401
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 1739095401
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/A user/group 1234 1000 dennis schafroth 33188 - 0 1739095401
+Command: local: CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/A - 1234 1000 dennis schafroth 33188 - 0 1739095401
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/A ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/A 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/A.
 daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/A
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/A  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all user/group 1234 1000 dennis schafroth 33188 - 4 1739095401
+Command: local: CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all - 1234 1000 dennis schafroth 33188 - 4 1739095401
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.
 daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test user/group 1234 1000 dennis schafroth 33188 - 0 1739095401
+Command: local: CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test - 1234 1000 dennis schafroth 33188 - 0 1739095401
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test.
 daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test  
 IDENT (cmd_finished).
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer 1739095401        
+Command: local: BYE          
 goto nofork.
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: LIST /export/home/dennis/Projects/csync2/csync2/test/test/peer 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1       
 peername: local file: /export/home/dennis/Projects/csync2/csync2/test/test/peer key: 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV recursive 1
+Command: local: BYE          
 goto nofork.
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
+Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
@@ -64,4 +81,5 @@ Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/te
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
+Command: local: BYE          
 goto nofork.

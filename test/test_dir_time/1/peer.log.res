@@ -1,74 +1,122 @@
 Found my alias peer localhost 30861 
 Binding to 30861 IPv0 
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1739095387
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 1739095387
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr user/group 1234 1000 dennis schafroth 16877 - 4096 1739095387
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr - 1234 1000 dennis schafroth 16877 - 4096 1739095387
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local user/group 1234 1000 dennis schafroth 16877 - 4096 1739095387
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local - 1234 1000 dennis schafroth 16877 - 4096 1739095387
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 1739095387
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin - 1234 1000 dennis schafroth 16877 - 4096 1739095387
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 1739095387        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 1739095387        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer 1739095387        
+Command: local: BYE          
 goto nofork.
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 1739095389
+Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin - 1234 1000 dennis schafroth 16877 - 4096 1739095389
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 1739095387        
+Command: local: BYE          
 goto nofork.
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1739095387
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr user/group 1234 1000 dennis schafroth 16877 - 4096 1739095387
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local user/group 1234 1000 dennis schafroth 16877 - 4096 1739095390
+Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local - 1234 1000 dennis schafroth 16877 - 4096 1739095390
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 1739095389
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 1739095390        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 1739095387        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer 1739095387        
+Command: local: BYE          
 goto nofork.
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local user/group 1234 1000 dennis schafroth 16877 - 4096 1739095390
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 1739095392
+Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin - 1234 1000 dennis schafroth 16877 - 4096 1739095392
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej user/group 1234 1000 dennis schafroth 33188 - 4 1739095392
+Command: local: CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej - 1234 1000 dennis schafroth 33188 - 4 1739095392
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej.
 daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej  
 IDENT (cmd_finished).
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 1739095392        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 1739095390        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr 1739095387        
+Command: local: BYE          
 goto nofork.
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 1739095393
+Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin - 1234 1000 dennis schafroth 16877 - 4096 1739095393
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej user/group        
+Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej.
 Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local/sbin/hej  
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/usr/local 1739095390        
+Command: local: BYE          
 goto nofork.
-Command: HELLO local
+Command: (null): DEBUG          
+Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
+Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
@@ -86,4 +134,5 @@ Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/te
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
+Command: local: BYE          
 goto nofork.
