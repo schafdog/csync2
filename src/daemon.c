@@ -306,12 +306,12 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 			rc = 0;
 			csync_info(1, "Ignoring dirty directory %s\n", filename);
 			db->remove_dirty(db, "%", filename, 0);
-			return 0;
+			return OK;
 		} else if (operation == OP_RM && cmd == A_DEL) {
 			// Delete both places
 			csync_info(1, "Deleted both places: %s\n", filename);
 			db->remove_dirty(db, "%", filename, 0);
-			return 0;
+			return OK;
 		} else {
 			csync_info(1, "File %s is dirty here: %s %d\n", filename, csync_operation_str(operation), operation);
 		}
@@ -777,7 +777,6 @@ int csync_patch(int conn, filename_p filename) {
 }
 
 int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
-	csync_info(1, "daemon CREATE %s\n", filename);
 	struct stat st;
 	int rc = stat(filename, &st);
 	if (rc != -1) {
@@ -785,6 +784,7 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 		return ABORT_CMD;
 	}
 	time_t lock_time = csync_redis_lock_custom(filename, csync_lock_time, "CLOSE_WRITE,CLOSE");
+	csync_info(1, "daemon CREATE %s %d %d\n", filename, csync_lock_time, lock_time);
 	if (lock_time == -1) {
 		csync_error(1, "Create %s: %s. Continue\n", filename, "ERROR (locked)");
 	}

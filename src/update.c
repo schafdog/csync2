@@ -1562,11 +1562,11 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 	textlist_p tl_del = 0, *last_tn = &tl;
 	struct stat st;
 	tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
-	csync_debug(1, "Got dirty files from host %s\n", peername);
 	/* just return if there are no files to update */
 	if (!tl) {
 		return;
 	}
+	csync_debug(1, "Got dirty files from host %s\n", peername);
 	int conn = connect_to_host(db, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
