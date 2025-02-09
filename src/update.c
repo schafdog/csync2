@@ -1280,8 +1280,11 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 											&st, uid, gid, checktxt, digest, force, dry_run, &last_conn_status);
 				if (rc == CONN_CLOSE)
 					return rc;
-				if (rc == OK)
+				if (rc == OK) {
+					csync_clear_dirty(db, peername, filename, auto_resolve_run);
+					csync_clear_dirty(db, peername, other, auto_resolve_run);					
 					return rc;
+				}
 				csync_error(0, "ERROR: move failed: %s %s ", filename, other);
 				operation_str = "WAS_MV";
 				operation = OP_UNDEF;
