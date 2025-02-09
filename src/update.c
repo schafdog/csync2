@@ -793,9 +793,9 @@ int csync_update_hardlink(int conn, peername_p peername, const char *key_encoded
 }
 
 int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myname, peername_p peername,
-		const char *key_encoded, filename_p filename, filename_p filename_enc, struct stat *st, const char *uid,
-		const char *gid, operation_t operation, const char *checktxt, const char *digest, int is_identical,
-		int *last_conn_status) {
+								   const char *key_encoded, filename_p filename, filename_p filename_enc, struct stat *st, const char *uid,
+								   const char *gid, operation_t operation, const char *checktxt, const char *digest, int is_identical,
+								   int *last_conn_status) {
 	textlist_p tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st, NULL);
 	textlist_p t = tl;
 	int found_one = 0;
@@ -811,9 +811,9 @@ int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myname, pe
 
 			const char *path = filename_enc, *other_enc = url_encode(prefixencode(other));
 			int rc;
-			rc = csync_update_file_sig_rs_diff(conn, myname, peername, db_escape(db, key), other, other_enc, st, uid,
-					gid,
-					NULL, digest, last_conn_status, 2);
+			rc = csync_update_file_sig_rs_diff(conn, myname, peername, db_escape(db, key), other, other_enc,
+											   st, uid, gid,
+											   NULL, digest, last_conn_status, 2);
 			if (!is_identical) {
 				if (rc == IDENTICAL) {
 					// We have a remote file that we can use to "reverse" hardlink with

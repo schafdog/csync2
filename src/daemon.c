@@ -57,6 +57,7 @@ extern char *active_peer;
 
 enum action_t {
 	A_SIG,
+	A_STAT,
 	A_FLUSH,
 	A_MARK,
 	A_TYPE,
@@ -586,6 +587,7 @@ struct csync_command cmdtab[] = {
  need_ident,
  action */
 	{ "sig", 1, 0, 0, NOP, YES, A_SIG },
+	{ "stat", 1, 0, 0, NOP, YES, A_STAT },
 	{ "mark", 1, 0, 0, NOP, YES, A_MARK },
 	{ "type", 2, 0, 0, NOP, YES, A_TYPE },
 	{ "gettm", 1, 0, 0, NOP, YES, A_GETTM },
@@ -939,8 +941,7 @@ int response_ok_not_found(int conn) {
 	return NEXT_CMD;
 }
 
-int csync_daemon_sig(int conn, char *filename, const char *user_group, time_t ftime, long long size, db_conn_p db,
-		const char **cmd_error) {
+int csync_daemon_sig(int conn, char *filename, const char *user_group, time_t ftime, long long size, db_conn_p db, const char **cmd_error) {
 	csync_debug(3, "csync_daemon_sig: unused parameters: ftime %ld size %zu\n", ftime, size);
 	struct stat st;
 	if (lstat_strict(filename, &st) != 0) {
@@ -1248,6 +1249,7 @@ int csync_daemon_hardlink(filename_p filename, const char *linkname, const char 
 
 int csync_daemon_mv(db_conn_p db, filename_p filename, const char *newname, const char **cmd_error) {
 	const char *operation = "MOVED_TO";
+	csync_debug(1, "DAEMON_MV %s Locking %s:%s %d\n", filename, operation, newname, csync_lock_time);
 	time_t lock_time = csync_redis_lock_custom(newname, csync_lock_time, operation);
 	if (rename(filename, newname)) {
 		*cmd_error = strerror(errno);
@@ -1257,8 +1259,10 @@ int csync_daemon_mv(db_conn_p db, filename_p filename, const char *newname, cons
 	}
 	int rc = db->move_file(db, filename, newname);
 	if (rc) {
-		csync_error(0, "ERROR: failed to update path for moved file %s -> %s\n", filename, newname);
+		csync_error(0, "ERROR: failed to update DB path for moved file %s -> %s\n", filename, newname);
 	}
+	db->remove_dirty(db, "%", filename, 0);
+	db->remove_dirty(db, "%", newname, 0);
 	return OK;
 }
 
@@ -1582,13 +1586,13 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 			filename = (char*) prefixsubst(tag[2]);
 		const char *other = prefixsubst(tag[3]);
 		if (cmd->action == A_HELLO) {
-			csync_log(LOG_DEBUG, 1, "Command: %s %s\n", tag[0], tag[1]);
+			csync_log(LOG_DEBUG, 1, "Command: %s %s\n", tag[1], tag[0]);
 			if (active_peer)
 				free(active_peer);
 			active_peer = strdup(tag[1]);
 		} else {
-			 csync_log(LOG_DEBUG, 2,
-			 "Command %s: %s %s %s %s %s %s %s %s %s %s %s\n", active_peer,
+			 csync_log(LOG_DEBUG, 1,
+			 "Command: %s: %s %s %s %s %s %s %s %s %s %s %s\n", active_peer,
 			 tag[0], filename, other, tag[4], tag[5], tag[6], tag[7],
 			 tag[8], tag[9], tag[10], tag[11]);
 		}

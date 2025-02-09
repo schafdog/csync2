@@ -439,11 +439,6 @@ textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char *myhos
 }
 
 int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {
-	// unused
-	(void) db;
-	(void) filename;
-	(void) newname;
-
 	char *update_sql = 0;
 	filename_p filename_encoded = db_escape(db, filename);
 	const char *newname_encoded  = db_escape(db, newname);
@@ -458,7 +453,7 @@ int db_sql_move_file(db_conn_p db, filename_p filename, const char *newname) {
 	SQL(db, "Update moved files in DB ", update_sql_format,
 		newname_encoded, filename_length+1, filename_encoded, filename_encoded);
 	free(update_sql);
-	csync_warn(0, "NOT IMPLEMENTED: csync_db_update_path (update DB recursive)\n");
+	//csync_warn(0, "NOT IMPLEMENTED: csync_db_update_path (update DB recursive)\n");
 	return 0;
 }
 
