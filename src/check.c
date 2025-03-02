@@ -22,6 +22,7 @@
 #include "digest.h"
 #include "db_api.h"
 #include "buffer.h"
+#include "redis.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -647,6 +648,12 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	char *other = 0;
 	char *digest = NULL;
 	dev_t old_no;
+	time_t lock_time = csync_redis_get_custom(file, "CLOSE_WRITE,CLOSE");
+	if (lock_time != -1) {
+		csync_info(1, "Skipping %s. Locked by daemon at %d\n", file, lock_time);
+		// Dirty rows
+		return 0;
+	}
 	int db_flags = db->check_file(db, file, encoded, &other, checktxt,
 			file_stat, buffer, &operation, &digest, flags, &old_no);
 	int calc_digest = db_flags & CALC_DIGEST;
