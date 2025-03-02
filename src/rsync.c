@@ -181,7 +181,7 @@ static FILE* open_temp_file(char *fnametmp, const char *fname) {
 
 	f = NULL;
 	//fd = mkstemp(fnametmp);
-	// Let csync2 tail ignore this file for 10 minutes
+	// Let csync2 tail ignore this file for x seconds. Default 60 seconds (problematic on large files)
 	csync_redis_lock_custom(fnametmp, csync_lock_time, "CLOSE_WRITE,CLOSE");
 	fd = open(fnametmp, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
 	if (fd >= 0) {
