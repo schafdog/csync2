@@ -147,15 +147,16 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const 
 		return 0;
 	time_t unix_time = time(NULL);
 	if (domain)
-		csync_debug(3, "Locking '%s:%s'\n", domain, filename);
+		csync_debug(2, "Locking '%s:%s'\n", domain, filename);
 	else
-		csync_debug(3, "Locking '%s'\n", filename);
+		csync_debug(2, "Locking '%s'\n", filename);
 	int rc = csync_redis_set_int(filename, domain, unix_time, 1, custom_lock_time);
 	if (rc < 0) {
 		// Failed to get OK reply
 		unix_time = -1;
 	}
-	csync_debug(3, "csync_redis_lock: %s %s %d\n", rc == 1 ? "OK" : "ERR", filename, unix_time);
+	csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: %s %s:%s %d\n",
+				rc == 1 ? "OK" : "ERR", domain, filename, unix_time);
 	return unix_time;
 }
 
