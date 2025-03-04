@@ -649,7 +649,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	char *digest = NULL;
 	dev_t old_no;
 	time_t lock_time = csync_redis_get_custom(file, "CLOSE_WRITE,CLOSE");
-	if (lock_time != -1) {
+	if (lock_time > 0) {
 		csync_info(1, "Skipping %s. Locked by daemon at %d\n", file, lock_time);
 		// Dirty rows
 		return 0;
