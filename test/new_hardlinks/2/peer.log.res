@@ -106,18 +106,18 @@ CONN local < octet-stream 32
 Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/new_file %25test%25/new/hardlinked '
-Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked        
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
-Skipping /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file. Locked by daemon at 1742894821
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file.
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file is clean
+CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked %25test%25/new/new_file '
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file        
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
+check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked' .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked is clean
 HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
+daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new xxxxxxxxxx'
@@ -187,29 +187,32 @@ CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFL
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
 CONN local < OK (not_found).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_3 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxxxx'
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
-CONN local < OK (not_found).
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/new_file user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
+CONN local < OK (data_follows).
 
-CONN local > 'CREATE 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_2 - 1234 1000 dennis schafroth 33188 - 4 xxxxxxxxxx'
-Command: local: CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 - 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
+Flags for gencheck: 48 
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file to peer.
+CONN local < octet-stream 32
+
+Signature has been sent to peer successfully.
+CONN local < OK (cmd_finished).
+
+CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_2 %25test%25/new/new_file '
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file        
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
 check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2' .
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 is clean
-Locking 'CLOSE_WRITE,CLOSE:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2'
-daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 1 0
-CONN local < OK 
-CONN local > 'octet-stream 4'
-Got octet-stream 4
-Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
-settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 rc = 0 time: 0 errno = 0 err = 
+HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2
-Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2  
-IDENT (cmd_finished).
-CONN local < IDENT (cmd_finished).
+daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
+CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_3 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxxxx'
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
@@ -228,17 +231,18 @@ CONN local < octet-stream 32
 Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/new_file %25test%25/new/hardlinked_3 '
-Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3        
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file.
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file is clean
+CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_3 %25test%25/new/new_file '
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file        
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 
+check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3' .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 is clean
 HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 
+daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_3 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/new_file 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new xxxxxxxxxx'
@@ -415,55 +419,60 @@ CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFL
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
 CONN local < OK (not_found).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxxxx'
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_5 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxx
+CONN local < OK (not_found).
+
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxx
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
 
-Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked to peer.
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 to peer.
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked %25test%25/new/hardlinked_4 '
-Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4        
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked.
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked is clean
-HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked
+CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_2 '
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2        
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
+check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4' .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 is clean
+HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
+daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxxxx'
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxx
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
 
-Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked to peer.
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 to peer.
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked %25test%25/new/hardlinked_4 '
-Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4        
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked.
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked is clean
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked
+CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_2 '
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2        
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 is clean
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
+daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_2 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_5 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxxxx'
@@ -483,17 +492,18 @@ CONN local < octet-stream 32
 Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_5 '
-Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5        
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4.
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 is clean
+CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_5 %25test%25/new/hardlinked_4 '
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4        
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
+check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5' .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 is clean
 HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
+daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_4 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 xxxxxxxxxx'
@@ -509,16 +519,16 @@ CONN local < octet-stream 32
 Signature has been sent to peer successfully.
 CONN local < OK (cmd_finished).
 
-CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_5 '
-Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5        
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4.
-daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 is clean
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
+CONN local > 'MKHARDLINK 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new/hardlinked_5 %25test%25/new/hardlinked_4 '
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4        
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 is clean
 daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 
+daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_5 /export/home/dennis/Projects/csync2/csync2/test/test/peer/new/hardlinked_4 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new xxxxxxxxxx'

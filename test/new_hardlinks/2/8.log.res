@@ -43,43 +43,52 @@ CONN peer > 'OK (not_found).'
 update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 RC 32
 CHECKING SAME DEV INODE /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 '32a0617aab4c9fe725f1b5bc441291180ad25b73'
 5 files with same dev:inode (2049:0) as file: /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
-check same file (32) /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 
-Found HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 
-do hardlink check /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked 
-CONN peer < SIG %25test%25/new/hardlinked user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
+check same file (32) /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 
+Found HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 
+do hardlink check /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 
+CONN peer < SIG %25test%25/new/hardlinked_5 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
+CONN peer > 'OK (not_found).'
+update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 RC 32
+Remote HARDLINK file (/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5) not identical. Need patching. RC = 32
+check_update_hardlink result: /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4: 32
+Not a candidate for HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
+check same file (32) /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 
+Found HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 
+do hardlink check /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 
+CONN peer < SIG %25test%25/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
 CONN peer > 'OK (data_follows).'
-update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked RC 0
+update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4'
 CONN peer > 'octet-stream 32'
 Got octet-stream 32
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
-rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked
+rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2
 CONN peer > 'OK (cmd_finished).'
-?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked
-Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
-CONN peer < MKHARDLINK %25test%25/new/hardlinked %25test%25/new/hardlinked_4 
+?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2
+Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
+CONN peer < MKHARDLINK %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_2 
 CONN peer > 'OK (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 (0)
-check_update_hardlink result: /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4: 0
-Candidate for HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
-do hardlink check /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked 
-CONN peer < SIG %25test%25/new/hardlinked user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
+check_update_hardlink result: /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4: 0
+Candidate for HARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
+do hardlink check /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 
+CONN peer < SIG %25test%25/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
 CONN peer > 'OK (data_follows).'
-update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked RC 0
+update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4'
 CONN peer > 'octet-stream 32'
 Got octet-stream 32
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
-rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked
+rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2
 CONN peer > 'OK (cmd_finished).'
-?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked
-Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
-CONN peer < MKHARDLINK %25test%25/new/hardlinked %25test%25/new/hardlinked_4 
+?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2
+Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
+CONN peer < MKHARDLINK %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_2 
 CONN peer > 'OK (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 (0)
 clear dirty HARDLINK
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 (0)
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked (0)
+Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 (0)
 Updating (MARK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5' ''
 CONN peer < SIG %25test%25/new/hardlinked_5 user/group 1234 1000 dennis schafroth 33188 - 4 
 CONN peer > 'OK (not_found).'
@@ -100,7 +109,7 @@ rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/c
 CONN peer > 'OK (cmd_finished).'
 ?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
 Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5
-CONN peer < MKHARDLINK %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_5 
+CONN peer < MKHARDLINK %25test%25/new/hardlinked_5 %25test%25/new/hardlinked_4 
 CONN peer > 'OK (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 (0)
 check_update_hardlink result: /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5: 0
@@ -117,7 +126,7 @@ rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/c
 CONN peer > 'OK (cmd_finished).'
 ?S: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4
 Hardlinking peer /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 -> /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5
-CONN peer < MKHARDLINK %25test%25/new/hardlinked_4 %25test%25/new/hardlinked_5 
+CONN peer < MKHARDLINK %25test%25/new/hardlinked_5 %25test%25/new/hardlinked_4 
 CONN peer > 'OK (cmd_finished).'
 Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 (0)
 clear dirty HARDLINK
