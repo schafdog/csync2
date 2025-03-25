@@ -631,7 +631,7 @@ textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, 
 			}
 		}
 		if (found)
-			csync_info(2, "dirty: %s:%s %s '%s'\n", peername, filename, checktxt, digest);
+			csync_info(2, "dirty: %s:%s %s '%s'\n", peername, filename, filter_mtime((char *) checktxt, 0), digest);
 
 	}SQL_END;
 
