@@ -785,7 +785,7 @@ int csync_daemon_create(int conn, filename_p filename, const char **cmd_error) {
 		return ABORT_CMD;
 	}
 	time_t lock_time = csync_redis_lock_custom(filename, csync_lock_time, "CLOSE_WRITE,CLOSE");
-	csync_info(1, "daemon CREATE %s %d %d\n", filename, csync_lock_time, lock_time);
+	csync_info(1, "daemon CREATE %s %d %d\n", filename, csync_lock_time, csync_zero_mtime_debug ? 0 : lock_time);
 	if (lock_time == -1) {
 		csync_error(1, "Create %s: %s. Continue\n", filename, "ERROR (locked)");
 	}
@@ -1466,7 +1466,7 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 		break;
 	case A_MKHLINK: {
 		*otherfile = prefixsubst(params->secondfile);
-		return csync_daemon_hardlink(filename, *otherfile, "1", cmd_error);
+		return csync_daemon_hardlink(*otherfile, filename, "1", cmd_error);
 		break;
 	}
 	case A_MV: {
@@ -1485,6 +1485,8 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 		break;
 	case A_SETTIME:
 		return csync_daemon_settime(filename, atol(params->value), cmd_error);
+		break;
+	case A_STAT:
 		break;
 	case A_LIST:
 		// LIST <host> <filename> <key> <recursive>
@@ -1595,8 +1597,11 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 		} else {
 			 csync_log(LOG_DEBUG, 1,
 			 "Command: %s: %s %s %s %s %s %s %s %s %s %s %s\n", active_peer,
-			 tag[0], filename, other, tag[4], tag[5], tag[6], tag[7],
-			 tag[8], tag[9], tag[10], tag[11]);
+					   tag[0], filename,
+					   csync_zero_mtime_debug && cmd->action == A_SETTIME ? "xxxxxxxx" :other,
+					   tag[4],
+					   tag[5], tag[6], tag[7],
+					   tag[8], tag[9], tag[10], tag[11][0] != 0 && csync_zero_mtime_debug ? "xxxxxxxx" : tag[11] );
 		}
 
 		cmd_error = 0;
@@ -1613,6 +1618,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 		}
 
 		struct command params;
+		
 		parse_tags(tag, &params);
 		if (rc == OK && cmd->check_dirty
 				&& csync_daemon_check_dirty(db, filename, peername, cmd->action,
@@ -1620,7 +1626,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 			rc = ABORT_CMD;
 			// Something is wrong if this is required
 			cmd_error = ERROR_DIRTY_STR;
-			csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename); // cmd_error is set on error
+			csync_info(1, "File %s:%s is dirty here. Continuing.\n", peername, filename); // cmd_error is set on error
 		} else {
 			// TODO: Unlink only if different type
 			if (rc == OK && cmd->unlink) {

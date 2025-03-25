@@ -790,7 +790,8 @@ int csync_update_hardlink(int conn, peername_p peername, const char *key_encoded
 		const char *path_enc, const char *newpath, const char *newpath_enc, int *last_conn_status) {
 	// TODO Check that the target matches the config
 	csync_info(1, "Hardlinking %s %s -> %s\n", peername, filename, newpath);
-	conn_printf(conn, "%s %s %s %s \n", HARDLINK_CMD, key_encoded, path_enc, newpath_enc);
+	// Swap filename and newpatch
+	conn_printf(conn, "%s %s %s %s \n", HARDLINK_CMD, key_encoded, newpath_enc, path_enc);
 	if ((*last_conn_status = read_conn_status(conn, filename, peername))) {
 		csync_error(0, "Failed to hard link %s %s %s\n", peername, filename, newpath);
 		if (*last_conn_status == CONN_CLOSE)
