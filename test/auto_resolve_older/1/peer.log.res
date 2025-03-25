@@ -39,7 +39,7 @@ mark other operation: 'NEW' 'local:/export/home/dennis/Projects/csync2/csync2/te
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both' '-'.
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.
 File /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both is dirty here: NEW 2
-ERROR: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both)
+File local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both is dirty here. Continuing. <3546557> ERROR: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both)
 Command: local: GETTM /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both         
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
@@ -90,7 +90,6 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve.
 check_auto_resolve: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolve
 daemon dispatch: Remote local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both won auto resolved. clear dirty
-Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both  
 IDENT (cmd_finished).
@@ -118,11 +117,11 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both.
 Removing file /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both
-Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older/update_both from file db.
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/older 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 0
+csync_redis_lock: ERR DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer -1
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
