@@ -590,12 +590,13 @@ void conn_remove_key(char *buf) {
 		*ptr = 0;
 	}
 }
+extern int csync_zero_mtime_debug;
 
 char* filter_mtime(char *buffer, int make_copy) {
 	char *str = buffer;
 	if (make_copy)
 		str = strdup(buffer);
-	if (csync_level_debug >= 2) {
+	if (csync_zero_mtime_debug) {
 		char *pos = strstr(str, "mtime=");
 		if (pos != NULL) {
 			pos += 6;
@@ -608,7 +609,7 @@ char* filter_mtime(char *buffer, int make_copy) {
 		int len = strlen(str);
 		if (len > 0) {
 			if (!strncmp(str, "PATCH", 5) || !strncmp(str, "SET", 3) || !strncmp(str, "MKDIR", 5)
-					|| !strncmp(str, "SIG", 3) || !strncmp(str, "MOD", 3)) {
+					|| !strncmp(str, "SIG", 3) || !strncmp(str, "MOD", 3)|| !strncmp(str, "CREATE", 6)) {
 				char *ptr = str + strlen(str) - 1;
 				// csync_debug(0, "Remove time: %s\n", str);
 				while (*ptr >= '0' && *ptr <= '9' && ptr >= str) { //  || (*ptr >= '0' && *ptr <= '9')) {
