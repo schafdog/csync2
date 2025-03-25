@@ -340,7 +340,19 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 		} else {
 			csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
 			if (strcmp(operation, "CREATE") == 0) {
-				csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
+				struct stat st;
+				if (lstat_strict(file, &st) == 0) {
+					if (st.st_nlink > 1 && S_ISREG(st.st_mode)) {
+						csync_info(2, "monitor: hardlink '%s' '%s' at '%s' \n", operation, file, time_str);
+						const struct csync_group *g = NULL;
+						int count_dirty;
+						csync_check_mod(db, file, flags, &count_dirty, &g);
+					} else {
+						csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
+					}
+				} else {
+					csync_error(1, "monitor: failed stat '%s' '%s' at '%s' \n", operation, file, time_str);
+				}
 			} else if (strcmp(operation, "DELETE") == 0) {
 				csync_check_del(db, file, flags);
 			} else if (strstr(operation, "CLOSE_WRITE") != NULL) {
