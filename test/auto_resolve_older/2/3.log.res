@@ -9,21 +9,21 @@ Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test
 Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/local
+csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local /export/home/dennis/Projects/csync2/csync2/test/test/local
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local (null)
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows matched: 0
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
+csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/auto /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' '-'.
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto (null)
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto rows matched: 0
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/* ..
 New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
+csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
 mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' '-'.
 mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' '-'.
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older (null)
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older rows matched: 0
 Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/* ..
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.

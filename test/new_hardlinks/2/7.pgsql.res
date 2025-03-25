@@ -9,19 +9,15 @@
  /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file
 (8 rows)
 
-----------+-----------------------------------------------------------------------------+-----------+---------------------------------------------------------------------------+----
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new              | MARK      |                                                                           |  0
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked   | MARK      |                                                                           |  0
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 | MARK      |                                                                           |  0
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_3 | MARK      |                                                                           |  0
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 | MARK      |                                                                           |  0
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 | MARK      |                                                                           |  0
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file     | MARK      |                                                                           |  0
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                  | MKDIR     |                                                                           |  1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new              | MKDIR     |                                                                           |  1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file     | NEW       |                                                                           |  2
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked   | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file   | 32
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked | 32
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_3 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked | 32
-(13 rows)
+----------+-----------------------------------------------------------------------------+-----------+-----------------------------------------------------------------------------+----
+ peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new              | MARK      |                                                                             |  0
+ peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_4 | MARK      |                                                                             |  0
+ peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_5 | MARK      |                                                                             |  0
+ other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                  | MKDIR     |                                                                             |  1
+ other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new              | MKDIR     |                                                                             |  1
+ other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file     | NEW       |                                                                             |  2
+ other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked   | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file     | 32
+ other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_2 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_3 | 32
+ other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked_3 | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file     | 32
+(9 rows)
 

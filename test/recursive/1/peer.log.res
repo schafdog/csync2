@@ -3,77 +3,77 @@ Binding to 30861 IPv0
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1581462000
-Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive user/group 1234 1000 dennis schafroth 16877 - 4096 1581462000
-Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive - 1234 1000 dennis schafroth 16877 - 4096 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 user/group 1234 1000 dennis schafroth 16877 - 4096 1581462000
-Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 - 1234 1000 dennis schafroth 16877 - 4096 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 user/group 1234 1000 dennis schafroth 16877 - 4096 1581462000
-Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 - 1234 1000 dennis schafroth 16877 - 4096 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 user/group 1234 1000 dennis schafroth 16877 - 4096 1581462000
-Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 - 1234 1000 dennis schafroth 16877 - 4096 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 user/group 1234 1000 dennis schafroth 16877 - 4096 1581462000
-Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 - 1234 1000 dennis schafroth 16877 - 4096 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 user/group 1234 1000 dennis schafroth 16877 - 4096 1581462000
-Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 - 1234 1000 dennis schafroth 16877 - 4096 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5.
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c user/group 1234 1000 dennis schafroth 33188 - 11 1581462000
-Command: local: CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c - 1234 1000 dennis schafroth 33188 - 11 1581462000
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c user/group 1234 1000 dennis schafroth 33188 - 11 xxxxxxxx
+Command: local: CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c - 1234 1000 dennis schafroth 33188 - 11 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c.
-daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c 1 1742889485
+daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c 1 0
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c  
 IDENT (cmd_finished).
-Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 1581462000        
-Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 1581462000        
-Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 1581462000        
-Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 1581462000        
-Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 1581462000        
-Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive 1581462000        
-Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer 1581462000        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 xxxxxxxx        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 xxxxxxxx        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 xxxxxxxx        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 xxxxxxxx        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 xxxxxxxx        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive xxxxxxxx        
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
 Command: local: BYE          
 goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 1742889488
-Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 1742889488
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
@@ -113,7 +113,6 @@ Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recu
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 0
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 0
-csync_redis_lock: ERR DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive -1
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive): 6 1 
@@ -132,7 +131,6 @@ Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 0 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
-csync_redis_lock: ERR DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer -1
 Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 0 1 

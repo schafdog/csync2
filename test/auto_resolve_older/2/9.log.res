@@ -27,13 +27,9 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
 csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' ''
 dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both v2:mtime=1625767200:mode=33188:user=dennis:group=schafroth:type=reg:size=14 ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older' ''
 dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older v2:mtime=1625767200:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' ''
 dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto v2:mtime=1625767200:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=1625767200:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...

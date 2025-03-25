@@ -16,5 +16,6 @@ echo "not ignore" > "test/$NAME/$DIRNAME/1/2/3/4/5/file.c"
 sleep 1
 cmd x "3. Sync with missing directories"
 rm -rf test/$NAME
+sleep 1
 cmd x "4. clean up"
 killdaemon

@@ -16,6 +16,5 @@
  other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash     | MKDIR     |       |  1
  other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur | MKDIR     |       |  1
  other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123    | NEW       |       |  2
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp/123    | NEW       |       |  2
-(8 rows)
+(7 rows)
 

@@ -16,7 +16,6 @@ New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/
 csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
 mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' '-'.
 mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both' '-'.
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both f2dd09e8939d88e1b547eae060b20f4098412f1b
 Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both rows matched: 0
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
 csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
