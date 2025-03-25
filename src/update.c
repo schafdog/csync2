@@ -448,6 +448,12 @@ int check_auto_resolve_peer(const char *peername, filename_p filename, const cha
 	return auto_resolved;
 }
 
+int csync_flush(int conn, const char *key_enc, const char *peername, filename_p filename_enc) {
+	conn_printf(conn, "FLUSH %s %s\n", key_enc, filename_enc);
+	int rc = read_conn_status(conn, filename_enc, peername);
+	return rc;
+}
+
 extern int csync_zero_mtime_debug;
 
 int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_p filename, int force, int flags) {
@@ -522,8 +528,10 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 			found_diff = 1;
 			// We should be able to figure auto resolve from checktxt
 			flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
-			if (flush)
-				csync_info(1, "Sould send FLUSH %s:%s (won auto resolved)", peername, filename);
+			if (flush) {
+				csync_info(1, "Sendind FLUSH %s:%s (won auto resolved)", peername, filename);
+				csync_flush(conn, key_enc, peername, filename_enc);
+			}
 		}
 		int rs_check_result = csync_rs_check(conn, filename, 0);
 		if (rs_check_result < 0)
@@ -937,12 +945,6 @@ int csync_update_directory(int conn, const char *myname, peername_p peername, co
 	return OK;
 }
 
-int csync_flush(int conn, const char *key_enc, const char *peername, filename_p filename_enc) {
-	conn_printf(conn, "FLUSH %s %s\n", key_enc, filename_enc);
-	int rc = read_conn_status(conn, filename_enc, peername);
-	return rc;
-}
-
 int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peername, const char *key_enc,
 		filename_p filename, filename_p filename_enc, const struct stat *st, const char *uid, const char *gid,
 		const char *chk_local, const char *digest, int *last_conn_status, int log_level) {
@@ -964,7 +966,7 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peerna
 		rc |= DIFF_FILE;
 	}
 	if (flags & DIFF_FLUSH) {
-		csync_flush(conn, key_enc, peername, filename_enc);
+		rc = csync_flush(conn, key_enc, peername, filename_enc);
 	}
 	int rc_status;
 	if ((rc_status = read_conn_status(conn, filename, peername)) < OK) {
@@ -1343,9 +1345,11 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			else if (sig_rc & OK_MISSING)
 				rc = csync_update_file_send(conn, key_enc, peername, filename, filename_enc, &st, uid, gid, digest,
 						&last_conn_status);
-			else
-				csync_info(2, "Skipping file patch '%s' (same)", filename);
-
+			else {
+				csync_info(2, "Skipping file patch '%s' (same) rc: %d sig_rc: %d \n", filename, rc, sig_rc);
+				// would better to have flush flag on PATCH
+				rc = csync_flush(conn, key_enc, peername, filename_enc);
+			}
 			if (rc == CONN_CLOSE || rc == ERROR_LOCKED)
 				return rc;
 			/*	    
@@ -1410,22 +1414,22 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 		if (rc == OK) {
 			rc = csync_update_file_setown(conn, peername, key_enc, filename, filename_enc, &st, uid, gid);
 			if (rc != OK) {
-				csync_error(2, "Failed to set owner on %s:%s %d", peername, filename, rc);
+				csync_error(2, "Failed to set owner on %s:%s %d\n", peername, filename, rc);
 				return rc;
 			}
 			// Is this difference for FS?
 			if (mode != LINK_TYPE) {
 				rc = csync_update_file_setmod(conn, peername, key_enc, filename, filename_enc, &st);
 				if (rc != OK) {
-					csync_error(2, "Failed to set mod on %s:%s %d", peername, filename, rc);
+					csync_error(2, "Failed to set mod on %s:%s %d\n", peername, filename, rc);
 					return rc;
-				} else {
-					csync_info(2, "Skipping setmod on link %s:%s", peername, filename);
 				}
+			} else {
+				csync_info(2, "Skipping setmod on link %s:%s\n", peername, filename);
 			}
 			rc = csync_update_file_settime(conn, peername, key_enc, filename, filename_enc, &st);
 			if (rc != OK) {
-				csync_error(2, "Failed to set time on %s:%s %d", peername, filename, rc);
+				csync_error(2, "Failed to set time on %s:%s %d\n", peername, filename, rc);
 				return rc;
 			}
 		}
