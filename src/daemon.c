@@ -288,7 +288,7 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 	const struct csync_group *g = NULL;
 	int markedDirty = csync_check_single(db, filename, FLAG_IGN_DIR, &g);
 	csync_log(LOG_DEBUG, 2, "daemon_check_dirty: %s %s\n", filename,
-			(markedDirty ? "is just marked dirty" : " is clean"));
+			(markedDirty ? "is just marked dirty" : "is clean"));
 
 	if (cmd == A_FLUSH)
 		return 0;
@@ -1401,17 +1401,17 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 		}
 		rc = csync_daemon_setown(filename, params->uid, params->gid, params->user, params->group, cmd_error);
 		if (rc != OK) {
-			csync_error(1, "Failed to set owner %s", filename);
+			csync_error(1, "Failed to set owner %s\n", filename);
 			return rc;
 		}
 		rc = csync_daemon_setmod(filename, params->mod, cmd_error);
 		if (rc != OK) {
-			csync_error(1, "Failed to set mod %s", filename);
+			csync_error(1, "Failed to set mod %s\n", filename);
 			return rc;
 		}
 		rc = csync_daemon_settime(filename, params->ftime, cmd_error);
 		if (rc != OK || params->ftime == 0) {
-			csync_error(1, "Failed to set time %s %d or is 0", filename, params->ftime);
+			csync_error(1, "Failed to set time %s %d or is 0\n", filename, params->ftime);
 			return rc;
 		}
 		return IDENTICAL;
@@ -1608,6 +1608,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 		int rc = OK;
 
 		if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername, tag[1]))) {
+			csync_error(1, "File %s:%s no perm. Abort cmd %s", peername, filename, cmd_error);
 			rc = ABORT_CMD;
 		}
 
@@ -1617,7 +1618,9 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 				&& csync_daemon_check_dirty(db, filename, peername, cmd->action,
 						daemon_check_auto_resolve(peername, filename, params.ftime, params.size), &cmd_error)) {
 			rc = ABORT_CMD;
-			// csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename) // cmd_error is set on error
+			// Something is wrong if this is required
+			cmd_error = ERROR_DIRTY_STR;
+			csync_info(1, "File %s:%s is dirty here. Continuing. ", peername, filename); // cmd_error is set on error
 		} else {
 			// TODO: Unlink only if different type
 			if (rc == OK && cmd->unlink) {
@@ -1633,8 +1636,8 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 				}
 			}
 			const char *otherfile = NULL;
-			cmd_error = 0;
 			if (rc != ABORT_CMD) {
+				cmd_error = 0;
 				rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params, protocol_version, &peername,
 						&peeraddr, &otherfile, &cmd_error);
 			}
