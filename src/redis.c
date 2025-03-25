@@ -136,6 +136,8 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 	return 1;
 }
 
+extern int csync_zero_mtime_debug;
+
 int csync_redis_set_int(const char *key, const char *domain, int number, int nx, int expire) {
 	char value[20];
 	sprintf(value, "%d", number);
@@ -155,8 +157,9 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const 
 		// Failed to get OK reply
 		unix_time = -1;
 	}
-	csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: %s %s:%s %d\n",
-				rc == 1 ? "OK" : "ERR", domain, filename, unix_time);
+	if (!csync_zero_mtime_debug || unix_time == -1)
+		csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: %s %s:%s %d\n",
+				   rc == 1 ? "OK" : "ERR", domain, filename, unix_time);
 	return unix_time;
 }
 
