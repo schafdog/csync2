@@ -254,7 +254,6 @@ int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int rec
 		return 0;
 
 	if (S_ISDIR(st.st_mode)) {
-		csync_redis_lock_custom(filename, csync_lock_time, "DELETE,ISDIR");
 		rc = csync_rmdir(db, filename, peername, recursive);
 	} else {
 		csync_redis_lock_custom(filename, csync_lock_time, "DELETE");
