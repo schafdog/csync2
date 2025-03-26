@@ -1,3 +1,4 @@
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
 #ifndef DB_API_H
 #define DB_API_H
 
@@ -105,14 +106,14 @@ struct db_conn_t {
 			struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int flags, dev_t *old_no);
 
 	textlist_p (*check_file_same_dev_inode)(db_conn_p db, filename_p filename, const char *checktxt, const char *digest,
-			struct stat *st);
+						struct stat *st, peername_p peername);
 	textlist_p (*check_dirty_file_same_dev_inode)(db_conn_p db, peername_p peername, filename_p filename,
 			const char *checktxt, const char *digest, struct stat *st);
 	textlist_p (*non_dirty_files_match)(db_conn_p db, filename_p pattern);
 	textlist_p (*get_dirty_hosts)(db_conn_p db);
 	int (*dir_count)(db_conn_p db, const char *dirname);
 	int (*move_file)(db_conn_p db, const char *oldfile, const char *newfile);
-
+	void (*update_dirty_hardlinks)(db_conn_p db, const char *peername, const char *newfile, struct stat *st);
 	long (*get_affected_rows)(db_conn_p db);
 	long affected_rows;
 };
