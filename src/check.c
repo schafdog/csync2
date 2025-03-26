@@ -443,17 +443,15 @@ int csync_check_pure(filename_p filename) {
 
 int csync_check_del(db_conn_p db, const char *file, int flags) {
 	return db->check_delete(db, file, flags & FLAG_RECURSIVE,
-			flags
-					& (FLAG_INIT_RUN | FLAG_INIT_RUN_STRAIGHT
-							| FLAG_INIT_RUN_REMOVAL));
+			flags & (FLAG_INIT_RUN | FLAG_INIT_RUN_STRAIGHT
+					 | FLAG_INIT_RUN_REMOVAL));
 }
 
 textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename,
-		const char *checktxt, const char *digest, struct stat *st) {
+										   const char *checktxt, const char *digest, struct stat *st, peername_p peername) {
 	textlist_p tl = 0;
-	csync_info(2, "csync_check_file_same_dev_inode %s %s\n", filename,
-			db_escape(db, filename));
-	tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st);
+	csync_info(2, "csync_check_file_same_dev_inode %s %s\n", filename, db_escape(db, filename));
+	tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st, peername);
 	return tl;
 }
 
@@ -491,7 +489,7 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername,
 	}
 	textlist_p t, tl = NULL;
 	textlist_p db_tl = db->check_dirty_file_same_dev_inode(db, peername,
-			filename, checktxt, digest, st);
+														   filename, checktxt, digest, st);
 	struct stat file_stat;
 	int count = 0;
 	for (t = db_tl; t != NULL; t = t->next) {
@@ -675,8 +673,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 	}
 	if ((is_upgrade || is_dirty) && !csync_compare_mode) {
 		if ((operation == OP_NEW && digest) || operation == OP_MKDIR) {
-			textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt,
-					digest, file_stat);
+			textlist_p tl = csync_check_file_same_dev_inode(db, file, checktxt, digest, file_stat, NULL);
 			textlist_p ptr = tl;
 			while (ptr != NULL) {
 				csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue,
@@ -691,8 +688,7 @@ int csync_check_file_mod(db_conn_p db, const char *file, struct stat *file_stat,
 					// BROKEN LOGIC. There can be more that one hardlink. Only finds last
 					operation = OP_HARDLINK;
 					other = buffer_strdup(buffer, ptr->value);
-					csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value,
-							file);
+					csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, file);
 				}
 				ptr = ptr->next;
 			}
