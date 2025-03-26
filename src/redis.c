@@ -158,8 +158,8 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const 
 		unix_time = -1;
 	}
 	if (!csync_zero_mtime_debug || unix_time == -1)
-		csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: %s %s:%s %d\n",
-				   rc == 1 ? "OK" : "ERR", domain, filename, unix_time);
+		csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: %s %s:%s %d %d\n",
+				   rc == 1 ? "OK" : "ERR", domain, filename, unix_time, custom_lock_time);
 	return unix_time;
 }
 
