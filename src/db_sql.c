@@ -846,20 +846,37 @@ int db_sql_remove_action_entry(db_conn_p db, filename_p filename, const char *co
 	return 0;
 }
 
-textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char *checktxt, const char *digest,
-		struct stat *st) {
-	textlist_p tl = 0;
-	const char *sql = " SELECT filename, checktxt, digest FROM file WHERE "
-			" hostname = '%s' "
+void db_sql_update_dirty_hardlinks(db_conn_p db, peername_p peername, filename_p filename, struct stat *st) {
+
+	const char *sql = " UPDATE dirty set other = '%s' WHERE "
+			" peername  = '%s' "
 			" AND device = %lu "
 			" AND inode = %llu "
 			" AND filename != '%s' ";
+	const char *filename_esc = db_escape(db, filename);
+	SQL(db, "Updating dirty hardlinks", sql, filename_esc, peername, st->st_dev, st->st_ino, filename_esc);
+}
+
+textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p filename, const char *checktxt, const char *digest,
+											struct stat *st, peername_p peername) {
+	(void) checktxt;
+	textlist_p tl = 0;
+	const char *sql =
+		" SELECT filename, checktxt, digest FROM file f "
+		" WHERE "
+		" hostname = '%s' "
+		" AND device = %lu "
+		" AND inode = %llu "
+		" AND filename != '%s'"
+		" AND ('NULL' = '%s' OR "
+		"     filename NOT IN (SELECT filename FROM dirty WHERE peername = '%s' AND device = f.device AND inode = f.inode));";
 //	" AND checktxt  = '%s' "
 //	" AND digest    = '%s' ";
 
-	SQL_BEGIN(db, "check_file_same_dev_inode",
-			sql, myhostname,
-			st->st_dev, st->st_ino, db_escape(db, filename), checktxt, digest)
+	const char *escaped = db_escape(db, filename);
+	SQL_BEGIN(db, "check_file_same_dev_inode, optional not dirty for peer",
+			  sql, myhostname,
+			  st->st_dev, st->st_ino, escaped, peername, peername)
 {			const char *db_filename = db_decode(SQL_V(0));
 			const char *db_checktxt = db_decode(SQL_V(1));
 			const char *db_digest = db_decode(SQL_V(2));
@@ -962,6 +979,7 @@ int db_sql_init(db_conn_p conn) {
 	conn->get_dirty_hosts = db_sql_get_dirty_hosts;
 	conn->dir_count = db_sql_dir_count;
 	conn->move_file = db_sql_move_file;
+	conn->update_dirty_hardlinks = db_sql_update_dirty_hardlinks;
 	conn->schema_version = db_sql_schema_version;
 	return 0;
 }
