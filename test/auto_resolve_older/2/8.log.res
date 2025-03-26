@@ -5,10 +5,10 @@ Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
 db_schema_version: 2
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both v2:mtime=1625767200:mode=33188:user=dennis:group=schafroth:type=reg:size=14 ''
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older v2:mtime=1625767200:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto v2:mtime=1625767200:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=1625767200:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=14 ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Connecting to localhost:30861 

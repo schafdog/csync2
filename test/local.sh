@@ -181,8 +181,10 @@ function killdaemon {
     if [ "$1" != "" ] ; then
 	HOST=$1
     fi
-    kill `cat ${HOST}.pid`
-    rm ${HOST}.pid
+    if [ -f ${HOST}.pid ] ; then
+	kill `cat ${HOST}.pid`
+	rm ${HOST}.pid
+    fi
     if [ -f "${HOST}_monitor.pid" ] ; then 
 	kill `cat ${HOST}_monitor.pid`
 	rm ${HOST}_monitor.pid

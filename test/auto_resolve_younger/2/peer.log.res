@@ -403,7 +403,6 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer is clean
 backup /export/home/dennis/Projects/csync2/csync2/test/test/peer 0 
-Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer'
 3 files within directory '/export/home/dennis/Projects/csync2/csync2/test/test/peer': 
 Deleting recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 
 Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. Errors 0

@@ -1,10 +1,9 @@
 cmd T "List daemon" local peer test/local
-Config-File:   csync2_mysql_local.cfg
+Config-File:   csync2_pgsql_local.cfg
 My hostname is local.
-Database File: mysql://csync2_local:csync2_local@127.0.0.1/csync2_local
+Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-Default encoding utf8mb4
 db_schema_version: 2
 csync_insynctest_all: get all groups 
 insynctest_all: Adding host local
@@ -26,11 +25,23 @@ CONN peer < HELLO local
 CONN peer > 'OK (cmd_finished).'
 CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
 
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test'
+db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
+D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
+'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
+>>> --- local
 CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4	/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all'
 db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
 D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
 '/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 peer
+>>> --- local
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	/export/home/dennis/Projects/csync2/csync2/test/test/peer/A'
+db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/A
+D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/A
+'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
 >>> --- local
 CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	/export/home/dennis/Projects/csync2/csync2/test/test/peer'
 db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer

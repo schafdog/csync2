@@ -24,13 +24,6 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
-IDENT (cmd_finished).
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8 user/group        
 Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/ÆØÅ Café.utf8 ...

@@ -89,12 +89,12 @@ SQL MOVE: UPDATE file set filename = concat('/export/home/dennis/Projects/csync2
 Updated(mv) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/123 /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
-Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab        
-Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab ...
-Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab.
+Command: local: MKHARDLINK /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab        
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab 
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab.
 HARDLINK: /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab -> /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab 
-Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab 
+Updated(mkhardlink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/123,Sab /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/123,Sab 
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur xxxxxxxx        
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp xxxxxxxx        
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur xxxxxxxx        

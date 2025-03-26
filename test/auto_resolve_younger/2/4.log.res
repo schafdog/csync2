@@ -5,9 +5,9 @@ Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
 db_schema_version: 2
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger v2:mtime=1620424800:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto v2:mtime=1620424800:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=1620424800:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Connecting to localhost:30861 
