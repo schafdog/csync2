@@ -1109,6 +1109,49 @@ int csync_update_hardlinks(int conn, const char *key_enc, const char *peername, 
 	return OK;
 }
 
+int csync_find_update_hardlink(int conn, db_conn_p db, const char *key_enc, const char *myname, peername_p peername,
+							   filename_p filename, filename_p filename_enc, const char *checktxt, const char *digest,
+							   struct stat *st, const char *uid, const char *gid,
+							   int auto_resolve_run) {
+	csync_debug(2, "Find same DEV INODE %s already on %s and hardlink\n", filename, peername);
+	textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st, peername);
+	textlist_p ptr = tl;
+	int last_conn_status;
+	int rc;
+	while (ptr != NULL) {
+		csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, filename);
+		// NOTE move check is disabled 
+		if (0 && ptr->intvalue == OP_RM) {
+			db->delete_file(db, ptr->value, 0);
+			csync_info(1, "Found MOVE %s -> %s \n", ptr->value, filename);
+			break;
+		} else if (ptr->intvalue == OP_HARDLINK) {
+			csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, filename);
+			rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc,
+											 ptr->value, st, uid, gid, digest, &last_conn_status, auto_resolve_run);
+			csync_debug(1, "check_update_hardlink result: %s -> %s: %d\n", ptr->value, filename, rc);
+
+			if (rc == ERROR_HARDLINK || rc == OK_MISSING) {
+				csync_debug(1, "Failed attempt to HARDLINK %s -> %s\n", ptr->value, filename);
+			} else if (rc == OK) {
+				csync_debug(1, "Hardlinked %s:%s -> %s\n", peername, ptr->value, filename);
+				csync_clear_dirty(db, peername, filename, auto_resolve_run);
+				break;
+			}
+			if (rc == CONN_CLOSE) {
+				break;
+			}
+
+		}
+		ptr = ptr->next;
+	}	
+	csync_info(1, "csync_find_update_hardlink: result: %s:%s %d\n", peername, filename, rc);
+	textlist_free(tl);
+	return rc;
+}
+
+	
+
 int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
 		operation_t operation, const char *other, const char *checktxt, const char *digest, int force, int dry_run,
 		BUF_P buffer) {
@@ -1213,45 +1256,9 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 					csync_calc_digest(filename, buffer, &calc_digest);
 					digest = calc_digest;
 				};
-				csync_debug(2, "CHECKING SAME DEV INODE %s '%s'\n", filename, digest);
-				textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
-				textlist_p ptr = tl;
-				while (ptr != NULL) {
-					csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, filename);
-					// NOTE move is disabled 
-					if (0 && ptr->intvalue == OP_RM) {
-						operation = OP_MOVE;
-						db->delete_file(db, ptr->value, 0);
-						other = buffer_strdup(buffer, ptr->value);
-						csync_info(1, "Found MOVE %s -> %s \n", ptr->value, filename);
-						break;
-					} else if (ptr->intvalue == OP_HARDLINK) {
-						//operation = OP_HARDLINK;
-						//other = buffer_strdup(buffer, ptr->value);
-						csync_info(1, "Found HARDLINK %s -> %s \n", ptr->value, filename);
-						rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc,
-								ptr->value, &st, uid, gid, digest, &last_conn_status, auto_resolve_run);
-						csync_debug(1, "check_update_hardlink result: %s -> %s: %d\n", ptr->value, filename, rc);
-						if (rc == ERROR_HARDLINK || rc == OK_MISSING) {
-							csync_debug(1, "Not a candidate for HARDLINK %s -> %s\n", ptr->value, filename);
-							//csync_mark(db, ptr->value, myname, peername, OP_RM, 0, 0, 0, 0, time(NULL));
-						}
-						if (rc == OK) {
-							csync_debug(1, "Candidate for HARDLINK %s -> %s\n", ptr->value, filename);
-							operation = OP_HARDLINK;
-							other = buffer_strdup(buffer, ptr->value);
-							//csync_clear_dirty(db, peername, filename, auto_resolve_run);
-							break;
-						}
-						if (rc == CONN_CLOSE) {
-							break;
-						}
-
-					}
-					ptr = ptr->next;
-				}
-				textlist_free(tl);
-				if (rc == CONN_CLOSE)
+				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername, filename, filename_enc,
+												checktxt, digest, &st, uid, gid, auto_resolve_run);
+				if (rc == OK || rc == CONN_CLOSE)
 					return rc;
 			}
 		}
@@ -1262,12 +1269,20 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			} else {
 				rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc, other,
 						&st, uid, gid, digest, &last_conn_status, auto_resolve_run);
-
+				if (rc != OK) {
+					csync_error(1, "Failed to hardlink %s:%s with %s. Retry...", peername, filename, other);
+					other = NULL;
+					rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername, filename, filename_enc,
+													checktxt, digest, &st, uid, gid, auto_resolve_run);
+				}
+				
 				if (rc == CONN_CLOSE || rc == OK || rc == IDENTICAL) {
 					if (rc == OK || rc == IDENTICAL) {
-						csync_debug(1, "clear dirty HARDLINK\n", filename, other);
+						csync_debug(1, "clear dirty HARDLINK %s %s\n", filename, other);
 						csync_clear_dirty(db, peername, filename, auto_resolve_run);
-						csync_clear_dirty(db, peername, other, auto_resolve_run);
+						if (other) {
+							csync_clear_dirty(db, peername, other, auto_resolve_run);
+						}
 					}
 					return rc;
 				}
@@ -1353,15 +1368,12 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			}
 			if (rc == CONN_CLOSE || rc == ERROR_LOCKED)
 				return rc;
-			/*	    
-			 if (st.st_nlink > 0) {
-			 csync_debug(0, "checking hardlinks: %s:%s %ld %ld %s %s\n", peername, filename,
-			 st.st_dev, st.st_ino, checktxt, digest);
-			 textlist_p others = db->check_file_same_dev_inode(db, filename, checktxt, digest, &st);
-			 csync_update_hardlinks(conn, key_enc, peername, filename, filename_enc, &st, others);
-			 textlist_free(others);
+
+			if (st.st_nlink > 1) {
+				csync_debug(1, "PATCH hardlink: checking dirty hardlinks: %s:%s %ld %ld %s %s\n",
+							peername, filename, st.st_dev, st.st_ino, filter_mtime((char *)checktxt,0), digest);
+				db->update_dirty_hardlinks(db, peername, filename, &st);
 			 }
-			 */
 			break;
 		case DIR_TYPE:
 			csync_info(3, "MKDIR rc: %d\n", sig_rc);
