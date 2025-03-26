@@ -39,7 +39,8 @@ install-data-local:
 	test -e $(CONFDIR)/csync2.cfg || \
 		$(INSTALL_DATA) csync2.cfg $(CONFDIR)/csync2.cfg
 	date >> installed.txt
-	./csync2 -V |grep git >> installed.txt
+	csync2 -V |grep git >> installed.txt
+	systemctl restart csync2
 
 cert:
 	$(mkinstalldirs) $(CONFDIR)
