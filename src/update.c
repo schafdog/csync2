@@ -1197,8 +1197,8 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 	while (not_done) {
 		csync_info(1, "Updating (%s) '%s:%s' '%s'\n", operation_str, peername, filename, (other ? other : ""));
 
-		if (lstat_strict(filename, &st) != 0) {
-			csync_error(0, "ERROR: Cant stat %s.\n", filename);
+		if (lstat_strict(filename, &st) != 0 || (access(filename, R_OK) != 0)) {
+			csync_error(0, "ERROR: Cant stat or read %s.\n", filename);
 			csync_error_count++;
 			return ERROR;
 		}
