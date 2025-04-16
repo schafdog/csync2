@@ -408,7 +408,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 #endif
 					&stats);
 		if (result != RS_DONE) {
-			csync_log(LOG_DEBUG, 0, "Internal error from rsync library!\n");
+			csync_log(LOG_DEBUG, 0, "Internal error from rsync library (RS_DONE)!\n");
 			rsync_close_error(errno, basis_file, sig_file, 0);
 		}
 		fclose(basis_file);
@@ -483,7 +483,6 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 int rsync_check_io_error(int err_no, filename_p filename, FILE *basis_file, FILE *sig_file, FILE *new_file) {
 	csync_error(0, "I/O Error '%s' in rsync-check: %s\n", strerror(errno), filename);
 	return rsync_close_error(err_no, basis_file, sig_file, new_file);
-
 }
 
 void csync_rs_sig(int conn, filename_p filename) {
@@ -641,8 +640,9 @@ int csync_rs_patch(int conn, filename_p filename) {
 	csync_log(LOG_DEBUG, 3, "Running rs_patch_file() from librsync..\n", filename);
 	result = rs_patch_file(basis_file, delta_file, patched_file, &stats);
 	if (result != RS_DONE) {
-		csync_log(LOG_DEBUG, 0, "Internal error from rsync library!\n");
-		rsync_close_error(errno, basis_file, delta_file, patched_file);
+		csync_log(LOG_DEBUG, 0, "Internal error from rsync library (RS_DONE)!\n");
+		unlink(tmpfname);
+		return rsync_close_error(errno, basis_file, delta_file, patched_file);
 	}
 
 	fclose(basis_file);
@@ -724,6 +724,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	int type, rc;
 	if ((rc = conn_read_get_content_length(sock, &size, &type))) {
 		csync_fatal(0, "rs_recv_delta_and_patch: Failed to read content-length\n");
+		unlink(tmpfname);
 		return rc;
 	}
 	/* Setup RSYNC buffers */
