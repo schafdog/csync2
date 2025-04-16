@@ -802,8 +802,9 @@ int csync_update_hardlink(int conn, peername_p peername, const char *key_encoded
 }
 
 int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myname, peername_p peername,
-								   const char *key_encoded, filename_p filename, filename_p filename_enc, struct stat *st, const char *uid,
-								   const char *gid, operation_t operation, const char *checktxt, const char *digest, int is_identical,
+								   const char *key_encoded, filename_p filename, filename_p filename_enc, struct stat *st,
+								   const char *uid, const char *gid, operation_t operation,
+								   const char *checktxt, const char *digest, int is_identical,
 								   int *last_conn_status) {
 	textlist_p tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st, NULL);
 	textlist_p t = tl;
@@ -1343,7 +1344,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			csync_warn(1, "HARDLINK failed. Continuing with PATCH\n");
 			break;
 		default:
-			csync_error(0, "Unhandled return code: %d \n", rc);
+			csync_error(0, "Unhandled return code: %s:%s %d \n", peername, filename, rc);
 			return rc;
 		}
 		/*
