@@ -1117,7 +1117,7 @@ int csync_find_update_hardlink(int conn, db_conn_p db, const char *key_enc, cons
 	textlist_p tl = db->check_file_same_dev_inode(db, filename, checktxt, digest, st, peername);
 	textlist_p ptr = tl;
 	int last_conn_status;
-	int rc;
+	int rc = OK_MISSING;
 	while (ptr != NULL) {
 		csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue, ptr->value, filename);
 		// NOTE move check is disabled 
@@ -1258,8 +1258,10 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 				};
 				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername, filename, filename_enc,
 												checktxt, digest, &st, uid, gid, auto_resolve_run);
-				if (rc == OK || rc == CONN_CLOSE)
+				if (rc == OK || rc == CONN_CLOSE) {
+					csync_info(1, "Returning after hard link check %s:%s %d\n", peername, filename, rc);
 					return rc;
+				}
 			}
 		}
 		if (operation == OP_HARDLINK) {
@@ -1270,10 +1272,11 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 				rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc, other,
 						&st, uid, gid, digest, &last_conn_status, auto_resolve_run);
 				if (rc != OK) {
-					csync_error(1, "Failed to hardlink %s:%s with %s. Retry...", peername, filename, other);
+					csync_error(0, "Failed to hardlink %s:%s with %s. Retry...", peername, filename, other);
 					other = NULL;
 					rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername, filename, filename_enc,
 													checktxt, digest, &st, uid, gid, auto_resolve_run);
+					csync_info(1, "After hard link check %s:%s %d\n", peername, filename, rc);
 				}
 				
 				if (rc == CONN_CLOSE || rc == OK || rc == IDENTICAL) {
