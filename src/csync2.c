@@ -1170,6 +1170,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 				csync_realnames_free(realnames, count);
 			else {
 				csync_debug(0, "No argument was matched in configuration\n");
+				exit(2);
 			}
 		}
 	};
