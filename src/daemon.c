@@ -348,7 +348,7 @@ void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername) 
 			}
 		}
 		csync_log(LOG_DEBUG, 1, "daemon_file_update: UPDATE/INSERT into file filename: %s\n", filename);
-		int count = db->insert_update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, db->escape(db, digest));
+		int count = db->insert_update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
 		if (count < 0)
 			csync_warn(1, "Failed to update or insert %s: %d", filename, count);
 		if (digest)
