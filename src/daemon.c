@@ -19,6 +19,7 @@
  */
 
 #include "csync2.h"
+
 #include "digest.h"
 #include "uidgid.h"
 #include "resolv.h"
@@ -337,14 +338,17 @@ void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername) 
 		const char *checktxt = csync_genchecktxt_version(&st, filename,
 		SET_USER | SET_GROUP, db->version);
 		if (S_ISREG(st.st_mode)) {
-			int size = 2 * DIGEST_MAX_SIZE + 1;
+			int size = 4 * DIGEST_MAX_SIZE + 1;
 			digest = malloc(size);
 			int rc = dsync_digest_path_hex(filename, "sha1", digest, size);
-			if (rc)
-				csync_error(0, "ERROR: generating digest for '%s': %s %d", filename, digest, rc);
+			if (rc) {
+				csync_error(0, "ERROR: generating digest %s for '%s': %d", "sha1", filename, rc);
+				free(digest);
+				digest = NULL;
+			}
 		}
 		csync_log(LOG_DEBUG, 2, "daemon_file_update: UPDATE/INSERT into file filename: %s\n", filename);
-		int count = db->insert_update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
+		int count = db->insert_update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, db->escape(db, digest));
 		if (count < 0)
 			csync_warn(1, "Failed to update or insert %s: %d", filename, count);
 		if (digest)

@@ -2,6 +2,7 @@
  *
  */
 
+#include "csync2.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -18,7 +19,7 @@ int dsync_digest(int file, const char *digest_name, unsigned char *md_value, uns
 	md = EVP_get_digestbyname(digest_name);
 
 	if (!md) {
-		printf("Unknown message digest %s\n", digest_name);
+		csync_error(0, "Unknown message digest %s\n", digest_name);
 		return 1;
 	}
 
@@ -44,16 +45,22 @@ void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *
 
 int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, unsigned int size) {
 	int fileno = open(filename, O_RDONLY);
-	if (fileno < 0)
+	if (fileno < 0) {
+		csync_error(0, "ERROR: Failed to open %s for digest: %d", filename, fileno);
 		return fileno;
+	}
 	unsigned char md_value[EVP_MAX_MD_SIZE];
 	unsigned int md_len = 0;
 	int rc = dsync_digest(fileno, digest_name, md_value, &md_len);
 	close(fileno);
-	if (rc)
+	if (rc) {
+		csync_error(0, "ERROR: Failed to calc digest for %s: %d", filename, fileno);
 		return rc;
-	if (size < 2 * md_len + 1)
+	}
+	if (size < 2 * md_len + 1) {
+		csync_error(0, "ERROR: Cannot hex digest for %s. Size to small", filename, fileno);
 		return -1;
+	}
 	dsync_digest_hex(md_value, md_len, digest_str);
 	return 0;
 }
