@@ -400,21 +400,23 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 		if (!basis_file)
 			basis_file = fopen("/dev/null", "rb");
 		csync_log(LOG_DEBUG, 3, "Running rs_sig_file() from librsync....\n");
-		if (basis_file)
+		if (basis_file) {
 			result = rs_sig_file(basis_file, sig_file,
 			RS_DEFAULT_BLOCK_LEN, STRONG_LEN,
 #ifdef RS_MAX_STRONG_SUM_LENGTH
 					RS_MD4_SIG_MAGIC,
 #endif
 					&stats);
-		if (result != RS_DONE) {
-			csync_log(LOG_DEBUG, 0, "Internal error from rsync library (RS_DONE)!\n");
-			rsync_close_error(errno, basis_file, sig_file, 0);
+			if (result != RS_DONE) {
+				csync_log(LOG_DEBUG, 0, "Internal error from rsync library (NOT RS_DONE)!\n");
+				rsync_close_error(errno, basis_file, sig_file, 0);
+			}
+			fclose(basis_file);
+		} else {
+			csync_fatal("Failed to open basis file. Should not happen. Skipped rs_sig_file!\n");
 		}
-		fclose(basis_file);
 	}
 	basis_file = 0;
-
 	{
 		int type;
 		csync_log(LOG_DEBUG, 3, "rs_check: Reading signature size from peer....\n");
