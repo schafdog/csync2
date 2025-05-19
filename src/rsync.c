@@ -228,7 +228,7 @@ static FILE* paranoid_tmpfile() {
 		csync_fatal("Temp directory '%s' does not exist!\n", P_tmpdir);
 
 	if (!(f = tmpfile()))
-		csync_fatal("ERROR: tmpfile() didn't return a valid file handle!\n");
+		csync_fatal("ERROR: tmpfile() didn't return a valid file handle: %d, %s\n", errno, strerror(errno));
 
 	return f;
 }
