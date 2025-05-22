@@ -64,7 +64,8 @@
 #define ERROR_PATH_MISSING -13
 #define ERROR_HARDLINK     -14
 #define ERROR_LOCKED       -15
-#define ERROR_OTHER        -16
+#define ERROR_CREATE       -16
+#define ERROR_OTHER        -20
 
 extern int csync_zero_mtime_debug;
 
@@ -133,6 +134,8 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 			return ERROR_LOCKED;
 		if (!strncmp(line, ERROR_NOT_FOUND_STR, ERROR_NOT_FOUND_STR_LEN))
 			return ERROR_NOT_FOUND;
+		if (!strncmp(line, ERROR_CREATE_STR, ERROR_CREATE_STR_LEN))
+			return ERROR_CREATE;
 	} else {
 		strcpy(line, "ERROR: Read conn status: Connection closed.\n");
 		csync_error(0, line);
@@ -1342,6 +1345,9 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			return rc;
 		case ERROR_HARDLINK:
 			csync_warn(1, "HARDLINK failed. Continuing with PATCH\n");
+			break;
+		case ERROR_CREATE:
+			csync_warn(1, "CREATE failed. Continuing with PATCH\n");
 			break;
 		default:
 			csync_error(0, "Unhandled return code: %s:%s %d \n", peername, filename, rc);
