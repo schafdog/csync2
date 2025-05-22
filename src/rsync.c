@@ -262,12 +262,13 @@ int csync_send_file_octet_stream(int conn, FILE *in) {
 
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
+		csync_debug(3, "Reading chunk %ld bytes of %ld from file\n", chunk, size);		
 		rc = fread(buffer, 1, chunk, in);
 
 		if (rc <= 0)
 			csync_fatal("Read-error while sending data.\n");
 		chunk = rc;
-
+		csync_debug(3, "Writing chunk %ld bytes of %ld\n", chunk, size);
 		rc = conn_write(conn, buffer, chunk);
 		if (rc != chunk)
 			csync_fatal("Write-error while sending data.\n");
@@ -339,12 +340,14 @@ int csync_recv_file_octet_stream(int conn, FILE *out) {
 	csync_log(LOG_DEBUG, 3, "Receiving %Ld bytes (%s)..\n", size, typestr[type]);
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
+		csync_debug(3, "Reading chunk %ld bytes of %ld\n", chunk, size);
 		bytes = conn_read(conn, buffer, chunk);
 
 		if (bytes <= 0)
 			csync_fatal("Read-error while receiving data.\n");
 		chunk = bytes;
 
+		csync_debug(3, "Writing chunk %ld bytes of %ld to file\n", chunk, size);
 		bytes = fwrite(buffer, chunk, 1, out);
 		if (bytes != 1)
 			csync_fatal("Write-error while receiving data.\n");
