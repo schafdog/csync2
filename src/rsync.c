@@ -327,7 +327,7 @@ int csync_recv_file_octet_stream(int conn, FILE *out) {
 	char buffer[CHUNK_SIZE];
 	int bytes, chunk;
 	long long size;
-	int type = 3;
+	int type = 2;
 	if (conn_read_get_content_length(conn, &size, &type)) {
 		if (errno == EIO)
 			return -1;
