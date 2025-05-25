@@ -180,7 +180,7 @@ extern int csync_perm(filename_p filename, const char *key, const char *hostname
 
 /* conn.c */
 
-extern int conn_open(peername_p peername, int ip_version);
+extern int conn_open(peername_p myhostname, peername_p peername, int ip_version);
 extern int conn_set(int infd, int outfd);
 extern int conn_activate_ssl(int server_role, int in, int out);
 extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal);
@@ -727,9 +727,9 @@ extern char *cfgname;
 extern int csync_ignore_uid;
 extern int csync_ignore_gid;
 extern int csync_ignore_mod;
-
 extern int csync_dump_dir_fd;
 
+extern char *csync_use_ip;
 extern int csync_compare_mode;
 extern char **active_peers;
 

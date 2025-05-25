@@ -26,12 +26,14 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
 #include <netdb.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <poll.h>
 
 #ifdef HAVE_LIBGNUTLS
 #  include <gnutls/gnutls.h>
@@ -45,22 +47,9 @@ static gnutls_session_t conn_tls_session;
 static gnutls_certificate_credentials_t conn_x509_cred;
 #endif
 
-/* getaddrinfo stuff mostly copied from its manpage */
-int conn_connect(peername_p peername, int ip_version) {
+struct sockaddr * csync_lookup_addr(const char *hostname, const char *port, int ip_version) {
 	struct addrinfo hints;
-	struct addrinfo *result, *rp;
-	int sfd, s;
-	struct csync_hostinfo *p = csync_hostinfo;
-	char *port = csync_port;
-	while (p) {
-		if (!strcmp(peername, p->name)) {
-			peername = p->host;
-			port = p->port;
-			break;
-		}
-		p = p->next;
-	}
-	csync_log(LOG_DEBUG, 2, "Connecting to %s:%s \n", peername, port);
+	struct addrinfo *result;
 	/* Obtain address(es) matching host/port */
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = ip_version; /* Allow IPv4 or IPv6 */
@@ -68,10 +57,10 @@ int conn_connect(peername_p peername, int ip_version) {
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0; /* Any protocol */
 
-	s = getaddrinfo(peername, port, &hints, &result);
+	int s = getaddrinfo(hostname, port, &hints, &result);
 	if (s != 0) {
 		csync_warn(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
-		return -1;
+		return NULL;
 	}
 
 	/* getaddrinfo() returns a list of address structures.
@@ -79,29 +68,104 @@ int conn_connect(peername_p peername, int ip_version) {
 	 If socket(2) (or connect(2)) fails, we (close the socket
 	 and) try the next address. */
 
-	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sfd == -1)
-			continue;
-
-		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-			break; /* Success */
-
-		close(sfd);
+    // Make a copy of the address to return
+	if (result == NULL) {
+		return NULL;
 	}
-	freeaddrinfo(result); /* No longer needed */
+    struct sockaddr *addr_copy = malloc(result->ai_addrlen);
+    if (!addr_copy) {
+        freeaddrinfo(result);
+        return NULL;
+    }
+    memcpy(addr_copy, result->ai_addr, result->ai_addrlen);
 
-	if (rp == NULL) /* No address succeeded */
+    // Clean up
+    freeaddrinfo(result);
+    return addr_copy;
+}
+
+// Returns the size of the appropriate sockaddr struct
+socklen_t get_sockaddr_len(const struct sockaddr *sa) {
+    switch (sa->sa_family) {
+        case AF_INET:
+            return sizeof(struct sockaddr_in);
+        case AF_INET6:
+            return sizeof(struct sockaddr_in6);
+        // You can add support for other families here if needed
+        default:
+            return sizeof(struct sockaddr);  // fallback
+    }
+}
+
+// Converts a sockaddr to a human-readable IP string
+const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_t outlen) {
+    if (sa->sa_family == AF_INET) {
+        const struct sockaddr_in *sin = (const struct sockaddr_in *)sa;
+        return inet_ntop(AF_INET, &(sin->sin_addr), out, outlen);
+    } else if (sa->sa_family == AF_INET6) {
+        const struct sockaddr_in6 *sin6 = (const struct sockaddr_in6 *)sa;
+        return inet_ntop(AF_INET6, &(sin6->sin6_addr), out, outlen);
+    } else {
+        snprintf(out, outlen, "Unknown AF: %d", sa->sa_family);
+        return NULL;
+    }
+}
+
+/* getaddrinfo stuff mostly copied from its manpage */
+int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
+	int sfd;
+	struct csync_hostinfo *p = csync_hostinfo;
+	char *port = csync_port;
+	while (p) {
+		if (!strcmp(peername, p->name)) {
+			peername = p->host;
+			port = p->port;
+			csync_log(LOG_DEBUG, 2, "Using alternative port to %s:%s \n", peername, port);
+			break;
+		}
+		p = p->next;
+	}
+	csync_log(LOG_DEBUG, 2, "Connecting to %s:%s \n", peername, port);
+
+	sfd = socket(ip_version, SOCK_STREAM, 0);
+	if (sfd == -1) {
+		csync_error(0, "Failed to create socket: %d, %s %d %d\n", errno, strerror(errno), AF_INET, AF_INET6);
 		return -1;
+	}
+			
+	struct sockaddr *localaddr = csync_lookup_addr(myhostname, NULL, ip_version);
+	if (localaddr == NULL) {
+		csync_error(0, "Failed to look up locala address address from %s\n", peername);
+	}	
+	struct sockaddr *peeraddr = csync_lookup_addr(peername, port, ip_version);
 
+	if (peeraddr == NULL) {
+		csync_error(0, "Failed to look up peer address from %s\n", peername);
+		return -1;
+	}
+	size_t sockaddr_size = get_sockaddr_len(peeraddr);
+	
+	if (localaddr != NULL) {
+		char ipstr[INET6_ADDRSTRLEN];
+		csync_info(1, "Using specific address %s\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
+		if (bind(sfd, localaddr, sockaddr_size) == -1) {
+			csync_error(0, "Failed to bind to %s: %d, %s\n", ipstr, errno, strerror(errno));
+		}
+	}
+		
+	if (connect(sfd, peeraddr, sockaddr_size) == -1) {
+		csync_error(0, "Failed to connect to peer %s:%s: %d, %s\n", peername, port, errno, strerror(errno));
+		return -1;
+	}
+	csync_log(LOG_DEBUG, 2, "Connected to %s:%s \n", peername, port);
 	return sfd;
 }
 
 char *active_peer = 0;
 
-int conn_open(peername_p peername, int ip_version) {
+int conn_open(peername_p myhostname, peername_p peername, int ip_version) {
 	int on = 1;
-	int conn_fd_in = conn_connect(peername, ip_version);
+	int conn_fd_in = conn_connect(myhostname, peername, ip_version);
 	if (conn_fd_in < 0) {
 		csync_error(1, "Can't create socket.\n");
 		return -1;
@@ -314,6 +378,45 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 	if (csync_conn_usessl)
 		return gnutls_record_recv(conn_tls_session, buf, count);
 #endif
+	size_t total_read = 0;
+	while (total_read < count) {
+		int TIMEOUT_MS = 600000;
+		struct pollfd pfd;
+		pfd.fd = filedesc;
+		pfd.events = POLLIN;
+		int rc = poll(&pfd, 1, TIMEOUT_MS);
+		if (rc < 0) {
+			csync_error(0, "Error in READ: %d %s\n", errno, strerror(errno));
+			return rc;
+		} else if (rc == 0) {
+			printf("[!] Timeout: no data received.\n");
+			return -2;
+		}
+		if (pfd.revents & POLLIN) {
+			ssize_t length = 0;
+			length = read(filedesc, buf + total_read, count - total_read);
+			if (length == -1 && errno == EINTR)
+				csync_error(2, "Interupted while reading. Continue\n");
+			else {
+				if (length < 0) {
+					csync_error(3, "Error in READ: %d %s\n", errno, strerror(errno));
+					return length;
+				} else if (length == 0) {
+					csync_error(3, "EOF before full readin READ: %ld", total_read);
+					return -1;
+				}
+				total_read += length;
+			}
+		}
+	}
+	return total_read;
+}
+
+static inline size_t READ2(int filedesc, void *buf, size_t count) {
+#ifdef HAVE_LIBGNUTLS
+	if (csync_conn_usessl)
+		return gnutls_record_recv(conn_tls_session, buf, count);
+#endif
 	fd_set set;
 	struct timeval timeout;
 	/* Initialize the file descriptor set. */
@@ -324,7 +427,7 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 	timeout.tv_usec = 0;
 	int rc = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
 	if (rc == 0) {
-
+		// Timeout?
 		return -2;
 	}
 	if (rc < 0) {

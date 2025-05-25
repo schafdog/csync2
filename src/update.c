@@ -172,7 +172,7 @@ int read_conn_status_allow_missing(int fd, const char *file, const char *host) {
 	return status;
 }
 
-int connect_to_host(db_conn_p db, peername_p peername, int ip_version) {
+int connect_to_host(db_conn_p db, peername_p myhostname, peername_p peername, int ip_version) {
 	int use_ssl = 1;
 	struct csync_nossl *t;
 
@@ -185,7 +185,7 @@ int connect_to_host(db_conn_p db, peername_p peername, int ip_version) {
 
 	csync_info(1, "Connecting to host %s (%s) ...\n", peername, use_ssl ? "SSL" : "PLAIN");
 
-	int conn = conn_open(peername, ip_version);
+	int conn = conn_open(myhostname, peername, ip_version);
 	if (conn < 0)
 		return conn;
 
@@ -1565,7 +1565,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername, cons
 	 return;
 	 }
 	 */
-	int conn = connect_to_host(db, peername, ip_version);
+	int conn = connect_to_host(db, myhostname, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
@@ -1594,7 +1594,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 		return;
 	}
 	csync_debug(1, "Got dirty files from host %s\n", peername);
-	int conn = connect_to_host(db, peername, ip_version);
+	int conn = connect_to_host(db, myhostname, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
@@ -1711,7 +1711,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername, cons
 		csync_log(LOG_DEBUG, 0, "csync_sync_host: no files to sync\n");
 		return;
 	}
-	int conn = connect_to_host(db, peername, ip_version);
+	int conn = connect_to_host(db, myhostname, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
@@ -1871,7 +1871,7 @@ int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p
 		return 0;
 	}
 
-	int conn = connect_to_host(db, peername, ip_version);
+	int conn = connect_to_host(db, myhostname, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
@@ -2009,7 +2009,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, file
 		return 0;
 	}
 
-	int conn = connect_to_host(db, peername, ip_version);
+	int conn = connect_to_host(db, myhostname, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
