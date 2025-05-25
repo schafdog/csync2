@@ -65,14 +65,13 @@ static char *file_config = 0;
 static char *cfgfile = 0;
 static char *dbdir = DBDIR;
 char *cfgname = "";
-
 char *active_grouplist = 0;
 char *active_peerlist = 0;
 char **active_peers = 0;
 char *update_format = 0;
 char *allow_peer = 0;
 int db_version = 1;
-int ip_version = AF_UNSPEC;
+int ip_version = AF_INET;
 
 extern int yyparse();
 extern FILE *yyin;
@@ -203,8 +202,9 @@ void help(char *cmd) {
 			"Test Options: NEVER use in production \n"
 			"       -N myname \n"
 			"              Override hostname \n"
-			"       -Z peername\n"
+			"       -z peername\n"
 			"              Allow connections from peername without checking \n"
+		   
 			"\n"
 			"Creating key file:\n"
 			"	%s -k filename\n"
