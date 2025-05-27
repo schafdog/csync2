@@ -373,7 +373,7 @@ int conn_close(int conn) {
 	return 0;
 }
 
-static inline size_t READ(int filedesc, void *buf, size_t count) {
+static inline size_t READ_POLL(int filedesc, void *buf, size_t count) {
 #ifdef HAVE_LIBGNUTLS
 	if (csync_conn_usessl)
 		return gnutls_record_recv(conn_tls_session, buf, count);
@@ -412,7 +412,7 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 	return total_read;
 }
 
-static inline size_t READ2(int filedesc, void *buf, size_t count) {
+static inline size_t READ(int filedesc, void *buf, size_t count) {
 #ifdef HAVE_LIBGNUTLS
 	if (csync_conn_usessl)
 		return gnutls_record_recv(conn_tls_session, buf, count);
