@@ -141,7 +141,7 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 	if (!strncmp(line, ERROR_CREATE_STR, ERROR_CREATE_STR_LEN))
 		return ERROR_CREATE;
 	if (!strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN)) {
-		strncpy(line, line+PATH_NOT_FOUND_LEN, maxlength);
+		//strncpy(line, line+PATH_NOT_FOUND_LEN, maxlength);
 		return ERROR_PATH_MISSING;
 	}
 
