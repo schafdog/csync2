@@ -317,9 +317,9 @@ struct textlist;
 #define ERROR_LOCKED_STR "ERROR (locked)"
 #define ERROR_LOCKED_STR_LEN sizeof(ERROR_LOCKED_STR)-1
 #define ERROR_NOT_FOUND_STR "No such file or directory"
-#define	ERROR_NOT_FOUND_STR_LEN	sizeof(ERROR_NOT_FOUND)-1
+#define	ERROR_NOT_FOUND_STR_LEN	sizeof(ERROR_NOT_FOUND_STR)-1
 #define ERROR_CREATE_STR "ERROR (create)"
-#define	ERROR_CREATE_STR_LEN sizeof(ERROR_CREATE)-1
+#define	ERROR_CREATE_STR_LEN sizeof(ERROR_CREATE_STR)-1
 
 int get_file_type(int st_mode);
 int compare_files(filename_p filename, const char *pattern, int recursive);
