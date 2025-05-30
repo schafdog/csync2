@@ -141,7 +141,6 @@ int read_conn_status_raw(int fd, const char *file, const char *host, char *line,
 	if (!strncmp(line, ERROR_CREATE_STR, ERROR_CREATE_STR_LEN))
 		return ERROR_CREATE;
 	if (!strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN)) {
-		//strncpy(line, line+PATH_NOT_FOUND_LEN, maxlength);
 		return ERROR_PATH_MISSING;
 	}
 
@@ -488,8 +487,7 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 		conn_printf(conn, "SIG %s %s %s\n", key_enc, filename_enc, "user/group");
 
 		if ((status = read_conn_status(conn, filename, peername))) {
-			csync_info(1, "SIG before DEL %s:%s %d\n", peername, filename, status);
-			if (status == ERROR_PATH_MISSING || status == OK_MISSING) {
+			if (status == ERROR_PATH_MISSING || status == OK_MISSING || status == ERROR_NOT_FOUND) {
 				csync_info(1, "%s:%s is already up to date on peer.\n", peername, filename);
 				csync_clear_dirty(db, peername, filename, auto_resolve_run);
 				return IDENTICAL;
