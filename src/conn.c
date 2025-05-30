@@ -402,8 +402,8 @@ static inline size_t READ_POLL(int filedesc, void *buf, size_t count) {
 					csync_error(3, "Error in READ: %d %s\n", errno, strerror(errno));
 					return length;
 				} else if (length == 0) {
-					csync_error(3, "EOF before full readin READ: %ld", total_read);
-					return -1;
+					// EOF
+					break; // return total_length;
 				}
 				total_read += length;
 			}
