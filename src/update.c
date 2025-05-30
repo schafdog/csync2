@@ -558,6 +558,10 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 		}
 		conn_printf(conn, "DEL %s %s \n", key_enc, filename_enc);
 		rc = read_conn_status(conn, filename, peername);
+		if (rc == CONN_CLOSE) {
+			csync_error(1, "Peer closed connection on DEL %s:%s\n", peername, filename);
+			return rc;
+		}
 		if (rc == ERROR_DIRTY)
 			auto_resolve_run = csync_check_auto_resolve(conn, peername, key_enc, filename, filename_enc, rc,
 					auto_resolve_run, 1);
@@ -769,7 +773,7 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername, file
 		// We should be able to figure auto resolve from checktxt
 		int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
 		if (flush) {
-			csync_info(1, "Sould send FLUSH %s:%s (won auto resolved)\n", peername, filename);
+			csync_info(1, "Should send FLUSH %s:%s (won auto resolved)\n", peername, filename);
 		}
 		*flags = DIFF_META | (flush & DIFF_FLUSH);
 		return rc | DIFF_META;
