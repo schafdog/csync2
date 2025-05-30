@@ -123,25 +123,24 @@ const char* csync_operation_str(operation_t op) {
 }
 
 int read_conn_status_raw(int fd, const char *file, const char *host, char *line, int maxlength) {
-	if (conn_gets(fd, line, maxlength)) {
-		if (!strncmp(line, "OK (not_found", 12))
-			return OK_MISSING;
-		if (!strncmp(line, "OK (", 4))
-			return OK;
-		if (!strncmp(line, "IDENT (", 7))
-			return IDENTICAL;
-		if (!strncmp(line, ERROR_LOCKED_STR, ERROR_LOCKED_STR_LEN))
-			return ERROR_LOCKED;
-		if (!strncmp(line, ERROR_NOT_FOUND_STR, ERROR_NOT_FOUND_STR_LEN))
-			return ERROR_NOT_FOUND;
-		if (!strncmp(line, ERROR_CREATE_STR, ERROR_CREATE_STR_LEN))
-			return ERROR_CREATE;
-	} else {
+	if (!conn_gets(fd, line, maxlength)) {
 		strcpy(line, "ERROR: Read conn status: Connection closed.\n");
 		csync_error(0, line);
 		return CONN_CLOSE;
 	}
-	if (strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN) == 0) {
+	if (!strncmp(line, "OK (not_found", 12))
+		return OK_MISSING;
+	if (!strncmp(line, "OK (", 4))
+		return OK;
+	if (!strncmp(line, "IDENT (", 7))
+		return IDENTICAL;
+	if (!strncmp(line, ERROR_LOCKED_STR, ERROR_LOCKED_STR_LEN))
+		return ERROR_LOCKED;
+	if (!strncmp(line, ERROR_NOT_FOUND_STR, ERROR_NOT_FOUND_STR_LEN))
+		return ERROR_NOT_FOUND;
+	if (!strncmp(line, ERROR_CREATE_STR, ERROR_CREATE_STR_LEN))
+		return ERROR_CREATE;
+	if (!strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN)) {
 		strncpy(line, line+PATH_NOT_FOUND_LEN, maxlength);
 		return ERROR_PATH_MISSING;
 	}
@@ -489,6 +488,7 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 		conn_printf(conn, "SIG %s %s %s\n", key_enc, filename_enc, "user/group");
 
 		if ((status = read_conn_status(conn, filename, peername))) {
+			csync_info(1, "SIG before DEL %s:%s %d\n", peername, filename, status);
 			if (status == ERROR_PATH_MISSING || status == OK_MISSING) {
 				csync_info(1, "%s:%s is already up to date on peer.\n", peername, filename);
 				csync_clear_dirty(db, peername, filename, auto_resolve_run);
