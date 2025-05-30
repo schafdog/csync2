@@ -484,7 +484,7 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 		const char *chk_local = "---";
 		char chk_peer[4096];
 		int status;
-		conn_printf(conn, "SIG %s %s %s\n", key_enc, filename_enc, "user/group");
+		conn_printf(conn, "STAT %s %s %s\n", key_enc, filename_enc, "user/group");
 
 		if ((status = read_conn_status(conn, filename, peername))) {
 			if (status == ERROR_PATH_MISSING || status == OK_MISSING || status == ERROR_NOT_FOUND) {
@@ -534,17 +534,7 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 				csync_flush(conn, key_enc, peername, filename_enc);
 			}
 		}
-		int rs_check_result = csync_rs_check(conn, filename, 0);
-		if (rs_check_result < 0)
-			return ERROR;
-		if (rs_check_result) {
-			csync_info(2, "File is different on peer (rsync sig).\n");
-			found_diff = 1;
-		}
-		int rc;
-		if ((rc = read_conn_status(conn, filename, peername)))
-			return rc;
-
+		// 
 		if (!found_diff) {
 			csync_info(1, "%s:%s is already up to date on peer. \n", peername, filename);
 			csync_clear_dirty(db, peername, filename, auto_resolve_run);
@@ -555,7 +545,7 @@ int csync_update_file_del(int conn, db_conn_p db, peername_p peername, filename_
 			return OK_DRY;
 		}
 		conn_printf(conn, "DEL %s %s \n", key_enc, filename_enc);
-		rc = read_conn_status(conn, filename, peername);
+		int rc = read_conn_status(conn, filename, peername);
 		if (rc == CONN_CLOSE) {
 			csync_error(1, "Peer closed connection on DEL %s:%s\n", peername, filename);
 			return rc;

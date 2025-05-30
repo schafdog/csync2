@@ -942,7 +942,7 @@ int response_ok_not_found(int conn) {
 	return NEXT_CMD;
 }
 
-int csync_daemon_sig(int conn, char *filename, const char *user_group, time_t ftime, long long size, db_conn_p db, const char **cmd_error) {
+int csync_daemon_sig(int conn, char *filename, const char *user_group, time_t ftime, long long size, db_conn_p db, const char **cmd_error, int skip_rs_sig) {
 	csync_debug(3, "csync_daemon_sig: unused parameters: ftime %ld size %zu\n", ftime, size);
 	struct stat st;
 	if (lstat_strict(filename, &st) != 0) {
@@ -981,6 +981,9 @@ int csync_daemon_sig(int conn, char *filename, const char *user_group, time_t ft
 	} else
 		conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
 
+	if (skip_rs_sig) {
+		return OK;
+	}
 	if (S_ISREG(st.st_mode))
 		csync_rs_sig(conn, filename);
 	else
@@ -1372,8 +1375,12 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 		db->remove_dirty(db, "%", filename, 0);
 	}
 	switch (cmd->action) {
+	case A_STAT:
 	case A_SIG: {
-		return csync_daemon_sig(conn_out, filename, params->value, params->ftime, params->size, db, cmd_error);
+		int skip_rs_sig = 0;
+		if (cmd->action == A_STAT)
+			skip_rs_sig = 1;
+		return csync_daemon_sig(conn_out, filename, params->value, params->ftime, params->size, db, cmd_error, skip_rs_sig);
 		break;
 	}
 	case A_MARK:
@@ -1496,8 +1503,6 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 		break;
 	case A_SETTIME:
 		return csync_daemon_settime(filename, atol(params->value), cmd_error);
-		break;
-	case A_STAT:
 		break;
 	case A_LIST:
 		// LIST <host> <filename> <key> <recursive>
