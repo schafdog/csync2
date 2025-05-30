@@ -1546,8 +1546,8 @@ void csync_end_command(int conn, filename_p filename, char *tag[32], const char 
 			conn_printf(conn, "IDENT (cmd_finished).\n");
 			break;
 		default:
-			csync_warn(1, "Unknown return rc: %d. Assuming OK\n", rc);
-			conn_printf(conn, "OK (cmd_finished).\n");
+			csync_fatal("Unknown return rc: %d %s %s Exiting!\n", rc, tag[0], filename ? filename : "<no file>");
+			conn_printf(conn, "ERROR (Server error).\n");
 		}
 	}
 	destroy_tag(tag);
