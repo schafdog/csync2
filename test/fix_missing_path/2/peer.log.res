@@ -1,6 +1,6 @@
 Config-File:   csync2_pgsql_peer.cfg
 Found my alias peer localhost 30861 
-Binding to 30861 IPv0 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
@@ -13,12 +13,14 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/recursive/1/2/3/4/5 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
@@ -37,8 +39,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 errno = 2
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -55,8 +57,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive rc = 0
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -73,8 +75,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 rc =
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -91,8 +93,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 rc
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -109,8 +111,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -127,8 +129,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -145,8 +147,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -169,21 +171,21 @@ CONN local > 'octet-stream 11'
 Got octet-stream 11
 Content length in buffer: 'octet-stream 11' size: 11 rc: 0 (octet-stream)
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c CREATE 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/recursive/1/2/3/4/5 xxxxxxxxxx'
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 xxxxxxxx        
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/recursive/1/2/3/4 xxxxxxxxxx'
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 xxxxxxxx        
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
@@ -203,23 +205,24 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group'
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
+CONN local > 'STAT 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group'
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
 
-CONN local < octet-stream 0
-
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer STAT 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 '
@@ -257,25 +260,29 @@ renaming backup files '/tmp/csync2/export/home/dennis/Projects/csync2/csync2/tes
 Locking 'DELETE:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c'
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5/file.c from file db.
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4/5 0
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3/4 0
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2/3 0
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1/2 0
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 0
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive 0
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 7 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer DEL 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
+CONN local > 'STAT 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/recursive user/group'
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive user/group        
+CONN local < ERROR not found): 
 CONN local > 'BYE'
 Command: local: BYE          
 CONN local < OK (cu_later).
