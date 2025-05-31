@@ -24,3 +24,4 @@ mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/tes
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
