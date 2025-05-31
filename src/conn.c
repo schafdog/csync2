@@ -147,7 +147,7 @@ int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
 	
 	if (localaddr != NULL) {
 		char ipstr[INET6_ADDRSTRLEN];
-		csync_info(1, "Using specific address %s\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
+		csync_info(2, "Using specific address %s\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
 		if (bind(sfd, localaddr, sockaddr_size) == -1) {
 			csync_error(0, "Failed to bind to %s: %d, %s\n", ipstr, errno, strerror(errno));
 		}

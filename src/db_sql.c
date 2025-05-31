@@ -593,7 +593,7 @@ void db_sql_clear_operation(db_conn_p db, const char *myhostname, peername_p pee
 textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhostname, peername_p peername, int recursive,
 		const char *patlist[], int numpat,
 		int (*get_dirty_by_peer)(filename_p filename, const char *pattern, int recursive)) {
-	textlist_p tl = 0;
+	textlist_p tl = NULL;
 	char *filter_sql = "";
 	char *where_rec = NULL;
 	if (numpat == 1) {

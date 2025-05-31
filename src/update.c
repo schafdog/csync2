@@ -684,7 +684,7 @@ int csync_fix_path(int conn, peername_p myname, peername_p peername, filename_p 
 			rc = csync_update_directory(conn, myname, peername, local_file, /*force */1, /* dryrun */0);
 			local_file[path_len] = ch;
 		} else {
-			csync_log(LOG_ERR, 1, "Error in ERROR_PATH_MISSING when fixing %s of %s: Not a slash at %d", local_file,
+			csync_log(LOG_ERR, 1, "Error in ERROR_PATH_MISSING when fixing %s of %s: Not a slash at %d\n", local_file,
 					path_not_found, path_len);
 			free(local_file);
 			return ERROR_PATH_MISSING;

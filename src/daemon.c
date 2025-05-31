@@ -342,13 +342,13 @@ void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername) 
 				digest = NULL;
 			}
 		}
-		csync_log(LOG_DEBUG, 1, "daemon_file_update: UPDATE/INSERT into file filename: %s\n", filename);
+		csync_log(LOG_DEBUG, 3, "daemon_file_update: UPDATE/INSERT into file filename: %s\n", filename);
 		int count = db->insert_update_file(db, db->escape(db, filename), db->escape(db, checktxt), &st, digest);
 		if (count < 0)
 			csync_warn(1, "Failed to update or insert %s: %d", filename, count);
 		if (digest)
 			free(digest);
-		csync_log(LOG_DEBUG, 1, "daemon_file_update DONE: UPDATE/INSERT into file filename: %s\n", filename);		
+		csync_log(LOG_DEBUG, 3, "daemon_file_update DONE: UPDATE/INSERT into file filename: %s\n", filename);		
 	}
 }
 
@@ -1543,7 +1543,7 @@ int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, char *filename, 
 }
 
 void csync_end_command(int conn, filename_p filename, char *tag[32], const char *cmd_error, int rc) {
-	csync_info(1, "Daemon end_command %s %s %d %s\n", filename, tag[0], rc, cmd_error != NULL ? cmd_error : ""); 
+	csync_info(2, "Daemon end_command %s %s %d %s\n", filename, tag[0], rc, cmd_error != NULL ? cmd_error : ""); 
 	if (cmd_error) {
 		csync_error(0, "ERROR: %s (%s)\n", cmd_error, filename ? filename : "<no file>");
 		conn_printf(conn, "%s (%s)\n", cmd_error, filename ? filename : "<no file>");
@@ -1666,7 +1666,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 			}
 			if (rc == OK || rc == IDENTICAL) {
 				// check updates done
-				csync_info(1, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename,
+				csync_info(3, "DEBUG daemon: check update rc=%d '%s' '%s' '%s' \n", rc, peername, filename,
 						(otherfile ? otherfile : "-"));
 				csync_daemon_check_update(db, filename, otherfile, cmd, peername);
 			} else if (rc == NEXT_CMD) {

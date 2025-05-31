@@ -435,7 +435,7 @@ void csync_openlog() {
 }
 
 static int csync_server_bind(char *service_port, int ip_version) {
-	csync_log(LOG_DEBUG, 1, "Binding to %s IPv%d \n", service_port, ip_version);
+	csync_log(LOG_DEBUG, 2, "Binding to %s IPv%d \n", service_port, ip_version);
 	int listenfd = csync_bind(service_port, ip_version);
 	if (listenfd < 0)
 		goto error;
