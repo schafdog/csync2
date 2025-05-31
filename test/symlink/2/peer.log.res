@@ -1,6 +1,6 @@
 Config-File:   csync2_pgsql_peer.cfg
 Found my alias peer localhost 30861 
-Binding to 30861 IPv0 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
@@ -13,12 +13,14 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
@@ -38,8 +40,8 @@ mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 errno = 2
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -62,8 +64,8 @@ CONN local > 'octet-stream 4'
 Got octet-stream 4
 Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all CREATE 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -79,8 +81,8 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link' .
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link is clean
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link
 Updated(mklink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link new_file 'N' all 
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link MKLINK 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETOWN 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new_file%20%27N%27%20all.link user/group 1234 1000 dennis schafroth 41471 - 16 xxxxxxxxxx'
@@ -90,20 +92,20 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link is clean
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link
 Updated(setown) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link SETOWN 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new_file%20%27N%27%20all.link xxxxxxxxxx'
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link xxxxxxxx        
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
@@ -123,12 +125,14 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
@@ -140,6 +144,7 @@ CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%
 
 CONN local < octet-stream 0
 
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer SIG 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
@@ -152,8 +157,8 @@ daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer is
 setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer MOD 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -169,8 +174,8 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link' .
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link is clean
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link
 Updated(mklink) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link missing 
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link MKLINK 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETOWN 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/bad.link user/group 1234 1000 dennis schafroth 41471 - 7 xxxxxxxxxx'
@@ -180,20 +185,20 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link.
 daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link is clean
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link
 Updated(setown) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link SETOWN 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/bad.link xxxxxxxxxx'
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link xxxxxxxx        
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
 settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
@@ -213,23 +218,24 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group'
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
+CONN local > 'STAT 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group'
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
 
-CONN local < octet-stream 0
-
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer STAT 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 '
@@ -284,13 +290,23 @@ backup /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link 0
 Locking 'DELETE:/export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link'
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link from file db.
 Locking 'DELETE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer'
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 3 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer DEL 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
+CONN local > 'STAT 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/bad.link user/group'
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/bad.link user/group        
+CONN local < ERROR not found): 
+CONN local > 'STAT 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new_file%20%27N%27%20all user/group'
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all user/group        
+CONN local < ERROR not found): 
+CONN local > 'STAT 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/new_file%20%27N%27%20all.link user/group'
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all.link user/group        
+CONN local < ERROR not found): 
 CONN local > 'BYE'
 Command: local: BYE          
 CONN local < OK (cu_later).

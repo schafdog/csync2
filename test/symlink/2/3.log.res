@@ -27,7 +27,10 @@ dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link 
 dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.0.0.2
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
