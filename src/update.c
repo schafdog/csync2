@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <fnmatch.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #include <signal.h>
 #include <time.h>
@@ -1195,7 +1196,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 	while (not_done) {
 		csync_info(1, "Updating (%s) '%s:%s' '%s'\n", operation_str, peername, filename, (other ? other : ""));
 
-		if (lstat_strict(filename, &st) != 0 || (access(filename, R_OK) != 0)) {
+		if (lstat_strict(filename, &st) != 0 || (faccessat(0, filename, R_OK,AT_SYMLINK_NOFOLLOW) != 0)) {
 			csync_error(0, "ERROR: Cant stat or read %s.\n", filename);
 			csync_error_count++;
 			return ERROR;
@@ -1257,7 +1258,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername, filename, filename_enc,
 												checktxt, digest, &st, uid, gid, auto_resolve_run);
 				if (rc == OK || rc == CONN_CLOSE) {
-					csync_info(1, "Returning after hard link check %s:%s %d\n", peername, filename, rc);
+					csync_info(2, "Returning after hard link check %s:%s %d\n", peername, filename, rc);
 					return rc;
 				}
 			}
@@ -1374,7 +1375,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 				return rc;
 
 			if (st.st_nlink > 1) {
-				csync_debug(1, "PATCH hardlink: checking dirty hardlinks: %s:%s %ld %ld %s %s\n",
+				csync_debug(2, "PATCH hardlink: checking dirty hardlinks: %s:%s %ld %ld %s %s\n",
 							peername, filename, st.st_dev, st.st_ino, filter_mtime((char *)checktxt,0), digest);
 				db->update_dirty_hardlinks(db, peername, filename, &st);
 			 }
