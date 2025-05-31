@@ -21,3 +21,5 @@ Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/lo
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S
+While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S
+ERROR from peer: v2%3Amtime=1591567200%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8 rc: -20 

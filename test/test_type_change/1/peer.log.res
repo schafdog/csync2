@@ -1,6 +1,5 @@
 Found my alias peer localhost 30861 
 Command: (null): DEBUG          
-DEBUG daemon: check update rc=0 '(null)' '' '-' 
 Command: local HELLO
 HELLO from local. Response: OK
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
@@ -8,9 +7,6 @@ Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
@@ -18,9 +14,6 @@ Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
 IDENT (cmd_finished).
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
@@ -29,47 +22,30 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
 daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 1 0
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change xxxxxxxx        
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Command: local: BYE          
 goto nofork.
 Command: (null): DEBUG          
-DEBUG daemon: check update rc=0 '(null)' '' '-' 
 Command: local HELLO
 HELLO from local. Response: OK
 Command: local: LIST /export/home/dennis/Projects/csync2/csync2/test/test/peer 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1       
 peername: local file: /export/home/dennis/Projects/csync2/csync2/test/test/peer key: 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV recursive 1
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
 Command: local: BYE          
 goto nofork.
 Command: (null): DEBUG          
-DEBUG daemon: check update rc=0 '(null)' '' '-' 
 Command: local HELLO
 HELLO from local. Response: OK
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
 Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change user/group 1234 1000 dennis schafroth 33188 - 9 xxxxxxxx
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
 Command: local: PATCH /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change - 1234 1000 dennis schafroth 33188 - 9 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
@@ -87,45 +63,30 @@ Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/n
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 1 
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
 IDENT (cmd_finished).
 Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all user/group        
 ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change: 33188
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Command: local: BYE          
 goto nofork.
 Command: (null): DEBUG          
-DEBUG daemon: check update rc=0 '(null)' '' '-' 
 Command: local HELLO
 HELLO from local. Response: OK
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
 Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
 Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change.
 Unlinking entry due to different type: 16384 32768 
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
 Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
 IDENT (cmd_finished).
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
@@ -134,38 +95,23 @@ Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all.
 daemon CREATE /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all 1 0
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all
 Updated(create) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change xxxxxxxx        
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Command: local: BYE          
 goto nofork.
 Command: (null): DEBUG          
-DEBUG daemon: check update rc=0 '(null)' '' '-' 
 Command: local HELLO
 HELLO from local. Response: OK
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
 Command: local: MOD /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change user/group 1234 1000 dennis schafroth 33188 - 11 xxxxxxxx
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
 Command: local: PATCH /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change - 1234 1000 dennis schafroth 33188 - 11 xxxxxxxx
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 
@@ -183,25 +129,17 @@ Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/n
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change): 1 1 
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change
 Updated(patch) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change  
 IDENT (cmd_finished).
 Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change/new_file 'N' all user/group        
 ERROR: Check for directory failed with non-directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change: 33188
 Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
-daemon_file_update: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-daemon_file_update DONE: UPDATE/INSERT into file filename: /export/home/dennis/Projects/csync2/csync2/test/test/peer
 Command: local: BYE          
 goto nofork.
 Command: (null): DEBUG          
-DEBUG daemon: check update rc=0 '(null)' '' '-' 
 Command: local HELLO
 HELLO from local. Response: OK
 Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
-DEBUG daemon: check update rc=0 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
 Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
@@ -218,7 +156,6 @@ Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change f
 Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 1 1 
-DEBUG daemon: check update rc=1 'local' '/export/home/dennis/Projects/csync2/csync2/test/test/peer' '-' 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
 Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/type_change user/group        

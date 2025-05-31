@@ -1,5 +1,4 @@
 Found my alias peer localhost 30861 
-Binding to 30861 IPv0 
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
@@ -182,14 +181,14 @@ Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur.
 Updated(mod) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group        
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group        
 Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.
 Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST  
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S user/group        
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S user/group        
 Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
@@ -203,7 +202,7 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
 Command: local: DEL /export/home/dennis/Projects/csync2/csync2/test/test/peer         
 Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
 Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
@@ -213,20 +212,21 @@ Calling csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/t
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/* ..
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/* ..
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp/* ..
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/tmp 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new/* ..
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/new 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur/* ..
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/cur 0
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/* ..
 Removing /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur/* ..
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 0
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 0
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 0
-Removed directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash/cur 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir/.Trash 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir 0
+Removing directory /export/home/dennis/Projects/csync2/csync2/test/test/peer 0
 Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/test/test/peer. RC: 1 0
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer): 6 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
 IDENT (cmd_finished).
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/Maildir user/group        
 Command: local: BYE          
 goto nofork.

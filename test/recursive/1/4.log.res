@@ -31,3 +31,4 @@ Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
 ?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
+Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1

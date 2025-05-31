@@ -1,5 +1,4 @@
 Found my alias peer localhost 30861 
-Binding to 30861 IPv0 
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
@@ -87,6 +86,6 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
+Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group        
 Command: local: BYE          
 goto nofork.
