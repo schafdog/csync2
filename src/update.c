@@ -447,7 +447,7 @@ int check_auto_resolve_peer(const char *peername, filename_p filename, const cha
 		auto_resolved = csync_auto_resolve_time_size(auto_method, time_l, time_p, size_l, size_p);
 		break;
 	}
-	csync_warn(1, "File %s:%s: %s autoresolve %s (%d)\n", peername, filename, auto_resolved ? "Won" : "Lost",
+	csync_info(1, "File %s:%s: %s autoresolve %s (%d)\n", peername, filename, auto_resolved ? "Won" : "Lost",
 			autoresolve_str[auto_method], auto_method);
 	return auto_resolved;
 }
@@ -764,7 +764,7 @@ int csync_update_file_sig(int conn, peername_p myname, peername_p peername, file
 		// We should be able to figure auto resolve from checktxt
 		int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
 		if (flush) {
-			csync_info(1, "Should send FLUSH %s:%s (won auto resolved)\n", peername, filename);
+			csync_info(1, "Send FLUSH %s:%s (won auto resolved)\n", peername, filename);
 		}
 		*flags = DIFF_META | (flush & DIFF_FLUSH);
 		return rc | DIFF_META;
@@ -966,6 +966,7 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peerna
 		rc |= DIFF_FILE;
 	}
 	if (flags & DIFF_FLUSH) {
+		csync_info(1, "Sending FLUSH (Won autoresolve): %s:%s", peername, filename);
 		rc = csync_flush(conn, key_enc, peername, filename_enc);
 	}
 	int rc_status;
@@ -1225,8 +1226,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			}
 		}
 		int sig_rc = csync_update_file_sig_rs_diff(conn, myname, peername, key_enc, filename, filename_enc, &st, uid,
-				gid,
-				NULL, digest, &last_conn_status, 2);
+												   gid, NULL, digest, &last_conn_status, 2);
 		rc = sig_rc;
 		if (rc >= 0) {
 			rc &= ~DIFF_BOTH;
