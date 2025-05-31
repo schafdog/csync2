@@ -240,14 +240,14 @@ int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, int recu
 int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int recursive, int unlink_flag,
 		const char **cmd_error) {
 	struct stat st;
-	int rc;
+	int rc = IDENTICAL;
 
 	if (lstat_strict(filename, &st) != 0)
-		return 0; /* Already gone */
+		return rc; /* Already gone */
 
 	/* TODO NOT working. Unlink is not set to two */
 	if (unlink_flag == 2 && S_ISREG(st.st_mode))
-		return 0;
+		return OK;
 
 	if (S_ISDIR(st.st_mode)) {
 		rc = csync_rmdir(db, filename, peername, recursive, cmd_error);
@@ -263,6 +263,7 @@ int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int rec
 		}
 	}
 	// IDENTICAL, ERROR, or new PARTIAL?
+	csync_info(1, "DEL %s:%s rc: %d", peername, filename, rc);
 	return rc;
 }
 
@@ -982,7 +983,7 @@ int csync_daemon_sig(int conn, char *filename, const char *user_group, time_t ft
 		conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
 
 	if (skip_rs_sig) {
-		return OK;
+		return NEXT_CMD;
 	}
 	if (S_ISREG(st.st_mode))
 		csync_rs_sig(conn, filename);
