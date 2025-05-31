@@ -728,7 +728,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	long long size;
 	int type, rc;
 	if ((rc = conn_read_get_content_length(sock, &size, &type))) {
-		csync_fatal(0, "rs_recv_delta_and_patch: Failed to read content-length\n");
+		csync_fatal("rs_recv_delta_and_patch: Failed to read content-length\n");
 		unlink(tmpfname);
 		return rc;
 	}

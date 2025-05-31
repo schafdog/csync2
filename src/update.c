@@ -1345,7 +1345,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			csync_warn(1, "CREATE failed. Continuing with PATCH\n");
 			break;
 		default:
-			csync_error(0, "Unhandled return code: %s:%s %d \n", peername, filename, rc);
+			csync_fatal("Unhandled return code: %s:%s %d \n", peername, filename, rc);
 			return rc;
 		}
 		/*
@@ -1478,7 +1478,7 @@ int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, p
 			return rc;
 		}
 	}
-	csync_fatal(0, "Failed through loop. Should have returned. rc: %d \n", rc);
+	csync_fatal("Failed through loop. Should have returned. rc: %d \n", rc);
 	return rc;
 }
 
