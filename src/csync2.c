@@ -193,7 +193,7 @@ void help(char *cmd) {
 			"\n"
 			"Options:"
 			"       -l \n"
-			"              Use syslog local0 facility\n"
+			"              Use syslog local5 facility. -9 for other facility\n"
 			"       -O logfile\n"
 			"              Use logfile for logging\n"
 			"       -K configfile\n"
@@ -429,9 +429,9 @@ static int csync_bind(char *service_port, int ip_version) {
 
 static char program_pid[256];
 
-void csync_openlog() {
+void csync_openlog(int facility) {
 	sprintf(program_pid, "csync2(%d)", getpid());
-	openlog(program_pid, LOG_ODELAY, LOG_LOCAL0);
+	openlog(program_pid, LOG_ODELAY, facility);
 }
 
 static int csync_server_bind(char *service_port, int ip_version) {
@@ -491,7 +491,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 				goto error;
 
 			if (csync_syslog) {
-				csync_openlog();
+				csync_openlog(csync_facility);
 				csync_info(1, "New connection from %s:%s.\n", hbuf, sbuf);
 			} else {
 				//Stupid this is not using csync_log(..)
@@ -656,10 +656,36 @@ int csync_read_config(char *cfgname, int conn, int mode) {
 	return 0;
 }
 
+int facility_from_string(const char *facility)
+{
+    if (strcmp(facility, "kern") == 0) return LOG_KERN;
+    if (strcmp(facility, "user") == 0) return LOG_USER;
+    if (strcmp(facility, "mail") == 0) return LOG_MAIL;
+    if (strcmp(facility, "daemon") == 0) return LOG_DAEMON;
+    if (strcmp(facility, "auth") == 0) return LOG_AUTH;
+    if (strcmp(facility, "syslog") == 0) return LOG_SYSLOG;
+    if (strcmp(facility, "lpr") == 0) return LOG_LPR;
+    if (strcmp(facility, "news") == 0) return LOG_NEWS;
+    if (strcmp(facility, "uucp") == 0) return LOG_UUCP;
+    if (strcmp(facility, "cron") == 0) return LOG_CRON;
+    if (strcmp(facility, "authpriv") == 0) return LOG_AUTHPRIV;
+    if (strcmp(facility, "ftp") == 0) return LOG_FTP;
+    if (strcmp(facility, "local0") == 0) return LOG_LOCAL0;
+    if (strcmp(facility, "local1") == 0) return LOG_LOCAL1;
+    if (strcmp(facility, "local2") == 0) return LOG_LOCAL2;
+    if (strcmp(facility, "local3") == 0) return LOG_LOCAL3;
+    if (strcmp(facility, "local4") == 0) return LOG_LOCAL4;
+    if (strcmp(facility, "local5") == 0) return LOG_LOCAL5;
+    if (strcmp(facility, "local6") == 0) return LOG_LOCAL6;
+    if (strcmp(facility, "local7") == 0) return LOG_LOCAL7;
+    return LOG_LOCAL5; // unknown
+}
+
 int main(int argc, char **argv) {
 	long mode = MODE_NONE;
 	int flags = 0;
 	int opt, i;
+	
 	// Default db_decodes (version 1 scheme)
 	db_decode = url_decode;
 
@@ -681,7 +707,7 @@ int main(int argc, char **argv) {
 	int cmd_ip_version = 0;
 	update_func update_func;
 	int csync_port_cmdline = 0;
-	while ((opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEYy")) != -1) {
+	while ((opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEYy9:")) != -1) {
 
 		switch (opt) {
 		case 'V':
@@ -703,10 +729,12 @@ int main(int argc, char **argv) {
 			cmd_ip_version = 1;
 			ip_version = AF_INET;
 			break;
-
 		case '6':
 			cmd_ip_version = 1;
 			ip_version = AF_INET6;
+			break;
+		case '9':
+			csync_facility = facility_from_string(optarg);
 			break;
 		case 'a':
 			csync_database = optarg;
@@ -986,7 +1014,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	csync_debug(4, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
 	// init syslog if needed. 
 	if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */) {
-		csync_openlog();
+		csync_openlog(csync_facility);
 		first = 0;
 	}
 	// mode keeps its original value, but now checking on server

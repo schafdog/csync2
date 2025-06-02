@@ -703,6 +703,7 @@ extern char *csync_redis;
 extern int csync_error_count;
 extern int csync_level_debug;
 extern int csync_syslog;
+extern int csync_facility;
 extern FILE *csync_out_debug;
 
 extern long csync_last_printtime;
