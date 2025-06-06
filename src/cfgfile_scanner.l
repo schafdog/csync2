@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005, 2006  Clifford Wolf <clifford@clifford.at>
@@ -55,7 +55,8 @@ int include_stack_ptr = 0;
 "database-version" { return TK_DB_VERSION;       }
 "protocol-version" { return TK_PROTOCOL_VERSION; }
 "ip-version"       { return TK_IP_VERSION;       }
-
+"patch-mode"       { return TK_PATCH_MODE;       }
+"lock-time"        { return TK_LOCK_TIME;        }
 
 "group"		{ return TK_GROUP; }
 "host"		{ return TK_HOST; }

@@ -1,3 +1,6 @@
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ */
 #ifndef ERROR_H
 #define ERROR_H
 
@@ -13,7 +16,7 @@ csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)
 #define csync_fatal(fmt, ...) {\
 	csync_log(LOG_CRIT, 0,fmt, ##__VA_ARGS__);	\
 	exit(1);							\
-} while(0)
+} while(0);
 
 #define csync_crit(level, fmt, ...)  csync_log(LOG_CRIT, level,fmt, ##__VA_ARGS__)
 

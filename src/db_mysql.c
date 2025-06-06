@@ -267,18 +267,18 @@ int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, char **
 }
 
 const void* db_mysql_stmt_get_column_blob(db_stmt_p stmt, int column) {
-	if (!stmt || !stmt->private2) {
+	if (!stmt || !stmt->private_data2) {
 		return 0;
 	}
-	MYSQL_ROW row = (MYSQL_ROW) stmt->private2;
+	MYSQL_ROW row = (MYSQL_ROW) stmt->private_data2;
 	return row[column];
 }
 
 const char* db_mysql_stmt_get_column_text(db_stmt_p stmt, int column) {
-	if (!stmt || !stmt->private2) {
+	if (!stmt || !stmt->private_data2) {
 		return 0;
 	}
-	MYSQL_ROW row = (MYSQL_ROW) stmt->private2;
+	MYSQL_ROW row = (MYSQL_ROW) stmt->private_data2;
 	return row[column];
 }
 
@@ -292,9 +292,9 @@ int db_mysql_stmt_get_column_int(db_stmt_p stmt, int column) {
 
 int db_mysql_stmt_next(db_stmt_p stmt) {
 	MYSQL_RES *mysql_stmt = (MYSQL_RES*) stmt->private_data;
-	stmt->private2 = f.mysql_fetch_row_fn(mysql_stmt);
+	stmt->private_data2 = f.mysql_fetch_row_fn(mysql_stmt);
 	/* error mapping */
-	if (stmt->private2)
+	if (stmt->private_data2)
 		return DB_ROW;
 	return DB_DONE;
 }

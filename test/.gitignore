@@ -3,6 +3,7 @@
 *.pid
 *.trs
 *.log
+*.pgsql
 csync2_local.cfg
 csync2_peer.cfg
 test/

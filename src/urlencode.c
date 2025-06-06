@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>
@@ -44,7 +44,7 @@ const char* url_encode(const char *in) {
 				break;
 			}
 
-	out = (char*) malloc(len + 1);
+	out = (char *) malloc(len + 1);
 
 	for (i = k = 0; in[i]; i++) {
 		for (j = 0; badchars[j]; j++)
@@ -78,7 +78,7 @@ const char* url_decode(const char *in) {
 		if (in[i] == '%' && in[i + 1] && in[i + 2])
 			i += 2;
 
-	out = (char*) malloc(len + 1);
+	out = (char *) malloc(len + 1);
 
 	for (i = k = 0; in[i]; i++)
 		if (in[i] == '%' && in[i + 1] && in[i + 2]) {

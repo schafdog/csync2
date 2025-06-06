@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005, 2006  Clifford Wolf <clifford@clifford.at>
@@ -164,9 +164,9 @@ void csync_db_close(db_conn_p db) {
 		SQL(db, "COMMIT (close)", "COMMIT ");
 		tqueries_counter = -10;
 	}
-	csync_info(3, "Closing db: %p\n", db);
+	csync_info(4, "Closing db: %p\n", db);
 	db_conn_close(db);
-	csync_info(3, "Closed db: %p\n", db);
+	csync_info(4, "Closed db: %p\n", db);
 	begin_commit_recursion--;
 	global_db = 0;
 	free(db);
@@ -200,12 +200,11 @@ long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...) {
 	long count = 0;
 	if (rc != DB_OK && err) {
 		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
-	}
-	else {
+	} else {
 		if (rc == DB_OK)
-		count = db->affected_rows;
+			count = db->affected_rows;
 		else
-		count = rc;
+			count = rc;
 	}
 	free(sql);
 
@@ -234,7 +233,8 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 			break;
 		if (busyc++ > get_dblock_timeout()) {
 			db = 0;
-			csync_fatal(DEADLOCK_MESSAGE);}
+			csync_fatal(DEADLOCK_MESSAGE);
+		}
 		csync_warn(3, "Database is busy, sleeping a sec.\n");
 		sleep(1);
 	}
@@ -246,12 +246,12 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 	return stmt;
 }
 
-const char* csync_db_get_column_text(void *stmt, int column) {
-	return db_stmt_get_column_text((db_stmt_p) stmt, column);
+const char* csync_db_get_column_text(db_stmt_p stmt, int column) {
+	return db_stmt_get_column_text(stmt, column);
 }
 
-int csync_db_get_column_int(void *stmt, int column) {
-	return db_stmt_get_column_int((db_stmt_p) stmt, column);
+int csync_db_get_column_int(db_stmt_p stmt, int column) {
+	return db_stmt_get_column_int(stmt, column);
 }
 
 int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue, const char ***pazColName) {
@@ -319,7 +319,8 @@ void csync_db_fin(void *vmx, const char *err) {
 			break;
 		if (busyc++ > get_dblock_timeout()) {
 			global_db = 0;
-			csync_fatal(DEADLOCK_MESSAGE);}
+			csync_fatal(DEADLOCK_MESSAGE);
+		}
 		csync_warn(3, "Database is busy, sleeping a sec.\n");
 		sleep(1);
 	}

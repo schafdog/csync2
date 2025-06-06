@@ -1,4 +1,4 @@
-/*
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  DB API
  
  */
@@ -85,7 +85,8 @@ int db_open(const char *file, int type, db_conn_p *db) {
 
 	default:
 		csync_fatal("Database type not found. Can't open database %s\n", file)
-;		rc = DB_ERROR;
+		;
+		rc = DB_ERROR;
 	}
 	if (*db)
 		(*db)->logger = 0;

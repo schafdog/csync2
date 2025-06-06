@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005, 2006  Clifford Wolf <clifford@clifford.at>
@@ -35,11 +35,13 @@ int csync_ignore_uid = 0;
 int csync_ignore_gid = 0;
 int csync_ignore_mod = 0;
 unsigned csync_lock_timeout = 12;
+unsigned csync_lock_time = 60;
 char *csync_tempdir = NULL;
 
 int cfg_db_version = -1;
 int cfg_protocol_version = -1;
 int cfg_ip_version = -1;
+int cfg_patch_mode = 0;
 
 #ifdef __CYGWIN__
 int csync_lowercyg_disable = 0;
@@ -90,23 +92,23 @@ static void add_host(char *hostname, char *peername, int slave)
 	else
 	    free(peername);
     } else {
-      struct csync_group_host *t = (struct csync_group_host *)
-	    calloc(sizeof(struct csync_group_host), 1);
-	t->hostname = peername;
-	t->on_left_side = !csync_group->myname;
-	t->slave = slave;
-	t->next = csync_group->host;
-	csync_group->host = t;
-	csync_log(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
+		struct csync_group_host *t = (struct csync_group_host *)
+			calloc(sizeof(struct csync_group_host), 1);
+		t->hostname = peername;
+		t->on_left_side = !csync_group->myname;
+		t->slave = slave;
+		t->next = csync_group->host;
+		csync_group->host = t;
+		csync_log(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
     }
     free(hostname);
 }
 
 static void add_patt(int patterntype, char *pattern)
 {
-     struct csync_group_pattern *t = (struct csync_group_pattern *)
-       calloc(sizeof(struct csync_group_pattern), 1);
-     int i;
+	struct csync_group_pattern *t = (struct csync_group_pattern *)
+		calloc(sizeof(struct csync_group_pattern), 1);
+	int i;
 
 #if __CYGWIN__
 	if (isalpha(pattern[0]) && pattern[1] == ':' &&
@@ -299,7 +301,7 @@ found_asactive:	;
 static void new_action()
 {
     struct csync_group_action *t = (struct csync_group_action *)
-      calloc(sizeof(struct csync_group_action), 1);
+	calloc(sizeof(struct csync_group_action), 1);
     t->next = csync_group->action;
     t->logfile = strdup("/dev/null");
     csync_group->action = t;
@@ -378,7 +380,7 @@ void csync_config_destroy_group(struct csync_group *group) {
 static void add_action_pattern(char *pattern)
 {
     struct csync_group_action_pattern *t = (struct csync_group_action_pattern *)
-      calloc(sizeof(struct csync_group_action_pattern), 1);
+		calloc(sizeof(struct csync_group_action_pattern), 1);
     t->star_matches_slashes = !!strstr(pattern, "**");
     t->pattern = pattern;
     t->next = csync_group->action->pattern;
@@ -387,11 +389,11 @@ static void add_action_pattern(char *pattern)
 
 static void add_action_exec(char *command)
 {
-    struct csync_group_action_command *t = (struct csync_group_action_command *)
-      calloc(sizeof(struct csync_group_action_command), 1);
-    t->command = command;
-    t->next = csync_group->action->command;
-    csync_group->action->command = t;
+	struct csync_group_action_command *t = (struct csync_group_action_command *)
+		calloc(sizeof(struct csync_group_action_command), 1);
+	t->command = command;
+	t->next = csync_group->action->command;
+	csync_group->action->command = t;
 }
 
 static void set_action_logfile(const char *logfile)
@@ -415,7 +417,12 @@ static void set_action_dolocal_only()
 
 static void set_lock_timeout(const char *timeout)
 {
-	csync_lock_timeout = atoi(timeout);
+	csync_lock_time = atoi(timeout);
+}
+
+static void set_lock_time(const char *time)
+{
+	csync_lock_time = atoi(time);
 }
 
 static void set_tempdir(const char *tempdir)
@@ -432,6 +439,12 @@ static void set_database_version(char *version)
 {
   cfg_db_version = atoi(version);
   free(version);
+}
+
+static void set_patch_mode(char *mode)
+{
+  cfg_patch_mode = atoi(mode);
+  free(mode);
 }
 
 static void set_redis(filename_p filename)
@@ -453,23 +466,23 @@ static void set_ip_version(char *version)
 
 static void new_hostinfo_entry(char *name, char *host, char *service)
 {
-    struct csync_hostinfo *p = (struct csync_hostinfo *)
-      calloc(sizeof(struct csync_hostinfo), 1);
-    p->next = csync_hostinfo;
-    p->name = name;
-    p->host = host;
-    p->port = service;
-    csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
-    csync_hostinfo = p;
+	struct csync_hostinfo *p = (struct csync_hostinfo *)
+		calloc(sizeof(struct csync_hostinfo), 1);
+	p->next = csync_hostinfo;
+	p->name = name;
+	p->host = host;
+	p->port = service;
+	csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
+	csync_hostinfo = p;
 }
 
 static void new_prefix(const char *pname)
 {
-    struct csync_prefix *p = (struct csync_prefix *)
-      calloc(sizeof(struct csync_prefix), 1);
-    p->name = pname;
-    p->next = csync_prefix;
-    csync_prefix = p;
+	struct csync_prefix *p = (struct csync_prefix *)
+		calloc(sizeof(struct csync_prefix), 1);
+	p->name = pname;
+	p->next = csync_prefix;
+	csync_prefix = p;
 }
 
 static void prefix_destroy(struct csync_prefix  *prefix)
@@ -517,12 +530,12 @@ static void new_prefix_entry(char *pattern, char *path)
 
 static void new_nossl(const char *from, const char *to)
 {
-    struct csync_nossl *t = (struct csync_nossl *)
-      calloc(sizeof(struct csync_nossl), 1);
-    t->pattern_from = from;
-    t->pattern_to = to;
-    t->next = csync_nossl;
-    csync_nossl = t;
+	struct csync_nossl *t = (struct csync_nossl *)
+		calloc(sizeof(struct csync_nossl), 1);
+	t->pattern_from = from;
+	t->pattern_to = to;
+	t->next = csync_nossl;
+	csync_nossl = t;
 }
 
 
@@ -591,13 +604,13 @@ static void disable_cygwin_lowercase_hack()
 
 %token TK_BLOCK_BEGIN TK_BLOCK_END TK_STEND TK_AT TK_AUTO
 %token TK_NOSSL TK_IGNORE TK_GROUP TK_HOST TK_EXCL TK_INCL TK_COMP TK_KEY TK_DATABASE
-%token TK_DB_VERSION TK_PROTOCOL_VERSION TK_IP_VERSION TK_REDIS
+%token TK_DB_VERSION TK_PROTOCOL_VERSION TK_PATCH_MODE TK_IP_VERSION TK_REDIS
 %token TK_ACTION TK_PATTERN TK_EXEC TK_DOLOCAL TK_LOGFILE TK_NOCYGLOWER
 %token TK_PREFIX TK_ON TK_COLON TK_POPEN TK_PCLOSE
 %token TK_BAK_DIR TK_BAK_GEN TK_DOLOCALONLY
 %token TK_FLAGS
 %token TK_TEMPDIR
-%token TK_LOCK_TIMEOUT TK_HOSTS
+%token TK_LOCK_TIMEOUT TK_HOSTS TK_LOCK_TIME
 %token <txt> TK_STRING
 
 %%
@@ -626,6 +639,8 @@ block:
 		{ set_redis($2); }
 |	TK_PROTOCOL_VERSION TK_STRING TK_STEND
 		{ set_protocol_version($2); }
+|	TK_PATCH_MODE TK_STRING TK_STEND
+		{ set_patch_mode($2); }
 |	TK_IP_VERSION TK_STRING TK_STEND
 		{ set_ip_version($2); }
 |	TK_TEMPDIR TK_STRING TK_STEND
@@ -635,6 +650,8 @@ block:
 		{ disable_cygwin_lowercase_hack(); }
 |	TK_LOCK_TIMEOUT TK_STRING TK_STEND
 		{ set_lock_timeout($2); }
+|	TK_LOCK_TIME TK_STRING TK_STEND
+		{ set_lock_time($2); }
 ;
 
 ignore_list:

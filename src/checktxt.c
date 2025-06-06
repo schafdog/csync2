@@ -1,4 +1,4 @@
-/*
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>
@@ -35,7 +35,7 @@
 #define xxprintf(...) \
 	{ char buffer; /* needed for older glibc */	\
 	int t = snprintf(&buffer, 1, ##__VA_ARGS__);	\
-	elements[elidx]= (char *) alloca(t+1);		\
+	elements[elidx]= (char *) alloca(t+1);			\
 	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
 	len+=t; elidx++; }
 
@@ -122,7 +122,7 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 
 	if (buffer)
 		free(buffer);
-	buffer = (char*) malloc(len);
+	buffer = (char *) malloc(len);
 
 	for (i = j = 0; j < elidx; j++)
 		for (k = 0; elements[j][k]; k++)
@@ -138,13 +138,22 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
  * WARNING: Inverted to return the n'th character.
  */
 int csync_cmpchecktxt(const char *a, const char *b) {
-	csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt A: %s \n", a);
-	csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", b);
-	return strcmp(a, b);
+	int rc = strcmp(a, b);
+	if (rc != 0) {
+		csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt A: %s \n", a);
+		csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt B: %s \n", b);
+	}
+	if (rc < 0) {
+		return -1;
+	} else if (rc > 0) {
+		return 1;
+	}
+	return rc;
+
 	int i;
 	for (i = 0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++) {
 		if (a[i] != b[i]) {
-			csync_log(LOG_DEBUG, 3, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
+			csync_log(LOG_DEBUG, 2, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
 			return i;
 		}
 	}

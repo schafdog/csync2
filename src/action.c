@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>
@@ -45,7 +45,8 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 				goto found_matching_pattern;
 			for (p = a->pattern; p; p = p->next) {
 				const char *prefix = prefixsubst(p->pattern);
-				csync_log(LOG_DEBUG, 1, "File pattern: %s => %s ", p->pattern, prefix);
+				csync_log(LOG_DEBUG, 1, "File pattern: %s => %s ", p->pattern,
+						prefix);
 				int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
 				if (!fnmatch(prefix, filename,
 				FNM_LEADING_DIR | fnm_pathname))
@@ -61,7 +62,8 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	}
 }
 
-void csync_run_single_command(db_conn_p db, const char *command, const char *logfile) {
+void csync_run_single_command(db_conn_p db, const char *command,
+		const char *logfile) {
 	char *command_clr = strdup(db_escape(db, command));
 	char *logfile_clr = strdup(db_escape(db, logfile));
 	char *real_command, *mark;
@@ -79,7 +81,7 @@ void csync_run_single_command(db_conn_p db, const char *command, const char *log
 		for (t = tl; t != 0; t = t->next)
 			len += strlen(t->value) + 1;
 
-		pos = real_command = (char*) malloc(len);
+		pos = real_command = (char *) malloc(len);
 		memcpy(real_command, command_clr, mark - command_clr);
 		real_command[mark - command_clr] = 0;
 

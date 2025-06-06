@@ -1,1 +1,1 @@
-DEBUG=vv ./local.sh auto_resolve_older.test 
+./local.sh auto_resolve_older.test 

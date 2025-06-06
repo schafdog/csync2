@@ -1,4 +1,4 @@
-/*
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
  *  LINBIT Information Technologies GmbH <http://www.linbit.com>
  *  Copyright (C) 2004, 2005, 2006  Clifford Wolf <clifford@clifford.at>
@@ -26,12 +26,14 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
 #include <netdb.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <poll.h>
 
 #ifdef HAVE_LIBGNUTLS
 #  include <gnutls/gnutls.h>
@@ -45,22 +47,9 @@ static gnutls_session_t conn_tls_session;
 static gnutls_certificate_credentials_t conn_x509_cred;
 #endif
 
-/* getaddrinfo stuff mostly copied from its manpage */
-int conn_connect(peername_p peername, int ip_version) {
+struct sockaddr * csync_lookup_addr(const char *hostname, const char *port, int ip_version) {
 	struct addrinfo hints;
-	struct addrinfo *result, *rp;
-	int sfd, s;
-	struct csync_hostinfo *p = csync_hostinfo;
-	const char *port = csync_port;
-	while (p) {
-		if (!strcmp(peername, p->name)) {
-			peername = p->host;
-			port = p->port;
-			break;
-		}
-		p = p->next;
-	}
-	csync_log(LOG_DEBUG, 2, "Connecting to %s:%s \n", peername, port);
+	struct addrinfo *result;
 	/* Obtain address(es) matching host/port */
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = ip_version; /* Allow IPv4 or IPv6 */
@@ -68,10 +57,10 @@ int conn_connect(peername_p peername, int ip_version) {
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0; /* Any protocol */
 
-	s = getaddrinfo(peername, port, &hints, &result);
+	int s = getaddrinfo(hostname, port, &hints, &result);
 	if (s != 0) {
 		csync_warn(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
-		return -1;
+		return NULL;
 	}
 
 	/* getaddrinfo() returns a list of address structures.
@@ -79,29 +68,104 @@ int conn_connect(peername_p peername, int ip_version) {
 	 If socket(2) (or connect(2)) fails, we (close the socket
 	 and) try the next address. */
 
-	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sfd == -1)
-			continue;
-
-		if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-			break; /* Success */
-
-		close(sfd);
+    // Make a copy of the address to return
+	if (result == NULL) {
+		return NULL;
 	}
-	freeaddrinfo(result); /* No longer needed */
+    struct sockaddr *addr_copy = (struct sockaddr *) malloc(result->ai_addrlen);
+    if (!addr_copy) {
+        freeaddrinfo(result);
+        return NULL;
+    }
+    memcpy(addr_copy, result->ai_addr, result->ai_addrlen);
 
-	if (rp == NULL) /* No address succeeded */
+    // Clean up
+    freeaddrinfo(result);
+    return addr_copy;
+}
+
+// Returns the size of the appropriate sockaddr struct
+socklen_t get_sockaddr_len(const struct sockaddr *sa) {
+    switch (sa->sa_family) {
+        case AF_INET:
+            return sizeof(struct sockaddr_in);
+        case AF_INET6:
+            return sizeof(struct sockaddr_in6);
+        // You can add support for other families here if needed
+        default:
+            return sizeof(struct sockaddr);  // fallback
+    }
+}
+
+// Converts a sockaddr to a human-readable IP string
+const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_t outlen) {
+    if (sa->sa_family == AF_INET) {
+        const struct sockaddr_in *sin = (const struct sockaddr_in *)sa;
+        return inet_ntop(AF_INET, &(sin->sin_addr), out, outlen);
+    } else if (sa->sa_family == AF_INET6) {
+        const struct sockaddr_in6 *sin6 = (const struct sockaddr_in6 *)sa;
+        return inet_ntop(AF_INET6, &(sin6->sin6_addr), out, outlen);
+    } else {
+        snprintf(out, outlen, "Unknown AF: %d", sa->sa_family);
+        return NULL;
+    }
+}
+
+/* getaddrinfo stuff mostly copied from its manpage */
+int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
+	int sfd;
+	struct csync_hostinfo *p = csync_hostinfo;
+	char *port = csync_port;
+	while (p) {
+		if (!strcmp(peername, p->name)) {
+			peername = p->host;
+			port = p->port;
+			csync_log(LOG_DEBUG, 2, "Using alternative port to %s:%s \n", peername, port);
+			break;
+		}
+		p = p->next;
+	}
+	csync_log(LOG_DEBUG, 2, "Connecting to %s:%s \n", peername, port);
+
+	sfd = socket(ip_version, SOCK_STREAM, 0);
+	if (sfd == -1) {
+		csync_error(0, "Failed to create socket: %d, %s %d %d\n", errno, strerror(errno), AF_INET, AF_INET6);
 		return -1;
+	}
 
+	struct sockaddr *localaddr = csync_lookup_addr(myhostname, NULL, ip_version);
+	if (localaddr == NULL) {
+		csync_error(0, "Failed to look up locala address address from %s\n", peername);
+	}
+	struct sockaddr *peeraddr = csync_lookup_addr(peername, port, ip_version);
+
+	if (peeraddr == NULL) {
+		csync_error(0, "Failed to look up peer address from %s\n", peername);
+		return -1;
+	}
+	size_t sockaddr_size = get_sockaddr_len(peeraddr);
+
+	if (localaddr != NULL) {
+		char ipstr[INET6_ADDRSTRLEN];
+		csync_info(2, "Using specific address %s\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
+		if (bind(sfd, localaddr, sockaddr_size) == -1) {
+			csync_error(0, "Failed to bind to %s: %d, %s\n", ipstr, errno, strerror(errno));
+		}
+	}
+
+	if (connect(sfd, peeraddr, sockaddr_size) == -1) {
+		csync_error(0, "Failed to connect to peer %s:%s: %d, %s\n", peername, port, errno, strerror(errno));
+		return -1;
+	}
+	csync_log(LOG_DEBUG, 2, "Connected to %s:%s \n", peername, port);
 	return sfd;
 }
 
 char *active_peer = 0;
 
-int conn_open(peername_p peername, int ip_version) {
+int conn_open(peername_p myhostname, peername_p peername, int ip_version) {
 	int on = 1;
-	int conn_fd_in = conn_connect(peername, ip_version);
+	int conn_fd_in = conn_connect(myhostname, peername, ip_version);
 	if (conn_fd_in < 0) {
 		csync_error(1, "Can't create socket.\n");
 		return -1;
@@ -213,7 +277,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 	case GNUTLS_E_FATAL_ALERT_RECEIVED:
 		alrt = gnutls_alert_get(conn_tls_session);
 		fprintf(csync_out_debug, "SSL: fatal alert received from peer: %d (%s).\n", alrt, gnutls_alert_get_name(alrt));
-		/* No break */
+
 	default:
 		gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
 		gnutls_deinit(conn_tls_session);
@@ -254,7 +318,8 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 		SQL_BEGIN(db, "Checking peer x509 certificate.",
 				"SELECT certdata FROM x509_cert WHERE peername = '%s'",
 				url_encode(peername))
-{				if (!strcmp((char *) SQL_V(0), certdata))
+		{
+			if (!strcmp((const char *) SQL_V(0), (const char *) certdata))
 				cert_is_ok = 1;
 				else
 				cert_is_ok = 0;
@@ -309,6 +374,45 @@ int conn_close(int conn) {
 	return 0;
 }
 
+static inline size_t READ_POLL(int filedesc, char *buf, size_t count) {
+#ifdef HAVE_LIBGNUTLS
+	if (csync_conn_usessl)
+		return gnutls_record_recv(conn_tls_session, buf, count);
+#endif
+	size_t total_read = 0;
+	while (total_read < count) {
+		int TIMEOUT_MS = 600000;
+		struct pollfd pfd;
+		pfd.fd = filedesc;
+		pfd.events = POLLIN;
+		int rc = poll(&pfd, 1, TIMEOUT_MS);
+		if (rc < 0) {
+			csync_error(0, "Error in READ: %d %s\n", errno, strerror(errno));
+			return rc;
+		} else if (rc == 0) {
+			printf("[!] Timeout: no data received.\n");
+			return -2;
+		}
+		if (pfd.revents & POLLIN) {
+			ssize_t length = 0;
+			length = read(filedesc,  buf + total_read, count - total_read);
+			if (length == -1 && errno == EINTR)
+				csync_error(2, "Interupted while reading. Continue\n");
+			else {
+				if (length < 0) {
+					csync_error(3, "Error in READ: %d %s\n", errno, strerror(errno));
+					return length;
+				} else if (length == 0) {
+					// EOF
+					break; // return total_length;
+				}
+				total_read += length;
+			}
+		}
+	}
+	return total_read;
+}
+
 static inline size_t READ(int filedesc, void *buf, size_t count) {
 #ifdef HAVE_LIBGNUTLS
 	if (csync_conn_usessl)
@@ -322,9 +426,9 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 	/* Initialize the timeout data structure. */
 	timeout.tv_sec = 600;
 	timeout.tv_usec = 0;
-	int rc = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
+	int rc = select(filedesc+1, &set, NULL, NULL, &timeout);
 	if (rc == 0) {
-
+		// Timeout?
 		return -2;
 	}
 	if (rc < 0) {
@@ -401,11 +505,24 @@ void conn_debug(const char *name, const char *buf, size_t count) {
 	fprintf(csync_out_debug, "\n");
 }
 
-ssize_t conn_read_get_content_length(int fd, long long *size) {
+ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
 	char buffer[200];
 	*size = 0;
-	int rc = !conn_gets(fd, buffer, 200) || sscanf(buffer, "octet-stream %lld\n", size) != 1;
-	csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %lld rc: %d \n", buffer, *size, rc);
+	int rc = !conn_gets(fd, buffer, 200);
+	char *typestr = "None";
+	if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
+		csync_info(2, "Got octet-stream %lld\n", *size);
+		*type = OCTET_STREAM;
+		typestr = "octet-stream";
+	} else if (sscanf(buffer, "chunked %lld\n", size) == 1) {
+		csync_info(2, "Got chuncked-stream %lld\n", *size);
+		*type = CHUNKED_MODE;
+		typestr = "chunked";
+	} else {
+		csync_error(0, "Failed to content-length: '%s'\n", buffer);
+	}
+
+	csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %lld rc: %d (%s)\n", buffer, *size, rc, typestr);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
 		return -1;
@@ -413,29 +530,30 @@ ssize_t conn_read_get_content_length(int fd, long long *size) {
 	return rc;
 }
 
-#define CHUNK_SIZE 16*1024
-int conn_write_chunk(int sockfd, const char *buffer, size_t size) {
+int conn_write_chunk(int sockfd, char *buffer, size_t size) {
 	char header[16];
 	snprintf(header, sizeof(header), "%zx\r\n", size);  // Chunk size in hex
 	if (send(sockfd, header, strlen(header), 0) == -1) {
-		perror("Error sending chunk header");
+		csync_error(0, "Error sending chunk header");
 		return -1;
 	}
+	csync_debug(3,"Chunk header %zx %lu\n", size, size);
 
-	if (send(sockfd, buffer, size, 0) == -1) {
-		perror("Error sending chunk");
-		return -1;
+	if (size > 0) {
+		if (send(sockfd, buffer, size, 0) == -1) {
+			csync_error(1, "Error sending chunk of size %lu", size);
+			return -1;
+		}
 	}
-
 	if (send(sockfd, "\r\n", 2, 0) == -1) {  // Chunk delimiter
-		perror("Error sending chunk delimiter");
+		csync_error(1, "Error sending chunk delimiter\n");
 		return -1;
 	}
-	//printf("Chunk %zu sent .\n", size);
+	csync_debug(3,"Chunk %lu sent.\n", size);
 	return 0;
 }
 
-int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
+ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 
 	char header[16];
 	size_t chunk_size;
@@ -443,7 +561,7 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	while (1) {
 		ssize_t header_len = recv(sockfd, header, sizeof(header) - 1, MSG_PEEK);
 		if (header_len <= 0) {
-			perror("Error receiving chunk header");
+			csync_error(1, "Error receiving chunk header %ld", header_len);
 			return -1;
 		}
 
@@ -454,9 +572,10 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 		}
 		// Only once
 		*end_of_header = '\0';  // Null-terminate the header
-		sscanf(header, "%zx", &chunk_size); // Read the chunk size in hexadecimal
-		recv(sockfd, header, end_of_header - header + 2, 0); // Consume the header
+		sscanf(header, "%zx", &chunk_size);  // Read the chunk size in hexadecimal
+		recv(sockfd, header, end_of_header - header + 2, 0);  // Consume the header
 		*end_of_header = '\0';
+		csync_debug(3, "CHUNK header %zx %lu\n", chunk_size, chunk_size);
 		break;
 	}
 
@@ -464,14 +583,12 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	*buffer = NULL;
 	if (chunk_size > 0) {
 		size_t bytes_received = 0;
-		*buffer = (char*) malloc(chunk_size);
+		*buffer = (char *) malloc(chunk_size);
 		while (bytes_received < chunk_size) {
-			ssize_t n = recv(sockfd, *buffer + bytes_received,
-					chunk_size - bytes_received > CHUNK_SIZE ?
-					CHUNK_SIZE :
-																chunk_size - bytes_received, 0);
+			ssize_t n = recv(sockfd, *buffer + bytes_received, chunk_size - bytes_received, 0);
+			csync_debug(3, "Read %ld bytes from peer", n);
 			if (n <= 0) {
-				perror("Error receiving file chunk");
+				csync_debug(1, "Error receiving file chunk %ld %ld %ld", n, chunk_size - bytes_received, CHUNK_SIZE);
 				return -1;
 			}
 			bytes_received += n;
@@ -480,22 +597,30 @@ int conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	// Consume the trailing "\r\n" after each chunk
 	char tmp[2];
 	recv(sockfd, tmp, 2, 0);
-	return 0;
+	csync_debug(3, "Chunk read %zx %lu\n", *size, *size);
+	return (ssize_t) *size;
 }
 
-int conn_write_file_chunked(int sockfd, FILE *file) {
+int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 	char buffer[CHUNK_SIZE];
-	size_t bytes_read;
-	while ((bytes_read = fread(buffer, 1, CHUNK_SIZE, file)) > 0) {
-		if (!conn_write_chunk(sockfd, buffer, bytes_read)) {
-			csync_error(0, "Failed to send chunk");
+	while (size > 0) {
+		size_t chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
+		int rc  = fread(buffer, chunk, 1, file);
+		char hexbuf[chunk*2+1];
+		if (rc <= 0) {
+			csync_error(0, "Failed reading file while sending");
 			return -1;
 		}
+		//csync_debug(3, "DUMP: %s\n", to_hex(buffer, chunk, hexbuf));
+		if (conn_write_chunk(sockfd, buffer, chunk) != 0) {
+			csync_error(0, "Failed to send file chunked %ld\n", chunk);
+			return -1;
+		}
+		size -= chunk;
 	}
 	// eof chunk
 	conn_write_chunk(sockfd, "", 0);
-	fclose(file);
-	printf("File sent using chunked encoding.\n");
+	csync_debug(3, "File sent using chunked encoding.\n");
 	return 0;
 }
 
@@ -503,35 +628,35 @@ int conn_read_file_chunked(int sockfd, FILE *file) {
 	while (1) {
 		char *buffer;
 		size_t n_bytes;
-		if (!conn_read_chunk(sockfd, &buffer, &n_bytes)) {
+		if (conn_read_chunk(sockfd, &buffer, &n_bytes) == -1) {
 			csync_error(0, "Failed to read chunk\n");
 			return -1;
 		}
-		if (n_bytes > 0) {
-			fwrite(buffer, n_bytes, 1, file);
-			free(buffer);
+		if (n_bytes == 0) {
 			break;
 		}
+		fwrite(buffer, n_bytes, 1, file);
+		free(buffer);
 	}
-	fclose(file);
-	printf("File received using chunked encoding.\n");
+	//fclose(file);
+	csync_debug(3,"File received using chunked encoding.\n");
 	return 0;
 }
 
-/* Rewritten not to mask errors */
+/* Rewritten not to mask errors, read in batch */
 ssize_t conn_read(int fd, void *buf, size_t count) {
-	size_t pos;
-	ssize_t rc;
-	for (pos = 0; pos < count; pos += rc) {
-		rc = conn_raw_read(fd, (char*) buf + pos, count - pos);
-		if (rc < 0)
-			return rc;
+	size_t size = 0;
+	while ((size < count)) {
+		ssize_t bytes_read = conn_raw_read(fd, (char*) buf + size, count - size);
+		if (bytes_read < 0)
+			return bytes_read;
 		/* End of file */
-		if (rc == 0)
+		if (bytes_read == 0)
 			break;
+		size += bytes_read;
 	}
 	//	conn_debug(active_peer, buf, pos);
-	return pos;
+	return size;
 }
 
 ssize_t conn_write(int fd, const void *buf, size_t count) {
@@ -569,18 +694,33 @@ void conn_remove_key(char *buf) {
 		*ptr = 0;
 	}
 }
+extern int csync_zero_mtime_debug;
 
 char* filter_mtime(char *buffer, int make_copy) {
 	char *str = buffer;
 	if (make_copy)
 		str = strdup(buffer);
-	if (csync_level_debug == 2) {
+	if (csync_zero_mtime_debug) {
 		char *pos = strstr(str, "mtime=");
 		if (pos != NULL) {
 			pos += 6;
-			while (*pos != '\0' && *pos != '%') {
+			while (*pos != '\0' && *pos != '%' && *pos != ':') {
 				*pos = 'x';
 				pos++;
+			}
+		}
+		// remove mtime at end of end of line
+		int len = strlen(str);
+		if (len > 0) {
+			if (!strncmp(str, "PATCH", 5) || !strncmp(str, "SET", 3) || !strncmp(str, "MKDIR", 5)
+					|| !strncmp(str, "SIG", 3) || !strncmp(str, "MOD", 3)|| !strncmp(str, "CREATE", 6)) {
+				char *ptr = str + strlen(str) - 1;
+				// csync_debug(0, "Remove time: %s\n", str);
+				while (*ptr >= '0' && *ptr <= '9' && ptr >= str) { //  || (*ptr >= '0' && *ptr <= '9')) {
+					*ptr = 'x';
+					--ptr;
+				}
+				// csync_debug(0, "Removed time: %s\n", str);
 			}
 		}
 	}
@@ -594,7 +734,7 @@ void conn_printf(int fd, const char *fmt, ...) {
 
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = (char*) alloca(size + 1);
+	buffer = (char *) alloca(size + 1);
 	va_end(ap);
 
 	va_start(ap, fmt);
@@ -615,7 +755,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const c
 	csync_debug(2, "conn_printf_cmd_filepath: unused parameters cmd %s file %s key_enc %s", cmd, file, key_enc);
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = (char*) alloca(size + 1);
+	buffer = (char *) alloca(size + 1);
 	va_end(ap);
 
 	va_start(ap, fmt);

@@ -4,6 +4,7 @@ clean peer
 mkdir -p test/$NAME
 echo A > test/$NAME/file
 mkdir test/$NAME/dir
+touch -m -d "2021-05-08" "test/$NAME/file" "test/$NAME/dir" "test/$NAME"
 cmd x "1 synced file and dir"
 sleep 1
 rm test/$NAME/file

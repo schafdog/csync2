@@ -1,3 +1,5 @@
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ */
 #ifndef RESOLV_H
 #define RESOLV_H
 
@@ -12,6 +14,6 @@ typedef union address {
 	struct sockaddr_storage ss;
 } address_t;
 
-const char* csync_inet_ntop(address_t *addr, char *buf, size_t size);
+const char *csync_inet_ntop(address_t *addr, char *buf, size_t size);
 
 #endif 

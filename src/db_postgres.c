@@ -1,4 +1,4 @@
-/*
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>
  *  Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>
  *
@@ -210,7 +210,7 @@ int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, char
 	}
 
 	stmt->private_data = result;
-	stmt->private2 = row_p;
+	stmt->private_data2 = row_p;
 
 	*stmt_p = stmt;
 	stmt->get_column_text = db_postgres_stmt_get_column_text;
@@ -226,11 +226,11 @@ const void* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column) {
 	PGresult *result;
 	int *row_p;
 
-	if (!stmt || !stmt->private_data || !stmt->private2) {
+	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
 	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private2;
+	row_p = (int*) stmt->private_data2;
 
 	if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
 		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(result));
@@ -243,11 +243,11 @@ const char* db_postgres_stmt_get_column_text(db_stmt_p stmt, int column) {
 	PGresult *result;
 	int *row_p;
 
-	if (!stmt || !stmt->private_data || !stmt->private2) {
+	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
 	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private2;
+	row_p = (int*) stmt->private_data2;
 
 	if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
 		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(result));
@@ -260,11 +260,11 @@ int db_postgres_stmt_get_column_int(db_stmt_p stmt, int column) {
 	PGresult *result;
 	int *row_p;
 
-	if (!stmt || !stmt->private_data || !stmt->private2) {
+	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
 	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private2;
+	row_p = (int*) stmt->private_data2;
 
 	if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
 		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(result));
@@ -277,11 +277,11 @@ int db_postgres_stmt_next(db_stmt_p stmt) {
 	PGresult *result;
 	int *row_p;
 
-	if (!stmt || !stmt->private_data || !stmt->private2) {
+	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
 	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private2;
+	row_p = (int*) stmt->private_data2;
 
 	(*row_p)++;
 	if (*row_p >= f.PQntuples_fn(result))
@@ -294,7 +294,7 @@ int db_postgres_stmt_close(db_stmt_p stmt) {
 	PGresult *res = (PGresult*) stmt->private_data;
 
 	f.PQclear_fn(res);
-	free(stmt->private2);
+	free(stmt->private_data2);
 	free(stmt);
 	return DB_OK;
 }
@@ -335,29 +335,31 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version) {
 			"  type   int    	      ,"
 			"  file_id   bigint      ,"
 			"  timestamp timestamp   DEFAULT current_timestamp,"
-			"  UNIQUE (filename,peername,myname), "
-			"); CREATE INDEX idx_dirty_device_inode on drity (device, inode);",
+			"  UNIQUE (filename,peername,myname)"
+			");"
+			"CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
 	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
 	csync_db_sql(conn, NULL, /* "Creating file table", */
 	"CREATE TABLE file ("
 //		     "  id     serial        ,"
-					"  parent bigint        ,"
-					"  filename varchar(%u) ,"
-					"  basename varchar(%u) ,"
-					"  hostname varchar(%u) ,"
-					"  checktxt varchar(%u),"
-					"  device bigint        ,"
-					"  inode  bigint        ,"
-					"  size   bigint        ,"
-					"  mode   int           ,"
-					"  mtime  int    	     ,"
-					"  type   int    	     ,"
-					"  digest varchar(130)  ,"
-					"  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
+				 "  parent bigint        ,"
+				 "  filename varchar(%u) ,"
+				 "  basename varchar(%u) ,"
+				 "  hostname varchar(%u) ,"
+				 "  checktxt varchar(%u),"
+				 "  device bigint        ,"
+				 "  inode  bigint        ,"
+				 "  size   bigint        ,"
+				 "  mode   int           ,"
+				 "  mtime  int    	     ,"
+				 "  type   int    	     ,"
+				 "  digest varchar(130)  ,"
+				 "  timestamp timestamp  DEFAULT CURRENT_TIMESTAMP,"
 //		     "  UNIQUE (id),"
-					"  UNIQUE (filename,hostname), "
-					"); CREATE INDEX idx_file_device_inode ON FILE (device, inode); ",
+				 "  UNIQUE (filename,hostname)"
+				 "); "
+				 "CREATE INDEX idx_file_device_inode ON FILE (device, inode); ",
 	FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50);
 
 	csync_db_sql(conn, NULL, /* "Creating hint table", */
@@ -387,7 +389,6 @@ const char* db_postgres_escape(db_conn_p conn, const char *string) {
 	size_t length = strlen(string);
 	char *escaped_buffer = ringbuffer_malloc(2 * length + 1);
 	f.PQescapeStringConn_fn((PGconn*) conn->private_data, escaped_buffer, string, length, &rc);
-
 	return escaped_buffer;
 }
 

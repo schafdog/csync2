@@ -1,0 +1,13 @@
+#
+#
+daemon d
+clean local
+clean peer
+FILENAME="big_file"
+mkdir -p "test/$NAME"
+dd if=/dev/random of="test/$NAME/$FILENAME" bs=4096 count=250000
+cmd x "New $NAME/$FILENAME"
+cmd T test/$NAME "List daemon" 
+rm -rf test/$NAME
+cmd x "clean up"
+killdaemon
