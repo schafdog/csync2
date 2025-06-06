@@ -120,7 +120,7 @@ struct db_conn_t {
 
 struct db_stmt_t {
 	void *private_data;
-	void *private2;
+	void *private_data2;
 	db_conn_p db;
 	const char* (*get_column_text)(db_stmt_p vmx, int column);
 	const void* (*get_column_blob)(db_stmt_p vmx, int column);

@@ -40,14 +40,14 @@
 #include <signal.h>
 #include <ctype.h>
 #include <syslog.h>
-#include "db_api.h"
-
-#include <netdb.h>
-#include <db_api.h>
-#include <time.h>
+#include <vector>
 #ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
+
+#include <netdb.h>
+#include "db_api.h"
+#include <time.h>
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -64,11 +64,11 @@ int db_type = DB_SQLITE3;
 static char *file_config = 0;
 static char *cfgfile = 0;
 static const char *dbdir = (const char *) DBDIR;
-char const *cfgname = "";
+const char *cfgname = "";
 char *active_grouplist = 0;
 char *active_peerlist = 0;
 char **active_peers = 0;
-char *update_format = 0;
+const char *update_format = NULL;
 char *allow_peer = 0;
 int db_version = 1;
 int ip_version = AF_INET;
@@ -362,10 +362,10 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			} else {
 				csync_check(db, file, flags);
 			}
-			const char *patlist[1];
-			patlist[0] = file;
+			std::vector<const char *> patlist(1);
+			patlist.push_back(file);
 			// Delay until we dont get more files or have enough and do it on common path
-			csync_update(db, myhostname, active_peers, (const char**) patlist, 1, ip_version, csync_update_host, flags);
+			csync_update(db, myhostname, active_peers, patlist, ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -374,7 +374,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 	}
 }
 
-static int csync_bind(char *service_port, int ip_version) {
+static int csync_bind(const char *service_port, int ip_version) {
 	struct linger sl = { 1, 5 };
 	struct addrinfo hints;
 	struct addrinfo *result, *rp;
@@ -434,7 +434,7 @@ void csync_openlog(int facility) {
 	openlog(program_pid, LOG_ODELAY, facility);
 }
 
-static int csync_server_bind(char *service_port, int ip_version) {
+static int csync_server_bind(const char *service_port, int ip_version) {
 	csync_log(LOG_DEBUG, 2, "Binding to %s IPv%d \n", service_port, ip_version);
 	int listenfd = csync_bind(service_port, ip_version);
 	if (listenfd < 0)
@@ -582,28 +582,29 @@ int match_peer(char **active_peers, const char *peer) {
 
 void csync_config_destroy();
 
-void free_realname(char *real_name) {
+void free_realname(const char *real_name) {
 	if (real_name == NULL) {
 		return;
 	}
 	if (!strcmp("", real_name)) {
 		return;
 	}
-	free(real_name);
+	free((char *) real_name);
 }
 
-int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
+
+int check_file_args(db_conn_p db, char *files[], int files_count,  std::vector<const char*> realnames, int flags) {
 	int count = 0;
-	for (int i = 0; i < file_count; i++) {
-		char *real_name = getrealfn(files[i]);
+	for (int index = 0; index < files_count; index++) {
+		char *real_name = getrealfn(files[index]);
 		if (real_name == NULL) {
-			csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
+			csync_warn(0, "%s did not match a real path. Skipping.\n", files[index]);
 		} else {
 			if (!csync_check_usefullness(real_name, flags)) {
-				realnames[count] = real_name;
+				realnames.push_back(real_name);
 				if (flags & FLAG_DO_CHECK) {
-					csync_check(db, realnames[count], flags);
-					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+					csync_check(db, real_name, flags);
+					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", real_name, flags);
 				}
 				count++;
 			} else {
@@ -612,12 +613,6 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
 		}
 	}
 	return count;
-}
-
-void csync_realnames_free(char *files[], int count) {
-	for (int i = 0; i < count; i++) {
-		free(files[i]);
-	}
 }
 
 void select_recursive(char *db_encoded, char **where_rec) {
@@ -635,7 +630,7 @@ int csync_read_config(const char *cfgname, int conn, int mode) {
 
 		for (i = 0; cfgname[i]; i++)
 			if (!(cfgname[i] >= '0' && cfgname[i] <= '9') && !(cfgname[i] >= 'a' && cfgname[i] <= 'z') && !(cfgname[i] == '_')) {
-				char *error = "Config names are limited to [a-z0-9_]+.\n";
+				const char *error = "Config names are limited to [a-z0-9_]+.\n";
 				if (mode & MODE_INETD)
 					conn_printf(conn, error);
 				else
@@ -714,7 +709,7 @@ int main(int argc, char **argv) {
 			csync_version();
 			exit(0);
 			break;
-		case '1':
+	case '1':
 			db_version = 1;
 			cmd_db_version = 1;
 			break;
@@ -963,7 +958,7 @@ int main(int argc, char **argv) {
 
 	int listenfd = 0;
 	long server_standalone = mode & MODE_STANDALONE;
-	char *myport = csync_port;
+	const char *myport = csync_port;
 	csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
 	csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 	if (server_standalone > 0) {
@@ -1167,18 +1162,17 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	if (mode == MODE_SIMPLE) {
 		if (argc == optind) {
 			csync_check(db, "/", flags);
-			csync_update(db, myhostname, active_peers, 0, 0, ip_version, csync_update_host, flags);
+			std::vector<const char *>  empty(0);
+			csync_update(db, myhostname, active_peers, empty, ip_version, csync_update_host, flags);
 		} else {
-			char *realnames[argc - optind];
+			std::vector<const char *> realnames(argc - optind);
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
-			csync_update(db, myhostname, active_peers, (const char**) realnames, count, ip_version, csync_update_host,
-					flags);
-			csync_realnames_free(realnames, count);
+			csync_update(db, myhostname, active_peers, realnames, ip_version, csync_update_host, flags);
 		}
 	}
 	if (mode == MODE_HINT) {
 		for (i = optind; i < argc; i++) {
-			char *realname = getrealfn(argv[i]);
+			const char *realname = getrealfn(argv[i]);
 			if (realname != NULL) {
 				if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE))
 					db->add_hint(db, realname, flags & FLAG_RECURSIVE);
@@ -1198,11 +1192,9 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 			}
 			textlist_free(tl);
 		} else {
-			char *realnames[argc - optind];
+			std::vector<const char *> realnames(argc - optind);
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
-			if (count > 0)
-				csync_realnames_free(realnames, count);
-			else {
+			if (count ==  0) {
 				csync_debug(0, "No argument was matched in configuration\n");
 				exit(2);
 			}
@@ -1211,7 +1203,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	if (mode & MODE_FORCE) {
 		for (i = optind; i < argc; i++) {
-			char *realname = getrealfn(argv[i]);
+			const char *realname = getrealfn(argv[i]);
 			db->force(db, realname, flags & FLAG_RECURSIVE);
 			free_realname(realname);
 		};
@@ -1219,23 +1211,23 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	if (mode & MODE_UPDATE || mode & MODE_EQUAL) {
 		if (argc <= optind) {
-			csync_update(db, myhostname, active_peers, 0, 0, ip_version, update_func, flags);
+			std::vector<const char *> empty(0);
+			csync_update(db, myhostname, active_peers, empty, ip_version, update_func, flags);
 		} else {
-			char *realnames[argc - optind];
+			std::vector<const char *> realnames(argc - optind);
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags);
 			if (count > 0) {
-				csync_update(db, myhostname, active_peers, (const char**) realnames, argc - optind, ip_version,
-						update_func, flags);
+				csync_update(db, myhostname, active_peers, realnames, ip_version,
+							 update_func, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
 			}
-			csync_realnames_free(realnames, count);
 		}
 	};
 
 	if (mode == MODE_COMPARE) {
 		for (i = optind; i < argc; i++) {
-			char *realname = getrealfn(argv[i]);
+			const char *realname = getrealfn(argv[i]);
 			if (realname != NULL) {
 				if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
 					csync_compare_mode = 1;
@@ -1255,7 +1247,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	if (mode == MODE_MARK) {
 		for (i = optind; i < argc; i++) {
-			char *realname = getrealfn(argv[i]);
+			const char *realname = getrealfn(argv[i]);
 			db->mark(db, active_peerlist, realname, flags & FLAG_RECURSIVE);
 		}
 	};
@@ -1267,7 +1259,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	if (mode == MODE_LIST_FILE) {
 		retval = 2;
-		char *realname = "";
+		const char *realname = NULL;
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}
@@ -1332,7 +1324,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	csync_debug(3, "MODE %ld\n", mode);
 	if (mode == MODE_LIST_DIRTY) {
 		retval = 0;
-		char *realname = "";
+		const char *realname = "";
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}
@@ -1341,7 +1333,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	}
 	if (mode == MODE_REMOVE_OLD) {
-		char *realname = "";
+		const char *realname = "";
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}

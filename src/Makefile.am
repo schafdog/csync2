@@ -65,11 +65,11 @@ dist-clean-local:
 AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) \
-	 -O0 -Wno-deprecated-declarations -Wall -Wextra
+	-O0 -Wno-vla-cxx-extension -Wno-deprecated-declarations -Wall -Wextra
 AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) \
 	$(LIBBSD_LIBS)
 
-AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
+AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"' -Wvla-cxx-extension
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
 
 #install-data-local:

@@ -91,7 +91,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 
 	const char *domain_key = build_key(key, domain, buffer);
 	const char *argv[] = { "GET", domain_key };
-	redis_reply = (redisReply*) redisCommandArgv(redis_context, 2, argv, NULL);
+	redis_reply = (redisReply *) redisCommandArgv(redis_context, 2, argv, NULL);
 	csync_debug(3, "Redis reply: GET '%s' -> %s\n", domain_key, redis_str(redis_reply));
 	buffer_destroy(buffer);
 
@@ -134,7 +134,7 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 		argv[argc] = time;
 		argc++;
 	}
-	redis_reply = redisCommandArgv(redis_context, argc, argv, NULL);
+	redis_reply = (redisReply *) redisCommandArgv(redis_context, argc, argv, NULL);
 	
 	csync_debug(3, "Redis reply: SET '%s' '%s' %s %s %s -> %s\n", domain_key, value, nx ? "NX" : "",
 			expire > 0 ? "EX" : "", expire > 0 ? time : "", redis_str(redis_reply));
@@ -197,7 +197,7 @@ int csync_redis_del_custom(const char *key, const char *domain) {
     csync_debug(3, "Deleting key '%s'\n", domain_key);
     const char *argv[] = { "DEL", domain_key };
 
-    redis_reply = (redisReply*) redisCommandArgv(redis_context, 2, argv, NULL);
+    redis_reply = (redisReply *) redisCommandArgv(redis_context, 2, argv, NULL);
     if (redis_reply == NULL) {
 	csync_error(1, "No redis response: %s\n", redis_context->err);
 	if (!csync_redis_check_connection()) {

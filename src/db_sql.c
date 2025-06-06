@@ -221,7 +221,7 @@ int db_sql_upgrade_db(db_conn_p db) {
 	for (p = csync_prefix; p; p = p->next) {
 		if (p->name && p->path) {
 			int length = strlen(p->name) + 3;
-			char *prefix = malloc(length);
+			char *prefix =  (char *) malloc(length);
 			prefix[0] = '%';
 			strcpy(prefix + 1, p->name);
 			strcpy(prefix + length - 2, "%");
@@ -253,23 +253,23 @@ textlist_p db_sql_get_hints(db_conn_p db) {
 
 char* csync_generate_recursive_sql(const char *file_encoded, int recursive, int prepend_where, int append_and) {
 	char *where_rec;
-	char *where = "WHERE";
-	char *and = " AND ";
+	const char *where = "WHERE";
+	const char *and_sql = " AND ";
 	if (prepend_where == 0)
 		where = "";
 	if (append_and == 0)
-		and = "";
+		and_sql = "";
 
 	if (recursive) {
 		if (file_encoded == NULL || !strcmp(file_encoded, "/"))
 			ASPRINTF(&where_rec, "");
 		else {
 			ASPRINTF(&where_rec, "%s (filename = '%s' OR filename LIKE '%s/%%') %s", where, file_encoded, file_encoded,
-					and);
+					and_sql);
 		}
 	} else {
 		if (file_encoded != NULL)
-			ASPRINTF(&where_rec, "%s filename = '%s' %s", where, file_encoded, and);
+			ASPRINTF(&where_rec, "%s filename = '%s' %s", where, file_encoded, and_sql);
 		else
 			// Also recursive
 			ASPRINTF(&where_rec, "");
@@ -748,7 +748,7 @@ int filter_child_to_deleted_dir(const char *filename, const char *checktxt, char
 		if (*last_dir_del)
 			free(*last_dir_del);
 		size_t len = strlen(filename);
-		*last_dir_del = malloc(len + 1);
+		*last_dir_del = (char *) malloc(len + 1);
 		strcpy(*last_dir_del, filename);
 		strcpy(*last_dir_del + len, "/");
 		return 0;

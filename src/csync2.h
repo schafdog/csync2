@@ -36,6 +36,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <syslog.h>
+#include <vector>
 
 typedef int operation_t;
 typedef const char * filename_p;
@@ -136,7 +137,7 @@ enum {
 
 
 typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
-							const char **patlist, int patnum, int ip_version, int flags);
+							std::vector<const char *>& patlist, int ip_version, int flags);
 
 /* csync2.c */
 
@@ -196,7 +197,7 @@ extern void conn_printf(int fd, const char *fmt, ...);
 extern int conn_fgets(int fd, char *s, int size);
 extern size_t conn_gets(int fd, char *s, size_t size);
 extern ssize_t conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
-extern int conn_write_chunk(int fd, char *buffer, size_t n_bytes);
+extern int conn_write_chunk(int fd, const char *buffer, size_t n_bytes);
 extern int conn_read_file_chunked(int sockfd, FILE *file);
 extern int conn_send_file_chunked(int sockfd, FILE *file, size_t size);
 extern char *filter_mtime(char *chktxt, int make_copy);
@@ -227,7 +228,7 @@ extern const char* (*db_decode) (const char *value);
 
 #define SQL_BEGIN(db, e, s, ...)			\
 { \
-	char *SQL_ERR = e; \
+    const char *SQL_ERR = e;													\
 	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
 	int SQL_COUNT = 0; \
 	(void) SQL_COUNT; \
@@ -241,7 +242,7 @@ extern const char* (*db_decode) (const char *value);
 			SQL_COUNT++;
 
 #define SQL_V(col)				\
-    (csync_db_colblob(SQL_VM,(col)))
+    ((char *) csync_db_colblob(SQL_VM,(col)))
 
 #define SQL_V_long(col, result)			\
     (csync_db_long(SQL_VM,(col), (result)))
@@ -363,16 +364,16 @@ void cmd_printf(int conn, const char *cmd, const char *key,
 int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
 
 extern void csync_update(db_conn_p db, const char *myname, char **peers,
-			 const char **patlist, int patnum, int ip_version, update_func func, int flags);
+						 std::vector<const char *>& patlist, int ip_version, update_func func, int flags);
 
 extern void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-			      const char **patlist, int patnum, int ip_version, int flags);
+							  std::vector<const char *>& patlist, int ip_version, int flags);
 
 extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
-			    const char **patlist, int patnum, int ip_version, int flags);
+							std::vector<const char *>& patlist, int ip_version, int flags);
 
 extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
-			    const char **patlist, int patnum, int ip_version, int flags);
+							std::vector<const char *>& patlist, int ip_version, int flags);
 
 extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
 extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version, int flags);
@@ -717,9 +718,9 @@ extern int csync_new_force;
 
 extern char myhostname[];
 extern char *myport;
-extern char *csync_port;
+extern const char *csync_port;
 extern int csync_port_cmdline;
-extern char *csync_confdir;
+extern const char *csync_confdir;
 extern char *active_grouplist;
 extern char *active_peerlist;
     

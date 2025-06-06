@@ -115,7 +115,7 @@ const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_t outle
 int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
 	int sfd;
 	struct csync_hostinfo *p = csync_hostinfo;
-	char *port = csync_port;
+	const char *port = csync_port;
 	while (p) {
 		if (!strcmp(peername, p->name)) {
 			peername = p->host;
@@ -509,7 +509,7 @@ ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
 	char buffer[200];
 	*size = 0;
 	int rc = !conn_gets(fd, buffer, 200);
-	char *typestr = "None";
+	const char *typestr = "None";
 	if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
 		csync_info(2, "Got octet-stream %lld\n", *size);
 		*type = OCTET_STREAM;
@@ -530,7 +530,7 @@ ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
 	return rc;
 }
 
-int conn_write_chunk(int sockfd, char *buffer, size_t size) {
+int conn_write_chunk(int sockfd, const char *buffer, size_t size) {
 	char header[16];
 	snprintf(header, sizeof(header), "%zx\r\n", size);  // Chunk size in hex
 	if (send(sockfd, header, strlen(header), 0) == -1) {
@@ -606,7 +606,7 @@ int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 	while (size > 0) {
 		size_t chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		int rc  = fread(buffer, chunk, 1, file);
-		char hexbuf[chunk*2+1];
+//		char hexbuf[chunk*2+1];
 		if (rc <= 0) {
 			csync_error(0, "Failed reading file while sending");
 			return -1;

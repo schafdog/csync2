@@ -33,11 +33,12 @@
  */
 
 #define xxprintf(...) \
-	{ char buffer; /* needed for older glibc */	\
-	int t = snprintf(&buffer, 1, ##__VA_ARGS__);	\
-	elements[elidx]= (char *) alloca(t+1);			\
-	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
-	len+=t; elidx++; }
+	{ \
+		int t = snprintf(NULL, 0, ##__VA_ARGS__);	\
+		elements[elidx]= (char *) alloca(t+1);		\
+		snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
+		len+=t; elidx++; \
+	}
 
 const char* csync_genchecktxt(const struct stat *st, filename_p filename, int flags) {
 	return csync_genchecktxt_version(st, filename, flags, 1);

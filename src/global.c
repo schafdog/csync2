@@ -16,7 +16,6 @@ int csync_new_force = 0;
 int csync_quiet = 0;
 
 int csync_dump_dir_fd = -1;
-char *csync_confdir = NULL;
-
-char *csync_port = "30865";
+const char *csync_confdir = NULL;
+const char *csync_port = "30865";
 char myhostname[256] = "";
