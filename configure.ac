@@ -17,9 +17,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Process this file with autoconf to produce a configure script.
-AC_PREREQ([2.69])
+AC_PREREQ([2.63])
 AC_INIT([csync2],[2.1-rc2],[dennis@schafroth.com])
-AM_INIT_AUTOMAKE([1.16 -Wall -Werror foreign subdir-objects])
+AM_INIT_AUTOMAKE([1.11 -Wall foreign subdir-objects])
 
 AC_CONFIG_SRCDIR(src/csync2.c)
 AC_CONFIG_HEADERS(src/config.h)
