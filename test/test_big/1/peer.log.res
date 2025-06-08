@@ -29,8 +29,8 @@ Running check for <TESTBASE>/test/peer/big_file ...
 Checking for modified files <TESTBASE>/test/peer/big_file 
 Checking for deleted files <TESTBASE>/test/peer/big_file.
 Removing file <TESTBASE>/test/peer/big_file
-Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1
 Removing <TESTBASE>/test/peer/big_file from file db.
 Removed directory <TESTBASE>/test/peer 0
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 11
