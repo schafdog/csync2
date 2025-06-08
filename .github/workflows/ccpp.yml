@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+    - name: Update apt
+      run: sudo apt-get update
     - name: Install dependencies
       run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl librsync-dev libhiredis-dev libbsd-dev
     - name: autogen
