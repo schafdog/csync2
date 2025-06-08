@@ -1,4 +1,3 @@
-----------------------------------------------------------------
  <TESTBASE>/test/local
  <TESTBASE>/test/local/new
  <TESTBASE>/test/local/new/hardlinked
@@ -9,7 +8,6 @@
  <TESTBASE>/test/local/new/new_file
 (8 rows)
 
-----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
  peer     | <TESTBASE>/test/local                  | MARK      |                                                                         |  0
  peer     | <TESTBASE>/test/local/new              | MARK      |                                                                         |  0
  peer     | <TESTBASE>/test/local/new/hardlinked   | MARK      |                                                                         |  0

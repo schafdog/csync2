@@ -466,7 +466,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 	while (1) {
 		unsigned addrlen = sizeof(addr);
 		*conn = accept(listenfd, &addr.sa, &addrlen);
-		if (conn < 0)
+		if (*conn < 0)
 			goto error;
 
 		struct timeval tv;
@@ -546,7 +546,7 @@ char **peers = NULL;
 char** parse_peerlist(char *peerlist) {
 	if (peerlist == NULL)
 		return peers;
-	peers = calloc(sizeof(peers), 100);
+	peers = calloc(100, sizeof(peers));
 	int i = 0;
 	char *saveptr = NULL;
 	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
@@ -705,7 +705,7 @@ int main(int argc, char **argv) {
 	csync_confdir = ETCDIR;
 	int cmd_db_version = 0;
 	int cmd_ip_version = 0;
-	update_func update_func;
+	update_func update_func = NULL;
 	int csync_port_cmdline = 0;
 	while ((opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEYy9:")) != -1) {
 
