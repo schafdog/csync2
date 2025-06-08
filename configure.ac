@@ -176,6 +176,18 @@ then
    PKG_PROG_PKG_CONFIG
    PKG_CHECK_MODULES([LIBHIREDIS], [hiredis >= 0.14.0], [
       AC_DEFINE([HAVE_LIBHIREDIS], 1, [Define to 1 when using libhiredis library])
+      
+      # macOS-specific Redis handling
+      case "$host_os" in
+          darwin*)
+              AC_MSG_NOTICE([Detected macOS - configuring Redis runtime paths])
+              HIREDIS_LIBDIR=`$PKG_CONFIG --variable=libdir hiredis 2>/dev/null`
+              if test -n "$HIREDIS_LIBDIR"; then
+                  LIBHIREDIS_LIBS="$LIBHIREDIS_LIBS -Wl,-rpath,$HIREDIS_LIBDIR"
+                  AC_MSG_NOTICE([Redis LIBS with rpath: $LIBHIREDIS_LIBS])
+              fi
+              ;;
+      esac
    ])
 fi
 
@@ -197,6 +209,18 @@ then
    PKG_PROG_PKG_CONFIG
    PKG_CHECK_MODULES([MYSQL], [libmariadb >= 3.1.0 ] , [
       AC_DEFINE([HAVE_MYSQL], 1, [Define to 1 when using libmariadb library])
+      
+      # macOS-specific MySQL/MariaDB handling
+      case "$host_os" in
+          darwin*)
+              AC_MSG_NOTICE([Detected macOS - configuring MySQL/MariaDB runtime paths])
+              MYSQL_LIBDIR=`$PKG_CONFIG --variable=libdir libmariadb 2>/dev/null`
+              if test -n "$MYSQL_LIBDIR"; then
+                  MYSQL_LIBS="$MYSQL_LIBS -Wl,-rpath,$MYSQL_LIBDIR"
+                  AC_MSG_NOTICE([MySQL LIBS with rpath: $MYSQL_LIBS])
+              fi
+              ;;
+      esac
       ])
 fi
 
@@ -205,6 +229,33 @@ then
      PKG_PROG_PKG_CONFIG
      PKG_CHECK_MODULES([LIBPQ], [libpq >= 10.1.0 ] , [
       AC_DEFINE([HAVE_LIBPQ], 1, [Define to 1 when using libpq library])
+      
+      # macOS-specific PostgreSQL handling
+      case "$host_os" in
+          darwin*)
+              AC_MSG_NOTICE([Detected macOS - configuring PostgreSQL runtime paths])
+              
+              # Get PostgreSQL library directory from pkg-config
+              LIBPQ_LIBDIR=`$PKG_CONFIG --variable=libdir libpq 2>/dev/null`
+              if test -n "$LIBPQ_LIBDIR"; then
+                  AC_MSG_NOTICE([PostgreSQL library directory: $LIBPQ_LIBDIR])
+                  
+                  # Add runtime library path for macOS
+                  LIBPQ_LIBS="$LIBPQ_LIBS -Wl,-rpath,$LIBPQ_LIBDIR"
+                  
+                  # Also check for common Homebrew locations
+                  if test -d "/opt/homebrew/lib"; then
+                      LIBPQ_LIBS="$LIBPQ_LIBS -Wl,-rpath,/opt/homebrew/lib"
+                  elif test -d "/usr/local/lib"; then
+                      LIBPQ_LIBS="$LIBPQ_LIBS -Wl,-rpath,/usr/local/lib"
+                  fi
+                  
+                  AC_MSG_NOTICE([PostgreSQL LIBS with rpath: $LIBPQ_LIBS])
+              else
+                  AC_MSG_WARN([Could not determine PostgreSQL library directory])
+              fi
+              ;;
+      esac
       ])
 fi
 
