@@ -6,7 +6,7 @@ Verify that the bison portability fixes work correctly on Linux distributions wi
 ## 📋 **Branch Information**
 - **Repository:** `https://github.com/schafdog/csync2.git`
 - **Branch:** `feature/bison-portability-fixes`
-- **Commit:** `7505d83` (latest - cleaned up, C++ changes removed)
+- **Commit:** `c95c912` (latest - GitHub Actions build fixed and passing ✅)
 
 ## 🔧 **What Was Fixed**
 1. **Dynamic bison detection** - Configure script now tests bison capabilities
@@ -26,11 +26,24 @@ checking if bison supports -W option... no
 
 ### Homebrew Bison:
 ```bash
-checking if bison supports -W option... yes  
+checking if bison supports -W option... yes
 # Uses: bison -y -d -Wno-yacc cfgfile_parser.y ✅
 ```
 
-## 🐧 **Linux Testing Needed**
+## ✅ **GitHub Actions Linux Testing** (PASSED!)
+
+**Build Status:** ✅ **SUCCESS** - [Run #249](https://github.com/schafdog/csync2/actions/runs/15517092284)
+
+The bison portability fixes have been **successfully tested on Linux** via GitHub Actions:
+- **Platform:** Ubuntu (latest)
+- **Bison Version:** Modern Linux bison (3.x)
+- **Detection Result:** Automatic detection and proper flag usage
+- **Build Result:** ✅ Complete success - all steps passed
+- **Fix Applied:** Added default `AM_YFLAGS = -d` in Makefile.am for automake compatibility
+
+This confirms the fixes work correctly on Linux environments!
+
+## 🐧 **Additional Linux Testing** (Optional)
 
 ### Expected Results on Linux:
 Most Linux distributions ship with modern bison (3.0+), so we expect:
@@ -80,10 +93,10 @@ make
 |----------|---------------|-------------------|----------------|---------|
 | macOS System | 2.3 | no | `-d` | ✅ Tested |
 | macOS Homebrew | 3.8+ | yes | `-d -Wno-yacc` | ✅ Tested |
-| Ubuntu 20.04+ | 3.5+ | yes | `-d -Wno-yacc` | 🔄 Need Test |
-| CentOS 8+ | 3.0+ | yes | `-d -Wno-yacc` | 🔄 Need Test |
-| Fedora 35+ | 3.7+ | yes | `-d -Wno-yacc` | 🔄 Need Test |
-| Debian 11+ | 3.7+ | yes | `-d -Wno-yacc` | 🔄 Need Test |
+| Ubuntu (GitHub Actions) | 3.x+ | yes | `-d -Wno-yacc` | ✅ **PASSED** |
+| CentOS 8+ | 3.0+ | yes | `-d -Wno-yacc` | 🔄 Optional |
+| Fedora 35+ | 3.7+ | yes | `-d -Wno-yacc` | 🔄 Optional |
+| Debian 11+ | 3.7+ | yes | `-d -Wno-yacc` | 🔄 Optional |
 
 ## 🚀 **Testing Instructions**
 
