@@ -20,6 +20,7 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "s|/export/home/dennis/Projects/csync2/csync2/test|<TESTBASE>|g" \
     -e "s|user/group [0-9]* [0-9]* [^ ]* [^ ]*|user/group <UID> <GID> <USER> <GROUP>|g" \
     -e "s|- [0-9]* [0-9]* [^ ]* [^ ]* |- <UID> <GID> <USER> <GROUP> |g" \
+    -e "s|<GROUP> [0-9]* - [0-9]*|<GROUP> <BLKSIZE> - <DIRSIZE>|g" \
     -e "s|Changing owner of /tmp/csync2/[^ ]* to user [0-9]* and group [0-9]*, rc= -1|Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1|g" \
     -e "/----------/d" \
     -e "/----------+/d" \
