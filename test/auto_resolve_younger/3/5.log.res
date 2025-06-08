@@ -3,7 +3,7 @@ csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Mode: 2 Flags: 1 PID: 2654115
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862
@@ -58,67 +58,67 @@ csync2_db_SQL: update file set filename = NULL where filename = NULL
 csync2_db_SQL: update host set host = NULL where host = NULL
 db_schema_version: 2
 Connecting to redis localhost:6379
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test 65 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
-No match. Don't check at all: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local' 
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+csync_check_dir: <TESTBASE>/test 65 
+Checking <TESTBASE>/test/* ..
+No match. Don't check at all: <TESTBASE>/test/peer
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local' 
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local 193 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' 
+csync_check_dir: <TESTBASE>/test/local 193 
+Checking <TESTBASE>/test/local/* ..
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/auto
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/auto' 
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto 193 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/* ..
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' 
+csync_check_dir: <TESTBASE>/test/local/auto 193 
+Checking <TESTBASE>/test/local/auto/* ..
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/auto/younger' 
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 193 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/* ..
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' 
-New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
+csync_check_dir: <TESTBASE>/test/local/auto/younger 193 
+Checking <TESTBASE>/test/local/auto/younger/* ..
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/auto/younger/local_oldest' 
+New file: <TESTBASE>/test/local/auto/younger/local_oldest
 SQL Query finished.
 check_file: calc_digest: 4 dirty: 2 is_upgrade 0 dev_change: 0
-csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-SQL:  SELECT filename, checktxt, digest FROM file WHERE  hostname = 'local'  AND device = 2049  AND inode = 53084654  AND filename != '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' 
+csync_check_file_same_dev_inode <TESTBASE>/test/local/auto/younger/local_oldest <TESTBASE>/test/local/auto/younger/local_oldest
+SQL:  SELECT filename, checktxt, digest FROM file WHERE  hostname = 'local'  AND device = 2049  AND inode = 53084654  AND filename != '<TESTBASE>/test/local/auto/younger/local_oldest' 
 SQL Query finished.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12' AND device = 2049 AND inode = 53084654 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest') AND peername = 'peer' ORDER BY timestamp 
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/auto/younger/local_oldest
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/auto/younger/local_oldest
+mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/auto/younger/local_oldest' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12' AND device = 2049 AND inode = 53084654 OR filename = '<TESTBASE>/test/local/auto/younger/local_oldest') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest', 0, 'local', 'peer', 'NEW', 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', 2049, 53084654, NULL, 2, 33188, 2, 1620424800)
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12' AND device = 2049 AND inode = 53084654 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/auto/younger/local_oldest'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/auto/younger/local_oldest', 0, 'local', 'peer', 'NEW', 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', 2049, 53084654, NULL, 2, 33188, 2, 1620424800)
+mark other operation: 'NEW' 'other:<TESTBASE>/test/local/auto/younger/local_oldest' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12' AND device = 2049 AND inode = 53084654 OR filename = '<TESTBASE>/test/local/auto/younger/local_oldest') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest', 0, 'local', 'other', 'NEW', 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', 2049, 53084654, NULL, 2, 33188, 2, 1620424800)
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest b228c706dbe64af26f59f8164031636a2f72f2d2
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest', 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', 2049, 53084654, 'b228c706dbe64af26f59f8164031636a2f72f2d2', 33188, 12, 1620424800, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', device = 2049, inode = 53084654, digest = 'b228c706dbe64af26f59f8164031636a2f72f2d2', mode = 33188, size = 12, mtime = 1620424800, type = 2
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest rows matched: 0
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-file /export/home/dennis/Projects/csync2/csync2/test/test encoded /export/home/dennis/Projects/csync2/csync2/test/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  hostname = 'local' ORDER BY filename
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local' 53, cached path: '(null)' 0, 0.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto' 59, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/' 53, 53.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger' 64, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/local/' 59, 59.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' 72, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/' 64, 64.
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/auto/younger/local_oldest'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/auto/younger/local_oldest', 0, 'local', 'other', 'NEW', 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', 2049, 53084654, NULL, 2, 33188, 2, 1620424800)
+INSERT/UPDATE: <TESTBASE>/test/local/auto/younger/local_oldest b228c706dbe64af26f59f8164031636a2f72f2d2
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/auto/younger/local_oldest', 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', 2049, 53084654, 'b228c706dbe64af26f59f8164031636a2f72f2d2', 33188, 12, 1620424800, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12', device = 2049, inode = 53084654, digest = 'b228c706dbe64af26f59f8164031636a2f72f2d2', mode = 33188, size = 12, mtime = 1620424800, type = 2
+Inserted/updated <TESTBASE>/test/local/auto/younger/local_oldest rows matched: 0
+Checking for deleted files <TESTBASE>/test recursive.
+file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
+SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/auto
+check_pure: filename: '<TESTBASE>/test/local/auto' 59, cached path: '<TESTBASE>/test/' 53, 53.
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger
+check_pure: filename: '<TESTBASE>/test/local/auto/younger' 64, cached path: '<TESTBASE>/test/local/' 59, 59.
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+check_pure: filename: '<TESTBASE>/test/local/auto/younger/local_oldest' 72, cached path: '<TESTBASE>/test/local/auto/' 64, 64.
 SQL Query finished.
-csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
+csync_file_args: '<TESTBASE>/test' flags 65 
 MODE 2
 Redis closing: 0x5623cc3df4a0
 Redis closed.
