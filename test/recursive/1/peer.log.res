@@ -117,7 +117,6 @@ Called csync_rmdir_recursive local:/export/home/dennis/Projects/csync2/csync2/te
 Deleted recursive from clean directory (/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive): 6 1 
 Updated(del) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive  
 IDENT (cmd_finished).
-Command: local: STAT /export/home/dennis/Projects/csync2/csync2/test/test/peer/recursive/1 user/group        
 Command: local: BYE          
 goto nofork.
 Command: (null): DEBUG          

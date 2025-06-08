@@ -17,8 +17,3 @@ mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/bad.link
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
-peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all is already up to date on peer.
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
-peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link is already up to date on peer.
