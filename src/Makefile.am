@@ -43,11 +43,13 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 # Default value for automake, will be overridden by configure
 AM_YFLAGS = -d
 BUILT_SOURCES = cfgfile_parser.h check_version
-LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
              config.log		
 
-# csync2_LDADD =
+# Link all required libraries
+csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) \
+               $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) $(LIBBSD_LIBS) \
+               -ldl -lssl -lcrypto -lrsync
 
 check_version: FORCE
 	@cd $(top_srcdir) && ./version.sh
@@ -69,8 +71,6 @@ AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) \
 	-std=c17 -O0 -Wno-deprecated-declarations -Wall -Wextra
-AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) \
-	$(LIBBSD_LIBS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
