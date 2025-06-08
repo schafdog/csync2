@@ -1,6 +1,4 @@
-+-------------------------------------------------------------------------------+
 | filename                                                                      |
-+-------------------------------------------------------------------------------+
 | <TESTBASE>/test/local                    |
 | <TESTBASE>/test/local/usr                |
 | <TESTBASE>/test/local/usr/local          |
@@ -9,10 +7,7 @@
 | <TESTBASE>/test/local/usr/local/def/hej  |
 | <TESTBASE>/test/local/usr/local/sbin     |
 | <TESTBASE>/test/local/usr/local/sbin/hej |
-+-------------------------------------------------------------------------------+
-+----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+------+
 | peername | filename                                                                      | operation | other       | op   |
-+----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+------+
 | other    | <TESTBASE>/test/local                    | MKDIR     | NULL        |    1 |
 | peer     | <TESTBASE>/test/local                    | MKDIR     | NULL        |    1 |
 | other    | <TESTBASE>/test/local/usr                | MKDIR     | NULL        |    1 |
@@ -29,4 +24,3 @@
 | peer     | <TESTBASE>/test/local/usr/local/def/hej  | ???       | ../sbin/hej |    2 |
 | other    | <TESTBASE>/test/local/usr/local/sbin/hej | NEW       | NULL        |    2 |
 | peer     | <TESTBASE>/test/local/usr/local/sbin/hej | NEW       | NULL        |    2 |
-+----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+------+

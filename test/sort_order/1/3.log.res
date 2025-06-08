@@ -1,4 +1,4 @@
-cmd M "New directories and files (List)" local peer test
+cmd M "New directories and files (Dirty)" local peer test
   MKDIR	local	peer	<TESTBASE>/test/local	1	1
   MKDIR	local	peer	<TESTBASE>/test/local/usr	1	1
   MKDIR	local	peer	<TESTBASE>/test/local/usr/local	1	1
