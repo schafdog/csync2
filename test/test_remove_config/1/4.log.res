@@ -1,8 +1,8 @@
 cmd c "clean up" local peer test
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-mark operation MKDIR -> RM peer:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+Checking for deleted files <TESTBASE>/test recursive.
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
+mark operation MKDIR -> RM peer:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
+mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
+mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.

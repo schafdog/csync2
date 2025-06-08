@@ -1,14 +1,14 @@
 +-----------------------------------------------------------------+
 | filename                                                        |
 +-----------------------------------------------------------------+
-| /export/home/dennis/Projects/csync2/csync2/test/test/local      |
-| /export/home/dennis/Projects/csync2/csync2/test/test/local/dir  |
-| /export/home/dennis/Projects/csync2/csync2/test/test/local/file |
+| <TESTBASE>/test/local      |
+| <TESTBASE>/test/local/dir  |
+| <TESTBASE>/test/local/file |
 +-----------------------------------------------------------------+
-+----------+-----------------------------------------------------------------+-----------+-------+------+
++----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+------+
 | peername | filename                                                        | operation | other | op   |
-+----------+-----------------------------------------------------------------+-----------+-------+------+
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local      | MKDIR     | NULL  |    1 |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/dir  | MKDIR     | NULL  |    1 |
-| other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/file | NEW       | NULL  |    2 |
-+----------+-----------------------------------------------------------------+-----------+-------+------+
++----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+------+
+| other    | <TESTBASE>/test/local      | MKDIR     | NULL  |    1 |
+| other    | <TESTBASE>/test/local/dir  | MKDIR     | NULL  |    1 |
+| other    | <TESTBASE>/test/local/file | NEW       | NULL  |    2 |
++----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+------+

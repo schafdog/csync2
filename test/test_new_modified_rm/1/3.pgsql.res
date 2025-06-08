@@ -1,14 +1,14 @@
--------------------------------------------------------------------
- /export/home/dennis/Projects/csync2/csync2/test/test/local
- /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir
+----------------------------------------------------------------
+ <TESTBASE>/test/local
+ <TESTBASE>/test/local/newdir
 (2 rows)
 
-----------+-------------------------------------------------------------------+-----------+--------------------------------------------------------------+----
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local        | MKDIR     |                                                              |  1
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local        | MKDIR     |                                                              |  1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/A      | NEW       |                                                              |  2
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/A      | NEW       |                                                              |  2
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir | MV        | /export/home/dennis/Projects/csync2/csync2/test/test/local/A | 16
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/newdir | MV        | /export/home/dennis/Projects/csync2/csync2/test/test/local/A | 16
+----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
+ other    | <TESTBASE>/test/local        | MKDIR     |                                                              |  1
+ peer     | <TESTBASE>/test/local        | MKDIR     |                                                              |  1
+ other    | <TESTBASE>/test/local/A      | NEW       |                                                              |  2
+ peer     | <TESTBASE>/test/local/A      | NEW       |                                                              |  2
+ other    | <TESTBASE>/test/local/newdir | MV        | <TESTBASE>/test/local/A | 16
+ peer     | <TESTBASE>/test/local/newdir | MV        | <TESTBASE>/test/local/A | 16
 (6 rows)
 

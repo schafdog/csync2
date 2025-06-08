@@ -1,8 +1,8 @@
 cmd u "New dir timestamp due to file (update)" local peer test
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Updating (MOD_DIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
+Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/usr/local/sbin' ''
 Got octet-stream 0
-?M: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej
+?M: peer            <TESTBASE>/test/local/usr/local/sbin
+Deleting peer:<TESTBASE>/test/local/usr/local/sbin/hej
 Got octet-stream 32
