@@ -22,17 +22,17 @@ sbin_SCRIPTS = csync2-compare
 bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
-CXX = clang++
-csync2_SOURCES = action.cpp cfgfile_parser.y cfgfile_scanner.l check.cpp	\
-                 checktxt.cpp csync2.cpp global.cpp daemon.cpp db.cpp \
-		 error.cpp error.h getrealfn.cpp	\
-                 groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
-		 db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \
-		 ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.h resolv.cpp resolv.h \
+CC = clang
+csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
+                 checktxt.c csync2.c global.c daemon.c db.c \
+		 error.c error.h getrealfn.c	\
+                 groups.c rsync.c update.c urlencode.c conn.c prefixsubst.c \
+		 db_api.c db_sql.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c \
+		 ringbuffer.c buffer.c uidgid.c uidgid.h resolv.c resolv.h \
 		 csync2.h db_api.h db_sql.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
-		 redis.h redis.cpp \
+		 redis.h redis.c \
 		 csync2-compare \
-		 digest.cpp digest.h version.h \
+		 digest.c digest.h version.h \
 		 csync2.1
 
 #EXTRA_DIST = csync2.cfg csync2.xinetd
@@ -62,10 +62,10 @@ dist-clean: dist-clean-local
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
+AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) \
-	-std=c++17 -O0 -Wno-deprecated-declarations -Wall -Wextra -Wno-old-style-cast
+	-std=c17 -O0 -Wno-deprecated-declarations -Wall -Wextra
 AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) \
 	$(LIBBSD_LIBS)
 
