@@ -1,4 +1,4 @@
-cmd x "New local/ÆØÅ Café with utf8 and latin1" local peer test
+cmd x "New local/ÆØÅ Café with utf8" local peer test
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local' '-'.
