@@ -3,7 +3,7 @@ csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Mode: 4096 Flags: 1 PID: 2657541
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862
@@ -58,7 +58,7 @@ csync2_db_SQL: update file set filename = NULL where filename = NULL
 csync2_db_SQL: update host set host = NULL where host = NULL
 db_schema_version: 2
 Connecting to redis localhost:6379
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 csync_insynctest_all: flags 1 
 csync_insynctest_all: get all groups 
 insynctest_all: Adding host local
@@ -66,7 +66,7 @@ Adding peer: peer
 Adding peer: other
 Check peername 
 Check peername 
-Running in-sync check for local <-> peer for file /export/home/dennis/Projects/csync2/csync2/test/test/local.
+Running in-sync check for local <-> peer for file <TESTBASE>/test/local.
 Connecting to host peer (PLAIN) ...
 Connecting to localhost:30861 
 CONN peer < CONFIG 
@@ -83,48 +83,48 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
 
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test'
-Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test [v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=0]
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
-SQL: SELECT checktxt, filename FROM file WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test'  AND  hostname = 'local' ORDER BY filename
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	<TESTBASE>/test/peer/.Test'
+Fetched tuple from peer: <TESTBASE>/test/peer/.Test [v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=0]
+db_sql_list_file local <-> peer <TESTBASE>/test/peer/.Test
+SQL: SELECT checktxt, filename FROM file WHERE  filename = '<TESTBASE>/test/peer/.Test'  AND  hostname = 'local' ORDER BY filename
 SQL Query finished.
 csync_cmpchecktxt A: v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=0 
 csync_cmpchecktxt B: --- 
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+D	local	peer	<TESTBASE>/test/peer/.Test
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4	/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all'
-Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all [v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=4]
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
-SQL: SELECT checktxt, filename FROM file WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file ''N'' all'  AND  hostname = 'local' ORDER BY filename
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4	<TESTBASE>/test/peer/new_file 'N' all'
+Fetched tuple from peer: <TESTBASE>/test/peer/new_file 'N' all [v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=4]
+db_sql_list_file local <-> peer <TESTBASE>/test/peer/new_file 'N' all
+SQL: SELECT checktxt, filename FROM file WHERE  filename = '<TESTBASE>/test/peer/new_file ''N'' all'  AND  hostname = 'local' ORDER BY filename
 SQL Query finished.
 csync_cmpchecktxt A: v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=4 
 csync_cmpchecktxt B: --- 
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+D	local	peer	<TESTBASE>/test/peer/new_file 'N' all
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	/export/home/dennis/Projects/csync2/csync2/test/test/peer/A'
-Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer/A [v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=0]
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/A
-SQL: SELECT checktxt, filename FROM file WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/peer/A'  AND  hostname = 'local' ORDER BY filename
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	<TESTBASE>/test/peer/A'
+Fetched tuple from peer: <TESTBASE>/test/peer/A [v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=0]
+db_sql_list_file local <-> peer <TESTBASE>/test/peer/A
+SQL: SELECT checktxt, filename FROM file WHERE  filename = '<TESTBASE>/test/peer/A'  AND  hostname = 'local' ORDER BY filename
 SQL Query finished.
 csync_cmpchecktxt A: v2:mtime=1736899562:mode=33188:user=dennis:group=schafroth:type=reg:size=0 
 csync_cmpchecktxt B: --- 
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/A
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+D	local	peer	<TESTBASE>/test/peer/A
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	/export/home/dennis/Projects/csync2/csync2/test/test/peer'
-Fetched tuple from peer: /export/home/dennis/Projects/csync2/csync2/test/test/peer [v2:mtime=1736899562:mode=16877:user=dennis:group=schafroth:type=dir]
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer
-SQL: SELECT checktxt, filename FROM file WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/peer'  AND  hostname = 'local' ORDER BY filename
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	<TESTBASE>/test/peer'
+Fetched tuple from peer: <TESTBASE>/test/peer [v2:mtime=1736899562:mode=16877:user=dennis:group=schafroth:type=dir]
+db_sql_list_file local <-> peer <TESTBASE>/test/peer
+SQL: SELECT checktxt, filename FROM file WHERE  filename = '<TESTBASE>/test/peer'  AND  hostname = 'local' ORDER BY filename
 SQL Query finished.
 csync_cmpchecktxt A: v2:mtime=1736899562:mode=16877:user=dennis:group=schafroth:type=dir 
 csync_cmpchecktxt B: --- 
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+D	local	peer	<TESTBASE>/test/peer
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir peer
 >>> --- local
 CONN peer > 'OK (cmd_finished).'

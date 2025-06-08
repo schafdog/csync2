@@ -3,7 +3,7 @@ csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Mode: 4 Flags: 1 PID: 2798106
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862

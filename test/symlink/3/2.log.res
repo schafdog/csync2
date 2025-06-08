@@ -2,7 +2,7 @@ cmd x "Link local/new_file 'N' all" local peer test
 csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862
@@ -57,107 +57,107 @@ csync2_db_SQL: update file set filename = NULL where filename = NULL
 csync2_db_SQL: update host set host = NULL where host = NULL
 db_schema_version: 2
 Connecting to redis localhost:6379
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test 65 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Redis reply: GET 'CLOSE_WRITE,CLOSE:/export/home/dennis/Projects/csync2/csync2/test/test/local' -> (null)
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local' 
-New file: /export/home/dennis/Projects/csync2/csync2/test/test/local
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+csync_check_dir: <TESTBASE>/test 65 
+Checking <TESTBASE>/test/* ..
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local' -> (null)
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local' 
+New file: <TESTBASE>/test/local
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local /export/home/dennis/Projects/csync2/csync2/test/test/local
-SQL:  SELECT filename, checktxt, digest FROM file f  WHERE  hostname = 'local'  AND device = 2049  AND inode = 52709148  AND filename != '/export/home/dennis/Projects/csync2/csync2/test/test/local' AND ('NULL' = '(null)' OR      filename NOT IN (SELECT filename FROM dirty WHERE peername = '(null)' AND device = f.device AND inode = f.inode));
+csync_check_file_same_dev_inode <TESTBASE>/test/local <TESTBASE>/test/local
+SQL:  SELECT filename, checktxt, digest FROM file f  WHERE  hostname = 'local'  AND device = 2049  AND inode = 52709148  AND filename != '<TESTBASE>/test/local' AND ('NULL' = '(null)' OR      filename NOT IN (SELECT filename FROM dirty WHERE peername = '(null)' AND device = f.device AND inode = f.inode));
 SQL Query finished.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 52709148 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local') AND peername = 'peer' ORDER BY timestamp 
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 52709148 OR filename = '<TESTBASE>/test/local') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0, 'local', 'peer', 'MKDIR', 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 52709148, NULL, 1, 16877, 1, 1748673362)
-mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 52709148 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local', 0, 'local', 'peer', 'MKDIR', 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 52709148, NULL, 1, 16877, 1, 1748673362)
+mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 52709148 OR filename = '<TESTBASE>/test/local') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0, 'local', 'other', 'MKDIR', 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 52709148, NULL, 1, 16877, 1, 1748673362)
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local', 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 52709148, NULL, 16877, 4096, 1748673362, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 52709148, digest = NULL, mode = 16877, size = 4096, mtime = 1748673362, type = 1
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows matched: 0
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local 193 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
-Redis reply: GET 'CLOSE_WRITE,CLOSE:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link' -> (null)
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link' 
-New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local', 0, 'local', 'other', 'MKDIR', 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 52709148, NULL, 1, 16877, 1, 1748673362)
+INSERT/UPDATE: <TESTBASE>/test/local (null)
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local', 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 52709148, NULL, 16877, 4096, 1748673362, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 52709148, digest = NULL, mode = 16877, size = 4096, mtime = 1748673362, type = 1
+Inserted/updated <TESTBASE>/test/local rows matched: 0
+csync_check_dir: <TESTBASE>/test/local 193 
+Checking <TESTBASE>/test/local/* ..
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all.link
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new_file 'N' all.link' -> (null)
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new_file ''N'' all.link' 
+New file: <TESTBASE>/test/local/new_file 'N' all.link
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
-mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link' 'new_file 'N' all'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all' AND device = 2049 AND inode = 52710367 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link') AND peername = 'peer' ORDER BY timestamp 
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all.link
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all.link
+mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/new_file 'N' all.link' 'new_file 'N' all'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all' AND device = 2049 AND inode = 52710367 OR filename = '<TESTBASE>/test/local/new_file ''N'' all.link') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link', 0, 'local', 'peer', 'NEW', 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all', 2049, 52710367, 'new_file ''N'' all', 2, 41471, 6, 1748673362)
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link' 'new_file 'N' all'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all' AND device = 2049 AND inode = 52710367 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file ''N'' all.link'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/new_file ''N'' all.link', 0, 'local', 'peer', 'NEW', 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all', 2049, 52710367, 'new_file ''N'' all', 2, 41471, 6, 1748673362)
+mark other operation: 'NEW' 'other:<TESTBASE>/test/local/new_file 'N' all.link' 'new_file 'N' all'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all' AND device = 2049 AND inode = 52710367 OR filename = '<TESTBASE>/test/local/new_file ''N'' all.link') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link', 0, 'local', 'other', 'NEW', 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all', 2049, 52710367, 'new_file ''N'' all', 2, 41471, 6, 1748673362)
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link', 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all', 2049, 52710367, NULL, 41471, 16, 1748673362, 6) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all', device = 2049, inode = 52710367, digest = NULL, mode = 41471, size = 16, mtime = 1748673362, type = 6
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link rows matched: 0
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
-Redis reply: GET 'CLOSE_WRITE,CLOSE:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' -> (null)
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all' 
-New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file ''N'' all.link'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/new_file ''N'' all.link', 0, 'local', 'other', 'NEW', 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''''N'''' all', 2049, 52710367, 'new_file ''N'' all', 2, 41471, 6, 1748673362)
+INSERT/UPDATE: <TESTBASE>/test/local/new_file ''N'' all.link (null)
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new_file ''N'' all.link', 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all', 2049, 52710367, NULL, 41471, 16, 1748673362, 6) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all', device = 2049, inode = 52710367, digest = NULL, mode = 41471, size = 16, mtime = 1748673362, type = 6
+Inserted/updated <TESTBASE>/test/local/new_file 'N' all.link rows matched: 0
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new_file 'N' all' -> (null)
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new_file ''N'' all' 
+New file: <TESTBASE>/test/local/new_file 'N' all
 SQL Query finished.
 check_file: calc_digest: 4 dirty: 2 is_upgrade 0 dev_change: 0
-csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all
-SQL:  SELECT filename, checktxt, digest FROM file f  WHERE  hostname = 'local'  AND device = 2049  AND inode = 52710352  AND filename != '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all' AND ('NULL' = '(null)' OR      filename NOT IN (SELECT filename FROM dirty WHERE peername = '(null)' AND device = f.device AND inode = f.inode));
+csync_check_file_same_dev_inode <TESTBASE>/test/local/new_file 'N' all <TESTBASE>/test/local/new_file ''N'' all
+SQL:  SELECT filename, checktxt, digest FROM file f  WHERE  hostname = 'local'  AND device = 2049  AND inode = 52710352  AND filename != '<TESTBASE>/test/local/new_file ''N'' all' AND ('NULL' = '(null)' OR      filename NOT IN (SELECT filename FROM dirty WHERE peername = '(null)' AND device = f.device AND inode = f.inode));
 SQL Query finished.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
-mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4' AND device = 2049 AND inode = 52710352 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all') AND peername = 'peer' ORDER BY timestamp 
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all
+mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/new_file 'N' all' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4' AND device = 2049 AND inode = 52710352 OR filename = '<TESTBASE>/test/local/new_file ''N'' all') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all', 0, 'local', 'peer', 'NEW', 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 52710352, NULL, 2, 33188, 2, 1748673361)
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4' AND device = 2049 AND inode = 52710352 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file ''N'' all'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/new_file ''N'' all', 0, 'local', 'peer', 'NEW', 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 52710352, NULL, 2, 33188, 2, 1748673361)
+mark other operation: 'NEW' 'other:<TESTBASE>/test/local/new_file 'N' all' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4' AND device = 2049 AND inode = 52710352 OR filename = '<TESTBASE>/test/local/new_file ''N'' all') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all', 0, 'local', 'other', 'NEW', 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 52710352, NULL, 2, 33188, 2, 1748673361)
-INSERT/UPDATE: /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all eeb4df3d04063049b45ea11a12354a37e8740687
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all', 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 52710352, 'eeb4df3d04063049b45ea11a12354a37e8740687', 33188, 4, 1748673361, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', device = 2049, inode = 52710352, digest = 'eeb4df3d04063049b45ea11a12354a37e8740687', mode = 33188, size = 4, mtime = 1748673361, type = 2
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all rows matched: 0
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-file /export/home/dennis/Projects/csync2/csync2/test/test encoded /export/home/dennis/Projects/csync2/csync2/test/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  hostname = 'local' ORDER BY filename
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local' 53, cached path: '(null)' 0, 0.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' 59, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/' 53, 53.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link' 59, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/local/' 59, 59.
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file ''N'' all'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/new_file ''N'' all', 0, 'local', 'other', 'NEW', 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 52710352, NULL, 2, 33188, 2, 1748673361)
+INSERT/UPDATE: <TESTBASE>/test/local/new_file ''N'' all eeb4df3d04063049b45ea11a12354a37e8740687
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new_file ''N'' all', 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 52710352, 'eeb4df3d04063049b45ea11a12354a37e8740687', 33188, 4, 1748673361, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4', device = 2049, inode = 52710352, digest = 'eeb4df3d04063049b45ea11a12354a37e8740687', mode = 33188, size = 4, mtime = 1748673361, type = 2
+Inserted/updated <TESTBASE>/test/local/new_file 'N' all rows matched: 0
+Checking for deleted files <TESTBASE>/test recursive.
+file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
+SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all
+check_pure: filename: '<TESTBASE>/test/local/new_file 'N' all' 59, cached path: '<TESTBASE>/test/' 53, 53.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all.link
+check_pure: filename: '<TESTBASE>/test/local/new_file 'N' all.link' 59, cached path: '<TESTBASE>/test/local/' 59, 59.
 SQL Query finished.
-csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
+csync_file_args: '<TESTBASE>/test' flags 65 
 get dirty host
 SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername
 dirty host other 
 dirty host peer 
 SQL Query finished.
-SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
+DIRTY LOOKUP: '<TESTBASE>/test/local/new_file 'N' all.link' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/new_file 'N' all' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
+DIRTY LOOKUP: '<TESTBASE>/test/local' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -177,39 +177,39 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local' 53, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/local/' 59, 53.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
+check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '<TESTBASE>/test/local/' 59, 53.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 uid dennis gid schafroth
-Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-csync_update_file_sig_rs_diff peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
+Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
+csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local
 CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
 CONN peer > 'OK (not_found).'
-update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local RC 32
-has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local checktxt 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+update_file_sig <TESTBASE>/test/local RC 32
+has links: file <TESTBASE>/test/local checktxt 'v2:mtime=1748673362:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
 MKDIR rc: 32
 CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 32.
 After setown/settime/setmod on OK. rc 4.
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local'  AND  myname = 'local' AND peername like 'peer'
-Directory /export/home/dennis/Projects/csync2/csync2/test/test
-Adding textlist_add_new: /export/home/dennis/Projects/csync2/csync2/test/test
-Skipping textlist_add_new: /export/home/dennis/Projects/csync2/csync2/test/test
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' 59, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/' 53, 53.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
+Clear dirty peer:<TESTBASE>/test/local (0)
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'peer'
+Directory <TESTBASE>/test
+Adding textlist_add_new: <TESTBASE>/test
+Skipping textlist_add_new: <TESTBASE>/test
+check_pure: filename: '<TESTBASE>/test/local/new_file 'N' all' 59, cached path: '<TESTBASE>/test/' 53, 53.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all
 uid dennis gid schafroth
-Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all' ''
-csync_update_file_sig_rs_diff peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all
+Updating (NEW) 'peer:<TESTBASE>/test/local/new_file 'N' all' ''
+csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/new_file 'N' all
 CONN peer < SIG %25test%25/new_file%20%27N%27%20all user/group 1234 1000 dennis schafroth 33188 - 4 
 CONN peer > 'OK (not_found).'
-update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all RC 32
-has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all checktxt 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 1 1
+update_file_sig <TESTBASE>/test/local/new_file 'N' all RC 32
+has links: file <TESTBASE>/test/local/new_file 'N' all checktxt 'v2:mtime=1748673361:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 1 1
 CONN peer < CREATE %25test%25/new_file%20%27N%27%20all - 1234 1000 dennis schafroth 33188 - 4 
 CONN peer > 'OK (send data).'
 read_conn_status 'OK (send data).' 0
-CREATE /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all 4
+CREATE <TESTBASE>/test/local/new_file 'N' all 4
 Sending octet-stream of 4 bytes
 CONN peer < octet-stream 4
 
@@ -219,19 +219,19 @@ CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 32.
 After setown/settime/setmod on OK. rc 4.
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all'  AND  myname = 'local' AND peername like 'peer'
-Directory /export/home/dennis/Projects/csync2/csync2/test/test/local
-Adding textlist_add_new: /export/home/dennis/Projects/csync2/csync2/test/test/local
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link' 59, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/local/' 59, 59.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
+Clear dirty peer:<TESTBASE>/test/local/new_file 'N' all (0)
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file ''N'' all'  AND  myname = 'local' AND peername like 'peer'
+Directory <TESTBASE>/test/local
+Adding textlist_add_new: <TESTBASE>/test/local
+check_pure: filename: '<TESTBASE>/test/local/new_file 'N' all.link' 59, cached path: '<TESTBASE>/test/local/' 59, 59.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file 'N' all.link
 uid dennis gid schafroth
-Updating (LINK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link' 'new_file 'N' all'
-csync_update_file_sig_rs_diff peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
+Updating (LINK) 'peer:<TESTBASE>/test/local/new_file 'N' all.link' 'new_file 'N' all'
+csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/new_file 'N' all.link
 CONN peer < SIG %25test%25/new_file%20%27N%27%20all.link user/group 1234 1000 dennis schafroth 41471 - 16 
 CONN peer > 'OK (not_found).'
-update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link RC 32
-has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link checktxt 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all' 1 0
+update_file_sig <TESTBASE>/test/local/new_file 'N' all.link RC 32
+has links: file <TESTBASE>/test/local/new_file 'N' all.link checktxt 'v2:mtime=1748673362:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all' 1 0
 CONN peer < MKLINK %25test%25/new_file%20%27N%27%20all.link 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
@@ -239,18 +239,18 @@ before setown/settime/setmod on OK. rc 0 sig_rc: 32.
 CONN peer < SETOWN %25test%25/new_file%20%27N%27%20all.link user/group 1234 1000 dennis schafroth 41471 - 16 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
-Skipping setmod on link peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link
+Skipping setmod on link peer:<TESTBASE>/test/local/new_file 'N' all.link
 CONN peer < SETTIME %25test%25/new_file%20%27N%27%20all.link 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 After setown/settime/setmod on OK. rc 0.
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file 'N' all.link (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file ''N'' all.link'  AND  myname = 'local' AND peername like 'peer'
-Directory /export/home/dennis/Projects/csync2/csync2/test/test/local
-Skipping textlist_add_new: /export/home/dennis/Projects/csync2/csync2/test/test/local
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
+Clear dirty peer:<TESTBASE>/test/local/new_file 'N' all.link (0)
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file ''N'' all.link'  AND  myname = 'local' AND peername like 'peer'
+Directory <TESTBASE>/test/local
+Skipping textlist_add_new: <TESTBASE>/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 uid dennis gid schafroth
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local 1748673362.
+update_directory: Setting directory time <TESTBASE>/test/local 1748673362.
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
