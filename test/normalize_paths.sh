@@ -14,7 +14,8 @@ BASEDIR="$(dirname "$TESTDIR")"
 
 # Create a sed script to normalize paths and filter environment-specific messages
 # Replace the base directory with a placeholder to make paths relative
-sed -e "s|$TESTDIR/test/|<TESTBASE>/test/|g" \
+sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
+    -e "s|$TESTDIR|<TESTBASE>|g" \
     -e "s|^-\{60,\}$|----------------------------------------------------------------|g" \
     -e "s|^-\{70,\}$|----------------------------------------------------------------|g" \
     -e "s|^-\{80,\}$|----------------------------------------------------------------|g" \
