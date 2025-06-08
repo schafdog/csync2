@@ -1,18 +1,18 @@
----------------------------------------------------------------------------
- /export/home/dennis/Projects/csync2/csync2/test/test/local
- /export/home/dennis/Projects/csync2/csync2/test/test/local/new
- /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked
- /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file
+----------------------------------------------------------------
+ <TESTBASE>/test/local
+ <TESTBASE>/test/local/new
+ <TESTBASE>/test/local/new/hardlinked
+ <TESTBASE>/test/local/new/new_file
 (4 rows)
 
-----------+---------------------------------------------------------------------------+-----------+-------------------------------------------------------------------------+----
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                | MKDIR     |                                                                         |  1
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local                | MKDIR     |                                                                         |  1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new            | MKDIR     |                                                                         |  1
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new            | MKDIR     |                                                                         |  1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file   | NEW       |                                                                         |  2
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file   | NEW       |                                                                         |  2
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file | 32
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/hardlinked | HARDLINK  | /export/home/dennis/Projects/csync2/csync2/test/test/local/new/new_file | 32
+----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
+ other    | <TESTBASE>/test/local                | MKDIR     |                                                                         |  1
+ peer     | <TESTBASE>/test/local                | MKDIR     |                                                                         |  1
+ other    | <TESTBASE>/test/local/new            | MKDIR     |                                                                         |  1
+ peer     | <TESTBASE>/test/local/new            | MKDIR     |                                                                         |  1
+ other    | <TESTBASE>/test/local/new/new_file   | NEW       |                                                                         |  2
+ peer     | <TESTBASE>/test/local/new/new_file   | NEW       |                                                                         |  2
+ other    | <TESTBASE>/test/local/new/hardlinked | HARDLINK  | <TESTBASE>/test/local/new/new_file | 32
+ peer     | <TESTBASE>/test/local/new/hardlinked | HARDLINK  | <TESTBASE>/test/local/new/new_file | 32
 (8 rows)
 
