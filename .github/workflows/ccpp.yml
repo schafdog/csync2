@@ -19,7 +19,11 @@ jobs:
       run: ./configure
     - name: make
       run: make
+    - name: Make DB
+      run: cd test && ./update_database_collation.sh
     - name: make check
       run: cd test && make check
+    - name: show errors
+      run: cd test && cat */1/*.diff
 #    - name: make distcheck
 #      run: make distcheck
