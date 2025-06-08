@@ -263,7 +263,7 @@ int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, int rec
 		}
 	}
 	// IDENTICAL, ERROR, or new PARTIAL?
-	csync_info(1, "DEL %s:%s rc: %d", peername, filename, rc);
+	csync_info(2, "DEL %s:%s rc: %d\n", peername, filename, rc);
 	return rc;
 }
 
