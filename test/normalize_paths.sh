@@ -26,4 +26,5 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "/----------/d" \
     -e "/----------+/d" \
     -e "/Transfer starting:/d" \
-    -e "/total size is.*speedup/d"
+    -e "/total size is.*speedup/d" \
+    -e "s|mtime=[0-9]*:|mtime=<MTIME>|g"
