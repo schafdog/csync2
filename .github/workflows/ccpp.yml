@@ -12,14 +12,18 @@ jobs:
     - name: Update apt
       run: sudo apt-get update
     - name: Install dependencies
-      run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl librsync-dev libhiredis-dev libbsd-dev
+      run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl librsync-dev libhiredis-dev libbsd-dev postgresql
     - name: autogen
       run: ./autogen.sh
     - name: configure
       run: ./configure
     - name: make
       run: make
+    - name: Make DB
+      run: cd test && PSQL_ADMIN="-U postgres" ./update_database_collation.sh
     - name: make check
       run: cd test && make check
+    - name: show errors
+      run: cd test && cat */1/*.diff
 #    - name: make distcheck
 #      run: make distcheck
