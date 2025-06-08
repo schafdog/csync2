@@ -29,14 +29,69 @@ AC_CONFIG_HEADERS(src/config.h)
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_YACC
 AM_PROG_LEX
 
+# Set C++ as the default language
+AC_LANG([C++])
+
+# Check for bison capabilities
+AC_MSG_CHECKING([if bison supports -W option])
+if test "x$YACC" != "x"; then
+    # Create a minimal test grammar
+    cat > conftest.y << 'EOF'
+%{
+int yylex(void);
+void yyerror(const char *s);
+%}
+%token TEST
+%%
+test: TEST;
+%%
+void yyerror(const char *s) {}
+int yylex(void) { return 0; }
+EOF
+
+    # Test if bison supports -Wno-yacc option
+    if $YACC -d -Wno-yacc conftest.y >/dev/null 2>&1; then
+        AC_MSG_RESULT([yes])
+        AM_YFLAGS="-d -Wno-yacc"
+    else
+        AC_MSG_RESULT([no])
+        AM_YFLAGS="-d"
+    fi
+
+    # Clean up test files
+    rm -f conftest.y conftest.tab.c conftest.tab.h y.tab.c y.tab.h
+else
+    AC_MSG_RESULT([yacc not found])
+    AM_YFLAGS="-d"
+fi
+AC_SUBST([AM_YFLAGS])
+
 if test "$CC" == "clang"
-then 
-   CFLAGS="$CFLAGS -Qunused-arguments " 
-fi 
+then
+   CFLAGS="$CFLAGS -Qunused-arguments "
+fi
+
+# macOS-specific checks
+case "$host_os" in
+    darwin*)
+        AC_MSG_NOTICE([Detected macOS - checking for Homebrew bison])
+        # Check if we're using the old system bison on macOS
+        if test "x$YACC" != "x"; then
+            YACC_PATH=`which $YACC 2>/dev/null`
+            if echo "$YACC_PATH" | grep -q "/usr/bin/"; then
+                AC_MSG_WARN([Using system bison which may be outdated. Consider installing Homebrew bison:])
+                AC_MSG_WARN([  brew install bison])
+                AC_MSG_WARN([  For Apple Silicon: export PATH="/opt/homebrew/opt/bison/bin:$PATH"])
+                AC_MSG_WARN([  For Intel: export PATH="/usr/local/opt/bison/bin:$PATH"])
+            fi
+        fi
+        ;;
+esac
 
 # check for large file support
 AC_SYS_LARGEFILE

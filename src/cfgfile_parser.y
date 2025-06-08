@@ -57,7 +57,7 @@ void yyerror(char *text)
 	csync_fatal("Near line %d: %s\n", yylineno, text);
 }
 
-static void new_group(char *name)
+static void create_group(char *name)
 {
 	int static autonum = 1;
 	struct csync_group *t =
@@ -298,7 +298,7 @@ found_asactive:	;
     }
 }
 
-static void new_action()
+static void create_action()
 {
     struct csync_group_action *t =
 	calloc(sizeof(struct csync_group_action), 1);
@@ -464,7 +464,7 @@ static void set_ip_version(char *version)
   free(version);
 }
 
-static void new_hostinfo_entry(char *name, char *host, char *service)
+static void create_hostinfo_entry(char *name, char *host, char *service)
 {
      struct csync_hostinfo *p =
 	 calloc(sizeof(struct csync_hostinfo), 1);
@@ -476,7 +476,7 @@ static void new_hostinfo_entry(char *name, char *host, char *service)
      csync_hostinfo = p;
 }
 
-static void new_prefix(const char *pname)
+static void create_prefix(const char *pname)
 {
 	struct csync_prefix *p =
 		calloc(sizeof(struct csync_prefix), 1);
@@ -495,7 +495,7 @@ static void prefix_destroy(struct csync_prefix  *prefix)
     free(prefix);
 }
 
-static void new_prefix_entry(char *pattern, char *path)
+static void create_prefix_entry(char *pattern, char *path)
 {
 	int i;
 
@@ -528,7 +528,7 @@ static void new_prefix_entry(char *pattern, char *path)
 	free(pattern);
 }
 
-static void new_nossl(const char *from, const char *to)
+static void create_nossl(const char *from, const char *to)
 {
 	struct csync_nossl *t =
 		calloc(sizeof(struct csync_nossl), 1);
@@ -549,7 +549,7 @@ static void nossl_destroy(struct csync_nossl *t)
     free(t);
 }
 
-static void new_ignore(char *propname)
+static void create_ignore(char *propname)
 {
 	if ( !strcmp(propname, "uid") )
 		csync_ignore_uid = 1;
@@ -623,14 +623,14 @@ config:
 block:
 	block_header block_body
 |	TK_PREFIX TK_STRING
-		{ new_prefix($2); }
+		{ create_prefix($2); }
 		TK_BLOCK_BEGIN prefix_list TK_BLOCK_END
 		{ }
 |	TK_HOSTS 
 		TK_BLOCK_BEGIN alias_list TK_BLOCK_END
 		{ }
 |	TK_NOSSL TK_STRING TK_STRING TK_STEND
-		{ new_nossl($2, $3); }
+		{ create_nossl($2, $3); }
 |	TK_DATABASE TK_STRING TK_STEND
 		{ set_database($2); }
 |	TK_DB_VERSION TK_STRING TK_STEND
@@ -657,28 +657,28 @@ block:
 ignore_list:
 	/* empty */
 |	TK_STRING ignore_list
-		{ new_ignore($1); }
+		{ create_ignore($1); }
 ;
 
 prefix_list:
 	/* empty */
 |	prefix_list TK_ON TK_STRING TK_COLON TK_STRING TK_STEND
-		{ new_prefix_entry($3, on_cygwin_lowercase($5)); }
+		{ create_prefix_entry($3, on_cygwin_lowercase($5)); }
 ;
 
 alias_list:
 	/* empty */
 |	alias_list TK_STRING TK_COLON TK_STRING TK_STEND
-                { new_hostinfo_entry($2, $4, strdup(csync_port)); }
+                { create_hostinfo_entry($2, $4, strdup(csync_port)); }
 |	alias_list TK_STRING TK_COLON TK_STRING TK_COLON TK_STRING TK_STEND
-                { new_hostinfo_entry($2, $4, $6); }
+                { create_hostinfo_entry($2, $4, $6); }
 ;
 
 block_header:
 	TK_GROUP
-		{ new_group(0);  }
+		{ create_group(0);  }
 |	TK_GROUP TK_STRING
-		{ new_group($2); }
+		{ create_group($2); }
 ;
 
 block_body:
@@ -746,7 +746,7 @@ comp_list:
 
 action:
 	TK_ACTION
-		{ new_action(); }
+		{ create_action(); }
 	TK_BLOCK_BEGIN action_stmts TK_BLOCK_END
 ;
 
