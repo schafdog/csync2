@@ -39,7 +39,9 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 
 GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
 
-AM_YFLAGS = -d -Wno-yacc
+# AM_YFLAGS is set by configure.ac based on bison capabilities
+# Default value for automake, will be overridden by configure
+AM_YFLAGS = -d
 BUILT_SOURCES = cfgfile_parser.h check_version
 LIBS += -ldl -lssl -lcrypto
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\

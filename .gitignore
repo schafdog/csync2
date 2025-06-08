@@ -35,6 +35,7 @@ ylwrap
 *.cockroach
 tests/*.diff
 tests/test
+test/prefix.cfg
 *.cpp
 mkstemp
 version.h

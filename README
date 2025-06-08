@@ -32,10 +32,36 @@ Broken stuff
 - Database creating is not 100% correct.
 - sqlite 2/3 has not been tested for a long time. Mostly mysql, and some PostgreSQL
 
-Building on Mac:
-================
-Will most likely require some homebrew versions of tools:
-- macOS bison with -W fails. Set YACC='<location of homebrew bison> -y' before ./autogen.sh
+Building on macOS:
+==================
+The build system now automatically detects and handles macOS-specific issues.
+
+Quick Setup (Recommended):
+--------------------------
+1. Run the macOS setup script:
+   ./setup-macos.sh
+
+2. Source the environment:
+   source setup-env.sh
+
+3. Build normally:
+   ./autogen.sh
+   ./configure
+   make
+
+Manual Setup:
+-------------
+If you prefer manual setup, install dependencies via Homebrew:
+
+   brew install autoconf automake libtool bison flex pkg-config
+   brew install librsync gnutls openssl sqlite mysql-client postgresql
+
+Then set up your environment to use Homebrew's bison (not the system one):
+   export PATH="/opt/homebrew/opt/bison/bin:$PATH"  # Apple Silicon
+   export PATH="/usr/local/opt/bison/bin:$PATH"     # Intel
+
+The configure script will automatically detect bison capabilities and set
+appropriate flags. No manual YACC setting is required anymore.
 
 
 Future
@@ -129,20 +155,39 @@ production environments.
 Building csync2
 ===============
 
-You'll need the GNU autotools and a compiler toolchain (gcc) for 
-building csync2.
+You'll need the GNU autotools and a C++ compiler toolchain (gcc/g++ or clang++)
+for building csync2. This version has been migrated to C++17.
 
+Dependencies:
+- C++17 compatible compiler (GCC 7+, Clang 5+, or newer)
+- GNU autotools (autoconf, automake, libtool)
+- Bison 3.0+ (for -W option support, older versions work but with warnings)
+- Flex
+- pkg-config
+
+Linux/General Build:
+-------------------
 First, run the autogen.sh script:
 
-karin$ ./autogen.sh
+$ ./autogen.sh
 
 Then run configure, use ./configure --help for more options:
 
-karin$ ./configure
+$ ./configure
 
 Then run make:
 
-karin$ make
+$ make
+
+macOS Build:
+-----------
+For macOS, use the provided setup script for easier dependency management:
+
+$ ./setup-macos.sh
+$ source setup-env.sh
+$ ./autogen.sh
+$ ./configure
+$ make
 
 csync2 should be built now. Direct any questions to the csync2 mailing list
 (see above).
