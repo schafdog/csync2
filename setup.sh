@@ -9,7 +9,8 @@
 set -e  # Exit on any error
 
 echo "Setting up PostgreSQL databases for csync2 tests..."
-
+#DO_POSTGRES_SUDO="sudo -u postgres"
+CONNECT_DB_HOST="-h localhost"
 # Check if PostgreSQL is running
 if ! systemctl is-active --quiet postgresql 2>/dev/null && ! pgrep -x postgres >/dev/null 2>&1; then
     echo "Error: PostgreSQL is not running. Please start PostgreSQL first."
@@ -21,12 +22,12 @@ fi
 execute_sql() {
     local sql_command="$1"
     echo "Executing: $sql_command"
-    sudo -u postgres psql -c "$sql_command"
+    $DO_POSTGRES_SUDO psql ${CONNECT_DB_HOST} -c "$sql_command" postgres
 }
 
 # Create user csync2 if it doesn't exist
 echo "Creating PostgreSQL user 'csync2'..."
-if sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='csync2'" | grep -q 1; then
+if ${DO_POSTGRES_SUDO} psql ${CONNECT_DB_HOST} -tAc "SELECT 1 FROM pg_roles WHERE rolname='csync2'" postgres | grep -q 1; then
     echo "User 'csync2' already exists, skipping user creation."
 else
     execute_sql "CREATE USER csync2 WITH ENCRYPTED PASSWORD 'csync238';"
@@ -35,7 +36,7 @@ fi
 
 # Create database csync2_local if it doesn't exist
 echo "Creating database 'csync2_local'..."
-if sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw csync2_local; then
+if ${DO_POSTGRES_SUDO} psql ${CONNECT_DB_HOST} -lqt postgres | cut -d \| -f 1 | grep -qw csync2_local; then
     echo "Database 'csync2_local' already exists, skipping database creation."
 else
     execute_sql "CREATE DATABASE csync2_local;"
@@ -44,7 +45,7 @@ fi
 
 # Create database csync2_peer if it doesn't exist
 echo "Creating database 'csync2_peer'..."
-if sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw csync2_peer; then
+if ${DO_POSTGRES_SUDO} psql ${CONNECT_DB_HOST} -lqt postgres | cut -d \| -f 1 | grep -qw csync2_peer; then
     echo "Database 'csync2_peer' already exists, skipping database creation."
 else
     execute_sql "CREATE DATABASE csync2_peer;"
