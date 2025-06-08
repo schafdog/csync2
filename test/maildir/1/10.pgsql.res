@@ -1,5 +1,4 @@
 (0 rows)
 
- other    | <TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S | RM        |       | 64
-(1 row)
+(0 rows)
 

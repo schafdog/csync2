@@ -9,6 +9,14 @@ Checking for modified files <TESTBASE>/test/peer
 Checking for deleted files <TESTBASE>/test/peer.
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
+Command: local: SIG <TESTBASE>/test/peer/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: CREATE <TESTBASE>/test/peer/.Test - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Running check for <TESTBASE>/test/peer/.Test ...
+Checking for modified files <TESTBASE>/test/peer/.Test 
+Checking for deleted files <TESTBASE>/test/peer/.Test.
+daemon CREATE <TESTBASE>/test/peer/.Test 1 0
+Updated(create) local:<TESTBASE>/test/peer/.Test  
+IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/A user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: CREATE <TESTBASE>/test/peer/A - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/A ...
@@ -24,14 +32,6 @@ Checking for modified files <TESTBASE>/test/peer/new_file 'N' all
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 daemon CREATE <TESTBASE>/test/peer/new_file 'N' all 1 0
 Updated(create) local:<TESTBASE>/test/peer/new_file 'N' all  
-IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Command: local: CREATE <TESTBASE>/test/peer/.Test - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Running check for <TESTBASE>/test/peer/.Test ...
-Checking for modified files <TESTBASE>/test/peer/.Test 
-Checking for deleted files <TESTBASE>/test/peer/.Test.
-daemon CREATE <TESTBASE>/test/peer/.Test 1 0
-Updated(create) local:<TESTBASE>/test/peer/.Test  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
 Command: local: BYE          

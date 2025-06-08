@@ -13,9 +13,9 @@ Checking for deleted files <TESTBASE>/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
+Updating (NEW) 'peer:<TESTBASE>/test/local/.Test' ''
+CREATE <TESTBASE>/test/local/.Test 0
 Updating (NEW) 'peer:<TESTBASE>/test/local/A' ''
 CREATE <TESTBASE>/test/local/A 0
 Updating (NEW) 'peer:<TESTBASE>/test/local/new_file 'N' all' ''
 CREATE <TESTBASE>/test/local/new_file 'N' all 4
-Updating (NEW) 'peer:<TESTBASE>/test/local/.Test' ''
-CREATE <TESTBASE>/test/local/.Test 0

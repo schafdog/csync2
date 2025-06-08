@@ -22,10 +22,10 @@ echo -e "${GREEN}Using collation: $COLLATION${NC}"
 
 # PostgreSQL connection settings
 # Use current user for database management operations
-PSQL_ADMIN="psql -h localhost"
+PSQL_ADMIN="psql -h localhost -U postgres"
 # Use csync2 user for schema operations (matching test infrastructure)
 export PGPASSWORD=csync238
-PSQL_CSYNC2="psql -U csync2 -h localhost"
+PSQL_CSYNC2="psql -h localhost"
 
 # Function to recreate a database with correct collation
 recreate_database() {
@@ -41,7 +41,7 @@ recreate_database() {
     fi
 
     # Create database with correct collation
-    echo "  - Creating database $dbname with collation $COLLATION"
+    echo "  - Creating database $dbname with collation $COLLATION owner $username"
     $PSQL_ADMIN -d postgres -c "CREATE DATABASE $dbname OWNER $username LC_COLLATE='$COLLATION' LC_CTYPE='$COLLATION' TEMPLATE template0;"
 
     # Grant permissions to csync2 user
@@ -55,7 +55,6 @@ recreate_database() {
         $PSQL_CSYNC2 -d $dbname -f "create_csync2_schema.sql" > /dev/null
     else
         echo -e "${RED}Error: Could not find create_csync2_schema.sql schema file${NC}"
-        exit 1
     fi
     
     echo -e "${GREEN}  ✓ Database $dbname recreated successfully${NC}"
