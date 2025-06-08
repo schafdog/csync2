@@ -2,22 +2,22 @@ Found my alias peer localhost 30861
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MKDIR <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MKDIR <TESTBASE>/test/peer/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MKDIR <TESTBASE>/test/peer/auto - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/auto ...
 Checking for modified files <TESTBASE>/test/peer/auto 
 Checking for deleted files <TESTBASE>/test/peer/auto.
 Updated(mkdir) local:<TESTBASE>/test/peer/auto  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/auto/older user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MKDIR <TESTBASE>/test/peer/auto/older - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/auto/older user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MKDIR <TESTBASE>/test/peer/auto/older - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/auto/older ...
 Checking for modified files <TESTBASE>/test/peer/auto/older 
 Checking for deleted files <TESTBASE>/test/peer/auto/older.
@@ -30,8 +30,8 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer/auto/older/update_both user/group 1234 1000 dennis schafroth 33188 - 14 xxxxxxxx
-Command: local: PATCH <TESTBASE>/test/peer/auto/older/update_both - 1234 1000 dennis schafroth 33188 - 14 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/auto/older/update_both user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: PATCH <TESTBASE>/test/peer/auto/older/update_both - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/auto/older/update_both ...
 Checking for modified files <TESTBASE>/test/peer/auto/older/update_both 
 mark other operation: 'NEW' 'local:<TESTBASE>/test/peer/auto/older/update_both' '-'.
@@ -51,24 +51,24 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MOD <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MOD <TESTBASE>/test/peer/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer/auto - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/auto ...
 Checking for modified files <TESTBASE>/test/peer/auto 
 Checking for deleted files <TESTBASE>/test/peer/auto.
 Updated(mod) local:<TESTBASE>/test/peer/auto  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/auto/older user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/auto/older user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/older won auto resolved. clear dirty
-Command: local: MOD <TESTBASE>/test/peer/auto/older - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer/auto/older - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older won auto resolve
 Running check for <TESTBASE>/test/peer/auto/older ...
 Checking for modified files <TESTBASE>/test/peer/auto/older 
@@ -77,10 +77,10 @@ check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older won auto resolv
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/older won auto resolved. clear dirty
 Updated(mod) local:<TESTBASE>/test/peer/auto/older  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/auto/older/update_both user/group 1234 1000 dennis schafroth 33188 - 14 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/auto/older/update_both user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolved. clear dirty
-Command: local: PATCH <TESTBASE>/test/peer/auto/older/update_both - 1234 1000 dennis schafroth 33188 - 14 xxxxxxxx
+Command: local: PATCH <TESTBASE>/test/peer/auto/older/update_both - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve
 Running check for <TESTBASE>/test/peer/auto/older/update_both ...
 Checking for modified files <TESTBASE>/test/peer/auto/older/update_both 
@@ -90,7 +90,7 @@ Checking for deleted files <TESTBASE>/test/peer/auto/older/update_both.
 Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve.
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolved. clear dirty
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Updated(patch) local:<TESTBASE>/test/peer/auto/older/update_both  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer/auto/older xxxxxxxx        
@@ -103,7 +103,7 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: STAT <TESTBASE>/test/peer user/group        
+Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>    
 Command: local: DEL <TESTBASE>/test/peer         
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
@@ -117,7 +117,7 @@ Running check for <TESTBASE>/test/peer/auto/older/update_both ...
 Checking for modified files <TESTBASE>/test/peer/auto/older/update_both 
 Checking for deleted files <TESTBASE>/test/peer/auto/older/update_both.
 Removing file <TESTBASE>/test/peer/auto/older/update_both
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/auto/older/update_both from file db.
 Removing directory <TESTBASE>/test/peer/auto/older 0
 Removing directory <TESTBASE>/test/peer/auto 0
