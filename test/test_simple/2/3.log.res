@@ -11,7 +11,7 @@ Adding peer: peer
 Adding peer: other
 Check peername 
 Check peername 
-Running in-sync check for local <-> peer for file /export/home/dennis/Projects/csync2/csync2/test/test/local.
+Running in-sync check for local <-> peer for file <TESTBASE>/test/local.
 Connecting to host peer (PLAIN) ...
 Connecting to localhost:30861 
 CONN peer < CONFIG 
@@ -25,28 +25,28 @@ CONN peer < HELLO local
 CONN peer > 'OK (cmd_finished).'
 CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
 
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test'
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/.Test
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	<TESTBASE>/test/peer/.Test'
+db_sql_list_file local <-> peer <TESTBASE>/test/peer/.Test
+D	local	peer	<TESTBASE>/test/peer/.Test
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4	/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all'
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/new_file 'N' all
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4	<TESTBASE>/test/peer/new_file 'N' all'
+db_sql_list_file local <-> peer <TESTBASE>/test/peer/new_file 'N' all
+D	local	peer	<TESTBASE>/test/peer/new_file 'N' all
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	/export/home/dennis/Projects/csync2/csync2/test/test/peer/A'
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer/A
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer/A
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	<TESTBASE>/test/peer/A'
+db_sql_list_file local <-> peer <TESTBASE>/test/peer/A
+D	local	peer	<TESTBASE>/test/peer/A
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	/export/home/dennis/Projects/csync2/csync2/test/test/peer'
-db_sql_list_file local <-> peer /export/home/dennis/Projects/csync2/csync2/test/test/peer
-D	local	peer	/export/home/dennis/Projects/csync2/csync2/test/test/peer
-'/export/home/dennis/Projects/csync2/csync2/test/test/local' is different:
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	<TESTBASE>/test/peer'
+db_sql_list_file local <-> peer <TESTBASE>/test/peer
+D	local	peer	<TESTBASE>/test/peer
+'<TESTBASE>/test/local' is different:
 >>> v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir peer
 >>> --- local
 CONN peer > 'OK (cmd_finished).'

@@ -5,19 +5,19 @@ Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
 db_schema_version: 2
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
-New file: /export/home/dennis/Projects/csync2/csync2/test/test/local
-csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local /export/home/dennis/Projects/csync2/csync2/test/test/local
-mark other operation: 'MKDIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-mark other operation: 'MKDIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows matched: 0
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
-New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/A
-csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/A /export/home/dennis/Projects/csync2/csync2/test/test/local/A
-mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/A' '-'.
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/A' '-'.
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/A rows matched: 0
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+Checking <TESTBASE>/test/* ..
+New file: <TESTBASE>/test/local
+csync_check_file_same_dev_inode <TESTBASE>/test/local <TESTBASE>/test/local
+mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local' '-'.
+mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local' '-'.
+Inserted/updated <TESTBASE>/test/local rows matched: 0
+Checking <TESTBASE>/test/local/* ..
+New file: <TESTBASE>/test/local/A
+csync_check_file_same_dev_inode <TESTBASE>/test/local/A <TESTBASE>/test/local/A
+mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/A' '-'.
+mark other operation: 'NEW' 'other:<TESTBASE>/test/local/A' '-'.
+Inserted/updated <TESTBASE>/test/local/A rows matched: 0
+Checking for deleted files <TESTBASE>/test recursive.
+csync_file_args: '<TESTBASE>/test' flags 65 

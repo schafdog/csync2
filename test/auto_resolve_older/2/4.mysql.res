@@ -1,6 +1,6 @@
-/export/home/dennis/Projects/csync2/csync2/test/test/local
-/export/home/dennis/Projects/csync2/csync2/test/test/local/auto
-/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
-other	/export/home/dennis/Projects/csync2/csync2/test/test/local	MKDIR	NULL	1
-other	/export/home/dennis/Projects/csync2/csync2/test/test/local/auto	MKDIR	NULL	1
-other	/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older	MKDIR	NULL	1
+<TESTBASE>/test/local
+<TESTBASE>/test/local/auto
+<TESTBASE>/test/local/auto/older
+other	<TESTBASE>/test/local	MKDIR	NULL	1
+other	<TESTBASE>/test/local/auto	MKDIR	NULL	1
+other	<TESTBASE>/test/local/auto/older	MKDIR	NULL	1
