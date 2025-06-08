@@ -234,6 +234,8 @@ echo "DAEMON:"
 # Process the raw daemon log and apply normalization
 if [ -f ${TESTNAME}/${LEVEL}/peer.log.raw ]; then
     cat ${TESTNAME}/${LEVEL}/peer.log.raw | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log
+    # Remove the raw log file after processing
+    rm ${TESTNAME}/${LEVEL}/peer.log.raw
 else
     # Fallback to existing log file if raw doesn't exist
     cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log.tmp
