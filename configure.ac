@@ -21,6 +21,9 @@ AC_PREREQ([2.63])
 AC_INIT([csync2],[2.1-rc2],[dennis@schafroth.com])
 AM_INIT_AUTOMAKE([1.11 -Wall foreign subdir-objects])
 
+# Canonical host detection (required for $host_os variable)
+AC_CANONICAL_HOST
+
 AC_CONFIG_SRCDIR(src/csync2.c)
 AC_CONFIG_HEADERS(src/config.h)
 
