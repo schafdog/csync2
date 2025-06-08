@@ -1,6 +1,6 @@
 
-MYTESTS:=$(patsubst %.test,%.sh,$(wildcard *.test))
-EXTRA_DIST = $(MYTESTS) $(check_SCRIPTS)
+# Test scripts are listed explicitly for portability
+EXTRA_DIST = $(check_SCRIPTS)
 
 check_SCRIPTS = auto_resolve_younger.sh auto_resolve_older.sh move_hardlink.sh test_maildir.sh test_new_modified_rm.sh \
 	new_hardlinks.sh test_different.sh test_dir_time.sh test_move_local.sh test_simple.sh test_remove_config.sh \
@@ -17,8 +17,8 @@ CONFIG_CLEAN_FILES=*.log *.dif
 clean-local:
 	rm -f *.log *.dif
 
-%.test:
-	./local.sh $@ || (echo "Test $@ failed" && exit 1)
+# Pattern rules replaced with explicit targets for portability
+# Use: make <testname> to run individual tests
 
 different:
 	./local.sh test_different.test

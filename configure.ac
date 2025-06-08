@@ -17,8 +17,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Process this file with autoconf to produce a configure script.
+AC_PREREQ([2.69])
 AC_INIT([csync2],[2.1-rc2],[dennis@schafroth.com])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([1.16 -Wall -Werror foreign subdir-objects])
 
 AC_CONFIG_SRCDIR(src/csync2.c)
 AC_CONFIG_HEADERS(src/config.h)
@@ -31,7 +32,7 @@ AC_CONFIG_HEADERS(src/config.h)
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_YACC
-AM_PROG_LEX
+AC_PROG_LEX([noyywrap])
 
 # Check for bison capabilities
 AC_MSG_CHECKING([if bison supports -W option])
@@ -67,7 +68,7 @@ else
 fi
 AC_SUBST([AM_YFLAGS])
 
-if test "$CC" == "clang"
+if test "$CC" = "clang"
 then
    CFLAGS="$CFLAGS -Qunused-arguments "
 fi
@@ -92,12 +93,15 @@ esac
 # check for large file support
 AC_SYS_LARGEFILE
 
-#if test -d ${srcdir}/.git; then
-#   sha=`git show --pretty=format:%H|head -1`
-#else
-#        sha=`head -1 ${srcdir}/ChangeLog|awk '{print $2}'`
-#fi
-#AC_DEFINE_UNQUOTED([CSYNC2_VERSION_SHA1], ["$sha"], [Git SHA1])
+# Generate version information
+AC_MSG_NOTICE([Generating version information...])
+if test -d "${srcdir}/.git" && command -v git >/dev/null 2>&1; then
+    GIT_VERSION=`cd "${srcdir}" && git describe --abbrev=60 --dirty --always 2>/dev/null || echo "unknown"`
+else
+    GIT_VERSION="unknown"
+fi
+AC_DEFINE_UNQUOTED([CSYNC2_GIT_VERSION], ["$GIT_VERSION"], [Git version string])
+AC_SUBST([GIT_VERSION])
 
 # Check for librsync.
 AC_ARG_WITH([librsync-source],
@@ -120,7 +124,7 @@ AC_ARG_ENABLE([sqlite],
 	[AS_HELP_STRING([--enable-sqlite],[enable/disable sqlite 2 support (default is disabled)])],
 	[], [ enable_sqlite=no ])
 
-if test "$enable_sqlite" == yes
+if test "$enable_sqlite" = yes
 then
         AC_CHECK_HEADERS([sqlite.h], , [AC_MSG_ERROR([[SQLite header not found; install libsqlite-dev and dependencies for SQLite 2 support]])])
 
@@ -131,7 +135,7 @@ AC_ARG_ENABLE([sqlite3],
 	[AS_HELP_STRING([--disable-sqlite3],[enable/disable sqlite3 support (default is enabled)])],
 	[], [ enable_sqlite3=yes ])
 
-if test "$enable_sqlite3" == yes
+if test "$enable_sqlite3" = yes
 then
         AC_CHECK_HEADERS([sqlite3.h], , [AC_MSG_WARN([[SQLite header not found; install libsqlite3-dev and dependencies for SQLite 3 support]])],
 [[
@@ -188,7 +192,7 @@ AC_ARG_ENABLE([redis],
 	[], [ enable_redis=yes ])
 
 
-if test "$enable_mysql" == yes
+if test "$enable_mysql" = yes
 then
    PKG_PROG_PKG_CONFIG
    PKG_CHECK_MODULES([MYSQL], [libmariadb >= 3.1.0 ] , [
@@ -196,7 +200,7 @@ then
       ])
 fi
 
-if test "$enable_postgres" == yes
+if test "$enable_postgres" = yes
 then
      PKG_PROG_PKG_CONFIG
      PKG_CHECK_MODULES([LIBPQ], [libpq >= 10.1.0 ] , [
