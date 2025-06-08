@@ -2,28 +2,28 @@ Found my alias peer localhost 30861
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MKDIR <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/new_file 'N' all user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
-Command: local: CREATE <TESTBASE>/test/peer/new_file 'N' all - 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/new_file 'N' all user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: CREATE <TESTBASE>/test/peer/new_file 'N' all - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 daemon CREATE <TESTBASE>/test/peer/new_file 'N' all 1 0
 Updated(create) local:<TESTBASE>/test/peer/new_file 'N' all  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/new_file 'N' all.link user/group 1234 1000 dennis schafroth 41471 - 16 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/new_file 'N' all.link user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: MKLINK <TESTBASE>/test/peer/new_file 'N' all.link new_file 'N' all        
 Running check for <TESTBASE>/test/peer/new_file 'N' all.link ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all.link 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.link.
 Updated(mklink) local:<TESTBASE>/test/peer/new_file 'N' all.link new_file 'N' all 
-Command: local: SETOWN <TESTBASE>/test/peer/new_file 'N' all.link user/group 1234 1000 dennis schafroth 41471 - 16 xxxxxxxx
+Command: local: SETOWN <TESTBASE>/test/peer/new_file 'N' all.link user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/new_file 'N' all.link ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all.link 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.link.
@@ -35,20 +35,20 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MOD <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/bad.link user/group 1234 1000 dennis schafroth 41471 - 7 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/bad.link user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: MKLINK <TESTBASE>/test/peer/bad.link missing        
 Running check for <TESTBASE>/test/peer/bad.link ...
 Checking for modified files <TESTBASE>/test/peer/bad.link 
 Checking for deleted files <TESTBASE>/test/peer/bad.link.
 Updated(mklink) local:<TESTBASE>/test/peer/bad.link missing 
-Command: local: SETOWN <TESTBASE>/test/peer/bad.link user/group 1234 1000 dennis schafroth 41471 - 7 xxxxxxxx
+Command: local: SETOWN <TESTBASE>/test/peer/bad.link user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/bad.link ...
 Checking for modified files <TESTBASE>/test/peer/bad.link 
 Checking for deleted files <TESTBASE>/test/peer/bad.link.
@@ -60,7 +60,7 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: STAT <TESTBASE>/test/peer user/group        
+Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>    
 Command: local: DEL <TESTBASE>/test/peer         
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
@@ -72,13 +72,13 @@ Running check for <TESTBASE>/test/peer/new_file 'N' all.link ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all.link 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.link.
 Removing file <TESTBASE>/test/peer/new_file 'N' all.link
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/new_file 'N' all.link from file db.
 Running check for <TESTBASE>/test/peer/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 Removing file <TESTBASE>/test/peer/new_file 'N' all
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
 Running check for <TESTBASE>/test/peer/bad.link ...
 Checking for modified files <TESTBASE>/test/peer/bad.link 

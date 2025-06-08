@@ -2,8 +2,8 @@ Found my alias peer localhost 30861
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MKDIR <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
@@ -14,9 +14,9 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: SIG <TESTBASE>/test/peer/different user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
-Command: local: PATCH <TESTBASE>/test/peer/different - 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/different user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: PATCH <TESTBASE>/test/peer/different - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 mark other operation: 'NEW' 'local:<TESTBASE>/test/peer/different' '-'.
@@ -31,8 +31,8 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer/different user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
-Command: local: PATCH <TESTBASE>/test/peer/different - 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/different user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: PATCH <TESTBASE>/test/peer/different - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 Checking for deleted files <TESTBASE>/test/peer/different.
@@ -49,12 +49,12 @@ Command: local: FLUSH <TESTBASE>/test/peer/different
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 Checking for deleted files <TESTBASE>/test/peer/different.
-Command: local: SIG <TESTBASE>/test/peer/different user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
-Command: local: PATCH <TESTBASE>/test/peer/different - 1234 1000 dennis schafroth 33188 - 4 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/different user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: PATCH <TESTBASE>/test/peer/different - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 Checking for deleted files <TESTBASE>/test/peer/different.
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Updated(patch) local:<TESTBASE>/test/peer/different  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
@@ -63,15 +63,15 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MOD <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
-Command: local: MOD <TESTBASE>/test/peer/tmp - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer/tmp - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/tmp ...
 Checking for modified files <TESTBASE>/test/peer/tmp 
 mark other operation: 'MKDIR' 'local:<TESTBASE>/test/peer/tmp' '-'.
@@ -86,6 +86,6 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: STAT <TESTBASE>/test/peer user/group        
+Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>    
 Command: local: BYE          
 goto nofork.

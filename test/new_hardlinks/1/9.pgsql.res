@@ -1,4 +1,3 @@
-----------------------------------------------------------------
  <TESTBASE>/test/local
  <TESTBASE>/test/local/new
  <TESTBASE>/test/local/new/hardlinked
@@ -11,7 +10,6 @@
  <TESTBASE>/test/local/new/was_hardlink
 (10 rows)
 
-----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+-----
  other    | <TESTBASE>/test/local                  | MKDIR     |                                                                             |   1
  other    | <TESTBASE>/test/local/new              | MKDIR     |                                                                             |   1
  other    | <TESTBASE>/test/local/new/new_file     | NEW       |                                                                             |   2

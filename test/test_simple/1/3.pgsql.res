@@ -1,11 +1,9 @@
-----------------------------------------------------------------
  <TESTBASE>/test/local
  <TESTBASE>/test/local/A
  <TESTBASE>/test/local/new_file 'N' all
  <TESTBASE>/test/local/.Test
 (4 rows)
 
-----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
  other    | <TESTBASE>/test/local                  | MKDIR     |       |  1
  other    | <TESTBASE>/test/local/A                | NEW       |       |  2
  other    | <TESTBASE>/test/local/new_file 'N' all | NEW       |       |  2
