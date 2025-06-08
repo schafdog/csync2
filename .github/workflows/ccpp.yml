@@ -12,7 +12,7 @@ jobs:
     - name: Update apt
       run: sudo apt-get update
     - name: Install dependencies
-      run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl librsync-dev libhiredis-dev libbsd-dev
+      run: sudo apt-get install -y flex bison libsqlite3-dev libmariadb-dev libpq-dev libgnutls28-dev openssl librsync-dev libhiredis-dev libbsd-dev postgresql
     - name: autogen
       run: ./autogen.sh
     - name: configure
