@@ -84,7 +84,7 @@ Updated(mod) local:<TESTBASE>/test/peer/Maildir/tmp
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/tmp/123 <TESTBASE>/test/peer/Maildir/cur/123,Sab        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/tmp/123 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/123,Sab 1
-SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/123,Sab',substring(filename,74)) WHERE filename = '<TESTBASE>/test/peer/Maildir/tmp/123' or filename like '<TESTBASE>/test/peer/Maildir/tmp/123/%'
+SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/123,Sab',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/tmp/123' or filename like '<TESTBASE>/test/peer/Maildir/tmp/123/%'
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/tmp/123 <TESTBASE>/test/peer/Maildir/cur/123,Sab 
 Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur/123,Sab user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur/123,Sab user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
