@@ -7,8 +7,6 @@ mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/newdir' '-'.
-WARN: operation changed: MKDIR(1) => MKDIR(129)
 mark operation MKDIR -> RM peer:<TESTBASE>/test/local/newdir deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/newdir' '-'.
-WARN: operation changed: MKDIR(1) => MKDIR(129)
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/newdir deleted before syncing. Removing from dirty.
