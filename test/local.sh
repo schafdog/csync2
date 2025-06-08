@@ -1,4 +1,4 @@
-#!/usr/bin/env bash --login
+#!/usr/bin/env bash
 
 ./set_prefix.sh
 
