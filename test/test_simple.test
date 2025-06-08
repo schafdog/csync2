@@ -6,8 +6,8 @@ clean peer
 FILENAME="new_file 'N' all"
 mkdir -p "test/$NAME"
 echo "far" > "test/$NAME/$FILENAME"
-touch "test/$NAME/A"
-touch "test/$NAME/.Test"
+./portable_touch.sh "test/$NAME/A"
+./portable_touch.sh "test/$NAME/.Test"
 cmd x "New $NAME/$FILENAME"
 cmd T test/$NAME "List daemon" 
 rm -rf test/$NAME

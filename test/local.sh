@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash --login
 
 ./set_prefix.sh
 
@@ -91,12 +91,12 @@ function cmd {
 	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
+        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished | ./normalize_paths.sh >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
-    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
+    echo "select filename from file where hostname = 'local' order by filename COLLATE \"C\"; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename COLLATE \"C\", peername COLLATE \"C\";" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
     testing ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
 	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
@@ -150,8 +150,8 @@ function daemon {
     CMD="$1"
     echo $DCFG $DNAME
     mkdir  -p $TESTNAME/${LEVEL}
-    if [ "$CMD" == "d" ] ; then 
-	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > ${TESTNAME}/${LEVEL}/$DCFG.log  2>&1 &
+    if [ "$CMD" == "d" ] ; then
+	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG 2>&1 | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/$DCFG.log &
 	echo "$!" > ${DCFG}.pid
     elif [ "$CMD" == "m" ] ; then 
 	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -E${DEBUG}B .inotify_${DCFG}.log  > ${TESTNAME}/${LEVEL}/${DCFG}_monitor.log  2>&1 &
@@ -224,7 +224,7 @@ for d in $* ; do
     fi
 done
 echo "DAEMON:"
-cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection > ${TESTNAME}/${LEVEL}/peer.log.tmp
+cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log.tmp
 mv ${TESTNAME}/${LEVEL}/peer.log.tmp ${TESTNAME}/${LEVEL}/peer.log
 testing ${TESTNAME}/${LEVEL}/peer.log
 ./compare_sql.sh $TESTNAME/${LEVEL}

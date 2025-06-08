@@ -1,1 +1,1 @@
-grep -v "peername	filename	operation	other	op" |grep -v "filename"
+grep -v "peername	filename	operation	other	op" |grep -v "filename" | ./normalize_paths.sh

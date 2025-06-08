@@ -15,7 +15,7 @@ mkdir -p test/$NAME/tmp
 sleep 1
 mkdir -p test/$PEER/tmp
 cmd x "Both updated with new dir (both dirty)"
-touch  test/$PEER/tmp
+./portable_touch.sh test/$PEER/tmp
 cmd x "Peer touch (both dirty)"
 rm -rf test/$NAME
 rm -rf test/$PEER

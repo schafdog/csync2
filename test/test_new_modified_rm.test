@@ -10,7 +10,7 @@ rm test/$NAME/A
 mkdir test/$NAME/newdir
 cmd c "newdir newdir" 
 sleep 1
-touch test/$NAME/newdir
+./portable_touch.sh test/$NAME/newdir
 cmd c "modified newdir, but still new"
 sleep 1
 rmdir test/$NAME/newdir

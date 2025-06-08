@@ -11,7 +11,7 @@ mkdir -p test/$NAME/Maildir/cur
 mkdir -p test/$NAME/Maildir/new
 mkdir -p test/$NAME/Maildir/tmp
 mkdir -p test/$NAME/Maildir/.Trash/cur
-touch -m -d "2020-06-01" test/$NAME/Maildir/*
+./portable_touch.sh -m -d "2020-06-01" test/$NAME/Maildir/*
 #
 cmd x "Setup Maildir"
 sleep 1
@@ -20,7 +20,7 @@ CURFILE=${FILE}:2,
 FILE2=2_${FILE}
 CURPATH=
 echo NewMail > test/$NAME/Maildir/tmp/${FILE}
-touch -m -d "2020-06-08" test/$NAME/Maildir/tmp/${FILE} test/$NAME/Maildir/tmp
+./portable_touch.sh -m -d "2020-06-08" test/$NAME/Maildir/tmp/${FILE} test/$NAME/Maildir/tmp
 sleep 1
 mv test/$NAME/Maildir/tmp/${FILE} test/$NAME/Maildir/new/${FILE}
 cmd x "New Maildir/new/${FILE} with transit in tmp "

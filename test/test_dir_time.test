@@ -13,7 +13,7 @@ cmd c "New dir timestamp due to file (check)"
 cmd u "New dir timestamp due to file (update)"
 #
 sleep 1
-touch test/$NAME/usr/local
+./portable_touch.sh test/$NAME/usr/local
 cmd m "New dir timestamp (mark)"
 cmd u "New dir timestamp (update)"
 #

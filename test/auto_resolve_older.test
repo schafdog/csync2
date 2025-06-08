@@ -9,18 +9,18 @@ LDIR_TEST=${LDIR}/auto/${TEST}
 PDIR=test/peer
 PDIR_TEST=${PDIR}/auto/${TEST}
 mkdir -p ${LDIR_TEST}
-find ${LDIR} -depth -exec touch -m -d "2021-06-08 20:00:00" {} \;
+find ${LDIR} -depth -exec ./portable_touch.sh -m -d "2021-06-08 20:00:00" {} \;
 cmd c "3 create directories (check)"
 cmd u "4 create directories (update)"
 echo "peer older" > ${PDIR_TEST}/update_both
-find ${PDIR} -depth -exec touch -m -d "2020-06-08 20:00:00" {} \;
+find ${PDIR} -depth -exec ./portable_touch.sh -m -d "2020-06-08 20:00:00" {} \;
 echo "local younger" > ${LDIR_TEST}/update_both
-find ${LDIR} -depth -exec touch -m -d "2021-06-08 20:00:00" {} \;
+find ${LDIR} -depth -exec ./portable_touch.sh -m -d "2021-06-08 20:00:00" {} \;
 cmd c "5 Check local (autoresolve failed)"
 cmd u "6 Fail to autoresolve (not older)"
 echo "peer younger" > ${PDIR_TEST}/update_both
-find ${PDIR} -depth -exec touch -m -d "2021-07-09 20:00:00" {} \;
-find ${LDIR} -depth -exec touch -m -d "2021-07-08 20:00:00" {} \;
+find ${PDIR} -depth -exec ./portable_touch.sh -m -d "2021-07-09 20:00:00" {} \;
+find ${LDIR} -depth -exec ./portable_touch.sh -m -d "2021-07-08 20:00:00" {} \;
 cmd c "7 Check local (${TEST})"
 cmd u "8 Update auto (older success)"
 rm -rf test/local

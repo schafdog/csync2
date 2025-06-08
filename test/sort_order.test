@@ -21,7 +21,7 @@ cmd M "Mark (after delete)"
 cmd u "New dir timestamp due to file (update)"
 #
 sleep 1
-touch test/$NAME/usr/local
+./portable_touch.sh test/$NAME/usr/local
 sleep 2
 cmd M "List dirty"
 cmd m "New dir timestamp (mark)"
