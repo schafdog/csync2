@@ -9,12 +9,12 @@ sleep 1
 rm test/$NAME/A
 mkdir test/$NAME/newdir
 cmd c "newdir newdir" 
-sleep 1
 ./portable_touch.sh test/$NAME/newdir
+sleep 1
 cmd c "modified newdir, but still new"
-sleep 1
 rmdir test/$NAME/newdir
-cmd c "rm newdir (removed from dirty)"
 sleep 1
+cmd c "rm newdir (removed from dirty)"
 rm -rf test/$NAME
+sleep 1
 cmd c "rm test/$NAME (removed from dirty)"
