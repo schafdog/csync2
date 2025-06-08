@@ -20,7 +20,7 @@ jobs:
     - name: make
       run: make
     - name: Make DB
-      run: cd test && ./update_database_collation.sh
+      run: cd test && PSQL_ADMIN="-U postgres" ./update_database_collation.sh
     - name: make check
       run: cd test && make check
     - name: show errors
