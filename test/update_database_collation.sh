@@ -23,7 +23,9 @@ echo -e "${GREEN}Using collation: $COLLATION${NC}"
 # PostgreSQL connection settings
 # Use current user for database management operations
 PSQL_ADMIN=${PSQL_ADMIN:-"psql -h localhost -U postgres"}
-echo "ADMIN: $PSQL_ADMIN"
+# Get the current user for database ownership
+DB_USER=${PGUSER:-$USER}
+echo "ADMIN: $PSQL_ADMIN host:port $POSTGRES_HOST $POSTGRES_PORT DB_USER: $DB_USER USER: $USER"
 # Use csync2 user for schema operations (matching test infrastructure)
 export PGPASSWORD=csync238
 PSQL_CSYNC2="psql -h localhost"
@@ -61,8 +63,6 @@ recreate_database() {
     echo -e "${GREEN}  ✓ Database $dbname recreated successfully${NC}"
 }
 
-# Get the current user for database ownership
-DB_USER=${PGUSER:-$USER}
 # Recreate both test databases
 recreate_database "csync2_local" "$DB_USER"
 recreate_database "csync2_peer" "$DB_USER"
