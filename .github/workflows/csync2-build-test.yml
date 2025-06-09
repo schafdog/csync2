@@ -197,7 +197,7 @@ jobs:
           # Run a simple test
           if [ -f test_simple.test ]; then
             echo "Running simple test..."
-            timeout 120 make check || echo "Test completed with status $? && cat test-suite.log"
+            timeout 120 make check || echo "Test completed with status $?" && cat test-suite.log && exit 1
           else
             echo "No test_simple.test found"
           fi
