@@ -38,12 +38,14 @@ jobs:
     - name: make
       run: make
     - name: Make DB
-      run: cd test && PGPASSWORD=postgres./update_database_collation.sh
+      run: cd test && ./update_database_collation.sh 
       env:
           # The hostname used to communicate with the PostgreSQL service container
           POSTGRES_HOST: localhost
           PGPASSWORD: postgres
           POSTGRES_PORT: 5432
+          POSTGRES_PASSWD: postgres
+          PSQL_ADMIN: -h $POSTGRES_HOST -U postgres
     - name: make check
       run: cd test && make check
     - name: show errors
