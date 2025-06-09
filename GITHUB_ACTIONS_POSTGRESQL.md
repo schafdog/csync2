@@ -99,24 +99,20 @@ services:
 ### Database Setup
 
 ```bash
-# Create csync2 user
-PGPASSWORD=csync238 psql -h localhost -U postgres -c "
-  CREATE USER csync2 WITH PASSWORD 'csync238';
-  ALTER USER csync2 CREATEDB;
-"
+# Create csync2 user (separate commands to avoid transaction issues)
+PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2 WITH PASSWORD 'csync238';"
+PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2 CREATEDB;"
 
-# Create databases with C collation (important for csync2!)
-PGPASSWORD=csync238 psql -h localhost -U postgres -c "
-  CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
-  CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
-"
+# Create databases with C collation (separate commands - important for csync2!)
+PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
 
-# Grant permissions
-PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "
-  GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;
-  GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;
-"
+# Grant permissions (separate commands)
+PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;"
+PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
 ```
+
+**Important**: Use separate `psql` commands for `CREATE DATABASE` to avoid "CREATE DATABASE cannot run inside a transaction block" errors.
 
 ## Best Practices
 
@@ -229,6 +225,18 @@ time psql -h localhost -U csync2 -d csync2_local -c "
 
 4. **Collation issues**: Different sorting behavior
    - Solution: Use `LC_COLLATE='C'` for consistent sorting
+
+5. **"CREATE DATABASE cannot run inside a transaction block"**
+   - **Problem**: Multiple SQL commands in one `psql` call can create implicit transactions
+   - **Solution**: Use separate `psql` commands for `CREATE DATABASE`
+   ```bash
+   # ❌ Wrong - can cause transaction block error
+   psql -c "CREATE USER test; CREATE DATABASE testdb;"
+
+   # ✅ Correct - separate commands
+   psql -c "CREATE USER test;"
+   psql -c "CREATE DATABASE testdb;"
+   ```
 
 ### Debugging Commands
 
