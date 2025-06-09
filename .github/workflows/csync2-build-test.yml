@@ -113,7 +113,7 @@ jobs:
         ./configure \
           --enable-postgres \
           --enable-mysql \
-          --enable-sqlite \
+          --enable-sqlite3 \
           --enable-redis \
           --with-libpq-includes=/usr/include/postgresql \
           --with-libpq-libs=/usr/lib/x86_64-linux-gnu
