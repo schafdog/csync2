@@ -45,7 +45,7 @@ jobs:
           PGPASSWORD: postgres
           POSTGRES_PORT: 5432
           POSTGRES_PASSWD: postgres
-          PSQL_ADMIN: -h $POSTGRES_HOST -U postgres
+          PSQL_ADMIN: psql -h localhost -U postgres
     - name: make check
       run: cd test && make check
     - name: show errors
