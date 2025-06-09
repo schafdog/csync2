@@ -54,35 +54,34 @@ jobs:
         PGPASSWORD: csync238
       run: |
         echo "=== Setting up PostgreSQL for csync2 ==="
-        
+
         # Wait for PostgreSQL to be ready
         until pg_isready -h localhost -p 5432 -U postgres; do
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
-        
-        # Create csync2 user and databases
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "
-          CREATE USER csync2 WITH PASSWORD 'csync238';
-          ALTER USER csync2 CREATEDB;
-        "
-        
-        # Create csync2 databases with C collation for consistent sorting
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "
-          CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
-          CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
-        "
-        
-        # Grant permissions
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "
-          GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;
-          GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;
-        "
-        
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "
-          GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2;
-          GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;
-        "
+
+        # Create csync2 user (separate commands to avoid transaction issues)
+        echo "Creating csync2 user..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2 WITH PASSWORD 'csync238';"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2 CREATEDB;"
+
+        # Create csync2 databases with C collation (separate commands)
+        echo "Creating csync2_local database..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+
+        echo "Creating csync2_peer database..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+
+        # Grant permissions on csync2_local
+        echo "Granting permissions on csync2_local..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
+
+        # Grant permissions on csync2_peer
+        echo "Granting permissions on csync2_peer..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
 
     - name: Verify PostgreSQL setup
       env:

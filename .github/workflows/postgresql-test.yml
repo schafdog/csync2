@@ -56,18 +56,16 @@ jobs:
         PGPASSWORD: postgres
       run: |
         echo "=== Creating test user and database ==="
-        
-        # Create a test user
-        psql -h localhost -U postgres -d testdb -c "
-          CREATE USER testuser WITH PASSWORD 'testpass';
-          ALTER USER testuser CREATEDB;
-        "
-        
-        # Create a test database
-        psql -h localhost -U postgres -c "
-          CREATE DATABASE csync2_test OWNER testuser;
-          GRANT ALL PRIVILEGES ON DATABASE csync2_test TO testuser;
-        "
+
+        # Create a test user (separate commands to avoid transaction issues)
+        echo "Creating test user..."
+        psql -h localhost -U postgres -d testdb -c "CREATE USER testuser WITH PASSWORD 'testpass';"
+        psql -h localhost -U postgres -d testdb -c "ALTER USER testuser CREATEDB;"
+
+        # Create a test database (separate command)
+        echo "Creating test database..."
+        psql -h localhost -U postgres -c "CREATE DATABASE csync2_test OWNER testuser;"
+        psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE csync2_test TO testuser;"
 
     - name: Test connection with test user
       env:
