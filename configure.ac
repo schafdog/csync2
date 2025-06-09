@@ -19,8 +19,8 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.63])
 AC_INIT([csync2],[2.1-rc2],[dennis@schafroth.com])
-AM_INIT_AUTOMAKE
-AM_SILENT_RULES([yes])([1.11 -Wall foreign subdir-objects])
+AM_INIT_AUTOMAKE([1.11 -Wall foreign subdir-objects])
+AM_SILENT_RULES([yes])
 
 # Canonical host detection (required for $host_os variable)
 AC_CANONICAL_HOST
@@ -187,14 +187,36 @@ AC_ARG_WITH([librsync-source],
 	AS_HELP_STRING([--with-librsync-source=source-tar-file],
 		[build this librsync and link statically against it (hack! hack!)]),
 	AC_SUBST([librsync_source_file], $withval),
+	[
 	CFLAGS_backup="${CFLAGS}"
 	LDFLAGS_backup="${LDFLAGS}"
-	CFLAGS="-I/opt/homebrew/include/ ${CFLAGS}"
-	LDFLAGS="-L/opt/homebrew/lib/ ${LDFLAGS}"
+
+	# Platform-specific library paths for librsync
+	case "$host_os" in
+	    darwin*)
+	        # macOS: Try Homebrew paths if they exist
+	        if test -d "/opt/homebrew/include"; then
+	            CFLAGS="-I/opt/homebrew/include ${CFLAGS}"
+	        elif test -d "/usr/local/include"; then
+	            CFLAGS="-I/usr/local/include ${CFLAGS}"
+	        fi
+	        if test -d "/opt/homebrew/lib"; then
+	            LDFLAGS="-L/opt/homebrew/lib ${LDFLAGS}"
+	        elif test -d "/usr/local/lib"; then
+	            LDFLAGS="-L/usr/local/lib ${LDFLAGS}"
+	        fi
+	        ;;
+	    *)
+	        # Linux and other platforms: rely on pkg-config and standard paths
+	        ;;
+	esac
+
 	AC_CHECK_LIB([rsync], [rs_sig_file], , [AC_MSG_ERROR(librsync is required)])
-	## reset CFLAGS and LDFLAGS
-#	CFLAGS="${CFLAGS_backup}"
-#a	LDFLAGS="${LDFLAGS_backup}"
+
+	# Reset CFLAGS and LDFLAGS to avoid polluting other checks
+	CFLAGS="${CFLAGS_backup}"
+	LDFLAGS="${LDFLAGS_backup}"
+	]
 )
 
 AM_CONDITIONAL([PRIVATE_LIBRSYNC], [test -n "$librsync_source_file"])
