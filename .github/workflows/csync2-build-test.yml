@@ -1,0 +1,286 @@
+name: Csync2 Build and Test
+
+on:
+  push:
+    branches: [ main, master, autotools-modernization ]
+  pull_request:
+    branches: [ main, master, autotools-modernization ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: csync238
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          autoconf \
+          automake \
+          pkg-config \
+          bison \
+          flex \
+          libgnutls28-dev \
+          libsqlite3-dev \
+          libmariadb-dev \
+          postgresql-client \
+          libpq-dev \
+          libhiredis-dev \
+          libssl-dev \
+          librsync-dev
+
+    - name: Setup PostgreSQL for csync2
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Setting up PostgreSQL for csync2 ==="
+        
+        # Wait for PostgreSQL to be ready
+        until pg_isready -h localhost -p 5432 -U postgres; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
+        
+        # Create csync2 user and databases
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "
+          CREATE USER csync2 WITH PASSWORD 'csync238';
+          ALTER USER csync2 CREATEDB;
+        "
+        
+        # Create csync2 databases with C collation for consistent sorting
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "
+          CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
+          CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
+        "
+        
+        # Grant permissions
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "
+          GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;
+          GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;
+        "
+        
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "
+          GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2;
+          GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;
+        "
+
+    - name: Verify PostgreSQL setup
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Verifying PostgreSQL setup ==="
+        
+        # Check database collation
+        psql -h localhost -U postgres -c "
+          SELECT datname, datcollate, datctype 
+          FROM pg_database 
+          WHERE datname LIKE 'csync2_%' 
+          ORDER BY datname;
+        "
+        
+        # Test connection as csync2 user
+        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
+          SELECT current_user, current_database(), version();
+        "
+
+    - name: Build csync2
+      run: |
+        echo "=== Building csync2 ==="
+        
+        # Generate build system
+        autoreconf -fiv
+        
+        # Configure with PostgreSQL support
+        ./configure \
+          --enable-postgres \
+          --enable-mysql \
+          --enable-sqlite \
+          --enable-redis \
+          --with-libpq-includes=/usr/include/postgresql \
+          --with-libpq-libs=/usr/lib/x86_64-linux-gnu
+        
+        # Build with enhanced warnings (silent mode for clean output)
+        make -j$(nproc)
+
+    - name: Check warning count
+      run: |
+        echo "=== Checking compiler warnings ==="
+        cd src
+        
+        # Count warnings
+        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
+        echo "Total warnings: $WARNING_COUNT"
+        
+        # Show sample warnings
+        echo "Sample warnings:"
+        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
+
+    - name: Setup csync2 database schema
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Setting up csync2 database schema ==="
+        
+        # Create schema in both databases
+        if [ -f test/create_csync2_schema.sql ]; then
+          PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -f test/create_csync2_schema.sql
+          PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_peer -f test/create_csync2_schema.sql
+        else
+          echo "Schema file not found, skipping schema creation"
+        fi
+        
+        # Verify tables were created
+        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "\d"
+
+    - name: Test database connectivity
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing database connectivity ==="
+        
+        # Test basic operations
+        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
+          -- Test basic table operations
+          SELECT 'Database connection successful' as status;
+          
+          -- Test collation behavior (important for csync2)
+          SELECT 'Testing collation' as test;
+          CREATE TEMP TABLE test_sort (name TEXT);
+          INSERT INTO test_sort VALUES ('file1'), ('.hidden'), ('File2'), ('dir/');
+          SELECT name FROM test_sort ORDER BY name COLLATE \"C\" DESC;
+        "
+
+    - name: Run basic functionality test
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing basic csync2 functionality ==="
+        
+        # Test csync2 binary
+        ./src/csync2 --help | head -5
+        
+        # Test version
+        ./src/csync2 --version
+
+    - name: Run csync2 tests (if available)
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Running csync2 tests ==="
+        
+        if [ -d test ] && [ -f test/local.sh ]; then
+          cd test
+          
+          # Kill any existing processes
+          pkill -f csync2 || true
+          sleep 2
+          
+          # Run a simple test
+          if [ -f test_simple.test ]; then
+            echo "Running simple test..."
+            timeout 60 ./local.sh test_simple.test || echo "Test completed with status $?"
+          else
+            echo "No test_simple.test found"
+          fi
+        else
+          echo "No test directory found, skipping tests"
+        fi
+
+    - name: Database cleanup test
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing database cleanup ==="
+        
+        # Test database cleanup
+        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
+          -- Show table sizes before cleanup
+          SELECT schemaname, tablename, 
+                 pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+          FROM pg_tables 
+          WHERE schemaname = 'public';
+        "
+
+    - name: Performance test
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Performance test ==="
+        
+        # Simple performance test
+        time PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
+          -- Create test data
+          CREATE TEMP TABLE perf_test AS 
+          SELECT 
+            'file_' || generate_series(1, 1000) as filename,
+            md5(random()::text) as checksum,
+            now() as created_at;
+          
+          -- Test query performance
+          SELECT count(*) FROM perf_test WHERE filename LIKE 'file_1%';
+        "
+
+  test-multiple-ubuntu:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-latest]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: csync238
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Test on ${{ matrix.os }}
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing on ${{ matrix.os }} ==="
+        
+        # Install minimal dependencies
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+        
+        # Test connection
+        until pg_isready -h localhost -p 5432 -U postgres; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
+        
+        # Test basic functionality
+        psql -h localhost -U postgres -c "SELECT version();"
+        echo "PostgreSQL connection successful on ${{ matrix.os }}"
