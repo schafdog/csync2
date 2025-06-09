@@ -29,7 +29,7 @@
 
 typedef void (*free_fn_t)(void*);
 
-BUF_P buffer_init() {
+BUF_P buffer_init(void) {
 	return buffer_init_size(BUFFER_LEN);
 }
 ;
@@ -99,7 +99,7 @@ char* buffer_quote(BUF_P handle, const char *cpy) {
 		buffer_add(handle, out);
 		return out;
 	}
-	return "NULL";
+	return buffer_strdup(handle, "NULL");
 }
 
 void buffer_destroy(BUF_P handle) {

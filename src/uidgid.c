@@ -7,6 +7,7 @@
 #include <grp.h>
 #include <unistd.h>
 #include <string.h>
+#include "uidgid.h"
 
 /* Missing on DARWIN */
 #ifndef _SC_GETPW_R_SIZE_MAX

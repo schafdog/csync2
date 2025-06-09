@@ -43,7 +43,7 @@ struct db_conn_t {
 	const char* (*errmsg)(db_conn_p conn);
 	const char* (*escape)(db_conn_p conn, const char *string);
 	void (*free)(db_conn_p conn, const char *escaped);
-	void (*shutdown)();
+	void (*shutdown)(void);
 	void (*mark)(db_conn_p conn, char *active_peerlist, const char *realname, int recursive);
 
 	// Update functions (deprecated)
@@ -133,7 +133,7 @@ struct db_stmt_t {
 //struct db_conn *db_conn;
 
 int db_open(const char *file, int type, db_conn_p *db);
-void db_close();
+void db_close(void);
 void db_conn_close(db_conn_p conn);
 
 int db_exec(db_conn_p conn, const char *exec);

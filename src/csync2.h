@@ -396,12 +396,12 @@ extern int csync_copy_file(int fd_in, int fd_out);
 extern int csync_dir_count(db_conn_p db, filename_p filename);
 
 /* ringbuffer.c */
-extern void  ringbuffer_init();
+extern void  ringbuffer_init(void);
 extern char *ringbuffer_malloc(size_t length);
 extern char *ringbuffer_strdup(const char *cpy);
 void         ringbuffer_add(const char* string, void (*free_fn) (void *) );
-extern void  ringbuffer_destroy();
-extern int   ringbugger_getcount();
+extern void  ringbuffer_destroy(void);
+extern int   ringbugger_getcount(void);
 
 /* getrealfn.c */
 
@@ -595,7 +595,7 @@ static inline void textlist_free_struct(struct textlist *listhandle)
     }
 }
 
-void csync_config_destroy();
+void csync_config_destroy(void);
 
 /* config structures */
 

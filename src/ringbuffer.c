@@ -31,7 +31,7 @@ static char *ringbuffer[RINGBUFFER_LEN];
 static free_fn_t free_fn_buffer[RINGBUFFER_LEN];
 static int ringbuffer_counter = 0;
 
-void ringbuffer_init() {
+void ringbuffer_init(void) {
 	int i;
 	for (i = 0; i < RINGBUFFER_LEN; i++) {
 		ringbuffer[i] = 0;
@@ -71,7 +71,7 @@ char* ringbuffer_strdup(const char *cpy) {
 	return out;
 }
 
-void ringbuffer_destroy() {
+void ringbuffer_destroy(void) {
 	int index;
 	for (index = 0; index < RINGBUFFER_LEN; index++) {
 		if (ringbuffer[index]) {
@@ -82,6 +82,6 @@ void ringbuffer_destroy() {
 	ringbuffer_counter = 0;
 }
 
-int ringbuffer_getcount() {
+int ringbuffer_getcount(void) {
 	return ringbuffer_counter;
 }
