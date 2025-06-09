@@ -176,10 +176,10 @@ jobs:
         echo "=== Testing basic csync2 functionality ==="
         
         # Test csync2 binary
-        ./src/csync2 --help | head -5
+        ./src/csync2 -V | head -5
         
         # Test version
-        ./src/csync2 --version
+        ./src/csync2 -V
 
     - name: Run csync2 tests (if available)
       env:
@@ -197,7 +197,7 @@ jobs:
           # Run a simple test
           if [ -f test_simple.test ]; then
             echo "Running simple test..."
-            timeout 60 ./local.sh test_simple.test || echo "Test completed with status $?"
+            timeout 120 make check || echo "Test completed with status $? && cat test-suite.log"
           else
             echo "No test_simple.test found"
           fi
