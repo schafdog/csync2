@@ -19,7 +19,8 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.63])
 AC_INIT([csync2],[2.1-rc2],[dennis@schafroth.com])
-AM_INIT_AUTOMAKE([1.11 -Wall foreign subdir-objects])
+AM_INIT_AUTOMAKE
+AM_SILENT_RULES([yes])([1.11 -Wall foreign subdir-objects])
 
 # Canonical host detection (required for $host_os variable)
 AC_CANONICAL_HOST
@@ -63,18 +64,93 @@ EOF
         AM_YFLAGS="-d"
     fi
 
+    # Test if yacc/bison supports %expect directive
+    AC_MSG_CHECKING([if yacc supports %expect directive])
+    cat > conftest_expect.y << 'EOF'
+%{
+int yylex(void);
+void yyerror(const char *s);
+%}
+%expect 1
+%token TEST
+%%
+start: TEST;
+%%
+void yyerror(const char *s) {}
+int yylex(void) { return 0; }
+EOF
+
+    if $YACC -d conftest_expect.y >/dev/null 2>&1; then
+        AC_MSG_RESULT([yes])
+        YACC_SUPPORTS_EXPECT=yes
+    else
+        AC_MSG_RESULT([no])
+        YACC_SUPPORTS_EXPECT=no
+    fi
+
     # Clean up test files
-    rm -f conftest.y conftest.tab.c conftest.tab.h y.tab.c y.tab.h
+    rm -f conftest.y conftest_expect.y conftest.tab.c conftest.tab.h y.tab.c y.tab.h conftest_expect.tab.c conftest_expect.tab.h
 else
     AC_MSG_RESULT([yacc not found])
     AM_YFLAGS="-d"
+    YACC_SUPPORTS_EXPECT=no
 fi
 AC_SUBST([AM_YFLAGS])
+AC_SUBST([YACC_SUPPORTS_EXPECT])
 
 if test "$CC" = "clang"
 then
    CFLAGS="$CFLAGS -Qunused-arguments "
 fi
+
+# Enable comprehensive compiler warnings
+AC_MSG_CHECKING([for compiler warning flags])
+WARNING_CFLAGS=""
+
+# Basic warning flags (supported by both GCC and Clang)
+for flag in \
+    -Wall \
+    -Wextra \
+    -Wformat=2 \
+    -Wformat-security \
+    -Wformat-nonliteral \
+    -Winit-self \
+    -Wmissing-include-dirs \
+    -Wno-switch-default \
+    -Wswitch-enum \
+    -Wunused \
+    -Wuninitialized \
+    -Wstrict-aliasing=2 \
+    -Wfloat-equal \
+    -Wundef \
+    -Wshadow \
+    -Wpointer-arith \
+    -Wbad-function-cast \
+    -Wcast-qual \
+    -Wcast-align \
+    -Wwrite-strings \
+    -Wstrict-prototypes \
+    -Wold-style-definition \
+    -Wmissing-prototypes \
+    -Wmissing-declarations \
+    -Wredundant-decls \
+    -Wnested-externs \
+    -Winline \
+    -Wdisabled-optimization \
+    -Wno-unused-parameter
+do
+    AC_MSG_CHECKING([whether $CC accepts $flag])
+    old_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $flag"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+        [AC_MSG_RESULT([yes]); WARNING_CFLAGS="$WARNING_CFLAGS $flag"],
+        [AC_MSG_RESULT([no])])
+    CFLAGS="$old_CFLAGS"
+done
+
+# Add warning flags to AM_CFLAGS instead of CFLAGS to avoid duplication
+AC_SUBST([WARNING_CFLAGS])
+AC_MSG_RESULT([enabled: $WARNING_CFLAGS])
 
 # macOS-specific checks
 case "$host_os" in
