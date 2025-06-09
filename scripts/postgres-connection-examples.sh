@@ -90,25 +90,29 @@ psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "
 
 # Create test user and database
 echo_info "Creating test user and database..."
+
+# Drop existing resources (separate commands to avoid transaction issues)
+echo_info "Cleaning up existing resources..."
+psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "DROP DATABASE IF EXISTS test_github_actions;" || true
+psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "DROP USER IF EXISTS test_user;" || true
+
+# Create test user (separate commands)
+echo_info "Creating test user..."
+psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "CREATE USER test_user WITH PASSWORD 'test_password';"
+psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "ALTER USER test_user CREATEDB;"
+
+# Create test database with C collation (separate command)
+echo_info "Creating test database with C collation..."
 psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "
-    -- Drop if exists (for idempotency)
-    DROP DATABASE IF EXISTS test_github_actions;
-    DROP USER IF EXISTS test_user;
-    
-    -- Create test user
-    CREATE USER test_user WITH PASSWORD 'test_password';
-    ALTER USER test_user CREATEDB;
-    
-    -- Create test database with C collation (important for csync2)
-    CREATE DATABASE test_github_actions 
-        OWNER test_user 
-        LC_COLLATE='C' 
-        LC_CTYPE='C' 
-        TEMPLATE template0;
-    
-    -- Grant permissions
-    GRANT ALL PRIVILEGES ON DATABASE test_github_actions TO test_user;
-"
+    CREATE DATABASE test_github_actions
+        OWNER test_user
+        LC_COLLATE='C'
+        LC_CTYPE='C'
+        TEMPLATE template0;"
+
+# Grant permissions (separate command)
+echo_info "Granting permissions..."
+psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "GRANT ALL PRIVILEGES ON DATABASE test_github_actions TO test_user;"
 
 # Test connection with new user
 echo_info "Testing connection with test user..."
@@ -234,10 +238,11 @@ psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "
 
 # Cleanup
 echo_info "=== Cleanup ==="
-psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "
-    DROP DATABASE IF EXISTS test_github_actions;
-    DROP USER IF EXISTS test_user;
-"
+echo_info "Dropping test database..."
+psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "DROP DATABASE IF EXISTS test_github_actions;" || true
+
+echo_info "Dropping test user..."
+psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -c "DROP USER IF EXISTS test_user;" || true
 
 # Clean up temporary files
 rm -f /tmp/test_script.sql /tmp/backup.sql
