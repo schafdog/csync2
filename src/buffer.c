@@ -59,12 +59,12 @@ void buffer_resize(BUF_P handle, int new_size) {
 }
 ;
 
-void buffer_add(BUF_P handle, const char *string) {
+void buffer_add(BUF_P handle, char *string) {
 	if (handle) {
 		if (handle->current >= handle->size) {
 			buffer_resize(handle, 2 * (handle->size + 1));
 		}
-		handle->buffer[handle->current] = (char*) string;
+		handle->buffer[handle->current] = string;
 		handle->current++;
 	} else {
 		csync_fatal(0, "buffer_add without handle %s", string);

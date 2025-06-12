@@ -63,22 +63,22 @@ int db_type = DB_SQLITE3;
 
 static char *file_config = 0;
 static char *cfgfile = 0;
-static char *dbdir = DBDIR;
-char *cfgname = "";
-char *active_grouplist = 0;
-char *active_peerlist = 0;
-char **active_peers = 0;
-char *update_format = 0;
-char *allow_peer = 0;
-int db_version = 1;
-int ip_version = AF_INET;
+static const char *dbdir = DBDIR;
+const char *g_cfgname = "";
+char *g_active_grouplist = 0;
+char *g_active_peerlist = 0;
+char **g_active_peers = 0;
+const char *g_update_format = 0;
+char *g_allow_peer = 0;
+int g_db_version = 1;
+int g_ip_version = AF_INET;
 
-extern int yyparse();
+extern int yyparse(void);
 extern FILE *yyin;
 
 char *log_file = 0;
 
-void csync_version() {
+static void csync_version(void) {
 	printf("\n"
 	PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
 	"LINBIT Information Technologies GmbH <http://www.linbit.com>\n"
@@ -91,7 +91,8 @@ void csync_version() {
 #endif
 			);
 }
-void help(char *cmd) {
+
+static void help(const char *cmd) {
 	csync_version();
 	printf("\n"
 			"This program is free software under the terms of the GNU GPL.\n"
@@ -214,7 +215,7 @@ void help(char *cmd) {
 	exit(1);
 }
 
-int create_keyfile(filename_p filename) {
+static int create_keyfile(filename_p filename) {
 	int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0600);
 	int rand = open("/dev/urandom", O_RDONLY);
 	char matrix[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
@@ -241,7 +242,7 @@ int create_keyfile(filename_p filename) {
 
 #define ERROR -1
 
-int csync_scan(char *buffer) {
+static int csync_scan(char *buffer) {
 	int i = 0;
 	while (buffer[i] != '\n' && buffer[i] != 0 && buffer[i] != ' ') {
 		i++;
@@ -249,7 +250,7 @@ int csync_scan(char *buffer) {
 	return i;
 }
 
-int csync_read_buffer(char *buffer, char *value) {
+static int csync_read_buffer(char *buffer, char *value) {
 
 	int match = csync_scan(buffer);
 	if (match > 0) {
@@ -365,7 +366,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			const char *patlist[1];
 			patlist[0] = file;
 			// Delay until we dont get more files or have enough and do it on common path
-			csync_update(db, myhostname, active_peers, (const char**) patlist, 1, ip_version, csync_update_host, flags);
+			csync_update(db, g_myhostname, g_active_peers, (const char**) patlist, 1, g_ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -429,7 +430,7 @@ static int csync_bind(char *service_port, int ip_version) {
 
 static char program_pid[256];
 
-void csync_openlog(int facility) {
+static void csync_openlog(int facility) {
 	sprintf(program_pid, "csync2(%d)", getpid());
 	openlog(program_pid, LOG_ODELAY, facility);
 }
@@ -517,13 +518,15 @@ int csync_get_checktxt_version(const char *value) {
 		if (value[1] == '2')
 			return 2;
 	}
-	return db_version;
+	// Weird
+	return g_db_version;
 }
-const char* csync_nop(const char *value) {
+
+static const char* csync_nop(const char *value) {
 	return value;
 }
 
-const char* csync_decode_v2(const char *value) {
+static const char* csync_decode_v2(const char *value) {
 	/* 
 	 int version = csync_get_checktxt_version(value);
 	 if (version == 1)
@@ -543,6 +546,7 @@ const char* (*db_decode)(const char *value);
 const char* (*db_encode)(const char *value);
 
 char **peers = NULL;
+
 char** parse_peerlist(char *peerlist) {
 	if (peerlist == NULL)
 		return peers;
@@ -580,9 +584,7 @@ int match_peer(char **active_peers, const char *peer) {
  Otherwise a long-running daemon running would be leaking
  **/
 
-void csync_config_destroy();
-
-void free_realname(char *real_name) {
+static void free_realname(char *real_name) {
 	if (real_name == NULL) {
 		return;
 	}
@@ -592,7 +594,7 @@ void free_realname(char *real_name) {
 	free(real_name);
 }
 
-int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
+static int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
 	int count = 0;
 	for (int i = 0; i < file_count; i++) {
 		char *real_name = getrealfn(files[i]);
@@ -614,18 +616,18 @@ int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames
 	return count;
 }
 
-void csync_realnames_free(char *files[], int count) {
+static void csync_realnames_free(char *files[], int count) {
 	for (int i = 0; i < count; i++) {
 		free(files[i]);
 	}
 }
 
-void select_recursive(char *db_encoded, char **where_rec) {
+static void select_recursive(char *db_encoded, char **where_rec) {
 	ASPRINTF(where_rec, " filename > '%s/' "
 			" and filename < '%s0'", db_encoded, db_encoded);
 }
 
-int csync_read_config(char *cfgname, int conn, int mode) {
+static int csync_read_config(const char *cfgname, int conn, int mode) {
 	if (cfgfile) {
 		ASPRINTF(&file_config, "%s", cfgfile);
 	} else if (!*cfgname) {
@@ -635,7 +637,7 @@ int csync_read_config(char *cfgname, int conn, int mode) {
 
 		for (i = 0; cfgname[i]; i++)
 			if (!(cfgname[i] >= '0' && cfgname[i] <= '9') && !(cfgname[i] >= 'a' && cfgname[i] <= 'z') && !(cfgname[i] == '_')) {
-				char *error = "Config names are limited to [a-z0-9_]+.\n";
+				const char *error = "Config names are limited to [a-z0-9_]+.\n";
 				if (mode & MODE_INETD)
 					conn_printf(conn, error);
 				else
@@ -656,7 +658,7 @@ int csync_read_config(char *cfgname, int conn, int mode) {
 	return 0;
 }
 
-int facility_from_string(const char *facility)
+static int facility_from_string(const char *facility)
 {
     if (strcmp(facility, "kern") == 0) return LOG_KERN;
     if (strcmp(facility, "user") == 0) return LOG_USER;
@@ -715,23 +717,23 @@ int main(int argc, char **argv) {
 			exit(0);
 			break;
 		case '1':
-			db_version = 1;
+			g_db_version = 1;
 			cmd_db_version = 1;
 			break;
 		case '0':
-			update_format = "v1-v2";
+			g_update_format = "v1-v2";
 			cmd_db_version = 1;
 			break;
 		case '2':
-			db_version = 2;
+			g_db_version = 2;
 			break;
 		case '4':
 			cmd_ip_version = 1;
-			ip_version = AF_INET;
+			g_ip_version = AF_INET;
 			break;
 		case '6':
 			cmd_ip_version = 1;
-			ip_version = AF_INET6;
+			g_ip_version = AF_INET6;
 			break;
 		case '9':
 			csync_facility = facility_from_string(optarg);
@@ -763,11 +765,11 @@ int main(int argc, char **argv) {
 			csync_port_cmdline = 1;
 			break;
 		case 'G':
-			active_grouplist = optarg;
+			g_active_grouplist = optarg;
 			break;
 		case 'P':
-			active_peerlist = optarg;
-			active_peers = parse_peerlist(active_peerlist);
+			g_active_peerlist = optarg;
+			g_active_peers = parse_peerlist(g_active_peerlist);
 			break;
 		case 'B':
 			db_blocking_mode = 0;
@@ -785,7 +787,7 @@ int main(int argc, char **argv) {
 			flags |= FLAG_INIT_RUN_STRAIGHT;
 			break;
 		case 'C':
-			cfgname = optarg;
+			g_cfgname = optarg;
 			break;
 		case 'K':
 			cfgfile = optarg;
@@ -795,7 +797,7 @@ int main(int argc, char **argv) {
 			dbdir = optarg;
 			break;
 		case 'N':
-			snprintf(myhostname, 256, "%s", optarg);
+			snprintf(g_myhostname, 256, "%s", optarg);
 			break;
 		case 'v':
 			csync_level_debug++;
@@ -899,7 +901,7 @@ int main(int argc, char **argv) {
 			mode = MODE_UPGRADE_DB;
 			break;
 		case 'z':
-			allow_peer = optarg;
+			g_allow_peer = optarg;
 			break;
 		case 'q':
 			csync_quiet = 1;
@@ -935,7 +937,7 @@ int main(int argc, char **argv) {
 			&& !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE
 			&& mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE
 			&& mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL
-			&& update_format == 0)
+			&& g_update_format == 0)
 		help(argv[0]);
 
 	if (mode == MODE_TEST_SYNC && optind != argc && optind + 1 != argc && optind + 2 != argc && optind + 3 != argc)
@@ -944,7 +946,7 @@ int main(int argc, char **argv) {
 	if (mode == MODE_LIST_SYNC && optind + 2 != argc)
 		help(argv[0]);
 
-	if (mode == MODE_NONE && update_format == 0)
+	if (mode == MODE_NONE && g_update_format == 0)
 		help(argv[0]);
 
 	/* Some inetd connect stderr to stdout.  The debug level messages on
@@ -953,17 +955,17 @@ int main(int argc, char **argv) {
 		csync_syslog = 1;
 	}
 
-	if (*myhostname == 0) {
-		gethostname(myhostname, 256);
-		myhostname[255] = 0;
+	if (*g_myhostname == 0) {
+		gethostname(g_myhostname, 256);
+		g_myhostname[255] = 0;
 	}
 
-	for (i = 0; myhostname[i]; i++)
-		myhostname[i] = tolower(myhostname[i]);
+	for (i = 0; g_myhostname[i]; i++)
+		g_myhostname[i] = tolower(g_myhostname[i]);
 
 	int listenfd = 0;
 	long server_standalone = mode & MODE_STANDALONE;
-	char *myport = csync_port;
+	char *myport = strdup(csync_port);
 	csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
 	csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 	if (server_standalone > 0) {
@@ -972,10 +974,10 @@ int main(int argc, char **argv) {
 			// We need to read the config file to determine a eventual port override
 			// port override needs to be consistent over all configurations
 			csync_debug(3, "No command line port. Reading config\n");
-			csync_read_config(cfgname, 0, MODE_NONE);
+			csync_read_config(g_cfgname, 0, MODE_NONE);
 			struct csync_hostinfo *myhostinfo = csync_hostinfo;
 			while (myhostinfo != NULL) {
-				if (!strcmp(myhostinfo->name, myhostname)) {
+				if (!strcmp(myhostinfo->name, g_myhostname)) {
 					csync_log(LOG_DEBUG, 1, "Found my alias %s %s %s \n", myhostinfo->name, myhostinfo->host,
 							myhostinfo->port);
 					myport = strdup(myhostinfo->port);
@@ -987,12 +989,14 @@ int main(int argc, char **argv) {
 			csync_config_destroy();
 		}
 
-		listenfd = csync_server_bind(myport, ip_version);
+		listenfd = csync_server_bind(myport, g_ip_version);
 		if (listenfd == -1) {
 			exit(1);
 		};
+		if (myport != NULL) {
+			free(myport);
+		}
 	};
-
 	return csync_start(mode, flags, argc, argv, update_func, listenfd, cmd_db_version, cmd_ip_version);
 }
 ;
@@ -1075,10 +1079,10 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 		}
 
 		if (para)
-			cfgname = strdup(url_decode(para));
+			g_cfgname = strdup(url_decode(para));
 	}
 
-	if (csync_read_config(cfgname, conn, mode) == -1)
+	if (csync_read_config(g_cfgname, conn, mode) == -1)
 		goto handle_error;
 	// Move configuration versions into place, if configured.
 	if (cfg_db_version != -1) {
@@ -1086,9 +1090,9 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 			csync_info(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version,
 					cmd_db_version);
 		else
-			db_version = cfg_db_version;
+			g_db_version = cfg_db_version;
 	}
-	if (db_version == 2) {
+	if (g_db_version == 2) {
         //	db_encode = csync_db_escape;
 		db_decode = csync_decode_v2;
 	}
@@ -1099,11 +1103,11 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	if (cfg_ip_version != -1) {
 		if (cmd_ip_version)
 			csync_info(0, "Command line overrides configuration ip protocol version: %d -> %d\n", cfg_ip_version,
-					ip_version);
+					g_ip_version);
 		else if (cfg_ip_version == 4)
-			ip_version = AF_INET;
+			g_ip_version = AF_INET;
 		else if (cfg_ip_version == 6)
-			ip_version = AF_INET6;
+			g_ip_version = AF_INET6;
 		else {
 			csync_error(0, "Unknown IP version: %d\n", cfg_ip_version);
 			exit(1);
@@ -1112,12 +1116,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	/* Read database name from config unless it's overridden from command line */
 	if (!csync_database)
-		csync_database = db_default_database(dbdir, myhostname, cfgname);
+		csync_database = db_default_database(dbdir, g_myhostname, g_cfgname);
 
-	csync_info(2, "My hostname is %s.\n", myhostname);
+	csync_info(2, "My hostname is %s.\n", g_myhostname);
 	csync_info(2, "Database File: %s\n", csync_database);
-	csync_info(2, "DB Version:    %d\n", db_version);
-	csync_info(2, "IP Version:    %s\n", (ip_version == AF_INET6 ? "IPv6" : "IPv4"));
+	csync_info(2, "DB Version:    %d\n", g_db_version);
+	csync_info(2, "IP Version:    %s\n", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
 	csync_info(3, "GIT:           %s\n", CSYNC_GIT_VERSION);
 
 	{
@@ -1129,11 +1133,11 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 				break;
 			}
 		if (!found)
-			csync_fatal("This host (%s) is not a member of any configured group.\n", myhostname);
+			csync_fatal("This host (%s) is not a member of any configured group.\n", g_myhostname);
 	}
 
 	db_conn_p db = csync_db_open(csync_database);
-	db->version = db_version;
+	db->version = g_db_version;
 	// Handles NULL
 	csync_redis_connect(csync_redis);
 
@@ -1143,13 +1147,13 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 		exit(rc);
 	}
 
-	if (update_format) {
-		if (!strcmp(update_format, "v1-v2")) {
+	if (g_update_format) {
+		if (!strcmp(g_update_format, "v1-v2")) {
 			int rc = db->update_format_v1_v2(db, "/", 1, 1);
 			csync_db_close(db);
 			exit(rc);
 		} else {
-			printf("Update format %s unknown\n", update_format);
+			printf("Update format %s unknown\n", g_update_format);
 			db->upgrade_db(db);
 			csync_db_close(db);
 			exit(1);
@@ -1161,11 +1165,11 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	if (mode == MODE_SIMPLE) {
 		if (argc == optind) {
 			csync_check(db, "/", flags);
-			csync_update(db, myhostname, active_peers, 0, 0, ip_version, csync_update_host, flags);
+			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, csync_update_host, flags);
 		} else {
 			char *realnames[argc - optind];
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
-			csync_update(db, myhostname, active_peers, (const char**) realnames, count, ip_version, csync_update_host,
+			csync_update(db, g_myhostname, g_active_peers, (const char**) realnames, count, g_ip_version, csync_update_host,
 					flags);
 			csync_realnames_free(realnames, count);
 		}
@@ -1213,12 +1217,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	if (mode & MODE_UPDATE || mode & MODE_EQUAL) {
 		if (argc <= optind) {
-			csync_update(db, myhostname, active_peers, 0, 0, ip_version, update_func, flags);
+			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, update_func, flags);
 		} else {
 			char *realnames[argc - optind];
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags);
 			if (count > 0) {
-				csync_update(db, myhostname, active_peers, (const char**) realnames, argc - optind, ip_version,
+				csync_update(db, g_myhostname, g_active_peers, (const char**) realnames, argc - optind, g_ip_version,
 						update_func, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
@@ -1250,7 +1254,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	if (mode == MODE_MARK) {
 		for (i = optind; i < argc; i++) {
 			char *realname = getrealfn(argv[i]);
-			db->mark(db, active_peerlist, realname, flags & FLAG_RECURSIVE);
+			db->mark(db, g_active_peerlist, realname, flags & FLAG_RECURSIVE);
 		}
 	};
 
@@ -1261,7 +1265,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	if (mode == MODE_LIST_FILE) {
 		retval = 2;
-		char *realname = "";
+		const char *realname = "";
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}
@@ -1301,24 +1305,24 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 			realname = getrealfn(argv[optind + 2]);
 			if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
 				if (flags & FLAG_TEST_AUTO_DIFF) {
-					retval = csync_diff(db, argv[optind], argv[optind + 1], realname, ip_version);
-				} else if (csync_insynctest(db, argv[optind], argv[optind + 1], realname, ip_version, flags))
+					retval = csync_diff(db, argv[optind], argv[optind + 1], realname, g_ip_version);
+				} else if (csync_insynctest(db, argv[optind], argv[optind + 1], realname, g_ip_version, flags))
 					retval = 2;
 			}
 			break;
 		case 2:
-			if (csync_insynctest(db, argv[optind], argv[optind + 1], 0, ip_version, flags))
+			if (csync_insynctest(db, argv[optind], argv[optind + 1], 0, g_ip_version, flags))
 				retval = 2;
 			break;
 		case 1:
 			realname = getrealfn(argv[optind]);
 			if (!csync_check_usefullness(realname, 0)) {
-				if (csync_insynctest_all(db, realname, ip_version, active_peers, flags))
+				if (csync_insynctest_all(db, realname, g_ip_version, g_active_peers, flags))
 					retval = 2;
 			}
 			break;
 		case 0:
-			if (csync_insynctest_all(db, 0, ip_version, active_peers, flags))
+			if (csync_insynctest_all(db, 0, g_ip_version, g_active_peers, flags))
 				retval = 2;
 			break;
 		}
@@ -1326,23 +1330,23 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	csync_debug(3, "MODE %ld\n", mode);
 	if (mode == MODE_LIST_DIRTY) {
 		retval = 0;
-		char *realname = "";
+		char *realname = NULL;
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}
-		db->list_dirty(db, active_peers, realname, flags & FLAG_RECURSIVE);
+		db->list_dirty(db, g_active_peers, realname != NULL ? realname : "", flags & FLAG_RECURSIVE);
 		free_realname(realname);
 
 	}
 	if (mode == MODE_REMOVE_OLD) {
-		char *realname = "";
+		char *realname = NULL;
 		if (optind < argc) {
 			realname = getrealfn(argv[optind]);
 		}
-		if (active_grouplist)
+		if (g_active_grouplist)
 			csync_fatal("Never run -R with -G!\n");
 		// TODO add "path" to limit clean up
-		csync_remove_old(db, realname);
+		csync_remove_old(db, realname != NULL ? realname : "");
 		free_realname(realname);
 	}
 
@@ -1350,8 +1354,8 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	csync_run_commands(db);
 	csync_db_close(db);
 	csync_config_destroy();
-	if (active_peers) {
-		free(active_peers);
+	if (g_active_peers) {
+		free(g_active_peers);
 	}
 	if (mode & MODE_DAEMON) {
 		csync_log(LOG_INFO, 4, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);

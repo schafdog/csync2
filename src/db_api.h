@@ -37,7 +37,7 @@ struct db_conn_t {
 	void *private;
 	int version;
 	int (*exec)(db_conn_p conn, const char *exec);
-	int (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
+	int (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
 	void (*close)(db_conn_p conn);
 	void (*logger)(int priority, int lv, const char *fmt, ...);
 	const char* (*errmsg)(db_conn_p conn);

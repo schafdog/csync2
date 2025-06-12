@@ -23,7 +23,7 @@
 
 int csync_compare_mode = 0;
 
-int match_pattern_list(filename_p filename, const char *basename, const struct csync_group_pattern *p, int compare_mode) {
+static int match_pattern_list(filename_p filename, const char *basename, const struct csync_group_pattern *p, int compare_mode) {
 	// unused
 	(void) compare_mode;
 
@@ -75,7 +75,7 @@ const struct csync_group* csync_find_next(const struct csync_group *g, const cha
 	return g;
 }
 
-int csync_step_into(const char *file, int compare_mode) {
+static int csync_step_into(const char *file, int compare_mode) {
 	const struct csync_group_pattern *p;
 	const struct csync_group *g;
 

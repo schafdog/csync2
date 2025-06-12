@@ -19,6 +19,7 @@
 
 #include "csync2.h"
 #include "db_api.h"
+#include "db_sqlite2.h"
 #include "config.h"
 
 #ifndef HAVE_SQLITE

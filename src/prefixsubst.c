@@ -51,12 +51,12 @@ const char* prefixsubst(const char *in) {
 		}
 	}
 
-	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, myhostname);
+	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname);
 	return 0;
 }
 
 const char* prefixencode(filename_p filename) {
-#if __CYGWIN__
+#ifdef __CYGWIN__
 	if (!strcmp(filename, "/")) {
 		filename = "/cygdrive";
 	}

@@ -86,7 +86,7 @@ static int sqlite_errors[] = { SQLITE_OK, SQLITE_ERROR, SQLITE_BUSY, SQLITE_ROW,
 SQLITE_DONE, -1 };
 static int db_errors[] = { DB_OK, DB_ERROR, DB_BUSY, DB_ROW, DB_DONE, -1 };
 
-int db_sqlite_error_map(int sqlite_err) {
+static int db_sqlite_error_map(int sqlite_err) {
 	int index;
 	for (index = 0;; index++) {
 		if (sqlite_errors[index] == -1)
@@ -97,32 +97,7 @@ int db_sqlite_error_map(int sqlite_err) {
 	return DB_OK;
 }
 
-int db_sqlite_open(const char *file, db_conn_p *conn_p) {
-	sqlite3 *db;
-
-	db_sqlite3_dlopen();
-
-	int rc = f.sqlite3_open_fn(file, &db);
-	if (rc != SQLITE_OK) {
-		return db_sqlite_error_map(rc);
-	};
-	db_conn_p conn = calloc(1, sizeof(*conn));
-	if (conn == NULL) {
-		return DB_ERROR;
-	}
-	db_sql_init(conn);
-	*conn_p = conn;
-	conn->private = db;
-	conn->close = db_sqlite_close;
-	conn->exec = db_sqlite_exec;
-	conn->prepare = db_sqlite_prepare;
-	conn->errmsg = db_sqlite_errmsg;
-	conn->upgrade_to_schema = db_sqlite_upgrade_to_schema;
-	conn->escape = db_sqlite_escape;
-	return db_sqlite_error_map(rc);
-}
-
-void db_sqlite_close(db_conn_p conn) {
+static void db_sqlite_close(db_conn_p conn) {
 	if (!conn)
 		return;
 	if (!conn->private)
@@ -131,7 +106,7 @@ void db_sqlite_close(db_conn_p conn) {
 	conn->private = 0;
 }
 
-const char* db_sqlite_errmsg(db_conn_p conn) {
+static const char* db_sqlite_errmsg(db_conn_p conn) {
 	if (!conn)
 		return "(no connection)";
 	if (!conn->private)
@@ -139,7 +114,7 @@ const char* db_sqlite_errmsg(db_conn_p conn) {
 	return f.sqlite3_errmsg_fn(conn->private);
 }
 
-int db_sqlite_exec(db_conn_p conn, const char *sql) {
+static int db_sqlite_exec(db_conn_p conn, const char *sql) {
 	int rc;
 	if (!conn)
 		return DB_NO_CONNECTION;
@@ -152,36 +127,7 @@ int db_sqlite_exec(db_conn_p conn, const char *sql) {
 	return db_sqlite_error_map(rc);
 }
 
-int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, char **pptail) {
-	int rc;
-
-	*stmt_p = NULL;
-
-	if (!conn)
-		return DB_NO_CONNECTION;
-
-	if (!conn->private) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	db_stmt_p stmt = malloc(sizeof(*stmt));
-	sqlite3_stmt *sqlite_stmt = 0;
-	/* TODO avoid strlen, use configurable limit? */
-	rc = f.sqlite3_prepare_v2_fn(conn->private, sql, strlen(sql), &sqlite_stmt, (const char**) pptail);
-	if (rc != SQLITE_OK)
-		return db_sqlite_error_map(rc);
-	stmt->private = sqlite_stmt;
-	*stmt_p = stmt;
-	stmt->get_column_text = db_sqlite_stmt_get_column_text;
-	stmt->get_column_blob = db_sqlite_stmt_get_column_blob;
-	stmt->get_column_int = db_sqlite_stmt_get_column_int;
-	stmt->next = db_sqlite_stmt_next;
-	stmt->close = db_sqlite_stmt_close;
-	stmt->db = conn;
-	return db_sqlite_error_map(rc);
-}
-
-const char* db_sqlite_stmt_get_column_text(db_stmt_p stmt, int column) {
+static const char* db_sqlite_stmt_get_column_text(db_stmt_p stmt, int column) {
 	if (!stmt || !stmt->private) {
 		return 0;
 	}
@@ -192,34 +138,34 @@ const char* db_sqlite_stmt_get_column_text(db_stmt_p stmt, int column) {
 }
 
 #if defined(HAVE_SQLITE3)
-const void* db_sqlite_stmt_get_column_blob(db_stmt_p stmtx, int col) {
+static const void* db_sqlite_stmt_get_column_blob(db_stmt_p stmtx, int col) {
 	sqlite3_stmt *stmt = stmtx->private;
 	return f.sqlite3_column_blob_fn(stmt, col);
 }
 #endif
 
-int db_sqlite_stmt_get_column_int(db_stmt_p stmt, int column) {
+static int db_sqlite_stmt_get_column_int(db_stmt_p stmt, int column) {
 	sqlite3_stmt *sqlite_stmt = stmt->private;
 	int rc = f.sqlite3_column_int_fn(sqlite_stmt, column);
 	return db_sqlite_error_map(rc);
 }
 
-int db_sqlite_stmt_next(db_stmt_p stmt) {
+static int db_sqlite_stmt_next(db_stmt_p stmt) {
 	sqlite3_stmt *sqlite_stmt = stmt->private;
 	int rc = f.sqlite3_step_fn(sqlite_stmt);
 	return db_sqlite_error_map(rc);
 }
 
-int db_sqlite_stmt_close(db_stmt_p stmt) {
+static int db_sqlite_stmt_close(db_stmt_p stmt) {
 	sqlite3_stmt *sqlite_stmt = stmt->private;
 	int rc = f.sqlite3_finalize_fn(sqlite_stmt);
 	free(stmt);
 	return db_sqlite_error_map(rc);
 }
 
-const char* db_my_escape(const char *string) {
+static char* db_my_escape(const char *string) {
 	if (string == NULL)
-		return string;
+		return NULL;
 	char *escaped = malloc(strlen(string) * 2 + 1);
 	const char *p = string;
 	char *e = escaped;
@@ -238,17 +184,17 @@ const char* db_my_escape(const char *string) {
 }
 ;
 
-const char* db_sqlite_escape(db_conn_p conn, const char *string) {
+static const char* db_sqlite_escape(db_conn_p conn, const char *string) {
 	// unused
 	(void) conn;
 
-	const char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
+	char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
 	if (escaped)
 		ringbuffer_add(escaped, free);
 	return escaped;
 }
 
-int db_sqlite_upgrade_to_schema(db_conn_p db, int version) {
+static int db_sqlite_upgrade_to_schema(db_conn_p db, int version) {
 	if (version < 0)
 		return DB_OK;
 
@@ -297,4 +243,57 @@ int db_sqlite_upgrade_to_schema(db_conn_p db, int version) {
 	return DB_OK;
 }
 
+static int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, const char **pptail) {
+	int rc;
+
+	*stmt_p = NULL;
+
+	if (!conn)
+		return DB_NO_CONNECTION;
+
+	if (!conn->private) {
+		/* added error element */
+		return DB_NO_CONNECTION_REAL;
+	}
+	db_stmt_p stmt = malloc(sizeof(*stmt));
+	sqlite3_stmt *sqlite_stmt = 0;
+	/* TODO avoid strlen, use configurable limit? */
+	rc = f.sqlite3_prepare_v2_fn(conn->private, sql, strlen(sql), &sqlite_stmt, pptail);
+	if (rc != SQLITE_OK)
+		return db_sqlite_error_map(rc);
+	stmt->private = sqlite_stmt;
+	*stmt_p = stmt;
+	stmt->get_column_text = db_sqlite_stmt_get_column_text;
+	stmt->get_column_blob = db_sqlite_stmt_get_column_blob;
+	stmt->get_column_int = db_sqlite_stmt_get_column_int;
+	stmt->next = db_sqlite_stmt_next;
+	stmt->close = db_sqlite_stmt_close;
+	stmt->db = conn;
+	return db_sqlite_error_map(rc);
+}
+
+int db_sqlite_open(const char *file, db_conn_p *conn_p) {
+	sqlite3 *db;
+
+	db_sqlite3_dlopen();
+
+	int rc = f.sqlite3_open_fn(file, &db);
+	if (rc != SQLITE_OK) {
+		return db_sqlite_error_map(rc);
+	};
+	db_conn_p conn = calloc(1, sizeof(*conn));
+	if (conn == NULL) {
+		return DB_ERROR;
+	}
+	db_sql_init(conn);
+	*conn_p = conn;
+	conn->private = db;
+	conn->close = db_sqlite_close;
+	conn->exec = db_sqlite_exec;
+	conn->prepare = db_sqlite_prepare;
+	conn->errmsg = db_sqlite_errmsg;
+	conn->upgrade_to_schema = db_sqlite_upgrade_to_schema;
+	conn->escape = db_sqlite_escape;
+	return db_sqlite_error_map(rc);
+}
 #endif

@@ -35,7 +35,7 @@ int csync_messages_printed = 0;
 
 time_t csync_startup_time = 0;
 
-void csync_printtime() {
+void csync_printtime(void) {
 	if (csync_timestamps || csync_timestamp_out) {
 		time_t now = time(0);
 		char ftbuffer[128];
@@ -60,7 +60,7 @@ void csync_printtime() {
 	}
 }
 
-void csync_printtotaltime() {
+void csync_printtotaltime(void) {
 	if (csync_timestamps || csync_timestamp_out) {
 		time_t now = time(0);
 		int seconds = now - csync_startup_time;
@@ -81,14 +81,14 @@ void csync_printtotaltime() {
 	}
 }
 
-void csync_printtime_prefix() {
+static void csync_printtime_prefix(void) {
 	time_t now = time(0);
 	char ftbuffer[32];
 	strftime(ftbuffer, 32, "%H:%M:%S", localtime(&now));
 	fprintf(csync_out_debug, "[%s] ", ftbuffer);
 }
 
-char *syslog_prio[] = { "EMERG ", "ALERT ", "CRIT  ", "ERROR ", "WARN  ", "NOTICE", "INFO  ", "DEBUG " };
+const char *syslog_prio[] = { "EMERG ", "ALERT ", "CRIT  ", "ERROR ", "WARN  ", "NOTICE", "INFO  ", "DEBUG " };
 
 void csync_log(int priority, int lv, const char *fmt, ...) {
 	va_list ap;

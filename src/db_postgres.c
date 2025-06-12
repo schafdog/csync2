@@ -42,6 +42,12 @@
 #include <libpq-fe.h>
 #endif
 
+// Works with both GCC and Clang
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#endif
+
 #if (!defined HAVE_LIBPQ)
 int db_postgres_open(const char *file, db_conn_p *conn_p)
 {
@@ -125,7 +131,7 @@ static int db_pgsql_parse_url(char *url, char **host, char **user, char **pass, 
 	return DB_OK;
 }
 
-void db_postgres_close(db_conn_p conn) {
+static void db_postgres_close(db_conn_p conn) {
 	if (!conn)
 		return;
 	if (!conn->private)
@@ -134,7 +140,7 @@ void db_postgres_close(db_conn_p conn) {
 	conn->private = 0;
 }
 
-const char* db_postgres_errmsg(db_conn_p conn) {
+static const char* db_postgres_errmsg(db_conn_p conn) {
 	if (!conn)
 		return "(no connection)";
 	if (!conn->private)
@@ -142,7 +148,7 @@ const char* db_postgres_errmsg(db_conn_p conn) {
 	return f.PQerrorMessage_fn(conn->private);
 }
 
-int db_postgres_exec(db_conn_p conn, const char *sql) {
+static int db_postgres_exec(db_conn_p conn, const char *sql) {
 	PGresult *res;
 
 	if (!conn)
@@ -161,68 +167,16 @@ int db_postgres_exec(db_conn_p conn, const char *sql) {
 		return DB_OK;
 	case PGRES_COMMAND_OK:
 		return DB_OK;
+
+	case PGRES_EMPTY_QUERY:
+	case PGRES_COPY_OUT:
+	case PGRES_COPY_IN:
 	default:
 		return DB_ERROR;
 	}
 }
 
-int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, char **pptail) {
-	// unused
-	(void) pptail;
-
-	PGresult *result;
-	int *row_p;
-
-	*stmt_p = NULL;
-
-	if (!conn)
-		return DB_NO_CONNECTION;
-
-	if (!conn->private) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	result = f.PQexec_fn(conn->private, sql);
-
-	if (result == NULL) {
-		csync_fatal("No memory for result\n");
-	}
-	switch (f.PQresultStatus_fn(result)) {
-	case PGRES_COMMAND_OK:
-	case PGRES_TUPLES_OK:
-		break;
-
-	default:
-		csync_error(1, "Error in PQexec: %s", f.PQresultErrorMessage_fn(result));
-		f.PQclear_fn(result);
-		return DB_ERROR;
-	}
-
-	row_p = malloc(sizeof(*row_p));
-	if (row_p == NULL) {
-		csync_fatal("No memory for row\n");
-	}
-	*row_p = -1;
-
-	db_stmt_p stmt = malloc(sizeof(*stmt));
-	if (stmt == NULL) {
-		csync_fatal("No memory for stmt\n");
-	}
-
-	stmt->private = result;
-	stmt->private2 = row_p;
-
-	*stmt_p = stmt;
-	stmt->get_column_text = db_postgres_stmt_get_column_text;
-	stmt->get_column_blob = db_postgres_stmt_get_column_blob;
-	stmt->get_column_int = db_postgres_stmt_get_column_int;
-	stmt->next = db_postgres_stmt_next;
-	stmt->close = db_postgres_stmt_close;
-	stmt->db = conn;
-	return DB_OK;
-}
-
-const void* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column) {
+static const void* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column) {
 	PGresult *result;
 	int *row_p;
 
@@ -239,7 +193,7 @@ const void* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column) {
 	return f.PQgetvalue_fn(result, *row_p, column);
 }
 
-const char* db_postgres_stmt_get_column_text(db_stmt_p stmt, int column) {
+static const char* db_postgres_stmt_get_column_text(db_stmt_p stmt, int column) {
 	PGresult *result;
 	int *row_p;
 
@@ -256,7 +210,7 @@ const char* db_postgres_stmt_get_column_text(db_stmt_p stmt, int column) {
 	return f.PQgetvalue_fn(result, *row_p, column);
 }
 
-int db_postgres_stmt_get_column_int(db_stmt_p stmt, int column) {
+static int db_postgres_stmt_get_column_int(db_stmt_p stmt, int column) {
 	PGresult *result;
 	int *row_p;
 
@@ -273,7 +227,7 @@ int db_postgres_stmt_get_column_int(db_stmt_p stmt, int column) {
 	return atoi(f.PQgetvalue_fn(result, *row_p, column));
 }
 
-int db_postgres_stmt_next(db_stmt_p stmt) {
+static int db_postgres_stmt_next(db_stmt_p stmt) {
 	PGresult *result;
 	int *row_p;
 
@@ -290,7 +244,7 @@ int db_postgres_stmt_next(db_stmt_p stmt) {
 	return DB_ROW;
 }
 
-int db_postgres_stmt_close(db_stmt_p stmt) {
+static int db_postgres_stmt_close(db_stmt_p stmt) {
 	PGresult *res = stmt->private;
 
 	f.PQclear_fn(res);
@@ -301,7 +255,7 @@ int db_postgres_stmt_close(db_stmt_p stmt) {
 
 #define FILE_LENGTH 275
 #define HOST_LENGTH  50
-int db_postgres_upgrade_to_schema(db_conn_p conn, int version) {
+static int db_postgres_upgrade_to_schema(db_conn_p conn, int version) {
 	csync_info(2, "Upgrading database schema to version %d.\n", version);
 
 	csync_db_sql(conn, NULL, /* "Creating action table", */
@@ -378,7 +332,7 @@ int db_postgres_upgrade_to_schema(db_conn_p conn, int version) {
 	return DB_OK;
 }
 
-const char* db_postgres_escape(db_conn_p conn, const char *string) {
+static const char* db_postgres_escape(db_conn_p conn, const char *string) {
 	int rc = DB_ERROR;
 	if (!conn)
 		return 0;
@@ -393,8 +347,7 @@ const char* db_postgres_escape(db_conn_p conn, const char *string) {
 	return escaped_buffer;
 }
 
-unsigned long long fstat_dev(struct stat *file_stat);
-int db_postgres_insert_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded,
+static int db_postgres_insert_update_file(db_conn_p db, filename_p encoded, const char *checktxt_encoded,
 		struct stat *file_stat, const char *digest) {
 	BUF_P buf = buffer_init();
 	char *digest_quote = buffer_quote(buf, digest);
@@ -403,7 +356,7 @@ int db_postgres_insert_update_file(db_conn_p db, filename_p encoded, const char 
 					"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
 							"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON CONFLICT (filename, hostname) DO UPDATE SET "
 							"checktxt = '%s', device = %lu, inode = %llu, "
-							"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", myhostname, encoded,
+							"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded,
 					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
 					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode),
 					// SET
@@ -412,6 +365,65 @@ int db_postgres_insert_update_file(db_conn_p db, filename_p encoded, const char 
 	buffer_destroy(buf);
 	return count;
 }
+
+static int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, const char **pptail) {
+	// unused
+	(void) pptail;
+
+	PGresult *result;
+	int *row_p;
+
+	*stmt_p = NULL;
+
+	if (!conn)
+		return DB_NO_CONNECTION;
+
+	if (!conn->private) {
+		/* added error element */
+		return DB_NO_CONNECTION_REAL;
+	}
+	result = f.PQexec_fn(conn->private, sql);
+
+	if (result == NULL) {
+		csync_fatal("No memory for result\n");
+	}
+
+	switch (f.PQresultStatus_fn(result)) {
+	case PGRES_COMMAND_OK:
+	case PGRES_TUPLES_OK:
+		break;
+
+	default:
+		csync_error(1, "Error in PQexec: %s", f.PQresultErrorMessage_fn(result));
+		f.PQclear_fn(result);
+		return DB_ERROR;
+	}
+
+	row_p = malloc(sizeof(*row_p));
+	if (row_p == NULL) {
+		csync_fatal("No memory for row\n");
+	}
+	*row_p = -1;
+
+	db_stmt_p stmt = malloc(sizeof(*stmt));
+	if (stmt == NULL) {
+		csync_fatal("No memory for stmt\n");
+	}
+
+	stmt->private = result;
+	stmt->private2 = row_p;
+
+	*stmt_p = stmt;
+	stmt->get_column_text = db_postgres_stmt_get_column_text;
+	stmt->get_column_blob = db_postgres_stmt_get_column_blob;
+	stmt->get_column_int = db_postgres_stmt_get_column_int;
+	stmt->next = db_postgres_stmt_next;
+	stmt->close = db_postgres_stmt_close;
+	stmt->db = conn;
+	return DB_OK;
+}
+
+
 
 int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	PGconn *pg_conn;
@@ -425,11 +437,12 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	if (db_url == NULL) {
 		csync_fatal("No memory for db_url\n");
 	}
+/*
 	user = "postgres";
 	pass = "";
 	host = "localhost";
 	database = "csync2";
-
+*/
 	strcpy(db_url, file);
 	int rc = db_pgsql_parse_url(db_url, &host, &user, &pass, &database, &port);
 	if (rc != DB_OK)
@@ -471,6 +484,9 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 			case PGRES_TUPLES_OK:
 				break;
 
+			case PGRES_EMPTY_QUERY:
+			case PGRES_COPY_OUT:
+			case PGRES_COPY_IN:
 			default:
 				csync_error(0, "Could not create database %s: %s", database, f.PQerrorMessage_fn(pg_conn));
 				return DB_ERROR;

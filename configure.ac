@@ -35,6 +35,24 @@ AC_CONFIG_HEADERS(src/config.h)
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+
+# macOS-specific: Prioritize Homebrew bison over system bison
+case "$host_os" in
+    darwin*)
+        AC_MSG_NOTICE([Detected macOS - checking for Homebrew bison])
+
+        # Check for Apple Silicon Homebrew bison first
+        if test -x "/opt/homebrew/opt/bison/bin/bison"; then
+            AC_MSG_NOTICE([Found Homebrew bison (Apple Silicon): /opt/homebrew/opt/bison/bin/bison])
+            YACC="/opt/homebrew/opt/bison/bin/bison -y"
+        # Check for Intel Homebrew bison
+        elif test -x "/usr/local/opt/bison/bin/bison"; then
+            AC_MSG_NOTICE([Found Homebrew bison (Intel): /usr/local/opt/bison/bin/bison])
+            YACC="/usr/local/opt/bison/bin/bison -y"
+        fi
+        ;;
+esac
+
 AC_PROG_YACC
 AC_PROG_LEX([noyywrap])
 
@@ -137,7 +155,10 @@ for flag in \
     -Wnested-externs \
     -Winline \
     -Wdisabled-optimization \
-    -Wno-unused-parameter
+    -Wno-unused-parameter \
+    -Wno-unused-function \
+    -Wno-format-nonliteral \
+    -Wno-cast-align 
 do
     AC_MSG_CHECKING([whether $CC accepts $flag])
     old_CFLAGS="$CFLAGS"
@@ -152,19 +173,32 @@ done
 AC_SUBST([WARNING_CFLAGS])
 AC_MSG_RESULT([enabled: $WARNING_CFLAGS])
 
-# macOS-specific checks
+# macOS-specific bison verification
 case "$host_os" in
     darwin*)
-        AC_MSG_NOTICE([Detected macOS - checking for Homebrew bison])
-        # Check if we're using the old system bison on macOS
+        AC_MSG_NOTICE([Verifying bison selection on macOS])
+        # Report which bison version we're using
         if test "x$YACC" != "x"; then
-            YACC_PATH=`which $YACC 2>/dev/null`
-            if echo "$YACC_PATH" | grep -q "/usr/bin/"; then
-                AC_MSG_WARN([Using system bison which may be outdated. Consider installing Homebrew bison:])
-                AC_MSG_WARN([  brew install bison])
-                AC_MSG_WARN([  For Apple Silicon: export PATH="/opt/homebrew/opt/bison/bin:$PATH"])
-                AC_MSG_WARN([  For Intel: export PATH="/usr/local/opt/bison/bin:$PATH"])
+            # Extract the actual bison command (remove -y flag)
+            BISON_CMD=`echo "$YACC" | sed 's/ -y$//'`
+            if test -x "$BISON_CMD"; then
+                AC_MSG_NOTICE([Using bison: $BISON_CMD])
+
+                # Check if it's system bison and warn
+                case "$BISON_CMD" in
+                    /usr/bin/*)
+                        AC_MSG_WARN([Using system bison which may be outdated. Consider installing Homebrew bison:])
+                        AC_MSG_WARN([  brew install bison])
+                        AC_MSG_WARN([  Then re-run ./autogen.sh to use the newer version])
+                        ;;
+                    *)
+                        AC_MSG_NOTICE([Using modern bison (likely Homebrew) - good!])
+                        ;;
+                esac
             fi
+        else
+            AC_MSG_WARN([No bison found. Please install bison:])
+            AC_MSG_WARN([  brew install bison])
         fi
         ;;
 esac
@@ -188,38 +222,129 @@ AC_ARG_WITH([librsync-source],
 		[build this librsync and link statically against it (hack! hack!)]),
 	AC_SUBST([librsync_source_file], $withval),
 	[
-	CFLAGS_backup="${CFLAGS}"
-	LDFLAGS_backup="${LDFLAGS}"
+	# Try pkg-config first for librsync
+	PKG_PROG_PKG_CONFIG
+	PKG_CHECK_MODULES([LIBRSYNC], [librsync >= 2.0.0], [
+		AC_DEFINE([HAVE_LIBRSYNC], 1, [Define to 1 when using librsync library])
+		AC_MSG_NOTICE([Found librsync via pkg-config])
+		
+		# Verify LIBRSYNC_CFLAGS contains include path, add it if not
+		AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+			AC_MSG_NOTICE([LIBRSYNC_CFLAGS is empty, adding include path manually])
+			# Try to find librsync.h in common locations
+			for inc_path in /usr/include /usr/local/include /opt/homebrew/include /usr/include/librsync; do
+				AS_IF([test -f "$inc_path/librsync.h"], [
+					LIBRSYNC_CFLAGS="-I$inc_path"
+					AC_MSG_NOTICE([Added $inc_path to LIBRSYNC_CFLAGS])
+					break
+				])
+			done
+		])
+	], [
+		# Fallback to manual detection if pkg-config fails
+		AC_MSG_NOTICE([pkg-config failed, trying manual librsync detection])
 
-	# Platform-specific library paths for librsync
-	case "$host_os" in
-	    darwin*)
-	        # macOS: Try Homebrew paths if they exist
-	        if test -d "/opt/homebrew/include"; then
-	            CFLAGS="-I/opt/homebrew/include ${CFLAGS}"
-	        elif test -d "/usr/local/include"; then
-	            CFLAGS="-I/usr/local/include ${CFLAGS}"
-	        fi
-	        if test -d "/opt/homebrew/lib"; then
-	            LDFLAGS="-L/opt/homebrew/lib ${LDFLAGS}"
-	        elif test -d "/usr/local/lib"; then
-	            LDFLAGS="-L/usr/local/lib ${LDFLAGS}"
-	        fi
-	        ;;
-	    *)
-	        # Linux and other platforms: rely on pkg-config and standard paths
-	        ;;
-	esac
+		CFLAGS_backup="${CFLAGS}"
+		LDFLAGS_backup="${LDFLAGS}"
 
-	AC_CHECK_LIB([rsync], [rs_sig_file], , [AC_MSG_ERROR(librsync is required)])
+		# Platform-specific library paths for librsync
+		case "$host_os" in
+		    darwin*)
+		        # macOS: Try Homebrew paths if they exist
+		        if test -d "/opt/homebrew/include"; then
+		            CFLAGS="-I/opt/homebrew/include ${CFLAGS}"
+		            LIBRSYNC_CFLAGS="-I/opt/homebrew/include"
+		        elif test -d "/usr/local/include"; then
+		            CFLAGS="-I/usr/local/include ${CFLAGS}"
+		            LIBRSYNC_CFLAGS="-I/usr/local/include"
+		        fi
+		        if test -d "/opt/homebrew/lib"; then
+		            LDFLAGS="-L/opt/homebrew/lib ${LDFLAGS}"
+		            LIBRSYNC_LIBS="-L/opt/homebrew/lib -lrsync"
+		        elif test -d "/usr/local/lib"; then
+		            LDFLAGS="-L/usr/local/lib ${LDFLAGS}"
+		            LIBRSYNC_LIBS="-L/usr/local/lib -lrsync"
+		        fi
+		        ;;
+		    *)
+		        # Linux and other platforms: try common paths
+		        for inc_path in /usr/include /usr/local/include /usr/include/librsync; do
+		            if test -f "$inc_path/librsync.h"; then
+		                if test "$inc_path" != "/usr/include"; then
+		                    CFLAGS="-I$inc_path ${CFLAGS}"
+		                    LIBRSYNC_CFLAGS="-I$inc_path"
+		                fi
+		                break
+		            fi
+		        done
+		        LIBRSYNC_LIBS="-lrsync"
+		        ;;
+		esac
 
-	# Reset CFLAGS and LDFLAGS to avoid polluting other checks
-	CFLAGS="${CFLAGS_backup}"
-	LDFLAGS="${LDFLAGS_backup}"
+		# Check for librsync header
+		AC_CHECK_HEADERS([librsync.h], [], [
+		    AC_MSG_ERROR([librsync.h not found. Please install librsync development package:
+		    - Ubuntu/Debian: sudo apt-get install librsync-dev
+		    - CentOS/RHEL: sudo yum install librsync-devel
+		    - macOS: brew install librsync])
+		])
+
+		# Check for librsync library
+		AC_CHECK_LIB([rsync], [rs_sig_file], [
+		    # LIBRSYNC_LIBS already set above based on platform
+		], [AC_MSG_ERROR([librsync library not found. Please install librsync development package.])])
+
+		# Reset CFLAGS and LDFLAGS to avoid polluting other checks
+		CFLAGS="${CFLAGS_backup}"
+		LDFLAGS="${LDFLAGS_backup}"
+	])
 	]
 )
 
+# Ensure LIBRSYNC_CFLAGS is set if it's still empty
+AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+    AC_MSG_NOTICE([LIBRSYNC_CFLAGS is still empty, searching for librsync.h])
+    for inc_path in /usr/include /usr/local/include /opt/homebrew/include /usr/include/librsync; do
+        AS_IF([test -f "$inc_path/librsync.h"], [
+            LIBRSYNC_CFLAGS="-I$inc_path"
+            AC_MSG_NOTICE([Found librsync.h in $inc_path])
+            break
+        ])
+    done
+    
+    # If still not found, try using which command to locate rsync
+    AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+        rsync_path=`which rsync 2>/dev/null`
+        if test -n "$rsync_path"; then
+            rsync_prefix=`dirname $rsync_path | sed 's/\/bin$//'`
+            if test -f "$rsync_prefix/include/librsync.h"; then
+                LIBRSYNC_CFLAGS="-I$rsync_prefix/include"
+                AC_MSG_NOTICE([Found librsync.h in $rsync_prefix/include])
+            fi
+        fi
+    ])
+])
+
+# Final check and warning if LIBRSYNC_CFLAGS is still empty
+AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+    AC_MSG_WARN([
+    =======================================================================
+    WARNING: LIBRSYNC_CFLAGS is empty! This may cause compilation failures.
+    Please manually specify the include path with:
+    ./configure LIBRSYNC_CFLAGS="-I/path/to/librsync/include"
+    =======================================================================
+    ])
+])
+
 AM_CONDITIONAL([PRIVATE_LIBRSYNC], [test -n "$librsync_source_file"])
+
+# Substitute librsync variables for Makefile
+AC_SUBST([LIBRSYNC_CFLAGS])
+AC_SUBST([LIBRSYNC_LIBS])
+
+# Debug output to verify values
+AC_MSG_NOTICE([LIBRSYNC_CFLAGS = $LIBRSYNC_CFLAGS])
+AC_MSG_NOTICE([LIBRSYNC_LIBS = $LIBRSYNC_LIBS])
 
 AC_ARG_ENABLE([sqlite],
 	[AS_HELP_STRING([--enable-sqlite],[enable/disable sqlite 2 support (default is disabled)])],

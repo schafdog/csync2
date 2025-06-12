@@ -40,14 +40,14 @@ void ringbuffer_init(void) {
 	ringbuffer_counter = 0;
 }
 
-void ringbuffer_add(const char *string, free_fn_t free_fn) {
+void ringbuffer_add(char *string, free_fn_t free_fn) {
 	if (ringbuffer[ringbuffer_counter]) {
 		if (free_fn_buffer[ringbuffer_counter])
 			free_fn_buffer[ringbuffer_counter](ringbuffer[ringbuffer_counter]);
 		else
 			free(ringbuffer[ringbuffer_counter]);
 	}
-	ringbuffer[ringbuffer_counter] = (char*) string;
+	ringbuffer[ringbuffer_counter] = string;
 	free_fn_buffer[ringbuffer_counter++] = free_fn;
 	if (ringbuffer_counter == RINGBUFFER_LEN) {
 		ringbuffer_counter = 0;

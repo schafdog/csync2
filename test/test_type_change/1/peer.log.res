@@ -67,6 +67,7 @@ Updated(patch) local:<TESTBASE>/test/peer/type_change
 IDENT (cmd_finished).
 Command: local: STAT <TESTBASE>/test/peer/type_change/new_file 'N' all user/group <UID> <GID> <USER> <GROUP>    
 ERROR: Check for directory failed with non-directory <TESTBASE>/test/peer/type_change: 33188
+Path not found <TESTBASE>/test/peer/type_change
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
 Command: local: BYE          
 goto nofork.
@@ -133,6 +134,7 @@ Updated(patch) local:<TESTBASE>/test/peer/type_change
 IDENT (cmd_finished).
 Command: local: STAT <TESTBASE>/test/peer/type_change/new_file 'N' all user/group <UID> <GID> <USER> <GROUP>    
 ERROR: Check for directory failed with non-directory <TESTBASE>/test/peer/type_change: 33188
+Path not found <TESTBASE>/test/peer/type_change
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
 Command: local: BYE          
 goto nofork.
