@@ -9,8 +9,9 @@ Checking for deleted files <TESTBASE>/test recursive.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/recursive/1/2/3/4/5' ''
-PATH MISSING: '%25test%25'
-PATH MISSING (decoded): '<TESTBASE>/test/local'
+PATH MISSING: '<TESTBASE>/test'
+PATH MISSING (decoded): '<TESTBASE>/test'
+UPDATE_DIRECTORY: 0
 UPDATE_DIRECTORY: 4
 UPDATE_DIRECTORY: 4
 UPDATE_DIRECTORY: 4

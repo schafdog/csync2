@@ -3,6 +3,7 @@ Command: (null): DEBUG
 Command: local HELLO
 HELLO from local. Response: OK
 Command: local: SIG <TESTBASE>/test/peer/recursive/1/2/3/4/5 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Path not found <TESTBASE>/test
 Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
