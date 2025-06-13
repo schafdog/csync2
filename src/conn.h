@@ -36,7 +36,7 @@ extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal
 extern int conn_close(int conn);
 
 extern ssize_t conn_read(int fd, char *buf, size_t count);
-extern ssize_t conn_read_get_content_length(int fd, long long *size, int *type);
+extern ssize_t conn_read_get_content_length(int fd, size_t *size, int *type);
 extern ssize_t conn_write(int fd, const char *buf, size_t count);
 ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline);
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);

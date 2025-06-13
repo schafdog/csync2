@@ -450,9 +450,10 @@ int db_mysql_open(const char *file, db_conn_p *conn_p) {
 				if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, 0) == NULL)
 					goto fatal;
 			}
-		} else
+		} else {
 			fatal:
 			csync_fatal("Failed to connect to database: Error: %s\n", f.mysql_error_fn(db));
+		}
 	}
 	const char *encoding = mysql_character_set_name(db);
 	csync_log(LOG_DEBUG, 2, "Default encoding %s\n", encoding);

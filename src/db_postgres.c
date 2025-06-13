@@ -429,7 +429,7 @@ static int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_
 
 int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	PGconn *pg_conn;
-	char *host, *user, *pass, *database;
+	char *host = NULL, *user = NULL, *pass = NULL, *database = NULL;
 	unsigned int port = 5432; /* default postgres port */
 	char *db_url = malloc(strlen(file) + 1);
 	char *pg_conn_info;
@@ -439,11 +439,6 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	if (db_url == NULL) {
 		csync_fatal("No memory for db_url\n");
 	}
-
-	user = "postgres";
-	pass = "";
-	host = "localhost";
-	database = "csync2";
 
 	strcpy(db_url, file);
 	int rc = db_pgsql_parse_url(db_url, &host, &user, &pass, &database, &port);

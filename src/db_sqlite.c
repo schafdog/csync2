@@ -176,6 +176,7 @@ static char* db_my_escape(const char *string) {
 		case '\\':
 			*(e++) = '\'';
 			;
+			__attribute__ ((fallthrough));
 		default:
 			*(e++) = *(p++);
 		}

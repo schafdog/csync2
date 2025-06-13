@@ -282,7 +282,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 	case GNUTLS_E_FATAL_ALERT_RECEIVED:
 		alrt = gnutls_alert_get(conn_tls_session);
 		fprintf(csync_out_debug, "SSL: fatal alert received from peer: %d (%s).\n", alrt, gnutls_alert_get_name(alrt));
-
+		__attribute__ ((fallthrough));
 	default:
 		gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
 		gnutls_deinit(conn_tls_session);
@@ -417,7 +417,7 @@ static inline size_t READ_POLL(int filedesc, char *buf, size_t count) {
 	return total_read;
 }
 
-static inline size_t READ(int filedesc, void *buf, size_t count) {
+static size_t READ(int filedesc, void *buf, size_t count) {
 #ifdef HAVE_LIBGNUTLS
 	if (csync_conn_usessl)
 		return gnutls_record_recv(conn_tls_session, buf, count);
@@ -453,7 +453,7 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 	return length;
 }
 
-static inline ssize_t WRITE(int fd, const char *buf, size_t count) {
+static ssize_t WRITE(int fd, const char *buf, size_t count) {
 	ssize_t n;
 	size_t total;
 #ifdef HAVE_LIBGNUTLS
@@ -509,17 +509,17 @@ static void conn_debug(const char *name, const char *buf, size_t count) {
 	fprintf(csync_out_debug, "\n");
 }
 
-ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
+ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	char buffer[200];
 	*size = 0;
 	int rc = !conn_gets(fd, buffer, 200);
 	const char *typestr = "None";
-	if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
-		csync_info(2, "Got octet-stream %lld\n", *size);
+	if (sscanf(buffer, "octet-stream %ld\n", size) == 1) {
+		csync_info(2, "Got octet-stream %ld\n", *size);
 		*type = OCTET_STREAM;
 		typestr = "octet-stream";
-	} else if (sscanf(buffer, "chunked %lld\n", size) == 1) {
-		csync_info(2, "Got chuncked-stream %lld\n", *size);
+	} else if (sscanf(buffer, "chunked %ld\n", size) == 1) {
+		csync_info(2, "Got chuncked-stream %ld\n", *size);
 		*type = CHUNKED_MODE;
 		typestr = "chunked";
 	} else {
@@ -610,7 +610,7 @@ int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 	while (size > 0) {
 		size_t chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		int rc  = fread(buffer, chunk, 1, file);
-		char hexbuf[chunk*2+1];
+		//char hexbuf[chunk*2+1];
 		if (rc <= 0) {
 			csync_error(0, "Failed reading file while sending");
 			return -1;
@@ -778,7 +778,7 @@ static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, 
 
 ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 	size_t i = 0;
-	int rc = 0;
+	ssize_t rc = 0;
 	while (i < size - 1) {
 		rc = conn_raw_read(filedesc, s + i, 1);
 		if (rc != 1)
@@ -790,7 +790,7 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 		}
 	}
 	s[i] = 0;
-	return rc ? rc : i;
+	return rc ? rc : (ssize_t) i;
 }
 
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {

@@ -75,8 +75,6 @@
 #define ERROR_CREATE       -16
 #define ERROR_OTHER        -20
 
-extern int csync_zero_mtime_debug;
-
 operation_t csync_operation(const char *operation) {
 	if (!operation) {
 		csync_warn(0, "Called with null operation");
@@ -147,7 +145,7 @@ static int read_conn_status_raw(int fd, const char *file, const char *host, char
 		return ERROR_CREATE;
 	if (!strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN)) {
 		// Return the missing path
-		strncpy(line, line+PATH_NOT_FOUND_LEN, maxlength);
+		memcpy(line, line+PATH_NOT_FOUND_LEN, strlen(line+PATH_NOT_FOUND_LEN)+1);
 		return ERROR_PATH_MISSING;
 	}
 
@@ -1611,7 +1609,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 		conn_close(conn);
 		return;
 	}
-	int rc;
+	int rc = -1;
 	textlist_p directory_list = 0;
 	char *last_dir_deleted = NULL;
 	for (t = tl; t != 0; t = next_t) {
@@ -1677,7 +1675,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 	textlist_free(tl);
 
 	textlist_free(tl_del);
-
+	rc = 0;
 	if (!(flags & FLAG_DRY_RUN))
 		for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
 			rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
@@ -1933,7 +1931,7 @@ int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p
 		csync_info(0, "Diff %s:%s failed with connection read %s %d", peername, filename, strerror(errno), errno);
 	csync_log(LOG_DEBUG, 2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d ", myname, filename,
 			peername, filename, length);
-	fclose(p);
+	pclose(p);
 	signal(SIGPIPE, old_sigpipe_handler);
 	return finish_close(conn);
 }
