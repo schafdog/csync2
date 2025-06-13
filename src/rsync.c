@@ -18,9 +18,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "csync2.h"
-#include "redis.h"
 #include <librsync.h>
+#include "csync2.h"
+#include "rsync.h"
+#include "conn.h"
+#include "redis.h"
 
 #if defined(RS_MD4_LENGTH)
 #define STRONG_LEN 16

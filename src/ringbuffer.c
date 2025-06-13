@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include "ringbuffer.h"
 
 /* Maximum simultanous allocated */
 #define RINGBUFFER_LEN 10000

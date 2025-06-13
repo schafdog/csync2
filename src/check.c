@@ -19,6 +19,11 @@
  */
 
 #include "csync2.h"
+#include "utils.h"
+#include "check.h"
+#include "action.h"
+#include "checktxt.h"
+#include "db.h"
 #include "digest.h"
 #include "db_api.h"
 #include "buffer.h"

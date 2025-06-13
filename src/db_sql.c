@@ -4,6 +4,12 @@
 
 #include "csync2.h" 
 #include "db_sql.h"
+#include "check.h"
+#include "urlencode.h"
+#include "utils.h"
+#include "checktxt.h"
+#include "update.h"
+#include "ringbuffer.h"
 #include <unistd.h>
 #include <time.h>
 

@@ -29,6 +29,8 @@
 #include "db_postgres.h"
 #include "dl.h"
 #include "db_sql.h"
+#include "ringbuffer.h"
+#include "check.h"
 
 #ifdef HAVE_POSTGRESQL_LIBPQ_FE_H
 #include <postgresql/libpq-fe.h>

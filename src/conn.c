@@ -18,7 +18,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "csync2.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -34,6 +33,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <poll.h>
+
+#include "csync2.h"
+#include "conn.h"
+#include "urlencode.h"
+#include "db.h"
+#include "utils.h"
 
 #ifdef HAVE_LIBGNUTLS
 #  include <gnutls/gnutls.h>
@@ -115,7 +120,7 @@ static const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_
 static int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
 	int sfd;
 	struct csync_hostinfo *p = csync_hostinfo;
-	char *port = csync_port;
+	const char *port = csync_port;
 	while (p) {
 		if (!strcmp(peername, p->name)) {
 			peername = p->host;
@@ -373,7 +378,7 @@ int conn_close(int conn) {
 	return 0;
 }
 
-static inline size_t READ_POLL(int filedesc, void *buf, size_t count) {
+static inline size_t READ_POLL(int filedesc, char *buf, size_t count) {
 #ifdef HAVE_LIBGNUTLS
 	if (csync_conn_usessl)
 		return gnutls_record_recv(conn_tls_session, buf, count);
@@ -448,7 +453,7 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 	return length;
 }
 
-static inline ssize_t WRITE(int fd, const void *buf, size_t count) {
+static inline ssize_t WRITE(int fd, const char *buf, size_t count) {
 	ssize_t n;
 	size_t total;
 #ifdef HAVE_LIBGNUTLS
@@ -643,10 +648,11 @@ int conn_read_file_chunked(int sockfd, FILE *file) {
 }
 
 /* Rewritten not to mask errors, read in batch */
-ssize_t conn_read(int fd, void *buf, size_t count) {
+ssize_t conn_read(int fd, char *buf, size_t count) {
 	size_t size = 0;
+	char *char_buf = (char *)buf;  /* Cast once to avoid repeated void* arithmetic */
 	while ((size < count)) {
-		ssize_t bytes_read = conn_raw_read(fd, (char*) buf + size, count - size);
+		ssize_t bytes_read = conn_raw_read(fd, char_buf + size, count - size);
 		if (bytes_read < 0)
 			return bytes_read;
 		/* End of file */
@@ -658,7 +664,7 @@ ssize_t conn_read(int fd, void *buf, size_t count) {
 	return size;
 }
 
-ssize_t conn_write(int fd, const void *buf, size_t count) {
+ssize_t conn_write(int fd, const char *buf, size_t count) {
 	// conn_debug("Local", buf, count);
 	return WRITE(fd, buf, count);
 }

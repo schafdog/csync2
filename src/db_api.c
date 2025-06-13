@@ -130,7 +130,7 @@ int db_exec(db_conn_p conn, const char *sql) {
 	return DB_ERROR;
 }
 
-int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt, char **pptail) {
+int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt, const char **pptail) {
 	if (conn && conn->prepare)
 		return conn->prepare(conn, sql, stmt, pptail);
 

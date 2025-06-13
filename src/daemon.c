@@ -18,14 +18,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "csync2.h"
-
-#include "digest.h"
-#include "uidgid.h"
-#include "resolv.h"
-#include "redis.h"
-#include "buffer.h"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -45,6 +37,23 @@
 #ifdef __CYGWIN__
 #include <w32api/windows.h>
 #endif
+
+#include "csync2.h"
+#include "daemon.h"
+#include "conn.h"
+#include "action.h"
+#include "check.h"
+#include "urlencode.h"
+#include "utils.h"
+#include "rsync.h"
+#include "checktxt.h"
+#include "update.h"
+#include "digest.h"
+#include "uidgid.h"
+#include "resolv.h"
+#include "redis.h"
+#include "buffer.h"
+
 
 #define OK        0
 #define IDENTICAL 1

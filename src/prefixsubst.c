@@ -20,6 +20,7 @@
 
 #include "csync2.h"
 #include <stdio.h>
+#include "utils.h"
 
 #define RINGBUFF_LEN 100
 

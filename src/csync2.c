@@ -19,10 +19,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "csync2.h"
-#include "version.h"
-#include "redis.h"
-
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -40,14 +36,26 @@
 #include <signal.h>
 #include <ctype.h>
 #include <syslog.h>
-#include "db_api.h"
-
 #include <netdb.h>
-#include <db_api.h>
 #include <time.h>
 #ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
+#include "csync2.h"
+#include "version.h"
+#include "redis.h"
+#include "db_api.h"
+#include "db.h"
+#include "conn.h"
+#include "check.h"
+#include "update.h"
+#include "utils.h"
+#include "ringbuffer.h"
+#include "urlencode.h"
+#include "daemon.h"
+#include "action.h"
+#include "checktxt.h"
+
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -1013,7 +1021,6 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	int retval = -1;
 	textlist_p tl = 0, t;
 	int first = 1;
-	int i;
 	nofork:
 	csync_debug(4, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
 	// init syslog if needed. 
@@ -1159,7 +1166,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 			exit(1);
 		}
 	}
-	for (i = optind; i < argc; i++)
+	for (int i = optind; i < argc; i++)
 		on_cygwin_lowercase(argv[i]);
 
 	if (mode == MODE_SIMPLE) {
@@ -1169,13 +1176,18 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 		} else {
 			char *realnames[argc - optind];
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
-			csync_update(db, g_myhostname, g_active_peers, (const char**) realnames, count, g_ip_version, csync_update_host,
+			// Create const char** array for csync_update call
+			const char *const_realnames[count];
+			for (int i = 0; i < count; i++) {
+				const_realnames[i] = realnames[i];
+			}
+			csync_update(db, g_myhostname, g_active_peers, const_realnames, count, g_ip_version, csync_update_host,
 					flags);
 			csync_realnames_free(realnames, count);
 		}
 	}
 	if (mode == MODE_HINT) {
-		for (i = optind; i < argc; i++) {
+		for (int i = optind; i < argc; i++) {
 			char *realname = getrealfn(argv[i]);
 			if (realname != NULL) {
 				if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE))
@@ -1208,7 +1220,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	};
 
 	if (mode & MODE_FORCE) {
-		for (i = optind; i < argc; i++) {
+		for (int i = optind; i < argc; i++) {
 			char *realname = getrealfn(argv[i]);
 			db->force(db, realname, flags & FLAG_RECURSIVE);
 			free_realname(realname);
@@ -1222,7 +1234,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 			char *realnames[argc - optind];
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags);
 			if (count > 0) {
-				csync_update(db, g_myhostname, g_active_peers, (const char**) realnames, argc - optind, g_ip_version,
+				// Create const char** array for csync_update call
+				const char *const_realnames[count];
+				for (int idx = 0; idx < count; idx++) {
+					const_realnames[idx] = realnames[idx];
+				}
+				csync_update(db, g_myhostname, g_active_peers, const_realnames, count, g_ip_version,
 						update_func, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
@@ -1232,7 +1249,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	};
 
 	if (mode == MODE_COMPARE) {
-		for (i = optind; i < argc; i++) {
+		for (int i = optind; i < argc; i++) {
 			char *realname = getrealfn(argv[i]);
 			if (realname != NULL) {
 				if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE)) {
@@ -1252,7 +1269,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 	};
 
 	if (mode == MODE_MARK) {
-		for (i = optind; i < argc; i++) {
+		for (int i = optind; i < argc; i++) {
 			char *realname = getrealfn(argv[i]);
 			db->mark(db, g_active_peerlist, realname, flags & FLAG_RECURSIVE);
 		}

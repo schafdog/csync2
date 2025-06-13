@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <time.h>
 #include "db_api.h"
+#include "db.h"
 
 #define DEADLOCK_MESSAGE \
 	"Database backend is exceedingly busy => Terminating (requesting retry).\n"
@@ -218,7 +219,7 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 	char *sql;
 	va_list ap;
 	int rc, busyc = 0;
-	char *ppTail;
+	const char *ppTail;
 	va_start(ap, fmt);
 	VASPRINTF(&sql, fmt, ap);
 	va_end(ap);

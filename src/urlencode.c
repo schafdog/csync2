@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include "urlencode.h"
 
 #define RINGBUFF_LEN 10000
 

@@ -18,9 +18,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "csync2.h"
-#include "uidgid.h"
-#include "redis.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -34,8 +31,18 @@
 #include <stdarg.h>
 #include <signal.h>
 #include <time.h>
-
 #include <limits.h>
+
+#include "csync2.h"
+#include "update.h"
+#include "rsync.h"
+#include "check.h"
+#include "conn.h"
+#include "utils.h"
+#include "checktxt.h"
+#include "urlencode.h"
+#include "uidgid.h"
+#include "redis.h"
 
 #define MAX_UID_SIZE  100
 #define MAX_GID_SIZE  100

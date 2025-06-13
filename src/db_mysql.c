@@ -28,6 +28,8 @@
 #include "db_api.h"
 #include "db_mysql.h"
 #include "dl.h"
+#include "ringbuffer.h"
+#include "check.h"
 
 #ifdef HAVE_MYSQL
 #ifdef HAVE_MYSQL
