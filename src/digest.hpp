@@ -9,7 +9,14 @@
 ##define DIGEST_MAX_SIZE 64
 #else
 */
+// Disable warnings for C headers
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wcast-qual"
+extern "C" {
 #include <openssl/evp.h>
+}
+#pragma GCC diagnostic pop
 #define DIGEST_MAX_SIZE EVP_MAX_MD_SIZE
 // #endif
 
