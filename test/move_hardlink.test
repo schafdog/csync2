@@ -1,3 +1,4 @@
+sleep 2
 daemon d
 clean local
 clean peer
