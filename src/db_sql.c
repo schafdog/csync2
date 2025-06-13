@@ -267,7 +267,7 @@ static char* csync_generate_recursive_sql(const char *file_encoded, int recursiv
 
 	if (recursive) {
 		if (file_encoded == NULL || !strcmp(file_encoded, "/"))
-			ASPRINTF(&where_rec, "");
+			ASPRINTF(&where_rec, "%s", "");
 		else {
 			ASPRINTF(&where_rec, "%s (filename = '%s' OR filename LIKE '%s/%%') %s", where, file_encoded, file_encoded,
 					and);
@@ -277,7 +277,7 @@ static char* csync_generate_recursive_sql(const char *file_encoded, int recursiv
 			ASPRINTF(&where_rec, "%s filename = '%s' %s", where, file_encoded, and);
 		else
 			// Also recursive
-			ASPRINTF(&where_rec, "");
+			ASPRINTF(&where_rec, "%s", "");
 	}
 	return where_rec;
 }

@@ -715,7 +715,7 @@ int main(int argc, char **argv) {
 	csync_confdir = ETCDIR;
 	int cmd_db_version = 0;
 	int cmd_ip_version = 0;
-	update_func update_func = NULL;
+	update_func update_function = NULL;
 	int csync_port_cmdline = 0;
 	while ((opt = getopt(argc, argv, "01246a:W:s:Ftp:G:P:C:K:D:N:HBAIXULlSTMRvhcuoimfxrdZz:VQqeEYy9:")) != -1) {
 
@@ -835,7 +835,7 @@ int main(int argc, char **argv) {
 			mode |= MODE_FORCE;
 			break;
 		case 'u':
-			update_func = csync_update_host;
+			update_function = csync_update_host;
 			if (mode == MODE_CHECK || mode == MODE_FORCE)
 				mode |= MODE_UPDATE;
 			else {
@@ -916,12 +916,12 @@ int main(int argc, char **argv) {
 			break;
 		case 'Q':
 			flags |= FLAG_DO_ALL;
-			update_func = csync_ping_host;
+			update_function = csync_ping_host;
 			mode = MODE_UPDATE;
 			break;
 		case 'e':
 			flags |= FLAG_DO_ALL;
-			update_func = csync_sync_host;
+			update_function = csync_sync_host;
 			mode = MODE_EQUAL;
 			break;
 		case 'Y':
@@ -1005,7 +1005,7 @@ int main(int argc, char **argv) {
 			free(myport);
 		}
 	};
-	return csync_start(mode, flags, argc, argv, update_func, listenfd, cmd_db_version, cmd_ip_version);
+	return csync_start(mode, flags, argc, argv, update_function, listenfd, cmd_db_version, cmd_ip_version);
 }
 ;
 
@@ -1013,7 +1013,7 @@ int main(int argc, char **argv) {
  Responsible for looping in server mode. Need rewrite
  */
 
-int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version,
+int csync_start(int mode, int flags, int argc, char *argv[], update_func updater, int listenfd, int cmd_db_version,
 		int cmd_ip_version) {
 	int start_time = time(NULL);
 	int server = mode & MODE_DAEMON;
@@ -1229,7 +1229,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 
 	if (mode & MODE_UPDATE || mode & MODE_EQUAL) {
 		if (argc <= optind) {
-			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, update_func, flags);
+			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, updater, flags);
 		} else {
 			char *realnames[argc - optind];
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags);
@@ -1240,7 +1240,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func update_
 					const_realnames[idx] = realnames[idx];
 				}
 				csync_update(db, g_myhostname, g_active_peers, const_realnames, count, g_ip_version,
-						update_func, flags);
+						updater, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
 			}

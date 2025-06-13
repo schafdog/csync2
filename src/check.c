@@ -764,7 +764,7 @@ int csync_check_mod(db_conn_p db, const char *file, int flags, int *count,
 		*count += csync_check_file_mod(db, file, &st, flags);
 		dirdump_this = FLAG_DIRDUMP;
 		dirdump_parent = FLAG_DIRDUMP;
-		//no break
+		 __attribute__ ((fallthrough));
 	case MATCH_INTO:
 		if (!(flags & FLAG_RECURSIVE))
 			break;

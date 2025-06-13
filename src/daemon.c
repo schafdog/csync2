@@ -748,7 +748,8 @@ static int setup_tag(const char *tag[32], char *line) {
 // Works with both GCC and Clang                                                                                                     
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
+//#pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 #endif
 static void destroy_tag(const char *tag[32]) {
 	int i = 0;
@@ -1462,7 +1463,7 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 		csync_info(2, "mkdir %s rc = %d errno = %d err = %s\n", filename, rc, errno, (*cmd_error ? *cmd_error : ""));
 		if (rc != OK)
 			return rc;
-		// fall through on OK
+		__attribute__ ((fallthrough));
 	}
 	case A_MOD: {
 		int rc = csync_daemon_setown(filename, params->uid, params->gid, params->user, params->group, cmd_error);

@@ -439,12 +439,12 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	if (db_url == NULL) {
 		csync_fatal("No memory for db_url\n");
 	}
-/*
+
 	user = "postgres";
 	pass = "";
 	host = "localhost";
 	database = "csync2";
-*/
+
 	strcpy(db_url, file);
 	int rc = db_pgsql_parse_url(db_url, &host, &user, &pass, &database, &port);
 	if (rc != DB_OK)
