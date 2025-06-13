@@ -23,16 +23,16 @@ bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
 
-csync2_SOURCES = action.c cfgfile_parser_processed.y cfgfile_scanner.l check.c	\
-                 checktxt.c csync2.c global.c daemon.c db.c \
-		 error.c error.h getrealfn.c	\
-                 groups.c rsync.c update.c urlencode.c conn.c prefixsubst.c \
-		 db_api.c db_sql.c db_sqlite.c db_sqlite2.c db_mysql.c db_postgres.c \
-		 ringbuffer.c buffer.c uidgid.c uidgid.h resolv.c resolv.h \
-		 csync2.h db_api.h db_sql.h db_mysql.h db_postgres.h db_sqlite.h db_sqlite2.h dl.h \
-		 redis.h redis.c \
+csync2_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l check.cpp	\
+                 checktxt.cpp csync2.cpp global.cpp daemon.cpp db.cpp \
+		 error.cpp error.hpp getrealfn.cpp	\
+                 groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
+		 db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \
+		 ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \
+		 csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp db_sqlite2.hpp dl.hpp \
+		 redis.hpp redis.cpp \
 		 csync2-compare \
-		 digest.c digest.h version.h \
+		 digest.cpp digest.hpp version.hpp \
 		 csync2.1
 
 EXTRA_DIST = cfgfile_parser.y
@@ -82,12 +82,12 @@ dist-clean: dist-clean-local
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
+AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	-std=c17 -O0 -Wno-deprecated-declarations \
-	$(WARNING_CFLAGS)
+	-std=c++17 -O0 -Wno-deprecated-declarations \
+	$(WARNING_CXXFLAGS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'

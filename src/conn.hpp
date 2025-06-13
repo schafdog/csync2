@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <db_api.h>
+#include "db_api.hpp"
 
 /* Forward declarations */
 typedef const char * peername_p;

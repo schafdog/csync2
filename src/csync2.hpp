@@ -41,7 +41,7 @@ typedef int operation_t;
 typedef const char * filename_p;
 typedef const char * peername_p;
 
-#include <db_api.h>
+#include "db_api.hpp"
 
 #define MATCH_NEXT 2
 #define MATCH_INTO 1
@@ -80,9 +80,9 @@ typedef const char * peername_p;
 
 #ifdef __DARWIN_C_LEVEL
 #define DEV_FORMAT "%u"
-#define INO_FORMAT "%"PRIu64
+#define INO_FORMAT "%" PRIu64
 #else
-#define DEV_FORMAT "%"PRIu64
+#define DEV_FORMAT "%" PRIu64
 #define INO_FORMAT "%"PRIu64
 #endif
 
@@ -120,7 +120,7 @@ enum {
 #define ERROR_DIRTY_STR "File is also marked dirty here!"
 #define ERROR_DIRTY_LEN ((int)sizeof ERROR_DIRTY_STR - 1)
 
-#include "error.h"
+#include "error.hpp"
 
 #define ASPRINTF(s, fmt, ...) do {\
 	int __ret = asprintf(s, fmt, ##__VA_ARGS__);\
@@ -206,7 +206,7 @@ typedef struct text_list *text_list_p;
 static inline void textlist_add_struct(struct textlist **listhandle, void *data, void (*destroy) (void *))
 {
     struct textlist *tmp = *listhandle;
-    *listhandle = malloc(sizeof(struct textlist));
+    *listhandle = (struct textlist*)malloc(sizeof(struct textlist));
     (*listhandle)->intvalue = 0;
     (*listhandle)->data = data;
     (*listhandle)->destroy = destroy;
@@ -218,10 +218,10 @@ static inline void textlist_add_var(struct textlist **listhandle, int intitem, i
     struct textlist *tmp = *listhandle;
     va_list arguments;
 
-    *listhandle = malloc(sizeof(struct textlist));
+    *listhandle = (struct textlist*)malloc(sizeof(struct textlist));
     (*listhandle)->intvalue = intitem;
     (*listhandle)->num = num;
-    (*listhandle)->values = calloc(num,sizeof(char*));
+    (*listhandle)->values = (char**)calloc(num,sizeof(char*));
     (*listhandle)->data = NULL;
     (*listhandle)->destroy = NULL;
     va_start ( arguments, num );           
@@ -240,7 +240,7 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 				 int intitem, int operation)
 {
 	struct textlist *tmp = *listhandle;
-	*listhandle = malloc(sizeof(struct textlist));
+	*listhandle = (struct textlist*)malloc(sizeof(struct textlist));
 	(*listhandle)->intvalue = intitem;
 	(*listhandle)->operation = operation;
 	(*listhandle)->value  = (item  ? strdup(item)  : 0);
@@ -341,11 +341,19 @@ static inline void textlist_free_struct(struct textlist *listhandle)
     }
 }
 
-#include "groups.h"
+#include "groups.hpp"
 
 /* cfgfile_parser_processed.y - additional missing prototypes */
+#ifdef __cplusplus
+extern "C" {
+#endif
 void csync_config_destroy_group(struct csync_group *group);
 void csync_config_destroy(void);
+int yyparse(void);
+int yylex_destroy(void);
+#ifdef __cplusplus
+}
+#endif
 
 /* config structures */
 

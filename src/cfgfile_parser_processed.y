@@ -19,13 +19,13 @@
  */
 
 %{
-#include "csync2.h"
+#include "csync2.hpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <fnmatch.h>
 #include <ctype.h>
-#include "utils.h"
+#include "utils.hpp"
 
 struct csync_group    *csync_group  = 0;
 struct csync_prefix   *csync_prefix = 0;

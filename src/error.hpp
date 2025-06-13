@@ -6,9 +6,15 @@
 
 /* error.c */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 void csync_printtime(void);
 void csync_printtotaltime(void);
 void csync_log(int syslog_priority, int lv, const char *fmt, ...);
+#ifdef __cplusplus
+}
+#endif
 
 #define csync_debug_ping(N) \
 csync_debug(N, "--> %s %d\n", __FILE__, __LINE__)

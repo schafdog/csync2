@@ -22,8 +22,8 @@
 #define CSYNC2_CHECK_H 1
 
 #include <sys/stat.h>
-#include <db_api.h>
-#include "buffer.h"
+#include "db_api.hpp"
+#include "buffer.hpp"
 
 /* Forward declarations */
 typedef const char * filename_p;

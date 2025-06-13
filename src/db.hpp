@@ -22,7 +22,7 @@
 #define CSYNC2_DB_H 1
 
 #include <sys/stat.h>
-#include <db_api.h>
+#include "db_api.hpp"
 
 /* Forward declarations */
 typedef const char * filename_p;

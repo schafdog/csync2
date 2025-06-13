@@ -25,7 +25,7 @@ AM_SILENT_RULES([yes])
 # Canonical host detection (required for $host_os variable)
 AC_CANONICAL_HOST
 
-AC_CONFIG_SRCDIR(src/csync2.c)
+AC_CONFIG_SRCDIR(src/csync2.cpp)
 AC_CONFIG_HEADERS(src/config.h)
 
 # Use /etc and /var instead of $prefix/...
@@ -33,7 +33,7 @@ AC_CONFIG_HEADERS(src/config.h)
 # test "$sysconfdir" = '${prefix}/etc' && sysconfdir=/etc
 
 # Checks for programs.
-AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_INSTALL
 
 # macOS-specific: Prioritize Homebrew bison over system bison
@@ -116,16 +116,16 @@ fi
 AC_SUBST([AM_YFLAGS])
 AC_SUBST([YACC_SUPPORTS_EXPECT])
 
-if test "$CC" = "clang"
+if test "$CXX" = "clang++"
 then
-   CFLAGS="$CFLAGS -Qunused-arguments "
+   CXXFLAGS="$CXXFLAGS -Qunused-arguments "
 fi
 
 # Enable comprehensive compiler warnings
 AC_MSG_CHECKING([for compiler warning flags])
-WARNING_CFLAGS=""
+WARNING_CXXFLAGS=""
 
-# Basic warning flags (supported by both GCC and Clang)
+# Basic warning flags (supported by both GCC and Clang for C++)
 for flag in \
     -Wall \
     -Wextra \
@@ -143,35 +143,32 @@ for flag in \
     -Wundef \
     -Wshadow \
     -Wpointer-arith \
-    -Wbad-function-cast \
     -Wcast-qual \
     -Wcast-align \
     -Wwrite-strings \
-    -Wstrict-prototypes \
-    -Wold-style-definition \
-    -Wmissing-prototypes \
-    -Wmissing-declarations \
     -Wredundant-decls \
-    -Wnested-externs \
     -Winline \
     -Wdisabled-optimization \
     -Wno-unused-parameter \
     -Wno-unused-function \
     -Wno-format-nonliteral \
-    -Wno-cast-align 
+    -Wno-cast-align \
+    -Woverloaded-virtual \
+    -Wnon-virtual-dtor \
+    -Wno-old-style-cast
 do
-    AC_MSG_CHECKING([whether $CC accepts $flag])
-    old_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $flag"
+    AC_MSG_CHECKING([whether $CXX accepts $flag])
+    old_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS $flag"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
-        [AC_MSG_RESULT([yes]); WARNING_CFLAGS="$WARNING_CFLAGS $flag"],
+        [AC_MSG_RESULT([yes]); WARNING_CXXFLAGS="$WARNING_CXXFLAGS $flag"],
         [AC_MSG_RESULT([no])])
-    CFLAGS="$old_CFLAGS"
+    CXXFLAGS="$old_CXXFLAGS"
 done
 
-# Add warning flags to AM_CFLAGS instead of CFLAGS to avoid duplication
-AC_SUBST([WARNING_CFLAGS])
-AC_MSG_RESULT([enabled: $WARNING_CFLAGS])
+# Add warning flags to AM_CXXFLAGS instead of CXXFLAGS to avoid duplication
+AC_SUBST([WARNING_CXXFLAGS])
+AC_MSG_RESULT([enabled: $WARNING_CXXFLAGS])
 
 # macOS-specific bison verification
 case "$host_os" in

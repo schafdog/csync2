@@ -21,7 +21,7 @@
 #ifndef CSYNC2_ACTION_H
 #define CSYNC2_ACTION_H 1
 
-#include <db_api.h>
+#include "db_api.hpp"
 
 /* Forward declarations */
 typedef const char * filename_p;

@@ -25,8 +25,14 @@ extern char *getrealfn(filename_p filename);
 
 /* prefixsubst.c */
 /* another ringbuffer here. so use it with care!! */
+#ifdef __cplusplus
+extern "C" {
+#endif
 const char *prefixsubst(const char *in);
 const char *prefixencode(filename_p filename);
+#ifdef __cplusplus
+}
+#endif
 
 
 extern char *filter_mtime(char *chktxt);

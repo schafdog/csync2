@@ -20,12 +20,12 @@
 #else
 #define SO_FILE_EXT ".so"
 #endif
-#include "buffer.h"
+#include "buffer.hpp"
 
 typedef struct db_conn_t *db_conn_p;
 typedef struct db_stmt_t *db_stmt_p;
 
-#include "csync2.h"
+// Forward declarations to avoid circular includes
 
 struct textlist;
 typedef struct textlist *textlist_p;
@@ -34,7 +34,7 @@ typedef textlist_p (*check_old_operation_f)(const char *file, int mode, struct s
 		const char *old_other, operation_t old_operation, const char *old_checktxt, peername_p peername, BUF_P buffer);
 
 struct db_conn_t {
-	void *private;
+	void *private_data;
 	int version;
 	int (*exec)(db_conn_p conn, const char *exec);
 	int (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
@@ -119,8 +119,8 @@ struct db_conn_t {
 };
 
 struct db_stmt_t {
-	void *private;
-	void *private2;
+	void *private_data;
+	void *private_data2;
 	db_conn_p db;
 	const char* (*get_column_text)(db_stmt_p vmx, int column);
 	const void* (*get_column_blob)(db_stmt_p vmx, int column);
