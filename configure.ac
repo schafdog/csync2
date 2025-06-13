@@ -155,7 +155,7 @@ for flag in \
     -Wno-cast-align \
     -Woverloaded-virtual \
     -Wnon-virtual-dtor \
-    -Wno-old-style-cast
+    -Wold-style-cast
 do
     AC_MSG_CHECKING([whether $CXX accepts $flag])
     old_CXXFLAGS="$CXXFLAGS"

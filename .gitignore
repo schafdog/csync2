@@ -36,7 +36,6 @@ ylwrap
 tests/*.diff
 tests/test
 test/prefix.cfg
-*.cpp
 mkstemp
 version.h
 version.h.new
