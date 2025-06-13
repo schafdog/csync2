@@ -27,6 +27,10 @@
 #define _GNU_SOURCE
 #endif
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +82,7 @@ typedef const char * peername_p;
 #define CHUNK_SIZE 16*1024
 
 
-#if __DARWIN_C_LEVEL
+#ifdef __DARWIN_C_LEVEL
 #define DEV_FORMAT "%u"
 #define INO_FORMAT "%"PRIu64
 #else

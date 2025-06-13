@@ -20,6 +20,7 @@
 
 #ifndef CSYNC2_CHECKTXT_H
 #define CSYNC2_CHECKTXT_H 1
+#include <time.h>
 
 //extern const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
 extern const char *csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version);

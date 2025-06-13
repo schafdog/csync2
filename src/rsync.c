@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <librsync.h>
 #include "csync2.h"
+#include <librsync.h>
 #include "rsync.h"
 #include "conn.h"
 #include "redis.h"
@@ -757,7 +757,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 				memmove(in_buf, bufs.next_in, bufs.avail_in);
 			}
 
-			char *buffer[CHUNK_SIZE];
+			char buffer[CHUNK_SIZE];
 			size_t avail = BUF_SIZE - bufs.avail_in;
 			avail = avail > CHUNK_SIZE ? CHUNK_SIZE : avail;
 			ssize_t read = conn_read(sock, buffer, (size_t) size > avail ? avail : size);

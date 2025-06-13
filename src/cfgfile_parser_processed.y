@@ -19,12 +19,12 @@
  */
 
 %{
+#include "csync2.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <fnmatch.h>
 #include <ctype.h>
-#include "csync2.h"
 #include "utils.h"
 
 struct csync_group    *csync_group  = 0;
@@ -60,9 +60,9 @@ void yyerror(const char *text)
 
 static void create_group(char *name)
 {
-	int static autonum = 1;
+	static int autonum = 1;
 	struct csync_group *t =
-		calloc(sizeof(struct csync_group), 1);
+		calloc(1, sizeof(struct csync_group));
 
 	if (name == 0)
 	    // missing check on result
@@ -94,7 +94,7 @@ static void add_host(char *hostname, char *peername, int slave)
 	    free(peername);
     } else {
 	struct csync_group_host *t =
-	    calloc(sizeof(struct csync_group_host), 1);
+	    calloc(1, sizeof(struct csync_group_host));
 	t->hostname = peername;
 	t->on_left_side = !csync_group->myname;
 	t->slave = slave;
@@ -108,7 +108,7 @@ static void add_host(char *hostname, char *peername, int slave)
 static void add_patt(int patterntype, const char *p_pattern)
 {
 	struct csync_group_pattern *t =
-		calloc(sizeof(struct csync_group_pattern), 1);
+		calloc(1, sizeof(struct csync_group_pattern));
 	int i;
 	char *pattern = strdup(p_pattern);
 
@@ -302,7 +302,7 @@ found_asactive:	;
 static void create_action(void)
 {
     struct csync_group_action *t =
-	calloc(sizeof(struct csync_group_action), 1);
+		calloc(1, sizeof(struct csync_group_action));
     t->next = csync_group->action;
     t->logfile = strdup("/dev/null");
     csync_group->action = t;
@@ -381,7 +381,7 @@ void csync_config_destroy_group(struct csync_group *group) {
 static void add_action_pattern(const char *pattern)
 {
     struct csync_group_action_pattern *t =
-	calloc(sizeof(struct csync_group_action_pattern), 1);
+		calloc(1, sizeof(struct csync_group_action_pattern));
     t->star_matches_slashes = !!strstr(pattern, "**");
     t->pattern = strdup(pattern);
     t->next = csync_group->action->pattern;
@@ -391,7 +391,7 @@ static void add_action_pattern(const char *pattern)
 static void add_action_exec(char *command)
 {
 	struct csync_group_action_command *t =
-		calloc(sizeof(struct csync_group_action_command), 1);
+		calloc(1, sizeof(struct csync_group_action_command));
 	t->command = command;
 	t->next = csync_group->action->command;
 	csync_group->action->command = t;
@@ -468,7 +468,7 @@ static void set_ip_version(char *version)
 static void create_hostinfo_entry(char *name, char *host, char *service)
 {
      struct csync_hostinfo *p =
-	 calloc(sizeof(struct csync_hostinfo), 1);
+		 calloc(1, sizeof(struct csync_hostinfo));
      p->next = csync_hostinfo;
      p->name = name;
      p->host = host;
@@ -480,7 +480,7 @@ static void create_hostinfo_entry(char *name, char *host, char *service)
 static void create_prefix(char *pname)
 {
 	struct csync_prefix *p =
-		calloc(sizeof(struct csync_prefix), 1);
+		calloc(1, sizeof(struct csync_prefix));
 	p->name = strdup(pname);
 	p->next = csync_prefix;
 	csync_prefix = p;
@@ -532,7 +532,7 @@ static void create_prefix_entry(char *pattern,  char *path)
 static void create_nossl(char *from, char *to)
 {
 	struct csync_nossl *t =
-		calloc(sizeof(struct csync_nossl), 1);
+		calloc(1, sizeof(struct csync_nossl));
 	t->pattern_from = from;
 	t->pattern_to = to;
 	t->next = csync_nossl;

@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "csync2.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -38,7 +39,6 @@
 #include <w32api/windows.h>
 #endif
 
-#include "csync2.h"
 #include "daemon.h"
 #include "conn.h"
 #include "action.h"

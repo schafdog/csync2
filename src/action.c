@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "csync2.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -27,7 +28,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
-#include "csync2.h"
 #include "action.h"
 #include "groups.h"
 #include "utils.h"

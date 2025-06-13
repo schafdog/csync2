@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "csync2.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -33,7 +34,6 @@
 #include <time.h>
 #include <limits.h>
 
-#include "csync2.h"
 #include "update.h"
 #include "rsync.h"
 #include "check.h"

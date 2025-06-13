@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "csync2.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -34,7 +35,6 @@
 #include <string.h>
 #include <poll.h>
 
-#include "csync2.h"
 #include "conn.h"
 #include "urlencode.h"
 #include "db.h"

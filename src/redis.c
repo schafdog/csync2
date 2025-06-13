@@ -12,8 +12,6 @@
 redisContext *redis_context = NULL;
 redisReply *redis_reply = NULL;
 int isunix = 0;
-extern char *csync_redis;
-extern unsigned int csync_lock_time;
 
 int csync_redis_connect(char *redis) {
 	if (redis == NULL)
