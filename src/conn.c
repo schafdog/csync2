@@ -35,6 +35,11 @@
 #include <string.h>
 #include <poll.h>
 
+#include "conn.h"
+#include "urlencode.h"
+#include "db.h"
+#include "utils.h"
+
 #ifdef HAVE_LIBGNUTLS
 #  include <gnutls/gnutls.h>
 #  include <gnutls/x509.h>
@@ -47,7 +52,7 @@ static gnutls_session_t conn_tls_session;
 static gnutls_certificate_credentials_t conn_x509_cred;
 #endif
 
-struct sockaddr * csync_lookup_addr(const char *hostname, const char *port, int ip_version) {
+static struct sockaddr * csync_lookup_addr(const char *hostname, const char *port, int ip_version) {
 	struct addrinfo hints;
 	struct addrinfo *result;
 	/* Obtain address(es) matching host/port */
@@ -85,7 +90,7 @@ struct sockaddr * csync_lookup_addr(const char *hostname, const char *port, int 
 }
 
 // Returns the size of the appropriate sockaddr struct
-socklen_t get_sockaddr_len(const struct sockaddr *sa) {
+static socklen_t get_sockaddr_len(const struct sockaddr *sa) {
     switch (sa->sa_family) {
         case AF_INET:
             return sizeof(struct sockaddr_in);
@@ -98,7 +103,7 @@ socklen_t get_sockaddr_len(const struct sockaddr *sa) {
 }
 
 // Converts a sockaddr to a human-readable IP string
-const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_t outlen) {
+static const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_t outlen) {
     if (sa->sa_family == AF_INET) {
         const struct sockaddr_in *sin = (const struct sockaddr_in *)sa;
         return inet_ntop(AF_INET, &(sin->sin_addr), out, outlen);
@@ -112,10 +117,10 @@ const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_t outle
 }
 
 /* getaddrinfo stuff mostly copied from its manpage */
-int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
+static int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
 	int sfd;
 	struct csync_hostinfo *p = csync_hostinfo;
-	char *port = csync_port;
+	const char *port = csync_port;
 	while (p) {
 		if (!strcmp(peername, p->name)) {
 			peername = p->host;
@@ -277,7 +282,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 	case GNUTLS_E_FATAL_ALERT_RECEIVED:
 		alrt = gnutls_alert_get(conn_tls_session);
 		fprintf(csync_out_debug, "SSL: fatal alert received from peer: %d (%s).\n", alrt, gnutls_alert_get_name(alrt));
-
+		__attribute__ ((fallthrough));
 	default:
 		gnutls_bye(conn_tls_session, GNUTLS_SHUT_RDWR);
 		gnutls_deinit(conn_tls_session);
@@ -373,7 +378,7 @@ int conn_close(int conn) {
 	return 0;
 }
 
-static inline size_t READ_POLL(int filedesc, void *buf, size_t count) {
+static inline size_t READ_POLL(int filedesc, char *buf, size_t count) {
 #ifdef HAVE_LIBGNUTLS
 	if (csync_conn_usessl)
 		return gnutls_record_recv(conn_tls_session, buf, count);
@@ -412,7 +417,7 @@ static inline size_t READ_POLL(int filedesc, void *buf, size_t count) {
 	return total_read;
 }
 
-static inline size_t READ(int filedesc, void *buf, size_t count) {
+static size_t READ(int filedesc, void *buf, size_t count) {
 #ifdef HAVE_LIBGNUTLS
 	if (csync_conn_usessl)
 		return gnutls_record_recv(conn_tls_session, buf, count);
@@ -448,7 +453,7 @@ static inline size_t READ(int filedesc, void *buf, size_t count) {
 	return length;
 }
 
-static inline ssize_t WRITE(int fd, const void *buf, size_t count) {
+static ssize_t WRITE(int fd, const char *buf, size_t count) {
 	ssize_t n;
 	size_t total;
 #ifdef HAVE_LIBGNUTLS
@@ -460,7 +465,7 @@ static inline ssize_t WRITE(int fd, const void *buf, size_t count) {
 		total = 0;
 
 		while (count > total) {
-			n = write(fd, ((char*) buf) + total, count - total);
+			n = write(fd, buf + total, count - total);
 			if (n >= 0)
 				total += n;
 			else {
@@ -474,11 +479,11 @@ static inline ssize_t WRITE(int fd, const void *buf, size_t count) {
 	}
 }
 
-ssize_t conn_raw_read(int filedesc, void *buf, size_t count) {
+static ssize_t conn_raw_read(int filedesc, void *buf, size_t count) {
 	return READ(filedesc, buf, count);
 }
 
-void conn_debug(const char *name, const char *buf, size_t count) {
+static void conn_debug(const char *name, const char *buf, size_t count) {
 	size_t i;
 
 	if (csync_level_debug < 3)
@@ -504,17 +509,17 @@ void conn_debug(const char *name, const char *buf, size_t count) {
 	fprintf(csync_out_debug, "\n");
 }
 
-ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
+ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	char buffer[200];
 	*size = 0;
 	int rc = !conn_gets(fd, buffer, 200);
-	char *typestr = "None";
-	if (sscanf(buffer, "octet-stream %lld\n", size) == 1) {
-		csync_info(2, "Got octet-stream %lld\n", *size);
+	const char *typestr = "None";
+	if (sscanf(buffer, "octet-stream %ld\n", size) == 1) {
+		csync_info(2, "Got octet-stream %ld\n", *size);
 		*type = OCTET_STREAM;
 		typestr = "octet-stream";
-	} else if (sscanf(buffer, "chunked %lld\n", size) == 1) {
-		csync_info(2, "Got chuncked-stream %lld\n", *size);
+	} else if (sscanf(buffer, "chunked %ld\n", size) == 1) {
+		csync_info(2, "Got chuncked-stream %ld\n", *size);
 		*type = CHUNKED_MODE;
 		typestr = "chunked";
 	} else {
@@ -529,7 +534,7 @@ ssize_t conn_read_get_content_length(int fd, long long *size, int *type) {
 	return rc;
 }
 
-int conn_write_chunk(int sockfd, char *buffer, size_t size) {
+int conn_write_chunk(int sockfd, const char *buffer, size_t size) {
 	char header[16];
 	snprintf(header, sizeof(header), "%zx\r\n", size);  // Chunk size in hex
 	if (send(sockfd, header, strlen(header), 0) == -1) {
@@ -605,7 +610,7 @@ int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 	while (size > 0) {
 		size_t chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		int rc  = fread(buffer, chunk, 1, file);
-		char hexbuf[chunk*2+1];
+		//char hexbuf[chunk*2+1];
 		if (rc <= 0) {
 			csync_error(0, "Failed reading file while sending");
 			return -1;
@@ -643,10 +648,11 @@ int conn_read_file_chunked(int sockfd, FILE *file) {
 }
 
 /* Rewritten not to mask errors, read in batch */
-ssize_t conn_read(int fd, void *buf, size_t count) {
+ssize_t conn_read(int fd, char *buf, size_t count) {
 	size_t size = 0;
+	char *char_buf = (char *)buf;  /* Cast once to avoid repeated void* arithmetic */
 	while ((size < count)) {
-		ssize_t bytes_read = conn_raw_read(fd, (char*) buf + size, count - size);
+		ssize_t bytes_read = conn_raw_read(fd, char_buf + size, count - size);
 		if (bytes_read < 0)
 			return bytes_read;
 		/* End of file */
@@ -658,12 +664,12 @@ ssize_t conn_read(int fd, void *buf, size_t count) {
 	return size;
 }
 
-ssize_t conn_write(int fd, const void *buf, size_t count) {
+ssize_t conn_write(int fd, const char *buf, size_t count) {
 	// conn_debug("Local", buf, count);
 	return WRITE(fd, buf, count);
 }
 
-void conn_remove_key(char *buf) {
+static void conn_remove_key(char *buf) {
 	if (!strncmp(buf, "HELLO", 5) || !strncmp(buf, "CONFIG", 6) || !strncmp(buf, "BYE", 3) ||
 //	!strncmp(buf, "DEL", 3)   ||
 			!strncmp(buf, "LIST", 4))
@@ -695,10 +701,13 @@ void conn_remove_key(char *buf) {
 }
 extern int csync_zero_mtime_debug;
 
-char* filter_mtime(char *buffer, int make_copy) {
+char* filter_mtime_copy(const char *buffer) {
+	char *copy = strdup(buffer);
+	return filter_mtime(copy);
+}
+
+char* filter_mtime(char *buffer) {
 	char *str = buffer;
-	if (make_copy)
-		str = strdup(buffer);
 	if (csync_zero_mtime_debug) {
 		char *pos = strstr(str, "mtime=");
 		if (pos != NULL) {
@@ -743,11 +752,11 @@ void conn_printf(int fd, const char *fmt, ...) {
 	buffer[size] = 0;
 	conn_write(fd, buffer, size);
 	conn_remove_key(buffer);
-	char *str = filter_mtime(buffer, 0);
+	char *str = filter_mtime(buffer);
 	csync_info(2, "CONN %s < %s\n", active_peer, str);
 }
 
-void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...) {
+static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...) {
 	char dummy = 0, *buffer = 0;
 	va_list ap;
 	int size;
@@ -769,7 +778,7 @@ void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const c
 
 ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 	size_t i = 0;
-	int rc = 0;
+	ssize_t rc = 0;
 	while (i < size - 1) {
 		rc = conn_raw_read(filedesc, s + i, 1);
 		if (rc != 1)
@@ -781,7 +790,7 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 		}
 	}
 	s[i] = 0;
-	return rc ? rc : i;
+	return rc ? rc : (ssize_t) i;
 }
 
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
@@ -791,7 +800,7 @@ ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline
 		return rc;
 	}
 	// Filter mtime but on a copy.
-	char *copy = filter_mtime(s, 1);
+	char *copy = filter_mtime_copy(s);
 	csync_info(2, "CONN %s > '%s'\n", active_peer, copy);
 	free(copy);
 	return rc;

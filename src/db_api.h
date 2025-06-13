@@ -37,13 +37,13 @@ struct db_conn_t {
 	void *private;
 	int version;
 	int (*exec)(db_conn_p conn, const char *exec);
-	int (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
+	int (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
 	void (*close)(db_conn_p conn);
 	void (*logger)(int priority, int lv, const char *fmt, ...);
 	const char* (*errmsg)(db_conn_p conn);
 	const char* (*escape)(db_conn_p conn, const char *string);
 	void (*free)(db_conn_p conn, const char *escaped);
-	void (*shutdown)();
+	void (*shutdown)(void);
 	void (*mark)(db_conn_p conn, char *active_peerlist, const char *realname, int recursive);
 
 	// Update functions (deprecated)
@@ -133,13 +133,13 @@ struct db_stmt_t {
 //struct db_conn *db_conn;
 
 int db_open(const char *file, int type, db_conn_p *db);
-void db_close();
+void db_close(void);
 void db_conn_close(db_conn_p conn);
 
 int db_exec(db_conn_p conn, const char *exec);
 int db_exec2(db_conn_p conn, const char *exec, void (*callback)(void*, int, int), void *data, const char **err);
 
-int db_prepare_stmt(db_conn_p conn, const char *statement, db_stmt_p *stmt, char **value);
+int db_prepare_stmt(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
 
 const char* db_stmt_get_column_text(db_stmt_p stmt, int column);
 int db_stmt_get_column_int(db_stmt_p stmt, int column);

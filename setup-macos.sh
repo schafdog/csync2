@@ -96,10 +96,14 @@ export MYSQL_CONFIG="\$HOMEBREW_PREFIX/bin/mysql_config"
 # For PostgreSQL
 export PG_CONFIG="\$HOMEBREW_PREFIX/bin/pg_config"
 
+# Runtime library paths for macOS (helps with dynamic library loading)
+export DYLD_LIBRARY_PATH="$HOMEBREW_PREFIX/lib:$DYLD_LIBRARY_PATH"
+
 echo "Environment configured for csync2 build"
 echo "Homebrew prefix: \$HOMEBREW_PREFIX"
 echo "Bison version: \$(bison --version | head -1)"
 echo "Flex version: \$(flex --version)"
+echo "PostgreSQL config: $(pg_config --version 2>/dev/null || echo 'not found')"
 EOF
 
 chmod +x setup-env.sh
@@ -155,3 +159,20 @@ fi
 
 echo
 echo "Run 'source setup-env.sh' to activate the environment!"
+
+echo
+echo "=== macOS Dynamic Library Notes ==="
+echo
+echo "If you encounter 'dylib not found' errors when running csync2:"
+echo
+echo "1. The configure script automatically adds -rpath flags for PostgreSQL, MySQL, and Redis"
+echo "2. You can also set DYLD_LIBRARY_PATH (already set in setup-env.sh):"
+echo "   export DYLD_LIBRARY_PATH=\"$HOMEBREW_PREFIX/lib:\$DYLD_LIBRARY_PATH\""
+echo
+echo "3. For PostgreSQL specifically, you can verify the library path:"
+echo "   otool -L \$HOMEBREW_PREFIX/lib/libpq.dylib"
+echo "   pg_config --libdir"
+echo
+echo "4. If problems persist, you can manually add rpath to the binary:"
+echo "   install_name_tool -add_rpath $HOMEBREW_PREFIX/lib ./src/csync2"
+echo

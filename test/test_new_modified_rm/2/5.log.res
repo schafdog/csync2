@@ -5,24 +5,24 @@ Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
 db_schema_version: 2
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
-mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-mark operation NEW -> MOD => NEW peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (not synced) .
-mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local (not synced) .
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local rows matched: 0
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '-'.
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+Checking <TESTBASE>/test/* ..
+mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.
+mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+mark operation NEW -> MOD => NEW peer:<TESTBASE>/test/local (not synced) .
+mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
+mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
+Inserted/updated <TESTBASE>/test/local rows matched: 0
+Checking <TESTBASE>/test/local/* ..
+Checking for deleted files <TESTBASE>/test recursive.
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local/newdir' '-'.
 WARN: operation changed: MKDIR(1) => MKDIR(129)
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' ''
-mark operation MKDIR -> RM peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir deleted before syncing. Removing from dirty.
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' '-'.
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/newdir' ''
+mark operation MKDIR -> RM peer:<TESTBASE>/test/local/newdir deleted before syncing. Removing from dirty.
+mark other operation: 'RM' 'other:<TESTBASE>/test/local/newdir' '-'.
 WARN: operation changed: MKDIR(1) => MKDIR(129)
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/newdir deleted before syncing. Removing from dirty.
-csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/newdir' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local/newdir deleted before syncing. Removing from dirty.
+csync_file_args: '<TESTBASE>/test' flags 65 

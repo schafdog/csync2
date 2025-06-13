@@ -3,7 +3,7 @@ csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Mode: 65536 Flags: 1 PID: 2656663
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862
@@ -58,38 +58,38 @@ csync2_db_SQL: update file set filename = NULL where filename = NULL
 csync2_db_SQL: update host set host = NULL where host = NULL
 db_schema_version: 2
 Connecting to redis localhost:6379
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test 65 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
-No match. Don't check at all: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local' 
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+csync_check_dir: <TESTBASE>/test 65 
+Checking <TESTBASE>/test/* ..
+No match. Don't check at all: <TESTBASE>/test/peer
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local' 
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local 193 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' 
+csync_check_dir: <TESTBASE>/test/local 193 
+Checking <TESTBASE>/test/local/* ..
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/tmp
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/tmp' 
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp 193 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp/* ..
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/different
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/different' 
+csync_check_dir: <TESTBASE>/test/local/tmp 193 
+Checking <TESTBASE>/test/local/tmp/* ..
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/different
+SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/different' 
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-file /export/home/dennis/Projects/csync2/csync2/test/test encoded /export/home/dennis/Projects/csync2/csync2/test/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  hostname = 'local' ORDER BY filename
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local' 53, cached path: '(null)' 0, 0.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/different
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/different' 59, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/' 53, 53.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/tmp
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/tmp' 59, cached path: '/export/home/dennis/Projects/csync2/csync2/test/test/local/' 59, 59.
+Checking for deleted files <TESTBASE>/test recursive.
+file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
+SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/different
+check_pure: filename: '<TESTBASE>/test/local/different' 59, cached path: '<TESTBASE>/test/' 53, 53.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/tmp
+check_pure: filename: '<TESTBASE>/test/local/tmp' 59, cached path: '<TESTBASE>/test/local/' 59, 59.
 SQL Query finished.
-csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
+csync_file_args: '<TESTBASE>/test' flags 65 
 get dirty host
 SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername
 dirty host other 

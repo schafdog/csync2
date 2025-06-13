@@ -1,9 +1,9 @@
-------------------------------------------------------------
- /export/home/dennis/Projects/csync2/csync2/test/test/local
+----------------------------------------------------------------
+ <TESTBASE>/test/local
 (1 row)
 
-----------+------------------------------------------------------------+-----------+-------+----
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local | MKDIR     |       |  1
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local | MKDIR     |       |  1
+----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
+ other    | <TESTBASE>/test/local | MKDIR     |       |  1
+ peer     | <TESTBASE>/test/local | MKDIR     |       |  1
 (2 rows)
 

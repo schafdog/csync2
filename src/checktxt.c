@@ -19,12 +19,14 @@
  */
 
 #include "csync2.h"
-#include "uidgid.h"
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <assert.h>
+#include "checktxt.h"
+#include "uidgid.h"
+#include "urlencode.h"
 
 /*
  * this csync_genchecktxt() function might not be nice or

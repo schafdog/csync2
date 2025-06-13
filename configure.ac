@@ -17,8 +17,13 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 # Process this file with autoconf to produce a configure script.
+AC_PREREQ([2.63])
 AC_INIT([csync2],[2.1-rc2],[dennis@schafroth.com])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([1.11 -Wall foreign subdir-objects])
+AM_SILENT_RULES([yes])
+
+# Canonical host detection (required for $host_os variable)
+AC_CANONICAL_HOST
 
 AC_CONFIG_SRCDIR(src/csync2.c)
 AC_CONFIG_HEADERS(src/config.h)
@@ -30,8 +35,26 @@ AC_CONFIG_HEADERS(src/config.h)
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
+
+# macOS-specific: Prioritize Homebrew bison over system bison
+case "$host_os" in
+    darwin*)
+        AC_MSG_NOTICE([Detected macOS - checking for Homebrew bison])
+
+        # Check for Apple Silicon Homebrew bison first
+        if test -x "/opt/homebrew/opt/bison/bin/bison"; then
+            AC_MSG_NOTICE([Found Homebrew bison (Apple Silicon): /opt/homebrew/opt/bison/bin/bison])
+            YACC="/opt/homebrew/opt/bison/bin/bison -y"
+        # Check for Intel Homebrew bison
+        elif test -x "/usr/local/opt/bison/bin/bison"; then
+            AC_MSG_NOTICE([Found Homebrew bison (Intel): /usr/local/opt/bison/bin/bison])
+            YACC="/usr/local/opt/bison/bin/bison -y"
+        fi
+        ;;
+esac
+
 AC_PROG_YACC
-AM_PROG_LEX
+AC_PROG_LEX([noyywrap])
 
 # Check for bison capabilities
 AC_MSG_CHECKING([if bison supports -W option])
@@ -59,32 +82,123 @@ EOF
         AM_YFLAGS="-d"
     fi
 
+    # Test if yacc/bison supports %expect directive
+    AC_MSG_CHECKING([if yacc supports %expect directive])
+    cat > conftest_expect.y << 'EOF'
+%{
+int yylex(void);
+void yyerror(const char *s);
+%}
+%expect 1
+%token TEST
+%%
+start: TEST;
+%%
+void yyerror(const char *s) {}
+int yylex(void) { return 0; }
+EOF
+
+    if $YACC -d conftest_expect.y >/dev/null 2>&1; then
+        AC_MSG_RESULT([yes])
+        YACC_SUPPORTS_EXPECT=yes
+    else
+        AC_MSG_RESULT([no])
+        YACC_SUPPORTS_EXPECT=no
+    fi
+
     # Clean up test files
-    rm -f conftest.y conftest.tab.c conftest.tab.h y.tab.c y.tab.h
+    rm -f conftest.y conftest_expect.y conftest.tab.c conftest.tab.h y.tab.c y.tab.h conftest_expect.tab.c conftest_expect.tab.h
 else
     AC_MSG_RESULT([yacc not found])
     AM_YFLAGS="-d"
+    YACC_SUPPORTS_EXPECT=no
 fi
 AC_SUBST([AM_YFLAGS])
+AC_SUBST([YACC_SUPPORTS_EXPECT])
 
-if test "$CC" == "clang"
+if test "$CC" = "clang"
 then
    CFLAGS="$CFLAGS -Qunused-arguments "
 fi
 
-# macOS-specific checks
+# Enable comprehensive compiler warnings
+AC_MSG_CHECKING([for compiler warning flags])
+WARNING_CFLAGS=""
+
+# Basic warning flags (supported by both GCC and Clang)
+for flag in \
+    -Wall \
+    -Wextra \
+    -Wformat=2 \
+    -Wformat-security \
+    -Wformat-nonliteral \
+    -Winit-self \
+    -Wmissing-include-dirs \
+    -Wno-switch-default \
+    -Wswitch-enum \
+    -Wunused \
+    -Wuninitialized \
+    -Wstrict-aliasing=2 \
+    -Wfloat-equal \
+    -Wundef \
+    -Wshadow \
+    -Wpointer-arith \
+    -Wbad-function-cast \
+    -Wcast-qual \
+    -Wcast-align \
+    -Wwrite-strings \
+    -Wstrict-prototypes \
+    -Wold-style-definition \
+    -Wmissing-prototypes \
+    -Wmissing-declarations \
+    -Wredundant-decls \
+    -Wnested-externs \
+    -Winline \
+    -Wdisabled-optimization \
+    -Wno-unused-parameter \
+    -Wno-unused-function \
+    -Wno-format-nonliteral \
+    -Wno-cast-align 
+do
+    AC_MSG_CHECKING([whether $CC accepts $flag])
+    old_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $flag"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+        [AC_MSG_RESULT([yes]); WARNING_CFLAGS="$WARNING_CFLAGS $flag"],
+        [AC_MSG_RESULT([no])])
+    CFLAGS="$old_CFLAGS"
+done
+
+# Add warning flags to AM_CFLAGS instead of CFLAGS to avoid duplication
+AC_SUBST([WARNING_CFLAGS])
+AC_MSG_RESULT([enabled: $WARNING_CFLAGS])
+
+# macOS-specific bison verification
 case "$host_os" in
     darwin*)
-        AC_MSG_NOTICE([Detected macOS - checking for Homebrew bison])
-        # Check if we're using the old system bison on macOS
+        AC_MSG_NOTICE([Verifying bison selection on macOS])
+        # Report which bison version we're using
         if test "x$YACC" != "x"; then
-            YACC_PATH=`which $YACC 2>/dev/null`
-            if echo "$YACC_PATH" | grep -q "/usr/bin/"; then
-                AC_MSG_WARN([Using system bison which may be outdated. Consider installing Homebrew bison:])
-                AC_MSG_WARN([  brew install bison])
-                AC_MSG_WARN([  For Apple Silicon: export PATH="/opt/homebrew/opt/bison/bin:$PATH"])
-                AC_MSG_WARN([  For Intel: export PATH="/usr/local/opt/bison/bin:$PATH"])
+            # Extract the actual bison command (remove -y flag)
+            BISON_CMD=`echo "$YACC" | sed 's/ -y$//'`
+            if test -x "$BISON_CMD"; then
+                AC_MSG_NOTICE([Using bison: $BISON_CMD])
+
+                # Check if it's system bison and warn
+                case "$BISON_CMD" in
+                    /usr/bin/*)
+                        AC_MSG_WARN([Using system bison which may be outdated. Consider installing Homebrew bison:])
+                        AC_MSG_WARN([  brew install bison])
+                        AC_MSG_WARN([  Then re-run ./autogen.sh to use the newer version])
+                        ;;
+                    *)
+                        AC_MSG_NOTICE([Using modern bison (likely Homebrew) - good!])
+                        ;;
+                esac
             fi
+        else
+            AC_MSG_WARN([No bison found. Please install bison:])
+            AC_MSG_WARN([  brew install bison])
         fi
         ;;
 esac
@@ -92,35 +206,151 @@ esac
 # check for large file support
 AC_SYS_LARGEFILE
 
-#if test -d ${srcdir}/.git; then
-#   sha=`git show --pretty=format:%H|head -1`
-#else
-#        sha=`head -1 ${srcdir}/ChangeLog|awk '{print $2}'`
-#fi
-#AC_DEFINE_UNQUOTED([CSYNC2_VERSION_SHA1], ["$sha"], [Git SHA1])
+# Generate version information
+AC_MSG_NOTICE([Generating version information...])
+if test -d "${srcdir}/.git" && command -v git >/dev/null 2>&1; then
+    GIT_VERSION=`cd "${srcdir}" && git describe --abbrev=60 --dirty --always 2>/dev/null || echo "unknown"`
+else
+    GIT_VERSION="unknown"
+fi
+AC_DEFINE_UNQUOTED([CSYNC2_GIT_VERSION], ["$GIT_VERSION"], [Git version string])
+AC_SUBST([GIT_VERSION])
 
 # Check for librsync.
 AC_ARG_WITH([librsync-source],
 	AS_HELP_STRING([--with-librsync-source=source-tar-file],
 		[build this librsync and link statically against it (hack! hack!)]),
 	AC_SUBST([librsync_source_file], $withval),
-	CFLAGS_backup="${CFLAGS}"
-	LDFLAGS_backup="${LDFLAGS}"
-	CFLAGS="-I/opt/homebrew/include/ ${CFLAGS}"
-	LDFLAGS="-L/opt/homebrew/lib/ ${LDFLAGS}"
-	AC_CHECK_LIB([rsync], [rs_sig_file], , [AC_MSG_ERROR(librsync is required)])
-	## reset CFLAGS and LDFLAGS
-#	CFLAGS="${CFLAGS_backup}"
-#a	LDFLAGS="${LDFLAGS_backup}"
+	[
+	# Try pkg-config first for librsync
+	PKG_PROG_PKG_CONFIG
+	PKG_CHECK_MODULES([LIBRSYNC], [librsync >= 2.0.0], [
+		AC_DEFINE([HAVE_LIBRSYNC], 1, [Define to 1 when using librsync library])
+		AC_MSG_NOTICE([Found librsync via pkg-config])
+		
+		# Verify LIBRSYNC_CFLAGS contains include path, add it if not
+		AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+			AC_MSG_NOTICE([LIBRSYNC_CFLAGS is empty, adding include path manually])
+			# Try to find librsync.h in common locations
+			for inc_path in /usr/include /usr/local/include /opt/homebrew/include /usr/include/librsync; do
+				AS_IF([test -f "$inc_path/librsync.h"], [
+					LIBRSYNC_CFLAGS="-I$inc_path"
+					AC_MSG_NOTICE([Added $inc_path to LIBRSYNC_CFLAGS])
+					break
+				])
+			done
+		])
+	], [
+		# Fallback to manual detection if pkg-config fails
+		AC_MSG_NOTICE([pkg-config failed, trying manual librsync detection])
+
+		CFLAGS_backup="${CFLAGS}"
+		LDFLAGS_backup="${LDFLAGS}"
+
+		# Platform-specific library paths for librsync
+		case "$host_os" in
+		    darwin*)
+		        # macOS: Try Homebrew paths if they exist
+		        if test -d "/opt/homebrew/include"; then
+		            CFLAGS="-I/opt/homebrew/include ${CFLAGS}"
+		            LIBRSYNC_CFLAGS="-I/opt/homebrew/include"
+		        elif test -d "/usr/local/include"; then
+		            CFLAGS="-I/usr/local/include ${CFLAGS}"
+		            LIBRSYNC_CFLAGS="-I/usr/local/include"
+		        fi
+		        if test -d "/opt/homebrew/lib"; then
+		            LDFLAGS="-L/opt/homebrew/lib ${LDFLAGS}"
+		            LIBRSYNC_LIBS="-L/opt/homebrew/lib -lrsync"
+		        elif test -d "/usr/local/lib"; then
+		            LDFLAGS="-L/usr/local/lib ${LDFLAGS}"
+		            LIBRSYNC_LIBS="-L/usr/local/lib -lrsync"
+		        fi
+		        ;;
+		    *)
+		        # Linux and other platforms: try common paths
+		        for inc_path in /usr/include /usr/local/include /usr/include/librsync; do
+		            if test -f "$inc_path/librsync.h"; then
+		                if test "$inc_path" != "/usr/include"; then
+		                    CFLAGS="-I$inc_path ${CFLAGS}"
+		                    LIBRSYNC_CFLAGS="-I$inc_path"
+		                fi
+		                break
+		            fi
+		        done
+		        LIBRSYNC_LIBS="-lrsync"
+		        ;;
+		esac
+
+		# Check for librsync header
+		AC_CHECK_HEADERS([librsync.h], [], [
+		    AC_MSG_ERROR([librsync.h not found. Please install librsync development package:
+		    - Ubuntu/Debian: sudo apt-get install librsync-dev
+		    - CentOS/RHEL: sudo yum install librsync-devel
+		    - macOS: brew install librsync])
+		])
+
+		# Check for librsync library
+		AC_CHECK_LIB([rsync], [rs_sig_file], [
+		    # LIBRSYNC_LIBS already set above based on platform
+		], [AC_MSG_ERROR([librsync library not found. Please install librsync development package.])])
+
+		# Reset CFLAGS and LDFLAGS to avoid polluting other checks
+		CFLAGS="${CFLAGS_backup}"
+		LDFLAGS="${LDFLAGS_backup}"
+	])
+	]
 )
 
+# Ensure LIBRSYNC_CFLAGS is set if it's still empty
+AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+    AC_MSG_NOTICE([LIBRSYNC_CFLAGS is still empty, searching for librsync.h])
+    for inc_path in /usr/include /usr/local/include /opt/homebrew/include /usr/include/librsync; do
+        AS_IF([test -f "$inc_path/librsync.h"], [
+            LIBRSYNC_CFLAGS="-I$inc_path"
+            AC_MSG_NOTICE([Found librsync.h in $inc_path])
+            break
+        ])
+    done
+    
+    # If still not found, try using which command to locate rsync
+    AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+        rsync_path=`which rsync 2>/dev/null`
+        if test -n "$rsync_path"; then
+            rsync_prefix=`dirname $rsync_path | sed 's/\/bin$//'`
+            if test -f "$rsync_prefix/include/librsync.h"; then
+                LIBRSYNC_CFLAGS="-I$rsync_prefix/include"
+                AC_MSG_NOTICE([Found librsync.h in $rsync_prefix/include])
+            fi
+        fi
+    ])
+])
+
+# Final check and warning if LIBRSYNC_CFLAGS is still empty
+AS_IF([test -z "$LIBRSYNC_CFLAGS"], [
+    AC_MSG_WARN([
+    =======================================================================
+    WARNING: LIBRSYNC_CFLAGS is empty! This may cause compilation failures.
+    Please manually specify the include path with:
+    ./configure LIBRSYNC_CFLAGS="-I/path/to/librsync/include"
+    =======================================================================
+    ])
+])
+
 AM_CONDITIONAL([PRIVATE_LIBRSYNC], [test -n "$librsync_source_file"])
+
+# Substitute librsync variables for Makefile
+AC_SUBST([LIBRSYNC_CFLAGS])
+AC_SUBST([LIBRSYNC_LIBS])
+
+# Debug output to verify values
+AC_MSG_NOTICE([LIBRSYNC_CFLAGS = $LIBRSYNC_CFLAGS])
+AC_MSG_NOTICE([LIBRSYNC_LIBS = $LIBRSYNC_LIBS])
 
 AC_ARG_ENABLE([sqlite],
 	[AS_HELP_STRING([--enable-sqlite],[enable/disable sqlite 2 support (default is disabled)])],
 	[], [ enable_sqlite=no ])
 
-if test "$enable_sqlite" == yes
+if test "$enable_sqlite" = yes
 then
         AC_CHECK_HEADERS([sqlite.h], , [AC_MSG_ERROR([[SQLite header not found; install libsqlite-dev and dependencies for SQLite 2 support]])])
 
@@ -131,7 +361,7 @@ AC_ARG_ENABLE([sqlite3],
 	[AS_HELP_STRING([--disable-sqlite3],[enable/disable sqlite3 support (default is enabled)])],
 	[], [ enable_sqlite3=yes ])
 
-if test "$enable_sqlite3" == yes
+if test "$enable_sqlite3" = yes
 then
         AC_CHECK_HEADERS([sqlite3.h], , [AC_MSG_WARN([[SQLite header not found; install libsqlite3-dev and dependencies for SQLite 3 support]])],
 [[
@@ -172,6 +402,18 @@ then
    PKG_PROG_PKG_CONFIG
    PKG_CHECK_MODULES([LIBHIREDIS], [hiredis >= 0.14.0], [
       AC_DEFINE([HAVE_LIBHIREDIS], 1, [Define to 1 when using libhiredis library])
+      
+      # macOS-specific Redis handling
+      case "$host_os" in
+          darwin*)
+              AC_MSG_NOTICE([Detected macOS - configuring Redis runtime paths])
+              HIREDIS_LIBDIR=`$PKG_CONFIG --variable=libdir hiredis 2>/dev/null`
+              if test -n "$HIREDIS_LIBDIR"; then
+                  LIBHIREDIS_LIBS="$LIBHIREDIS_LIBS -Wl,-rpath,$HIREDIS_LIBDIR"
+                  AC_MSG_NOTICE([Redis LIBS with rpath: $LIBHIREDIS_LIBS])
+              fi
+              ;;
+      esac
    ])
 fi
 
@@ -188,19 +430,58 @@ AC_ARG_ENABLE([redis],
 	[], [ enable_redis=yes ])
 
 
-if test "$enable_mysql" == yes
+if test "$enable_mysql" = yes
 then
    PKG_PROG_PKG_CONFIG
    PKG_CHECK_MODULES([MYSQL], [libmariadb >= 3.1.0 ] , [
       AC_DEFINE([HAVE_MYSQL], 1, [Define to 1 when using libmariadb library])
+      
+      # macOS-specific MySQL/MariaDB handling
+      case "$host_os" in
+          darwin*)
+              AC_MSG_NOTICE([Detected macOS - configuring MySQL/MariaDB runtime paths])
+              MYSQL_LIBDIR=`$PKG_CONFIG --variable=libdir libmariadb 2>/dev/null`
+              if test -n "$MYSQL_LIBDIR"; then
+                  MYSQL_LIBS="$MYSQL_LIBS -Wl,-rpath,$MYSQL_LIBDIR"
+                  AC_MSG_NOTICE([MySQL LIBS with rpath: $MYSQL_LIBS])
+              fi
+              ;;
+      esac
       ])
 fi
 
-if test "$enable_postgres" == yes
+if test "$enable_postgres" = yes
 then
      PKG_PROG_PKG_CONFIG
      PKG_CHECK_MODULES([LIBPQ], [libpq >= 10.1.0 ] , [
       AC_DEFINE([HAVE_LIBPQ], 1, [Define to 1 when using libpq library])
+      
+      # macOS-specific PostgreSQL handling
+      case "$host_os" in
+          darwin*)
+              AC_MSG_NOTICE([Detected macOS - configuring PostgreSQL runtime paths])
+              
+              # Get PostgreSQL library directory from pkg-config
+              LIBPQ_LIBDIR=`$PKG_CONFIG --variable=libdir libpq 2>/dev/null`
+              if test -n "$LIBPQ_LIBDIR"; then
+                  AC_MSG_NOTICE([PostgreSQL library directory: $LIBPQ_LIBDIR])
+                  
+                  # Add runtime library path for macOS
+                  LIBPQ_LIBS="$LIBPQ_LIBS -Wl,-rpath,$LIBPQ_LIBDIR"
+                  
+                  # Also check for common Homebrew locations
+                  if test -d "/opt/homebrew/lib"; then
+                      LIBPQ_LIBS="$LIBPQ_LIBS -Wl,-rpath,/opt/homebrew/lib"
+                  elif test -d "/usr/local/lib"; then
+                      LIBPQ_LIBS="$LIBPQ_LIBS -Wl,-rpath,/usr/local/lib"
+                  fi
+                  
+                  AC_MSG_NOTICE([PostgreSQL LIBS with rpath: $LIBPQ_LIBS])
+              else
+                  AC_MSG_WARN([Could not determine PostgreSQL library directory])
+              fi
+              ;;
+      esac
       ])
 fi
 

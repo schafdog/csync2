@@ -3,7 +3,7 @@ csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Mode: 16384 Flags: 1 PID: 2657695
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862
@@ -60,31 +60,31 @@ Connecting to redis localhost:6379
 MODE 16384
 remove_old: dirty
 SQL: SELECT filename, myname, peername FROM dirty where myname = 'local' AND peername not in (select host from host where status = 1) 
-Check 'local' with 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' from dirty.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Check 'local' with 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' from dirty.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Check 'local' with 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file' from dirty.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file
-Match (-): /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file
-Remove 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file' from dirty. No longer in configuration
-Check 'local' with 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file' from dirty.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file
-Match (-): /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file
-Remove 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file' from dirty. No longer in configuration
+Check 'local' with 'peer:<TESTBASE>/test/local' from dirty.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Check 'local' with 'other:<TESTBASE>/test/local' from dirty.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Check 'local' with 'peer:<TESTBASE>/test/local/new_file' from dirty.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file
+Match (-): <TESTBASE>/test/local/new_file on <TESTBASE>/test/local/new_file
+Remove 'peer:<TESTBASE>/test/local/new_file' from dirty. No longer in configuration
+Check 'local' with 'other:<TESTBASE>/test/local/new_file' from dirty.
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file
+Match (-): <TESTBASE>/test/local/new_file on <TESTBASE>/test/local/new_file
+Remove 'other:<TESTBASE>/test/local/new_file' from dirty. No longer in configuration
 SQL Query finished.
-Removing /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file (other) from dirty db.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file'  AND  myname = 'local' AND peername like 'other'
-Removing /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file (peer) from dirty db.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file'  AND  myname = 'local' AND peername like 'peer'
+Removing <TESTBASE>/test/local/new_file (other) from dirty db.
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file'  AND  myname = 'local' AND peername like 'other'
+Removing <TESTBASE>/test/local/new_file (peer) from dirty db.
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file'  AND  myname = 'local' AND peername like 'peer'
 remove_old: file
-SQL: SELECT filename, mode FROM file where hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test' or filename like '/export/home/dennis/Projects/csync2/csync2/test/test/%' 
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file
-Match (-): /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file on /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file
+SQL: SELECT filename, mode FROM file where hostname = 'local' AND filename = '<TESTBASE>/test' or filename like '<TESTBASE>/test/%' 
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file
+Match (-): <TESTBASE>/test/local/new_file on <TESTBASE>/test/local/new_file
 SQL Query finished.
-Removing /export/home/dennis/Projects/csync2/csync2/test/test/local/new_file from file db.
-csync2_db_SQL: DELETE FROM file WHERE  (filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/local/new_file/%')  AND  hostname = 'local'
+Removing <TESTBASE>/test/local/new_file from file db.
+csync2_db_SQL: DELETE FROM file WHERE  (filename = '<TESTBASE>/test/local/new_file' OR filename LIKE '<TESTBASE>/test/local/new_file/%')  AND  hostname = 'local'
 remove_old: end
 Redis closing: 0x55d6d79fd500
 Redis closed.

@@ -1,17 +1,9 @@
-cmd x "New directory and file" local peer test
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-Got dirty files from host peer
-Connecting to host peer (PLAIN) ...
-Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr' ''
-Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' ''
-Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/abc' ''
-Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/def' ''
-Updating (MKDIR) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' ''
-Updating (LINK) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/def/hej' '../sbin/hej'
-Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' ''
-Got octet-stream 12
-Receiving 12 bytes (octet-stream)..
-Sending octet-stream of 10 bytes
+cmd L "New directories and files (List)" local peer test
+v2:mtime=<MTIME>mode=16877:user=dennis:group=staff:type=dir	<TESTBASE>/test/local
+v2:mtime=<MTIME>mode=16877:user=dennis:group=staff:type=dir	<TESTBASE>/test/local/usr
+v2:mtime=<MTIME>mode=16877:user=dennis:group=staff:type=dir	<TESTBASE>/test/local/usr/local
+v2:mtime=<MTIME>mode=16877:user=dennis:group=staff:type=dir	<TESTBASE>/test/local/usr/local/abc
+v2:mtime=<MTIME>mode=16877:user=dennis:group=staff:type=dir	<TESTBASE>/test/local/usr/local/def
+v2:mtime=<MTIME>mode=41453:user=dennis:group=staff:type=lnk:target=../sbin/hej	<TESTBASE>/test/local/usr/local/def/hej
+v2:mtime=<MTIME>mode=16877:user=dennis:group=staff:type=dir	<TESTBASE>/test/local/usr/local/sbin
+v2:mtime=<MTIME>mode=33188:user=dennis:group=staff:type=reg:size=4	<TESTBASE>/test/local/usr/local/sbin/hej

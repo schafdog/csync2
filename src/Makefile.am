@@ -22,8 +22,8 @@ sbin_SCRIPTS = csync2-compare
 bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
-CC = clang
-csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
+
+csync2_SOURCES = action.c cfgfile_parser_processed.y cfgfile_scanner.l check.c	\
                  checktxt.c csync2.c global.c daemon.c db.c \
 		 error.c error.h getrealfn.c	\
                  groups.c rsync.c update.c urlencode.c conn.c prefixsubst.c \
@@ -35,24 +35,42 @@ csync2_SOURCES = action.c cfgfile_parser.y cfgfile_scanner.l check.c	\
 		 digest.c digest.h version.h \
 		 csync2.1
 
-#EXTRA_DIST = csync2.cfg csync2.xinetd
+EXTRA_DIST = cfgfile_parser.y
 
-GIT_VERSION = $(shell git describe --abbrev=60 --dirty --always)
+# GIT_VERSION will be set by version.sh script
 
 # AM_YFLAGS is set by configure.ac based on bison capabilities
 # Default value for automake, will be overridden by configure
 AM_YFLAGS = -d
-BUILT_SOURCES = cfgfile_parser.h check_version
-LIBS += -ldl -lssl -lcrypto
+BUILT_SOURCES = cfgfile_parser.h check_version cfgfile_parser_processed.y
 CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
-             config.log		
+             cfgfile_parser_processed.y cfgfile_parser_processed.c cfgfile_parser_processed.h config.log
 
-# csync2_LDADD =
+# Link all required libraries
+csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) \
+               $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) $(LIBBSD_LIBS) $(LIBRSYNC_LIBS) \
+               -ldl
+
+#-lssl -lcrypto
 
 check_version: FORCE
-	@../version.sh $(objects)
+	@cd $(top_srcdir) && ./version.sh
 
-clean:
+# Preprocess yacc file to conditionally include %expect directive
+cfgfile_parser_processed.y: cfgfile_parser.y
+	@if test "x$(YACC_SUPPORTS_EXPECT)" = "xyes"; then \
+		cp cfgfile_parser.y cfgfile_parser_processed.y; \
+	else \
+		sed '/^%expect/d' cfgfile_parser.y > cfgfile_parser_processed.y; \
+	fi
+
+# Create header symlink for scanner compatibility
+cfgfile_parser.h: cfgfile_parser_processed.h
+	@if test ! -e cfgfile_parser.h; then \
+		ln -sf cfgfile_parser_processed.h cfgfile_parser.h; \
+	fi
+
+clean-local:
 	rm -f $(CLEANFILES)
 	rm -f *.o
 
@@ -64,12 +82,12 @@ dist-clean: dist-clean-local
 dist-clean-local:
 	rm -rf autom4te.cache
 
-AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" $(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
+AM_CFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
+	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
-	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) \
-	-std=c17 -O0 -Wno-deprecated-declarations -Wall -Wextra
-AM_LDFLAGS= $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) \
-	$(LIBBSD_LIBS)
+	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
+	-std=c17 -O0 -Wno-deprecated-declarations \
+	$(WARNING_CFLAGS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
@@ -93,5 +111,15 @@ cert:
 
 tests:
 	make -C tests
+
+# Convenience target to show only warnings
+warnings:
+	@echo "Building and showing only warnings..."
+	@$(MAKE) -s 2>&1 | grep "warning:" || echo "No warnings found!"
+
+# Count warnings
+warnings-count:
+	@echo "Counting warnings..."
+	@$(MAKE) -s 2>&1 | grep -c "warning:" || echo "0"
 
 FORCE:

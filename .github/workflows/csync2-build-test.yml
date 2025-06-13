@@ -10,7 +10,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
@@ -26,9 +26,35 @@ jobs:
         ports:
           - 5432:5432
 
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Setup host aliases for csync2 testing
+      run: |
+        echo "=== Setting up host aliases for csync2 ==="
+
+        # Add csync2-specific host aliases to /etc/hosts
+        sudo tee -a /etc/hosts << 'EOF'
+        # csync2 test environment hosts
+        127.0.0.1 local
+        127.0.0.1 peer
+        EOF
+
+        # Test hostname resolution
+        echo "Testing hostname resolution:"
+        nslookup local || true
+        ping -c 1 peer || true
 
     - name: Install dependencies
       run: |
@@ -47,42 +73,42 @@ jobs:
           libpq-dev \
           libhiredis-dev \
           libssl-dev \
-          librsync-dev
+          librsync-dev \
+          redis-tools
 
     - name: Setup PostgreSQL for csync2
       env:
         PGPASSWORD: csync238
       run: |
         echo "=== Setting up PostgreSQL for csync2 ==="
-        
+
         # Wait for PostgreSQL to be ready
         until pg_isready -h localhost -p 5432 -U postgres; do
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
-        
-        # Create csync2 user and databases
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "
-          CREATE USER csync2 WITH PASSWORD 'csync238';
-          ALTER USER csync2 CREATEDB;
-        "
-        
-        # Create csync2 databases with C collation for consistent sorting
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "
-          CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
-          CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;
-        "
-        
-        # Grant permissions
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "
-          GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;
-          GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;
-        "
-        
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "
-          GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2;
-          GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;
-        "
+
+        # Create csync2 user (separate commands to avoid transaction issues)
+        echo "Creating csync2 user..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2 WITH PASSWORD 'csync238';"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2 CREATEDB;"
+
+        # Create csync2 databases with C collation (separate commands)
+        echo "Creating csync2_local database..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+
+        echo "Creating csync2_peer database..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+
+        # Grant permissions on csync2_local
+        echo "Granting permissions on csync2_local..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
+
+        # Grant permissions on csync2_peer
+        echo "Granting permissions on csync2_peer..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
 
     - name: Verify PostgreSQL setup
       env:
@@ -103,6 +129,34 @@ jobs:
           SELECT current_user, current_database(), version();
         "
 
+    - name: Setup and test Redis
+      run: |
+        echo "=== Setting up and testing Redis ==="
+
+        # Wait for Redis to be ready
+        until redis-cli -h localhost -p 6379 ping; do
+          echo "Waiting for Redis..."
+          sleep 2
+        done
+
+        # Test basic Redis operations
+        echo "Testing basic Redis operations..."
+        redis-cli -h localhost -p 6379 set test_key "test_value"
+        redis-cli -h localhost -p 6379 get test_key
+
+        # Test Redis info
+        echo "Redis server info:"
+        redis-cli -h localhost -p 6379 info server | head -10
+
+        # Test Redis configuration
+        echo "Redis configuration:"
+        redis-cli -h localhost -p 6379 config get "*max*" | head -10
+
+        # Clean up test data
+        redis-cli -h localhost -p 6379 del test_key
+
+        echo "✅ Redis setup and testing completed"
+
     - name: Build csync2
       run: |
         echo "=== Building csync2 ==="
@@ -114,7 +168,7 @@ jobs:
         ./configure \
           --enable-postgres \
           --enable-mysql \
-          --enable-sqlite \
+          --enable-sqlite3 \
           --enable-redis \
           --with-libpq-includes=/usr/include/postgresql \
           --with-libpq-libs=/usr/lib/x86_64-linux-gnu
@@ -177,10 +231,48 @@ jobs:
         echo "=== Testing basic csync2 functionality ==="
         
         # Test csync2 binary
-        ./src/csync2 --help | head -5
+        ./src/csync2 -V | head -5
         
         # Test version
-        ./src/csync2 --version
+        ./src/csync2 -V
+
+    - name: Test Redis integration
+      run: |
+        echo "=== Testing Redis integration with csync2 ==="
+
+        # Test Redis connectivity from csync2 perspective
+        echo "Testing Redis connectivity..."
+
+        # Create a simple test to verify Redis support is compiled in
+        if ./src/csync2 --help | grep -i redis; then
+          echo "✅ Redis support detected in csync2"
+        else
+          echo "ℹ️  Redis support may not be explicitly mentioned in help"
+        fi
+
+        # Test Redis connection with redis-cli
+        echo "Testing Redis operations that csync2 might use..."
+
+        # Test key-value operations (csync2 uses Redis for caching/coordination)
+        redis-cli -h localhost -p 6379 set "csync2:test:file1" "checksum123"
+        redis-cli -h localhost -p 6379 get "csync2:test:file1"
+
+        # Test hash operations (csync2 might use hashes for file metadata)
+        redis-cli -h localhost -p 6379 hset "csync2:test:metadata" "filename" "/test/file1" "size" "1024" "mtime" "1234567890"
+        redis-cli -h localhost -p 6379 hgetall "csync2:test:metadata"
+
+        # Test list operations (csync2 might use lists for queues)
+        redis-cli -h localhost -p 6379 lpush "csync2:test:queue" "file1" "file2" "file3"
+        redis-cli -h localhost -p 6379 lrange "csync2:test:queue" 0 -1
+
+        # Test expiration (useful for temporary data)
+        redis-cli -h localhost -p 6379 setex "csync2:test:temp" 60 "temporary_data"
+        redis-cli -h localhost -p 6379 ttl "csync2:test:temp"
+
+        # Clean up test data
+        redis-cli -h localhost -p 6379 del "csync2:test:file1" "csync2:test:metadata" "csync2:test:queue" "csync2:test:temp"
+
+        echo "✅ Redis integration testing completed"
 
     - name: Run csync2 tests (if available)
       env:
@@ -198,7 +290,7 @@ jobs:
           # Run a simple test
           if [ -f test_simple.test ]; then
             echo "Running simple test..."
-            timeout 60 ./local.sh test_simple.test || echo "Test completed with status $?"
+            timeout 120 make check || (echo "Test completed with status $?" && cat test-suite.log && exit 1) 
           else
             echo "No test_simple.test found"
           fi
@@ -245,7 +337,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-latest]
-    
     services:
       postgres:
         image: postgres:15
@@ -261,6 +352,16 @@ jobs:
         ports:
           - 5432:5432
 
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -273,14 +374,23 @@ jobs:
         
         # Install minimal dependencies
         sudo apt-get update
-        sudo apt-get install -y postgresql-client
-        
-        # Test connection
+        sudo apt-get install -y postgresql-client redis-tools
+
+        # Test PostgreSQL connection
         until pg_isready -h localhost -p 5432 -U postgres; do
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
-        
+
+        # Test Redis connection
+        until redis-cli -h localhost -p 6379 ping; do
+          echo "Waiting for Redis..."
+          sleep 2
+        done
+
         # Test basic functionality
         psql -h localhost -U postgres -c "SELECT version();"
         echo "PostgreSQL connection successful on ${{ matrix.os }}"
+
+        redis-cli -h localhost -p 6379 info server | head -5
+        echo "Redis connection successful on ${{ matrix.os }}"

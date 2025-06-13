@@ -3,7 +3,7 @@ csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Mode: 4 Flags: 1 PID: 2654152
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862
@@ -63,10 +63,10 @@ SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELE
 dirty host other 
 dirty host peer 
 SQL Query finished.
-SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12 ''
+SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
+DIRTY LOOKUP: '<TESTBASE>/test/local/auto/younger/local_oldest' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/auto/younger/local_oldest v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12 ''
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -83,70 +83,70 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
-check_pure: filename: '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' 72, cached path: '(null)' 0, 0.
-Locking '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest'
-Redis reply: SET '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' '1736899510' NX EX 60 -> OK
-csync_redis_lock: OK /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest 1736899510
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
+check_pure: filename: '<TESTBASE>/test/local/auto/younger/local_oldest' 72, cached path: '(null)' 0, 0.
+Locking '<TESTBASE>/test/local/auto/younger/local_oldest'
+Redis reply: SET '<TESTBASE>/test/local/auto/younger/local_oldest' '1736899510' NX EX 60 -> OK
+csync_redis_lock: OK <TESTBASE>/test/local/auto/younger/local_oldest 1736899510
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
 uid dennis gid schafroth
-Updating (NEW) 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' ''
-csync_update_file_sig_rs_diff peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
+Updating (NEW) 'peer:<TESTBASE>/test/local/auto/younger/local_oldest' ''
+csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/auto/younger/local_oldest
 CONN peer < SIG %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 12 
 CONN peer > 'OK (data_follows).'
-update_file_sig /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest RC 0
+update_file_sig <TESTBASE>/test/local/auto/younger/local_oldest RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13'
 Flags for gencheck: 112 
 csync_cmpchecktxt A: v2:mtime=1623103200:mode=33188:user=dennis:group=schafroth:type=reg:size=13 
 csync_cmpchecktxt B: v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12 
-/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest is different on peer (cktxt char #1).
+<TESTBASE>/test/local/auto/younger/local_oldest is different on peer (cktxt char #1).
 >>> peer:	v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=13
 >>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=12
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest 
-File peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest: Lost autoresolve YOUNGER (2)
-Continue to rs_check /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest 16
-Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest', 1 [regular file])
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/auto/younger/local_oldest
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+Auto resolve method YOUNGER 2 for peer:<TESTBASE>/test/local/auto/younger/local_oldest 
+File peer:<TESTBASE>/test/local/auto/younger/local_oldest: Lost autoresolve YOUNGER (2)
+Continue to rs_check <TESTBASE>/test/local/auto/younger/local_oldest 16
+Csync2 / Librsync: csync_rs_check('<TESTBASE>/test/local/auto/younger/local_oldest', 1 [regular file])
 rs_check: Opening basis_file and sig_file..
 Running rs_sig_file() from librsync....
 rs_check: Reading signature size from peer....
 CONN peer > 'octet-stream 32'
 Got octet-stream 32
 Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
-rs_check: Receiving signature 32 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
+rs_check: Receiving signature 32 bytes for <TESTBASE>/test/local/auto/younger/local_oldest
 rs_check: Found diff in sig at -32:-0
 Got 32 bytes, 0 bytes left ..
 File has been checked successfully (difference found).
 File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
-?B: peer            /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-END csync_update_file_sig_rs_diff peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-has links: file /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest checktxt 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12' 1 1
+?B: peer            <TESTBASE>/test/local/auto/younger/local_oldest
+END csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/auto/younger/local_oldest
+has links: file <TESTBASE>/test/local/auto/younger/local_oldest checktxt 'v2:mtime=1620424800:mode=33188:user=dennis:group=schafroth:type=reg:size=12' 1 1
 CONN peer < PATCH %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 12 
-CONN peer > 'File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest)'
-While syncing file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-ERROR from peer: File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest) rc: -11 
-read_conn_status 'File is also marked dirty here! (/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest)' -11
+CONN peer > 'File is also marked dirty here! (<TESTBASE>/test/peer/auto/younger/local_oldest)'
+While syncing file: <TESTBASE>/test/local/auto/younger/local_oldest
+ERROR from peer: File is also marked dirty here! (<TESTBASE>/test/peer/auto/younger/local_oldest) rc: -11 
+read_conn_status 'File is also marked dirty here! (<TESTBASE>/test/peer/auto/younger/local_oldest)' -11
 before setown/settime/setmod on OK. rc -11 sig_rc: 24.
 After setown/settime/setmod on OK. rc -11.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-Auto resolve method YOUNGER 2 for peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest CONN peer < GETTM 
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/auto/younger/local_oldest
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger/local_oldest
+Auto resolve method YOUNGER 2 for peer:<TESTBASE>/test/local/auto/younger/local_oldest CONN peer < GETTM 
 CONN peer > 'OK (data_follows).'
 read_conn_status 'OK (data_follows).' 0
 CONN peer > '1623103200'
 Do not auto-resolve conflict: Lost 'younger/older' test.
 File stays in dirty state after autoresolve. Try again later...
-Deleting key '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest'
-Redis Reply: DEL '/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' -> 1
-Directory /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
-Adding textlist_add_new: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger on /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger
+Deleting key '<TESTBASE>/test/local/auto/younger/local_oldest'
+Redis Reply: DEL '<TESTBASE>/test/local/auto/younger/local_oldest' -> 1
+Directory <TESTBASE>/test/local/auto/younger
+Adding textlist_add_new: <TESTBASE>/test/local/auto/younger
+Match (+): <TESTBASE>/test/local/auto/younger on <TESTBASE>/test/local/auto/younger
 uid dennis gid schafroth
-update_directory: Setting directory time /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger 1620424800.
+update_directory: Setting directory time <TESTBASE>/test/local/auto/younger 1620424800.
 CONN peer < SETTIME %25test%25/auto/younger 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0

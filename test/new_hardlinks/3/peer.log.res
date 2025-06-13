@@ -3,7 +3,7 @@ standalone: 64 server_standalone > 0: 1
 server standalone 64 server_standalone > 0: 1
 No command line port. Reading config
 Config-File:   csync2_pgsql_peer.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/peer'.
+Prefix 'test' is set to '<TESTBASE>/test/peer'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862

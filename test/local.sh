@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ./set_prefix.sh
 
@@ -91,15 +91,16 @@ function cmd {
 	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
+        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished | ./normalize_paths.sh >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
-    echo "select filename from file where hostname = 'local' order by filename; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename, peername;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
+    # CL="COLLATE \"C\""
+    echo "select filename from file where hostname = 'local' order by filename $CL; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename $CL, peername $CL ;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
     testing ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
-	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
+	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
 	testing ${TESTNAME}/${LEVEL}/${COUNT}.rsync
     else
 	if [ "$CMD" == "c" ] ; then
@@ -150,8 +151,9 @@ function daemon {
     CMD="$1"
     echo $DCFG $DNAME
     mkdir  -p $TESTNAME/${LEVEL}
-    if [ "$CMD" == "d" ] ; then 
-	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > ${TESTNAME}/${LEVEL}/$DCFG.log  2>&1 &
+    if [ "$CMD" == "d" ] ; then
+	# Start daemon and capture its PID directly (without pipeline)
+	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG > ${TESTNAME}/${LEVEL}/$DCFG.log.raw 2>&1 &
 	echo "$!" > ${DCFG}.pid
     elif [ "$CMD" == "m" ] ; then 
 	${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -E${DEBUG}B .inotify_${DCFG}.log  > ${TESTNAME}/${LEVEL}/${DCFG}_monitor.log  2>&1 &
@@ -175,18 +177,24 @@ function daemon {
 function killdaemon {
     if [ "$DAEMON" == "NO" ] ; then
 	echo "daemon stop disabled";
-	return 
+	return
     fi
     HOST=peer
     if [ "$1" != "" ] ; then
 	HOST=$1
     fi
     if [ -f ${HOST}.pid ] ; then
-	kill `cat ${HOST}.pid`
+	PID=`cat ${HOST}.pid`
+	if kill -0 "$PID" 2>/dev/null; then
+	    kill "$PID" 2>/dev/null || true
+	fi
 	rm ${HOST}.pid
     fi
-    if [ -f "${HOST}_monitor.pid" ] ; then 
-	kill `cat ${HOST}_monitor.pid`
+    if [ -f "${HOST}_monitor.pid" ] ; then
+	PID=`cat ${HOST}_monitor.pid`
+	if kill -0 "$PID" 2>/dev/null; then
+	    kill "$PID" 2>/dev/null || true
+	fi
 	rm ${HOST}_monitor.pid
     fi
 }
@@ -224,8 +232,16 @@ for d in $* ; do
     fi
 done
 echo "DAEMON:"
-cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection > ${TESTNAME}/${LEVEL}/peer.log.tmp
-mv ${TESTNAME}/${LEVEL}/peer.log.tmp ${TESTNAME}/${LEVEL}/peer.log
+# Process the raw daemon log and apply normalization
+if [ -f ${TESTNAME}/${LEVEL}/peer.log.raw ]; then
+    cat ${TESTNAME}/${LEVEL}/peer.log.raw | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log
+    # Remove the raw log file after processing
+    rm ${TESTNAME}/${LEVEL}/peer.log.raw
+else
+    # Fallback to existing log file if raw doesn't exist
+    cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log.tmp
+    mv ${TESTNAME}/${LEVEL}/peer.log.tmp ${TESTNAME}/${LEVEL}/peer.log
+fi
 testing ${TESTNAME}/${LEVEL}/peer.log
 ./compare_sql.sh $TESTNAME/${LEVEL}
 echo "END DAEMON"

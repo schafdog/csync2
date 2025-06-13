@@ -5,17 +5,17 @@ Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
 db_schema_version: 2
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
-No match. Don't check at all: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/* ..
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/* ..
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/* ..
-New file: /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-csync_check_file_same_dev_inode /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest
-mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' '-'.
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest' '-'.
-Inserted/updated /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/younger/local_oldest rows matched: 0
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+Checking <TESTBASE>/test/* ..
+No match. Don't check at all: <TESTBASE>/test/peer
+Checking <TESTBASE>/test/local/* ..
+Checking <TESTBASE>/test/local/auto/* ..
+Checking <TESTBASE>/test/local/auto/younger/* ..
+New file: <TESTBASE>/test/local/auto/younger/local_oldest
+csync_check_file_same_dev_inode <TESTBASE>/test/local/auto/younger/local_oldest <TESTBASE>/test/local/auto/younger/local_oldest
+mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/auto/younger/local_oldest' '-'.
+mark other operation: 'NEW' 'other:<TESTBASE>/test/local/auto/younger/local_oldest' '-'.
+Inserted/updated <TESTBASE>/test/local/auto/younger/local_oldest rows matched: 0
+Checking for deleted files <TESTBASE>/test recursive.
+csync_file_args: '<TESTBASE>/test' flags 65 

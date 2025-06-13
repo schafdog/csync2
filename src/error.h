@@ -6,8 +6,8 @@
 
 /* error.c */
 
-void csync_printtime();
-void csync_printtotaltime();
+void csync_printtime(void);
+void csync_printtotaltime(void);
 void csync_log(int syslog_priority, int lv, const char *fmt, ...);
 
 #define csync_debug_ping(N) \

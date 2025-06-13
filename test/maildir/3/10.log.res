@@ -3,7 +3,7 @@ csync_hostinfo (nil)
 standalone: 0 server_standalone > 0: 0
 Mode: 65536 Flags: 1 PID: 2798340
 Config-File:   csync2_pgsql_local.cfg
-Prefix 'test' is set to '/export/home/dennis/Projects/csync2/csync2/test/test/local'.
+Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
 New host alias: peer: localhost 30861
 New host alias: other: localhost 30862
@@ -58,155 +58,155 @@ csync2_db_SQL: update file set filename = NULL where filename = NULL
 csync2_db_SQL: update host set host = NULL where host = NULL
 db_schema_version: 2
 Connecting to redis localhost:6379
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-csync_check_dir: /export/home/dennis/Projects/csync2/csync2/test/test 65 
-Checking /export/home/dennis/Projects/csync2/csync2/test/test/* ..
-No match. Don't check at all: /export/home/dennis/Projects/csync2/csync2/test/test/peer
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
-file /export/home/dennis/Projects/csync2/csync2/test/test encoded /export/home/dennis/Projects/csync2/csync2/test/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  hostname = 'local' ORDER BY filename
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
+Running recursive check for <TESTBASE>/test ...
+Checking recursive for modified files <TESTBASE>/test 
+csync_check_dir: <TESTBASE>/test 65 
+Checking <TESTBASE>/test/* ..
+No match. Don't check at all: <TESTBASE>/test/peer
+Checking for deleted files <TESTBASE>/test recursive.
+file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
+SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/new
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/tmp
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash/cur
 SQL Query finished.
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348023 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur') AND peername = 'peer' ORDER BY timestamp 
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash/cur
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash/cur
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348023 OR filename = '<TESTBASE>/test/local/Maildir/.Trash/cur') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348023, NULL, 64, 16877, 1, 1736905951)
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348023 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/.Trash/cur'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/Maildir/.Trash/cur', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348023, NULL, 64, 16877, 1, 1736905951)
+mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348023 OR filename = '<TESTBASE>/test/local/Maildir/.Trash/cur') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur deleted before syncing. Removing from dirty.
-Found row: file '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur'
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348020 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash') AND peername = 'peer' ORDER BY timestamp 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash/cur' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/.Trash/cur deleted before syncing. Removing from dirty.
+Found row: file '<TESTBASE>/test/local/Maildir/.Trash/cur' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/.Trash/cur'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/Maildir/.Trash/cur'
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/.Trash' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348020 OR filename = '<TESTBASE>/test/local/Maildir/.Trash') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348020, NULL, 64, 16877, 1, 1736905951)
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348020 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/.Trash'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/Maildir/.Trash', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348020, NULL, 64, 16877, 1, 1736905951)
+mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/.Trash' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348020 OR filename = '<TESTBASE>/test/local/Maildir/.Trash') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash deleted before syncing. Removing from dirty.
-Found row: file '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash'
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348019 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp') AND peername = 'peer' ORDER BY timestamp 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/.Trash deleted before syncing. Removing from dirty.
+Found row: file '<TESTBASE>/test/local/Maildir/.Trash' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/.Trash'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/Maildir/.Trash'
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/tmp
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/tmp
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/tmp' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348019 OR filename = '<TESTBASE>/test/local/Maildir/tmp') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348019, NULL, 64, 16877, 1, 1736905951)
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348019 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/tmp'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/Maildir/tmp', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348019, NULL, 64, 16877, 1, 1736905951)
+mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/tmp' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348019 OR filename = '<TESTBASE>/test/local/Maildir/tmp') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp deleted before syncing. Removing from dirty.
-Found row: file '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp'
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348016 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new') AND peername = 'peer' ORDER BY timestamp 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/tmp' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/tmp deleted before syncing. Removing from dirty.
+Found row: file '<TESTBASE>/test/local/Maildir/tmp' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/tmp'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/Maildir/tmp'
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/new
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/new
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/new' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348016 OR filename = '<TESTBASE>/test/local/Maildir/new') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348016, NULL, 64, 16877, 1, 1736905951)
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348016 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/new'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/Maildir/new', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348016, NULL, 64, 16877, 1, 1736905951)
+mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/new' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348016 OR filename = '<TESTBASE>/test/local/Maildir/new') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new deleted before syncing. Removing from dirty.
-Found row: file '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new'
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348015 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur') AND peername = 'peer' ORDER BY timestamp 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/new' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/new deleted before syncing. Removing from dirty.
+Found row: file '<TESTBASE>/test/local/Maildir/new' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/new'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/Maildir/new'
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/cur' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348015 OR filename = '<TESTBASE>/test/local/Maildir/cur') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348015, NULL, 64, 16877, 1, 1736905951)
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348015 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/cur'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/Maildir/cur', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348015, NULL, 64, 16877, 1, 1736905951)
+mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/cur' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348015 OR filename = '<TESTBASE>/test/local/Maildir/cur') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur deleted before syncing. Removing from dirty.
-Found row: file '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur'
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348014 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir') AND peername = 'peer' ORDER BY timestamp 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/cur deleted before syncing. Removing from dirty.
+Found row: file '<TESTBASE>/test/local/Maildir/cur' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir/cur'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/Maildir/cur'
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348014 OR filename = '<TESTBASE>/test/local/Maildir') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348014, NULL, 64, 16877, 1, 1736905951)
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348014 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/Maildir', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348014, NULL, 64, 16877, 1, 1736905951)
+mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348014 OR filename = '<TESTBASE>/test/local/Maildir') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir deleted before syncing. Removing from dirty.
-Found row: file '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir'
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-mark other operation: 'RM' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348013 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local') AND peername = 'peer' ORDER BY timestamp 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir deleted before syncing. Removing from dirty.
+Found row: file '<TESTBASE>/test/local/Maildir' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/Maildir'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/Maildir'
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348013 OR filename = '<TESTBASE>/test/local') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348013, NULL, 64, 16877, 1, 1736905951)
-mark other operation: 'RM' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348013 OR filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local') AND peername = 'other' ORDER BY timestamp 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local', 0, 'local', 'peer', 'RM', 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348013, NULL, 64, 16877, 1, 1736905951)
+mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53348013 OR filename = '<TESTBASE>/test/local') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
-mark other: RM(64) Old operation: MKDIR(1) '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-mark operation MKDIR -> RM other:/export/home/dennis/Projects/csync2/csync2/test/test/local deleted before syncing. Removing from dirty.
-Found row: file '/export/home/dennis/Projects/csync2/csync2/test/test/local' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local'  AND  myname = 'local' AND peername like 'other'
-csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local'
-csync_file_args: '/export/home/dennis/Projects/csync2/csync2/test/test' flags 65 
+mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
+Found row: file '<TESTBASE>/test/local' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'other'
+csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local'
+csync_file_args: '<TESTBASE>/test' flags 65 
 get dirty host
 SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername
 dirty host other 
 dirty host peer 
 SQL Query finished.
-SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '/export/home/dennis/Projects/csync2/csync2/test/test' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '/export/home/dennis/Projects/csync2/csync2/test/test/local' ''
-compare file with pattern /export/home/dennis/Projects/csync2/csync2/test/test
-dirty: peer:/export/home/dennis/Projects/csync2/csync2/test/test/local v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir ''
+SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
+DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/.Trash/cur' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/.Trash' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/Maildir/.Trash v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/tmp' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=1736905926:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/new' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/Maildir/new v2:mtime=1736905941:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/cur' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/Maildir/cur v2:mtime=1736905950:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local/Maildir v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local' ''
+compare file with pattern <TESTBASE>/test
+dirty: peer:<TESTBASE>/test/local v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir ''
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -223,9 +223,9 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local RM  0
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Deleting peer:/export/home/dennis/Projects/csync2/csync2/test/test/local
+Dirty (missing) item <TESTBASE>/test/local RM  0
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Deleting peer:<TESTBASE>/test/local
 CONN peer < SIG %25test%25 
 CONN peer > 'OK (data_follows).'
 read_conn_status 'OK (data_follows).' 0
@@ -233,41 +233,41 @@ CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%
 delete flags: 0
 csync_cmpchecktxt A: v2:mtime=1736905921:mode=16877:user=dennis:group=schafroth:type=dir 
 csync_cmpchecktxt B: --- 
-/export/home/dennis/Projects/csync2/csync2/test/test/local is different on peer (cktxt char #1).
+<TESTBASE>/test/local is different on peer (cktxt char #1).
 >>> PEER:  v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
 >>> LOCAL: ---
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Match (+): /export/home/dennis/Projects/csync2/csync2/test/test/local on /export/home/dennis/Projects/csync2/csync2/test/test/local
-Csync2 / Librsync: csync_rs_check('/export/home/dennis/Projects/csync2/csync2/test/test/local', 0 [non-regular file])
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Csync2 / Librsync: csync_rs_check('<TESTBASE>/test/local', 0 [non-regular file])
 rs_check: Opening basis_file and sig_file..
 rs_check: Reading signature size from peer....
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
-rs_check: Receiving signature 0 bytes for /export/home/dennis/Projects/csync2/csync2/test/test/local
+rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local
 File has been checked successfully (files are equal).
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 CONN peer < DEL %25test%25 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
-Clear dirty peer:/export/home/dennis/Projects/csync2/csync2/test/test/local (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: DELETE FROM dirty WHERE  (filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/local/%')  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: DELETE FROM file WHERE  (filename = '/export/home/dennis/Projects/csync2/csync2/test/test/local' OR filename LIKE '/export/home/dennis/Projects/csync2/csync2/test/test/local/%')  AND  hostname = 'local'
-DELETE (/export/home/dennis/Projects/csync2/csync2/test/test/local) Last dir: /export/home/dennis/Projects/csync2/csync2/test/test/local/. rc: 4
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir RM  0
-Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur RM  0
-Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/cur) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new RM  0
-Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/new) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp RM  0
-Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/tmp) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash RM  0
-Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
-Dirty (missing) item /export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur RM  0
-Skipping matched file (/export/home/dennis/Projects/csync2/csync2/test/test/local/Maildir/.Trash/cur) from deleted directory (/export/home/dennis/Projects/csync2/csync2/test/test/local/)
+Clear dirty peer:<TESTBASE>/test/local (0)
+csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: DELETE FROM dirty WHERE  (filename = '<TESTBASE>/test/local' OR filename LIKE '<TESTBASE>/test/local/%')  AND  myname = 'local' AND peername like 'peer'
+csync2_db_SQL: DELETE FROM file WHERE  (filename = '<TESTBASE>/test/local' OR filename LIKE '<TESTBASE>/test/local/%')  AND  hostname = 'local'
+DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
+Dirty (missing) item <TESTBASE>/test/local/Maildir RM  0
+Skipping matched file (<TESTBASE>/test/local/Maildir) from deleted directory (<TESTBASE>/test/local/)
+Dirty (missing) item <TESTBASE>/test/local/Maildir/cur RM  0
+Skipping matched file (<TESTBASE>/test/local/Maildir/cur) from deleted directory (<TESTBASE>/test/local/)
+Dirty (missing) item <TESTBASE>/test/local/Maildir/new RM  0
+Skipping matched file (<TESTBASE>/test/local/Maildir/new) from deleted directory (<TESTBASE>/test/local/)
+Dirty (missing) item <TESTBASE>/test/local/Maildir/tmp RM  0
+Skipping matched file (<TESTBASE>/test/local/Maildir/tmp) from deleted directory (<TESTBASE>/test/local/)
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash RM  0
+Skipping matched file (<TESTBASE>/test/local/Maildir/.Trash) from deleted directory (<TESTBASE>/test/local/)
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur RM  0
+Skipping matched file (<TESTBASE>/test/local/Maildir/.Trash/cur) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 
 CONN peer > 'OK (cu_later).'

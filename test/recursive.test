@@ -13,9 +13,9 @@ PDIR=${DIRNAME/5/}
 FILENAME="$DIRNAME/file.c"
 BACKDIR=`pwd`/test/$PEER
 mkdir -p $DIRNAME
-find test/peer/ -exec touch -d "2020-02-11" {} \;
+find test/peer/ -exec ./portable_touch.sh -d "2020-02-11" {} \;
 echo "not ignore" > $FILENAME
-find test/local/ -exec touch -d "2020-02-12" {} \;
+find test/local/ -exec ./portable_touch.sh -d "2020-02-12" {} \;
 cmd x "2. New $FILENAME"
 echo "UPDATE file SET DEVICE = 12345 WHERE filename LIKE '`pwd`/test/$NAME/1/2/%'" | mysql csync2_local
 cmd x "3. New Device ID $FILENAME"

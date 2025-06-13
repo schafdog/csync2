@@ -19,8 +19,10 @@
  */
 
 #include "csync2.h"
-#include "redis.h"
 #include <librsync.h>
+#include "rsync.h"
+#include "conn.h"
+#include "redis.h"
 
 #if defined(RS_MD4_LENGTH)
 #define STRONG_LEN 16
@@ -52,7 +54,6 @@
 #endif
 
 extern int cfg_patch_mode;
-extern unsigned csync_lock_time;
 
 /* This has been taken from rsync:lib/compat.c */
 
@@ -169,6 +170,7 @@ static int get_tmpname(char *fnametmp, const char *fname, int make_unique) {
  same directory as file fname. The file must be removed after
  usage.
  */
+static FILE* paranoid_tmpfile(void);
 
 static FILE* open_temp_file(char *fnametmp, const char *fname) {
 	FILE *f;
@@ -221,7 +223,7 @@ static FILE *paranoid_tmpfile()
   return f;
 }
 #else
-static FILE* paranoid_tmpfile() {
+static FILE* paranoid_tmpfile(void) {
 	FILE *f;
 
 	if (access(P_tmpdir, R_OK | W_OK | X_OK) < 0)
@@ -234,7 +236,7 @@ static FILE* paranoid_tmpfile() {
 }
 #endif
 
-int csync_send_file_chunked(int conn, FILE *in) {
+static int csync_send_file_chunked(int conn, FILE *in) {
 	long size;
 	fflush(in);
 	fseek(in, 0L, SEEK_END);
@@ -247,7 +249,7 @@ int csync_send_file_chunked(int conn, FILE *in) {
 	return 0;
 }
 
-int csync_send_file_octet_stream(int conn, FILE *in) {
+static int csync_send_file_octet_stream(int conn, FILE *in) {
 	char buffer[CHUNK_SIZE];
 	int rc, chunk;
 	long size;
@@ -285,7 +287,7 @@ int  csync_send_file(int conn, FILE *in) {
 		return csync_send_file_octet_stream(conn, in);
 }
 
-int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) {
+static int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_file) {
 	if (delta_file)
 		fclose(delta_file);
 	if (basis_file)
@@ -296,14 +298,14 @@ int rsync_close_error(int err_no, FILE *delta_file, FILE *basis_file, FILE *new_
 	return -1;
 }
 
-void csync_send_error(int conn) {
+static void csync_send_error(int conn) {
 	conn_printf(conn, "ERROR\n");
 }
 
 const char *typestr[3] = { "octet-stream", "chunked", "ERROR" };
 
-int csync_recv_file_chunked(int conn, FILE *out) {
-	long long size;
+static int csync_recv_file_chunked(int conn, FILE *out) {
+	size_t size;
 	int type = 2;
 	if (conn_read_get_content_length(conn, &size, &type)) {
 		if (errno == EIO)
@@ -324,10 +326,10 @@ int csync_recv_file_chunked(int conn, FILE *out) {
 	return 0;
 }
 
-int csync_recv_file_octet_stream(int conn, FILE *out) {
+static int csync_recv_file_octet_stream(int conn, FILE *out) {
 	char buffer[CHUNK_SIZE];
 	int bytes, chunk;
-	long long size;
+	size_t size;
 	int type = 2;
 	if (conn_read_get_content_length(conn, &size, &type)) {
 		if (errno == EIO)
@@ -385,7 +387,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	ssize_t read;
 	rs_stats_t stats;
 	rs_result result = 0;
-	long long size = 0;
+	size_t size = 0;
 	char *peer = peerbuf;
 
 	csync_log(LOG_DEBUG, 3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n", filename, isreg,
@@ -394,9 +396,10 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	csync_log(LOG_DEBUG, 3, "rs_check: Opening basis_file and sig_file..\n");
 
 	sig_file = paranoid_tmpfile();
-	/* if ( !sig_file ) 
-	 return rsync_check_io_error(...);
-	 */
+	/*
+	if ( !sig_file ) 
+	   return rsync_check_io_error(...);
+	*/
 
 	if (isreg) {
 		basis_file = fopen(filename, "rb");
@@ -431,7 +434,8 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 
 	if (sig_file) {
 		fflush(sig_file);
-		if (size != ftell(sig_file)) {
+		ssize_t size_tell = ftell(sig_file);
+		if ((ssize_t) size != size_tell) {
 			csync_info(2, "rs_check: Signature size differs: local=%d, peer=%Ld\n", ftell(sig_file), size);
 			found_diff = 1;
 		}
@@ -485,7 +489,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	return found_diff;
 }
 
-int rsync_check_io_error(int err_no, filename_p filename, FILE *basis_file, FILE *sig_file, FILE *new_file) {
+static int rsync_check_io_error(int err_no, filename_p filename, FILE *basis_file, FILE *sig_file, FILE *new_file) {
 	csync_error(0, "I/O Error '%s' in rsync-check: %s\n", strerror(errno), filename);
 	return rsync_close_error(err_no, basis_file, sig_file, new_file);
 }
@@ -529,16 +533,15 @@ void csync_rs_sig(int conn, filename_p filename) {
 	return;
 }
 
-void io_error(const char *filename, FILE *basis_file, FILE *sig_file) {
+static void io_error(const char *filename, FILE *basis_file, FILE *sig_file) {
 	csync_log(LOG_DEBUG, 0, "I/O Error '%s' in rsync-sig: %s\n", strerror(errno), filename);
-
 	if (basis_file)
 		fclose(basis_file);
 	if (sig_file)
 		fclose(sig_file);
 }
 
-int rsync_delta_io_error(int err_no, filename_p filename, FILE *new_file, FILE *delta_file, FILE *sig_file) {
+static int rsync_delta_io_error(int err_no, filename_p filename, FILE *new_file, FILE *delta_file, FILE *sig_file) {
 	csync_error(0, "I/O Error '%s' in rsync-delta: %s\n", strerror(errno), filename);
 	return rsync_close_error(err_no, new_file, delta_file, sig_file);
 }
@@ -564,6 +567,7 @@ int csync_rs_delta(int conn, filename_p filename) {
 	if (result != RS_DONE)
 		csync_fatal("Got an error from librsync, too bad!\n");
 	fclose(sig_file);
+	sig_file = NULL;
 
 	csync_log(LOG_DEBUG, 3, "Opening new_file and delta_file..\n");
 	new_file = fopen(filename, "rb");
@@ -602,7 +606,7 @@ int csync_rs_delta(int conn, filename_p filename) {
 	return 0;
 }
 
-int rsync_patch_io_error(const char *errstr, filename_p filename, FILE *delta_file, FILE *basis_file, FILE *new_file) {
+static int rsync_patch_io_error(const char *errstr, filename_p filename, FILE *delta_file, FILE *basis_file, FILE *new_file) {
 	csync_error(0, "I/O Error '%s' while %s in rsync-patch: %s\n", strerror(errno), errstr, filename);
 	return rsync_close_error(errno, delta_file, basis_file, new_file);
 }
@@ -611,7 +615,7 @@ int csync_rs_patch(int conn, filename_p filename) {
 	FILE *basis_file = 0, *delta_file = 0, *patched_file = 0;
 	rs_stats_t stats;
 	rs_result result;
-	char *errstr = "?";
+	const char *errstr = "?";
 	char tmpfname[MAXPATHLEN];
 
 	csync_log(LOG_DEBUG, 3, "Csync2 / Librsync: csync_rs_patch('%s')\n", filename);
@@ -725,7 +729,7 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 
 	rs_job_t *job = rs_patch_begin(rs_file_copy_cb, old);
 
-	long long size;
+	size_t size;
 	int type, rc;
 	if ((rc = conn_read_get_content_length(sock, &size, &type))) {
 		csync_fatal("rs_recv_delta_and_patch: Failed to read content-length\n");
@@ -754,10 +758,10 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 				memmove(in_buf, bufs.next_in, bufs.avail_in);
 			}
 
-			char *buffer[CHUNK_SIZE];
+			char buffer[CHUNK_SIZE];
 			size_t avail = BUF_SIZE - bufs.avail_in;
 			avail = avail > CHUNK_SIZE ? CHUNK_SIZE : avail;
-			ssize_t read = conn_read(sock, buffer, (size_t) size > avail ? avail : size);
+			ssize_t read = conn_read(sock, buffer, size > avail ? avail : size);
 			if (read == -1) {
 				return csync_delta_patch_error("Failed to read chunk: %s %d", fname, old, tmp, job, read);
 			}

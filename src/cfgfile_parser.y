@@ -25,6 +25,7 @@
 #include <string.h>
 #include <fnmatch.h>
 #include <ctype.h>
+#include "utils.h"
 
 struct csync_group    *csync_group  = 0;
 struct csync_prefix   *csync_prefix = 0;
@@ -48,20 +49,20 @@ int csync_lowercyg_disable = 0;
 int csync_lowercyg_used = 0;
 #endif
 
-extern void yyerror(char* text);
-extern int yylex();
+extern void yyerror(const char* text);
+extern int yylex(void);
 extern int yylineno;
 
-void yyerror(char *text)
+void yyerror(const char *text)
 {
 	csync_fatal("Near line %d: %s\n", yylineno, text);
 }
 
 static void create_group(char *name)
 {
-	int static autonum = 1;
+	static int autonum = 1;
 	struct csync_group *t =
-		calloc(sizeof(struct csync_group), 1);
+		calloc(1, sizeof(struct csync_group));
 
 	if (name == 0)
 	    // missing check on result
@@ -85,7 +86,7 @@ static void add_host(char *hostname, char *peername, int slave)
 	hostname[i] = tolower(hostname[i]);
     for (i=0; peername[i]; i++)
 	peername[i] = tolower(peername[i]);
-    if ( strcmp(hostname, myhostname) == 0 ) {
+    if ( strcmp(hostname, g_myhostname) == 0 ) {
 	csync_group->local_slave = slave;
 	if (!csync_group->myname)
 	    csync_group->myname = peername;
@@ -93,7 +94,7 @@ static void add_host(char *hostname, char *peername, int slave)
 	    free(peername);
     } else {
 	struct csync_group_host *t =
-	    calloc(sizeof(struct csync_group_host), 1);
+	    calloc(1, sizeof(struct csync_group_host));
 	t->hostname = peername;
 	t->on_left_side = !csync_group->myname;
 	t->slave = slave;
@@ -104,13 +105,14 @@ static void add_host(char *hostname, char *peername, int slave)
     free(hostname);
 }
 
-static void add_patt(int patterntype, char *pattern)
+static void add_patt(int patterntype, const char *p_pattern)
 {
 	struct csync_group_pattern *t =
-		calloc(sizeof(struct csync_group_pattern), 1);
+		calloc(1, sizeof(struct csync_group_pattern));
 	int i;
+	char *pattern = strdup(p_pattern);
 
-#if __CYGWIN__
+#ifdef __CYGWIN__
 	if (isalpha(pattern[0]) && pattern[1] == ':' &&
 	    (pattern[2] == '/' || pattern[2] == '\\')) {
 		char *new_pattern, *p;
@@ -122,7 +124,6 @@ static void add_patt(int patterntype, char *pattern)
 		pattern = new_pattern;
 	}
 #endif
-
 	/* strip trailing slashes from pattern */
 	for (i=strlen(pattern)-1; i>0; i--)
 		if (pattern[i] == '/')
@@ -231,7 +232,7 @@ static void set_flags(char *flags)
     free(flags);
 }
 
-static void check_group()
+static void check_group(void)
 {
     if ( ! csync_group->key )
 	csync_fatal("Config error: every group must have a key.\n");
@@ -261,36 +262,36 @@ static void check_group()
 	}
     }
 
-    if (active_peerlist) {
+    if (g_active_peerlist) {
 	struct csync_group_host *h;
 	int i=0;
 	size_t thisplen;
 
-	while (active_peerlist[i]) {
-	    thisplen = strcspn(active_peerlist + i, ",");
+	while (g_active_peerlist[i]) {
+	    thisplen = strcspn(g_active_peerlist + i, ",");
 
 	    for (h=csync_group->host; h; h=h->next)
-		if (strlen(h->hostname) == thisplen && !strncmp(active_peerlist + i, h->hostname, thisplen))
+		if (strlen(h->hostname) == thisplen && !strncmp(g_active_peerlist + i, h->hostname, thisplen))
 		    goto foundactivepeers;
 
 	    i += thisplen;
-	    while (active_peerlist[i] == ',') i++;
+	    while (g_active_peerlist[i] == ',') i++;
 	}
     } else
 foundactivepeers:
 	csync_group->hasactivepeers = 1;
 
-    if (active_grouplist && csync_group->myname)
+    if (g_active_grouplist && csync_group->myname)
     {
 	int i=0, gnamelen = strlen(csync_group->gname);
 
-	while (active_grouplist[i])
+	while (g_active_grouplist[i])
 	{
-	    if ( !strncmp(active_grouplist+i, csync_group->gname, gnamelen) &&
-		 (active_grouplist[i+gnamelen] == ',' || !active_grouplist[i+gnamelen]) )
+	    if ( !strncmp(g_active_grouplist+i, csync_group->gname, gnamelen) &&
+		 (g_active_grouplist[i+gnamelen] == ',' || !g_active_grouplist[i+gnamelen]) )
 		goto found_asactive;
-	    while (active_grouplist[i])
-		if (active_grouplist[i++]==',') break;
+	    while (g_active_grouplist[i])
+		if (g_active_grouplist[i++]==',') break;
 	}
 
 	csync_group->myname = 0;
@@ -298,10 +299,10 @@ found_asactive:	;
     }
 }
 
-static void create_action()
+static void create_action(void)
 {
     struct csync_group_action *t =
-	calloc(sizeof(struct csync_group_action), 1);
+		calloc(1, sizeof(struct csync_group_action));
     t->next = csync_group->action;
     t->logfile = strdup("/dev/null");
     csync_group->action = t;
@@ -319,7 +320,7 @@ static void action_command_destroy(struct csync_group_action_command *command) {
   if (!command)
     return ;
   action_command_destroy(command->next);
-  free((void *) command->command);
+  free(command->command);
   free(command);
 }
 
@@ -329,7 +330,7 @@ static void action_destroy(struct csync_group_action *action) {
     action_destroy(action->next);
     action_pattern_destroy(action->pattern);
     action_command_destroy(action->command);
-    free((void *) action->logfile);
+    free(action->logfile);
     free(action);
 }
 
@@ -367,22 +368,22 @@ void csync_config_destroy_group(struct csync_group *group) {
     pattern_destroy(group->pattern);
     action_destroy(group->action);
     if (group->myname)
-	free((void *) group->myname);
+	free(group->myname);
     if (group->gname)
-	free((void *) group->gname);
+	free(group->gname);
     if (group->key)
-	free((void *) group->key);
+	free(group->key);
     if (group->backup_directory)
-	free((void *) group->backup_directory);
+	free(group->backup_directory);
     free(group);
 }
 
-static void add_action_pattern(char *pattern)
+static void add_action_pattern(const char *pattern)
 {
     struct csync_group_action_pattern *t =
-	calloc(sizeof(struct csync_group_action_pattern), 1);
+		calloc(1, sizeof(struct csync_group_action_pattern));
     t->star_matches_slashes = !!strstr(pattern, "**");
-    t->pattern = pattern;
+    t->pattern = strdup(pattern);
     t->next = csync_group->action->pattern;
     csync_group->action->pattern = t;
 }
@@ -390,26 +391,26 @@ static void add_action_pattern(char *pattern)
 static void add_action_exec(char *command)
 {
 	struct csync_group_action_command *t =
-		calloc(sizeof(struct csync_group_action_command), 1);
+		calloc(1, sizeof(struct csync_group_action_command));
 	t->command = command;
 	t->next = csync_group->action->command;
 	csync_group->action->command = t;
 }
 
-static void set_action_logfile(const char *logfile)
+static void set_action_logfile(char *logfile)
 {
-    const char *oldlog = csync_group->action->logfile;
+    char *oldlog = csync_group->action->logfile;
     if (oldlog)
-	free((void *) oldlog);
+		free(oldlog);
     csync_group->action->logfile = logfile;
 }
 
-static void set_action_dolocal()
+static void set_action_dolocal(void)
 {
 	csync_group->action->do_local = 1;
 }
 
-static void set_action_dolocal_only()
+static void set_action_dolocal_only(void)
 {
 	csync_group->action->do_local = 1;
 	csync_group->action->do_local_only = 1;
@@ -430,9 +431,9 @@ static void set_tempdir(const char *tempdir)
 	csync_tempdir = strdup(tempdir);
 }
 
-static void set_database(filename_p filename)
+static void set_database(const char *filename)
 {
-    csync_database = (char*) filename;
+    csync_database = strdup(filename);
 }
 
 static void set_database_version(char *version)
@@ -449,7 +450,7 @@ static void set_patch_mode(char *mode)
 
 static void set_redis(filename_p filename)
 {
-    csync_redis = (char*) filename;
+    csync_redis = strdup(filename);
 }
 
 static void set_protocol_version(char *version)
@@ -467,7 +468,7 @@ static void set_ip_version(char *version)
 static void create_hostinfo_entry(char *name, char *host, char *service)
 {
      struct csync_hostinfo *p =
-	 calloc(sizeof(struct csync_hostinfo), 1);
+		 calloc(1, sizeof(struct csync_hostinfo));
      p->next = csync_hostinfo;
      p->name = name;
      p->host = host;
@@ -476,11 +477,11 @@ static void create_hostinfo_entry(char *name, char *host, char *service)
      csync_hostinfo = p;
 }
 
-static void create_prefix(const char *pname)
+static void create_prefix(char *pname)
 {
 	struct csync_prefix *p =
-		calloc(sizeof(struct csync_prefix), 1);
-	p->name = pname;
+		calloc(1, sizeof(struct csync_prefix));
+	p->name = strdup(pname);
 	p->next = csync_prefix;
 	csync_prefix = p;
 }
@@ -490,20 +491,20 @@ static void prefix_destroy(struct csync_prefix  *prefix)
     if (!prefix)
 	return ;
     prefix_destroy(prefix->next);
-    free((void *) prefix->name);
-    free((void *) prefix->path);
+    free(prefix->name);
+    free(prefix->path);
     free(prefix);
 }
 
-static void create_prefix_entry(char *pattern, char *path)
+static void create_prefix_entry(char *pattern,  char *path)
 {
 	int i;
 
 	if (path[0] != '/')
 		csync_fatal("Config error: Prefix '%s' is not an absolute path.\n", path);
 
-	if (!csync_prefix->path && !fnmatch(pattern, myhostname, 0)) {
-#if __CYGWIN__
+	if (!csync_prefix->path && !fnmatch(pattern, g_myhostname, 0)) {
+#ifdef __CYGWIN__
 		if (isalpha(path[0]) && path[1] == ':' &&
 		    (path[2] == '/' || path[2] == '\\')) {
 			char *new_path, *p;
@@ -528,10 +529,10 @@ static void create_prefix_entry(char *pattern, char *path)
 	free(pattern);
 }
 
-static void create_nossl(const char *from, const char *to)
+static void create_nossl(char *from, char *to)
 {
 	struct csync_nossl *t =
-		calloc(sizeof(struct csync_nossl), 1);
+		calloc(1, sizeof(struct csync_nossl));
 	t->pattern_from = from;
 	t->pattern_to = to;
 	t->next = csync_nossl;
@@ -542,10 +543,10 @@ static void create_nossl(const char *from, const char *to)
 static void nossl_destroy(struct csync_nossl *t)
 {
     if (!t)
-	return;
+		return;
     nossl_destroy(t->next);
-    free((void *)t->pattern_from);
-    free((void *)t->pattern_to);
+    free(t->pattern_from);
+    free(t->pattern_to);
     free(t);
 }
 
@@ -565,15 +566,15 @@ static void create_ignore(char *propname)
 	free(propname);
 }
 
-void csync_config_destroy() {
+void csync_config_destroy(void) {
     csync_debug(3, "csync_config_destroy\n");
     prefix_destroy(csync_prefix);
     csync_prefix = NULL;
     nossl_destroy(csync_nossl);
     if (csync_database) 
-	free(csync_database);
+		free(csync_database);
     if (csync_redis)
-	free(csync_redis);
+		free(csync_redis);
     csync_nossl = NULL;
     csync_config_destroy_group(csync_group);
     csync_group = NULL;
@@ -583,7 +584,7 @@ void csync_config_destroy() {
     csync_debug(3, "csync_config_destroy end\n");
 }
 
-static void disable_cygwin_lowercase_hack()
+static void disable_cygwin_lowercase_hack(void)
 {
 #ifdef __CYGWIN__
 	if (csync_lowercyg_used)

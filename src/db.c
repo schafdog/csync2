@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <time.h>
 #include "db_api.h"
+#include "db.h"
 
 #define DEADLOCK_MESSAGE \
 	"Database backend is exceedingly busy => Terminating (requesting retry).\n"
@@ -38,7 +39,7 @@ static db_conn_p global_db = 0;
 // TODO make configurable
 static int wait_length = 2;
 
-static int get_dblock_timeout() {
+static int get_dblock_timeout(void) {
 	return getpid() % 7 + csync_lock_timeout;
 }
 
@@ -48,7 +49,7 @@ static time_t last_wait_cycle = 0;
 static int begin_commit_recursion = 0;
 static int in_sql_query = 0;
 
-void csync_db_alarmhandler(int signum) {
+static void csync_db_alarmhandler(int signum) {
 	// unused parameter
 	(void) signum;
 
@@ -67,7 +68,7 @@ void csync_db_alarmhandler(int signum) {
 	begin_commit_recursion--;
 }
 
-void csync_db_maybegin(db_conn_p db) {
+static void csync_db_maybegin(db_conn_p db) {
 	if (!db_blocking_mode || begin_commit_recursion)
 		return;
 	begin_commit_recursion++;
@@ -91,7 +92,7 @@ void csync_db_maybegin(db_conn_p db) {
 	begin_commit_recursion--;
 }
 
-void csync_db_maycommit(db_conn_p db) {
+static void csync_db_maycommit(db_conn_p db) {
 	time_t now;
 
 	if (!db_blocking_mode || begin_commit_recursion)
@@ -218,7 +219,7 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 	char *sql;
 	va_list ap;
 	int rc, busyc = 0;
-	char *ppTail;
+	const char *ppTail;
 	va_start(ap, fmt);
 	VASPRINTF(&sql, fmt, ap);
 	va_end(ap);
@@ -246,11 +247,11 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 	return stmt;
 }
 
-const char* csync_db_get_column_text(void *stmt, int column) {
+static const char* csync_db_get_column_text(void *stmt, int column) {
 	return db_stmt_get_column_text(stmt, column);
 }
 
-int csync_db_get_column_int(void *stmt, int column) {
+static int csync_db_get_column_int(void *stmt, int column) {
 	return db_stmt_get_column_int((db_stmt_p) stmt, column);
 }
 
@@ -286,9 +287,9 @@ int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue, c
 
 const void* csync_db_colblob(void *stmtx, int col) {
 	db_stmt_p stmt = stmtx;
-	const void *ptr = stmt->get_column_blob(stmt, col);
+	const char  *ptr = stmt->get_column_blob(stmt, col);
 	if (stmt->db && stmt->db->logger) {
-		stmt->db->logger(LOG_DEBUG, 4, "DB get blob: %s ", (char*) ptr);
+		stmt->db->logger(LOG_DEBUG, 4, "DB get blob: %s ", ptr);
 	}
 	return ptr;
 }
@@ -341,27 +342,27 @@ void csync_db_fin(void *vmx, const char *err) {
 #define DBEXTENSION ""
 #endif
 
-char* db_default_database(char *dbdir, char *myhostname, char *cfg_name) {
+char* db_default_database(const char *dbdir, const char *myhostname, const char *cfgname) {
 	char *db;
 
 #if defined(HAVE_SQLITE3)
-	if (cfg_name[0] != '\0')
+	if (cfgname[0] != '\0')
 		ASPRINTF(&db, "sqlite3://%s/%s_%s" DBEXTENSION, dbdir, myhostname, cfgname);
 	else
 		ASPRINTF(&db, "sqlite3://%s/%s" DBEXTENSION, dbdir, myhostname);
 #elif defined(HAVE_SQLITE)
-	if (cfg_name[0] != '\0')
+	if (cfgname[0] != '\0')
 		ASPRINTF(&db, "sqlite2://%s/%s_%s" DBEXTENSION, dbdir, myhostname, cfgname);
 	else
 		ASPRINTF(&db, "sqlite2://%s/%s" DBEXTENSION, dbdir, myhostname);
 #elif defined(HAVE_MYSQL)
-	if (cfg_name[0] != '\0')
+	if (cfgname[0] != '\0')
 		ASPRINTF(&db, "mysql://root@localhost/csync2_%s_%s" DBEXTENSION, myhostname, cfgname);
 	else
 		ASPRINTF(&db, "mysql://root@localhost/csync2_%s" DBEXTENSION, myhostname);
 
 #elif defined(HAVE_LIBPQ)
-	if (cfg_name[0] != '\0')
+	if (cfgname[0] != '\0')
 		ASPRINTF(&db, "pgsql://root@localhost/csync2_%s_%s" DBEXTENSION, myhostname, cfgname);
 	else
 		ASPRINTF(&db, "pgsql://root@localhost/csync2_%s" DBEXTENSION, myhostname);

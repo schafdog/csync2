@@ -1,13 +1,13 @@
---------------------------------------------------------------------------------
- /export/home/dennis/Projects/csync2/csync2/test/test/local
- /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive
- /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1
- /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2
- /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3
- /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4
- /export/home/dennis/Projects/csync2/csync2/test/test/local/recursive/1/2/3/4/5
+----------------------------------------------------------------
+ <TESTBASE>/test/local
+ <TESTBASE>/test/local/recursive
+ <TESTBASE>/test/local/recursive/1
+ <TESTBASE>/test/local/recursive/1/2
+ <TESTBASE>/test/local/recursive/1/2/3
+ <TESTBASE>/test/local/recursive/1/2/3/4
+ <TESTBASE>/test/local/recursive/1/2/3/4/5
 (7 rows)
 
-----------+----------+-----------+-------+----
+----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
 (0 rows)
 

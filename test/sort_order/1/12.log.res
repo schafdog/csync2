@@ -1,12 +1,12 @@
-cmd c "New file" local peer test
-Running recursive check for /export/home/dennis/Projects/csync2/csync2/test/test ...
-Checking recursive for modified files /export/home/dennis/Projects/csync2/csync2/test/test 
-mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' '-'.
-mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local' '-'.
-mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local (not synced) .
-mark other operation: 'MOD_DIR' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' '-'.
-mark other operation: 'MOD_DIR' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin' '-'.
-mark operation NEW -> MOD => NEW other:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin (not synced) .
-mark other operation: 'NEW' 'peer:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' '-'.
-mark other operation: 'NEW' 'other:/export/home/dennis/Projects/csync2/csync2/test/test/local/usr/local/sbin/hej' '-'.
-Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test recursive.
+cmd u "New dir timestamp (update)" local peer test
+Got dirty files from host peer
+Connecting to host peer (PLAIN) ...
+Updating (MARK) 'peer:<TESTBASE>/test/local' ''
+Updating (MARK) 'peer:<TESTBASE>/test/local/usr' ''
+Updating (MARK) 'peer:<TESTBASE>/test/local/usr/local' ''
+?M: peer            <TESTBASE>/test/local/usr/local
+Updating (MARK) 'peer:<TESTBASE>/test/local/usr/local/abc' ''
+Updating (MARK) 'peer:<TESTBASE>/test/local/usr/local/def' ''
+Updating (MARK) 'peer:<TESTBASE>/test/local/usr/local/def/hej' ''
+Updating (MARK) 'peer:<TESTBASE>/test/local/usr/local/sbin' ''
+?M: peer            <TESTBASE>/test/local/usr/local/sbin

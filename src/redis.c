@@ -12,8 +12,6 @@
 redisContext *redis_context = NULL;
 redisReply *redis_reply = NULL;
 int isunix = 0;
-extern char *csync_redis;
-extern unsigned int csync_lock_time;
 
 int csync_redis_connect(char *redis) {
 	if (redis == NULL)
@@ -46,19 +44,19 @@ int csync_redis_connect(char *redis) {
 	return 0;
 }
 
-int csync_redis_reconnect() {
+static int csync_redis_reconnect(void) {
 	return csync_redis_connect(csync_redis);
 }
 
-const char* not_null(const char *str) {
+static const char* not_null(const char *str) {
 	return str ? str : "";
 }
 
-const char* not_null_default(const char *str, const char *if_null) {
+static const char* not_null_default(const char *str, const char *if_null) {
 	return str ? str : if_null;
 }
 
-int csync_redis_check_connection() {
+int csync_redis_check_connection(void) {
 	struct pollfd fds;
 	fds.fd = redis_context->fd;
 	fds.events = POLLOUT;
@@ -70,8 +68,8 @@ int csync_redis_check_connection() {
 	return 1;
 }
 
-const char* build_key(const char *key, const char *domain, BUF_P buffer) {
-	char *spacer = "";
+static const char* build_key(const char *key, const char *domain, BUF_P buffer) {
+	const char *spacer = "";
 	if (domain && domain[0] != 0) {
 		spacer = ":";
 	}
@@ -80,8 +78,8 @@ const char* build_key(const char *key, const char *domain, BUF_P buffer) {
 	return str;
 }
 
-const char* redis_str(redisReply *redis_reply) {
-	return redis_reply ? redis_reply->str : "<no response>";
+static const char* redis_str(redisReply *reply) {
+	return reply ? reply->str : "<no response>";
 }
 
 time_t csync_redis_get_custom(const char *key, const char *domain) {
@@ -239,7 +237,7 @@ int csync_redis_unlock_status(filename_p filename, time_t lock_time, int status)
 	return status;
 }
 
-void csync_redis_close() {
+void csync_redis_close(void) {
 	csync_debug(4, "Redis closing: %p\n", redis_context);
 	if (redis_context)
 		redisFree(redis_context);

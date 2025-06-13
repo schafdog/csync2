@@ -1,4 +1,4 @@
-created directory /export/home/dennis/Projects/csync2/csync2/test/test/peer
+created directory <TESTBASE>/test/peer
 ./
 usr/
 usr/local/

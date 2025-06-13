@@ -27,6 +27,10 @@
 #define _GNU_SOURCE
 #endif
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +82,7 @@ typedef const char * peername_p;
 #define CHUNK_SIZE 16*1024
 
 
-#if __DARWIN_C_LEVEL
+#ifdef __DARWIN_C_LEVEL
 #define DEV_FORMAT "%u"
 #define INO_FORMAT "%"PRIu64
 #else
@@ -140,146 +144,8 @@ typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
 
 /* csync2.c */
 
-extern int match_peer(char **active_peers, const char *peer);
-
-int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func, int listenfd, int cmd_db_version, int cmd_ip_version);
-
-/* action.c */
-
-extern void  csync_schedule_commands(db_conn_p db, filename_p filename, int islocal);
-extern void  csync_run_commands(db_conn_p db);
-
-/* groups.c */
-
-struct peer {
-	const char *myname;
-	peername_p peername;
-};
-
-typedef struct  peer *peer_t; 
-
-struct file_info {
-  filename_p filename;
-  filename_p filename_enc;
-  const char *operation;
-  const char *key_enc;
-  const struct stat *stat;
-  const int rc_stat;
-};
-
-typedef struct file_info *file_info_t; 
-
-extern const struct csync_group *csync_find_next(const struct csync_group *g, const char *file, int compare_mode);
-extern int csync_match_file(const char *file, int compare_mode, const struct csync_group **g);
-extern int csync_check_usefullness(const char *file, int recursive);
-extern int csync_match_file_host(const char *file, const char *myname, peername_p peername, const char **keys);
-extern struct peer *csync_find_peers(const char *file, const char *thispeer);
-extern const char *csync_key(const char *hostname, filename_p filename);
-extern int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode);
-
-
-/* conn.c */
-
-extern int conn_open(peername_p myhostname, peername_p peername, int ip_version);
-extern int conn_set(int infd, int outfd);
-extern int conn_activate_ssl(int server_role, int in, int out);
-extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal);
-extern int conn_close(int conn);
-
-extern ssize_t conn_read(int fd, void *buf, size_t count);
-extern ssize_t conn_read_get_content_length(int fd, long long *size, int *type);
-extern ssize_t conn_write(int fd, const void *buf, size_t count);
-ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline);
-ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline);
-
-extern void conn_printf(int fd, const char *fmt, ...);
-extern int conn_fgets(int fd, char *s, int size);
-extern size_t conn_gets(int fd, char *s, size_t size);
-extern ssize_t conn_read_chunk(int fd, char **buffer, size_t *n_bytes);
-extern int conn_write_chunk(int fd, char *buffer, size_t n_bytes);
-extern int conn_read_file_chunked(int sockfd, FILE *file);
-extern int conn_send_file_chunked(int sockfd, FILE *file, size_t size);
-extern char *filter_mtime(char *chktxt, int make_copy);
-
-/* db.c */
-
-extern db_conn_p csync_db_open(const char *file);
-extern void csync_db_close(db_conn_p db);
-
-extern long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...);
-extern void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...);
-extern int csync_db_next(void *vmx, const char *err,
-		int *pN, const char ***pazValue, const char ***pazColName);
-extern void csync_db_fin(void *vmx, const char *err);
-extern const void * csync_db_colblob(void *stmtx,int col);
-extern long  csync_db_long(void *stmtx,int col, long *result);
-extern char *db_default_database(char *dbdir, char *myhostname, char *cfg_name);
-extern const char *csync_db_escape(const char *);
-extern const char *csync_db_quote(filename_p filename); 
-extern const char *csync_db_escape_quote(filename_p filename); 
-
-
-
-#define SQL(db, e, s, rest...) csync_db_sql(db, e, s, ##rest)
-
-extern const char* (*db_decode) (const char *value); 
-//extern const char* (*db_encode) (const char *value); 
-
-#define SQL_BEGIN(db, e, s, ...)			\
-{ \
-	char *SQL_ERR = e; \
-	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__);	\
-	int SQL_COUNT = 0; \
-	(void) SQL_COUNT; \
-\
-	if (SQL_VM) { \
-		while (1) { \
-			const char **dataSQL_V, **dataSQL_N; \
-			int SQL_C; \
-			if ( !csync_db_next(SQL_VM, SQL_ERR,		\
-						&SQL_C, &dataSQL_V, &dataSQL_N) ) break; \
-			SQL_COUNT++;
-
-#define SQL_V(col)				\
-    (csync_db_colblob(SQL_VM,(col)))
-
-#define SQL_V_long(col, result)			\
-    (csync_db_long(SQL_VM,(col), (result)))
-
-#define SQL_FIN }{
-
-#define SQL_END \
-		} \
-		    csync_db_fin(SQL_VM, SQL_ERR);	\
-	} \
-}
-
-extern int db_blocking_mode;
-extern int db_sync_mode;
-
-
-/* rsync.c */
-
-extern int csync_rs_check(int conn, filename_p filename, int isreg);
-extern void csync_rs_sig( int conn, filename_p filename);
-extern int csync_rs_delta(int conn, filename_p filename);
-extern int csync_rs_patch(int conn, filename_p filename);
-extern int csync_recv_file(int conn, FILE *file);
-extern int csync_send_file(int conn, FILE *file);
-extern int csync_rs_recv_delta_and_patch(int sock, const char *fname);
-extern int csync_recv_file(int conn, FILE *file);
-
-extern char *to_hex(const char str[], size_t length, char hexbuffer[]);
-/* checktxt.c */
-
-//extern const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
-extern const char *csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version);
-extern int csync_cmpchecktxt(const char *a, const char *b);
-extern int csync_cmpchecktxt_component(const char *a, const char *b, int flags);
-int csync_get_checktxt_version(const char *value);
-time_t csync_checktxt_get_time(const char *checktxt);
-long long csync_checktxt_get_size(const char *checktxt);
-long long csync_checktxt_get_long_long(const char *checktxt, const char *token);
+int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func,
+				int listenfd, int cmd_db_version, int cmd_ip_version);
 
 /* check.c */
 #define DEV_INO_SAME 0
@@ -287,11 +153,6 @@ long long csync_checktxt_get_long_long(const char *checktxt, const char *token);
 #define INO_CHANGED 2
 #define DEV_MISSING 4
 #define INO_MISSING 8
-int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
-int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
-
-struct textlist;
-
 /* check.c */
 #define OP_UNDEF      0
 #define OP_MARK       0
@@ -311,117 +172,6 @@ struct textlist;
 #define IS_DIRTY    2
 #define CALC_DIGEST 4
 #define DEV_CHANGE  8
-
-#define PATH_NOT_FOUND "ERROR (Path not found): "
-#define PATH_NOT_FOUND_LEN sizeof(PATH_NOT_FOUND)-1
-#define ERROR_LOCKED_STR "ERROR (locked)"
-#define ERROR_LOCKED_STR_LEN sizeof(ERROR_LOCKED_STR)-1
-#define ERROR_NOT_FOUND_STR "No such file or directory"
-#define	ERROR_NOT_FOUND_STR_LEN	sizeof(ERROR_NOT_FOUND_STR)-1
-#define ERROR_CREATE_STR "ERROR (create)"
-#define	ERROR_CREATE_STR_LEN sizeof(ERROR_CREATE_STR)-1
-
-int get_file_type(int st_mode);
-int compare_files(filename_p filename, const char *pattern, int recursive);
-
-char ** parse_peerlist(char *peerlist);
-
-extern const char *csync_mode_op_str(int st_mode, int op);
-extern operation_t csync_operation(const char *operation);
-extern const char *csync_operation_str(operation_t op);
-
-extern void csync_hint(db_conn_p db, const char *file, int recursive);
-extern void csync_check(db_conn_p db, filename_p filename, int flags);
-/* Single file checking but returns possible operation */
-extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g); 
-
-extern int csync_check_del(db_conn_p db, filename_p filename, int flags);
-extern int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
-
-extern void csync_mark(db_conn_p db, filename_p file, const char *thispeer, const char *peerfilter, operation_t op,
-		       const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
-extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
-extern char *csync_check_path(char *filename); 
-extern int   csync_check_pure(filename_p filename);
-typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st, struct textlist *tl);
-struct textlist *csync_check_move(db_conn_p db, peername_p peername, filename_p filename, const char* checktxt, const char *digest, struct stat *st);
-struct textlist *csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
-				       const char* checktxt, operation_t op, const char *digest,
-				       struct stat *st, textlist_loop_t loop);
-
-extern int csync_check_dir(db_conn_p db, const char* file, int flags);
-
-/* update.c */
-
-int get_auto_method(peername_p peername, filename_p filename);
-int csync_auto_resolve_time_size(int auto_method, time_t time_l, time_t time_p, long long size_l, long long size_p);
-
-void cmd_printf(int conn, const char *cmd, const char *key, 
-		filename_p filename, const char *secondname,
-		const struct stat *st, const char *uidptr, const char* gidptr, const char *digest);
-
-int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
-
-extern void csync_update(db_conn_p db, const char *myname, char **peers,
-			 const char **patlist, int patnum, int ip_version, update_func func, int flags);
-
-extern void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-			      const char **patlist, int patnum, int ip_version, int flags);
-
-extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
-			    const char **patlist, int patnum, int ip_version, int flags);
-
-extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
-			    const char **patlist, int patnum, int ip_version, int flags);
-
-extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
-extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version, int flags);
-extern int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags);
-extern void csync_remove_old(db_conn_p db, filename_p pattern);
-int csync_update_file_sig_rs_diff(int conn, peername_p myname,
-				  peername_p peername, const char *key_enc,
-				  filename_p filename, filename_p filename_enc,
-				  const struct stat *st, 
-				  const char *uidptr, const char *gidptr,
-				  const char *chk_local,
-				  const char *digest,
-				  int *last_conn_status, 
-				  int log_level);
-
-
-/* daemon.c */
-
-extern void csync_daemon_session(int conn, int conn_out, db_conn_p db, int protocol_version, int mode);
-extern int csync_copy_file(int fd_in, int fd_out);
-extern int csync_dir_count(db_conn_p db, filename_p filename);
-
-/* ringbuffer.c */
-extern void  ringbuffer_init();
-extern char *ringbuffer_malloc(size_t length);
-extern char *ringbuffer_strdup(const char *cpy);
-void         ringbuffer_add(const char* string, void (*free_fn) (void *) );
-extern void  ringbuffer_destroy();
-extern int   ringbugger_getcount();
-
-/* getrealfn.c */
-
-extern char *getrealfn(filename_p filename);
-
-
-/* urlencode.c */
-
-/* only use this functions if you understood the sideeffects of the ringbuffer
- * used to allocate the return values.
- */
-const char *url_encode(const char *in);
-const char *url_decode(const char *in);
-
-
-/* prefixsubst.c */
-
-/* another ringbuffer here. so use it with care!! */
-const char *prefixsubst(const char *in);
-const char *prefixencode(filename_p filename);
 
 /* textlist implementation */
 
@@ -595,7 +345,11 @@ static inline void textlist_free_struct(struct textlist *listhandle)
     }
 }
 
-void csync_config_destroy();
+#include "groups.h"
+
+/* cfgfile_parser_processed.y - additional missing prototypes */
+void csync_config_destroy_group(struct csync_group *group);
+void csync_config_destroy(void);
 
 /* config structures */
 
@@ -634,14 +388,14 @@ struct csync_group_action_pattern {
 
 struct csync_group_action_command {
 	struct csync_group_action_command *next;
-	const char *command;
+	char *command;
 };
 
 struct csync_group_action {
 	struct csync_group_action *next;
 	struct csync_group_action_pattern *pattern;
 	struct csync_group_action_command *command;
-	const char *logfile;
+	char *logfile;
 	int do_local;
 	int do_local_only;
 };
@@ -651,23 +405,23 @@ struct csync_group {
     struct csync_group_host *host;
     struct csync_group_pattern *pattern;
     struct csync_group_action *action;
-    const char *key, *myname, *gname;
+    char *key, *myname, *gname;
     int auto_method, local_slave;
-    const char *backup_directory;
+    char *backup_directory;
     int backup_generations;
     int hasactivepeers;
     int flags;
 };
 
 struct csync_prefix {
-	const char *name, *path;
+	char *name, *path;
 	struct csync_prefix *next;
 };
 
 struct csync_nossl {
 	struct csync_nossl *next;
-	const char *pattern_from;
-	const char *pattern_to;
+	char *pattern_from;
+	char *pattern_to;
 };
 
 enum CSYNC_AUTO_METHOD {
@@ -715,15 +469,13 @@ extern int csync_server_child_pid;
 extern int csync_timestamps;
 extern int csync_new_force;
 
-extern char myhostname[];
-extern char *myport;
-extern char *csync_port;
-extern int csync_port_cmdline;
-extern char *csync_confdir;
-extern char *active_grouplist;
-extern char *active_peerlist;
+extern char g_myhostname[];
+extern const char *csync_port;
+extern const char *csync_confdir;
+extern char *g_active_grouplist;
+extern char *g_active_peerlist;
     
-extern char *cfgname;
+extern const char *g_cfgname;
 
 extern int csync_ignore_uid;
 extern int csync_ignore_gid;
@@ -732,7 +484,7 @@ extern int csync_dump_dir_fd;
 
 extern char *csync_use_ip;
 extern int csync_compare_mode;
-extern char **active_peers;
+extern char **g_active_peers;
 
 #ifdef HAVE_LIBGNUTLS
 extern int csync_conn_usessl;
@@ -754,16 +506,17 @@ static inline int lstat_strict(filename_p filename, struct stat *buf) {
 	return lstat(filename, buf);
 }
 
-static inline char *on_cygwin_lowercase(char *s) {
+static inline char *on_cygwin_lowercase(char *cchar) {
 #ifdef __CYGWIN__
 	if (!csync_lowercyg_disable) {
+		char *s = (char *) cchar;
 		int i;
 		for (i=0; s[i]; i++)
 			s[i] = tolower(s[i]);
 	}
 	csync_lowercyg_used = 1;
 #endif
-	return s;
+	return cchar;
 }
 
 #endif /* CSYNC2_H */

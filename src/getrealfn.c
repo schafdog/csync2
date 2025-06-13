@@ -24,8 +24,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <assert.h>
+#include "utils.h"
 
-static char* my_get_current_dir_name() {
+static char* my_get_current_dir_name(void) {
 #if defined __CYGWIN__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __NetBSD__ || defined __DARWIN_C_LEVEL
 	char *r = malloc(1024);
 	if (!getcwd(r, 1024))

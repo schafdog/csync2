@@ -28,6 +28,9 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
+#include "action.h"
+#include "groups.h"
+#include "utils.h"
 
 void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	const struct csync_group *g = NULL;
@@ -62,7 +65,7 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	}
 }
 
-void csync_run_single_command(db_conn_p db, const char *command,
+static void csync_run_single_command(db_conn_p db, const char *command,
 		const char *logfile) {
 	char *command_clr = strdup(db_escape(db, command));
 	char *logfile_clr = strdup(db_escape(db, logfile));

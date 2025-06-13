@@ -1,18 +1,16 @@
------------------------------------------------------------------------------------
- /export/home/dennis/Projects/csync2/csync2/test/test/local
- /export/home/dennis/Projects/csync2/csync2/test/test/local/auto
- /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older
- /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both
+ <TESTBASE>/test/local
+ <TESTBASE>/test/local/auto
+ <TESTBASE>/test/local/auto/older
+ <TESTBASE>/test/local/auto/older/update_both
 (4 rows)
 
-----------+-----------------------------------------------------------------------------------+-----------+-------+-----
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local                        | MKDIR     |       |   1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/auto                   | MKDIR     |       |   1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older             | MKDIR     |       |   1
- other    | /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both | NEW       |       |   2
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older/update_both | NEW       |       |   2
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local                        | MKDIR     |       | 129
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/auto                   | MKDIR     |       | 129
- peer     | /export/home/dennis/Projects/csync2/csync2/test/test/local/auto/older             | MKDIR     |       | 129
+ other    | <TESTBASE>/test/local                        | MKDIR     |       |   1
+ other    | <TESTBASE>/test/local/auto                   | MKDIR     |       |   1
+ other    | <TESTBASE>/test/local/auto/older             | MKDIR     |       |   1
+ other    | <TESTBASE>/test/local/auto/older/update_both | NEW       |       |   2
+ peer     | <TESTBASE>/test/local/auto/older/update_both | NEW       |       |   2
+ peer     | <TESTBASE>/test/local                        | MKDIR     |       | 129
+ peer     | <TESTBASE>/test/local/auto                   | MKDIR     |       | 129
+ peer     | <TESTBASE>/test/local/auto/older             | MKDIR     |       | 129
 (8 rows)
 

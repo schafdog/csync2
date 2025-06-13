@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include "ringbuffer.h"
 
 /* Maximum simultanous allocated */
 #define RINGBUFFER_LEN 10000
@@ -31,7 +32,7 @@ static char *ringbuffer[RINGBUFFER_LEN];
 static free_fn_t free_fn_buffer[RINGBUFFER_LEN];
 static int ringbuffer_counter = 0;
 
-void ringbuffer_init() {
+void ringbuffer_init(void) {
 	int i;
 	for (i = 0; i < RINGBUFFER_LEN; i++) {
 		ringbuffer[i] = 0;
@@ -40,14 +41,14 @@ void ringbuffer_init() {
 	ringbuffer_counter = 0;
 }
 
-void ringbuffer_add(const char *string, free_fn_t free_fn) {
+void ringbuffer_add(char *string, free_fn_t free_fn) {
 	if (ringbuffer[ringbuffer_counter]) {
 		if (free_fn_buffer[ringbuffer_counter])
 			free_fn_buffer[ringbuffer_counter](ringbuffer[ringbuffer_counter]);
 		else
 			free(ringbuffer[ringbuffer_counter]);
 	}
-	ringbuffer[ringbuffer_counter] = (char*) string;
+	ringbuffer[ringbuffer_counter] = string;
 	free_fn_buffer[ringbuffer_counter++] = free_fn;
 	if (ringbuffer_counter == RINGBUFFER_LEN) {
 		ringbuffer_counter = 0;
@@ -71,7 +72,7 @@ char* ringbuffer_strdup(const char *cpy) {
 	return out;
 }
 
-void ringbuffer_destroy() {
+void ringbuffer_destroy(void) {
 	int index;
 	for (index = 0; index < RINGBUFFER_LEN; index++) {
 		if (ringbuffer[index]) {
@@ -82,6 +83,6 @@ void ringbuffer_destroy() {
 	ringbuffer_counter = 0;
 }
 
-int ringbuffer_getcount() {
+int ringbuffer_getcount(void) {
 	return ringbuffer_counter;
 }
