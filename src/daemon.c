@@ -748,15 +748,19 @@ static int setup_tag(const char *tag[32], char *line) {
 // Works with both GCC and Clang                                                                                                     
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
+#if defined(__DARWIN_C_LEVEL) 
+#pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
+#else
 #pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 #endif
+#endif
+
 static void destroy_tag(const char *tag[32]) {
 	int i = 0;
 	for (i = 0; i < 32; i++)
 		free(tag[i]);
 }
-// Works with both GCC and Clang                                                                                                     
+// Works with both GCC and Clang
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
