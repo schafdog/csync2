@@ -46,6 +46,8 @@
 #include "redis.hpp"
 #include <vector>
 #include <memory>
+#include <string>
+#include <algorithm>
 #include "db_api.hpp"
 #include "db.hpp"
 #include "conn.hpp"
@@ -58,6 +60,15 @@
 #include "action.hpp"
 #include "checktxt.hpp"
 
+// Helper function to convert std::vector<std::string> to const char** array
+static std::vector<const char*> string_vector_to_c_array(const std::vector<std::string>& strings) {
+	std::vector<const char*> c_array;
+	c_array.reserve(strings.size());
+	for (const auto& str : strings) {
+		c_array.push_back(str.c_str());
+	}
+	return c_array;
+}
 
 #ifdef REAL_DBDIR
 #  undef DBDIR
@@ -370,10 +381,10 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			} else {
 				csync_check(db, file, flags);
 			}
-			const char *patlist[1];
-			patlist[0] = file;
+			std::vector<std::string> patlist = {file};
+			std::vector<const char*> const_patlist = string_vector_to_c_array(patlist);
 			// Delay until we dont get more files or have enough and do it on common path
-			csync_update(db, g_myhostname, g_active_peers, static_cast<const char**>(patlist), 1, g_ip_version, csync_update_host, flags);
+			csync_update(db, g_myhostname, g_active_peers, const_patlist.data(), const_patlist.size(), g_ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -552,12 +563,15 @@ int protocol_version;
 const char* (*db_decode)(const char *value);
 const char* (*db_encode)(const char *value);
 
-static std::vector<char*> peers_storage;
-char **peers = NULL;
+static std::vector<std::string> peers_storage;
+static std::vector<char*> peers_c_array;
 
 char** parse_peerlist(char *peerlist) {
-	if (peerlist == NULL)
-		return peers;
+	if (peerlist == NULL) {
+		peers_c_array.clear();
+		peers_c_array.push_back(nullptr);
+		return peers_c_array.data();
+	}
 
 	// Clear previous storage
 	peers_storage.clear();
@@ -568,13 +582,19 @@ char** parse_peerlist(char *peerlist) {
 	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
 	while ((token = strtok_r(peerlist, ",", &saveptr))) {
 		csync_log(LOG_DEBUG, 2, "New peer: %s\n", token);
-		peers_storage.push_back(token);
+		peers_storage.emplace_back(token);
 		peerlist = NULL;
 	}
-	peers_storage.push_back(nullptr); // NULL terminator
 
-	peers = peers_storage.data();
-	return peers;
+	// Create C-style array for compatibility
+	peers_c_array.clear();
+	peers_c_array.reserve(peers_storage.size() + 1);
+	for (const auto& peer : peers_storage) {
+		peers_c_array.push_back(const_cast<char*>(peer.c_str()));
+	}
+	peers_c_array.push_back(nullptr); // NULL terminator
+
+	return peers_c_array.data();
 }
 
 int match_peer(char **active_peers, const char *peer) {
@@ -608,8 +628,8 @@ static void free_realname(char *real_name) {
 	free(real_name);
 }
 
-static std::vector<char*> check_file_args(db_conn_p db, char *files[], int file_count, int flags) {
-	std::vector<char*> realnames;
+static std::vector<std::string> check_file_args(db_conn_p db, char *files[], int file_count, int flags) {
+	std::vector<std::string> realnames;
 	realnames.reserve(file_count);
 
 	for (int i = 0; i < file_count; i++) {
@@ -618,23 +638,16 @@ static std::vector<char*> check_file_args(db_conn_p db, char *files[], int file_
 			csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 		} else {
 			if (!csync_check_usefullness(real_name, flags)) {
-				realnames.push_back(real_name);
+				realnames.emplace_back(real_name);
 				if (flags & FLAG_DO_CHECK) {
 					csync_check(db, real_name, flags);
 					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", real_name, flags);
 				}
-			} else {
-				free(real_name);
 			}
+			free(real_name); // Always free since we copied to string
 		}
 	}
 	return realnames;
-}
-
-static void csync_realnames_free(const std::vector<char*>& files) {
-	for (char* file : files) {
-		free(file);
-	}
 }
 
 static void select_recursive(char *db_encoded, char **where_rec) {
@@ -1182,16 +1195,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			csync_check(db, "/", flags);
 			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, csync_update_host, flags);
 		} else {
-			std::vector<char*> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
+			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
 			// Create const char** array for csync_update call
-			std::vector<const char*> const_realnames;
-			const_realnames.reserve(realnames.size());
-			for (char* name : realnames) {
-				const_realnames.push_back(name);
-			}
+			std::vector<const char*> const_realnames = string_vector_to_c_array(realnames);
 			csync_update(db, g_myhostname, g_active_peers, const_realnames.data(), const_realnames.size(), g_ip_version, csync_update_host,
 					flags);
-			csync_realnames_free(realnames);
+			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
 	}
 	if (mode == MODE_HINT) {
@@ -1216,13 +1225,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			}
 			textlist_free(tl);
 		} else {
-			std::vector<char*> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
-			if (!realnames.empty())
-				csync_realnames_free(realnames);
-			else {
+			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
+			if (realnames.empty()) {
 				csync_debug(0, "No argument was matched in configuration\n");
 				exit(2);
 			}
+			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
 	};
 
@@ -1238,20 +1246,16 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 		if (argc <= optind) {
 			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, updater, flags);
 		} else {
-			std::vector<char*> realnames = check_file_args(db, argv + optind, argc - optind, flags);
+			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags);
 			if (!realnames.empty()) {
 				// Create const char** array for csync_update call
-				std::vector<const char*> const_realnames;
-				const_realnames.reserve(realnames.size());
-				for (char* name : realnames) {
-					const_realnames.push_back(name);
-				}
+				std::vector<const char*> const_realnames = string_vector_to_c_array(realnames);
 				csync_update(db, g_myhostname, g_active_peers, const_realnames.data(), const_realnames.size(), g_ip_version,
 						updater, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
 			}
-			csync_realnames_free(realnames);
+			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
 	};
 
