@@ -698,8 +698,11 @@ static int verify_peername(db_conn_p db, const char *name, address_t *peeraddr) 
  * To limit the impact of an accidental misconfiguration.
  */
 static void set_peername_from_env(address_t *p, const char *env) {
-	struct addrinfo hints = { .ai_family = AF_UNSPEC, .ai_socktype = SOCK_STREAM, .ai_flags = AI_NUMERICHOST
-			| AI_NUMERICSERV, };
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
 	struct addrinfo *result;
 	char *c;
 	int s;
@@ -1615,7 +1618,9 @@ static void parse_tags(const char *tag[32], struct command *cmd) {
 }
 
 void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_version, int mode) {
-	address_t peeraddr = { .sa.sa_family = AF_UNSPEC, };
+	address_t peeraddr;
+	memset(&peeraddr, 0, sizeof(peeraddr));
+	peeraddr.sa.sa_family = AF_UNSPEC;
 	socklen_t peerlen = sizeof(peeraddr);
 	char line[4096], *peername = 0;
 	const char *tag[32];
