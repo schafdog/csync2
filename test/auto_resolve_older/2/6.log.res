@@ -8,7 +8,10 @@ db_schema_version: 2
 dirty: peer:<TESTBASE>/test/local/auto/older/update_both v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=14 ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.0.0.2
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -19,7 +22,7 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (NEW) 'peer:<TESTBASE>/test/local/auto/older/update_both' ''
-CONN peer < SIG %25test%25/auto/older/update_both user/group 1234 1000 dennis schafroth 33188 - 14 
+CONN peer < SIG %25test%25/auto/older/update_both user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/auto/older/update_both RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=11'
@@ -36,7 +39,7 @@ rs_check: Found diff in sig at -32:-0
 File is different on peer (rsync sig).
 CONN peer > 'OK (cmd_finished).'
 ?B: peer            <TESTBASE>/test/local/auto/older/update_both
-CONN peer < PATCH %25test%25/auto/older/update_both - 1234 1000 dennis schafroth 33188 - 14 
+CONN peer < PATCH %25test%25/auto/older/update_both - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'File is also marked dirty here! (<TESTBASE>/test/peer/auto/older/update_both)'
 While syncing file: <TESTBASE>/test/local/auto/older/update_both
 ERROR from peer: File is also marked dirty here! (<TESTBASE>/test/peer/auto/older/update_both) rc: -11 
