@@ -38,12 +38,15 @@ Checking <TESTBASE>/test/local/Maildir/.Trash/* ..
 Checking <TESTBASE>/test/local/Maildir/.Trash/cur/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, v2:mtime=1591567200:mode=33188:user=dennis:group=schafroth:type=reg:size=8 ''
-dirty: peer:<TESTBASE>/test/local/Maildir/new v2:mtime=1742890060:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/Maildir/cur v2:mtime=1742890060:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=8 ''
+dirty: peer:<TESTBASE>/test/local/Maildir/new v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/cur v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.0.0.2
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -54,7 +57,7 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/cur' ''
-CONN peer < SIG %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/cur RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
@@ -67,11 +70,11 @@ Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local/Maildir/cur
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            <TESTBASE>/test/local/Maildir/cur
-CONN peer < MOD %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/Maildir/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/cur (0)
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/new' ''
-CONN peer < SIG %25test%25/Maildir/new user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir/new user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/new RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
@@ -84,7 +87,7 @@ Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local/Maildir/new
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            <TESTBASE>/test/local/Maildir/new
-CONN peer < MOD %25test%25/Maildir/new - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/Maildir/new - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/new (0)
 Updating (MV) 'peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,' '<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764'
