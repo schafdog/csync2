@@ -1629,8 +1629,6 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 			if (other) {
 				csync_directory_add(&directory_list, other);
 			}
-			if (S_ISDIR(st.st_mode))
-				textlist_add_new(&directory_list, filename, 0);
 			last_tn = &(t->next);
 		} else {
 			/* File not found */
