@@ -92,6 +92,21 @@ AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
 AM_CPPFLAGS += -D'ETCDIR="$(sysconfdir)/csync2"'
 
+# Force C compilation for flex/yacc generated files
+AM_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\" \
+	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
+	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
+	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
+	-O0 -Wno-deprecated-declarations \
+	$(WARNING_CFLAGS)
+
+# Explicit rules to compile scanner and parser as C
+cfgfile_scanner.o: cfgfile_scanner.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $@ $<
+
+cfgfile_parser_processed.o: cfgfile_parser_processed.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $@ $<
+
 #install-data-local:
 #	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
 #	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/lib/csync2
