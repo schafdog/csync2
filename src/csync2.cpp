@@ -62,8 +62,6 @@
 #  define DBDIR REAL_DBDIR
 #endif
 
-int yylex_destroy(void);
-
 char *csync_database = 0;
 char *csync_redis = 0;
 
@@ -81,7 +79,6 @@ char *g_allow_peer = 0;
 int g_db_version = 1;
 int g_ip_version = AF_INET;
 
-extern int yyparse(void);
 extern FILE *yyin;
 
 char *log_file = 0;
@@ -374,7 +371,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			const char *patlist[1];
 			patlist[0] = file;
 			// Delay until we dont get more files or have enough and do it on common path
-			csync_update(db, g_myhostname, g_active_peers, (const char**) patlist, 1, g_ip_version, csync_update_host, flags);
+			csync_update(db, g_myhostname, g_active_peers, static_cast<const char**>(patlist), 1, g_ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -410,11 +407,11 @@ static int csync_bind(char *service_port, int ip_version) {
 		if (sfd == -1)
 			continue;
 
-		if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, (socklen_t) sizeof(on)) < 0)
+		if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, static_cast<socklen_t>(sizeof(on))) < 0)
 			goto error;
-		if (setsockopt(sfd, SOL_SOCKET, SO_LINGER, &sl, (socklen_t) sizeof(sl)) < 0)
+		if (setsockopt(sfd, SOL_SOCKET, SO_LINGER, &sl, static_cast<socklen_t>(sizeof(sl))) < 0)
 			goto error;
-		if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0)
+		if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, &on, static_cast<socklen_t>(sizeof(on))) < 0)
 			goto error;
 
 		if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
@@ -483,7 +480,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 		tv.tv_sec = 60;
 		tv.tv_usec = 0;
 		/* Not working for inet, but conn now uses select to detect data */
-		if (setsockopt(*conn, SOL_SOCKET, SO_RCVTIMEO, (char*) &tv, sizeof tv))
+		if (setsockopt(*conn, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>( &tv), sizeof tv))
 			csync_error(0, "Failed to set socket rcv timeout");
 
 		fflush(stdout);
@@ -558,7 +555,7 @@ char **peers = NULL;
 char** parse_peerlist(char *peerlist) {
 	if (peerlist == NULL)
 		return peers;
-	peers = (char**)calloc(100, sizeof(peers));
+	peers = static_cast<char**>(calloc(100, sizeof(peers)));
 	int i = 0;
 	char *saveptr = NULL;
 	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
@@ -1176,10 +1173,10 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, csync_update_host, flags);
 		} else {
 			int arg_count = argc - optind;
-			char **realnames = (char**)malloc(arg_count * sizeof(char*));
+			char **realnames = static_cast<char**>(malloc(arg_count * sizeof(char*)));
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
 			// Create const char** array for csync_update call
-			const char **const_realnames = (const char**)malloc(count * sizeof(const char*));
+			const char **const_realnames = static_cast<const char**>(malloc(count * sizeof(const char*)));
 			for (int i = 0; i < count; i++) {
 				const_realnames[i] = realnames[i];
 			}
@@ -1213,7 +1210,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			textlist_free(tl);
 		} else {
 			int arg_count = argc - optind;
-			char **realnames = (char**)malloc(arg_count * sizeof(char*));
+			char **realnames = static_cast<char**>(malloc(arg_count * sizeof(char*)));
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
 			if (count > 0)
 				csync_realnames_free(realnames, count);
@@ -1238,11 +1235,11 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, updater, flags);
 		} else {
 			int arg_count = argc - optind;
-			char **realnames = (char**)malloc(arg_count * sizeof(char*));
+			char **realnames = static_cast<char**>(malloc(arg_count * sizeof(char*)));
 			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags);
 			if (count > 0) {
 				// Create const char** array for csync_update call
-				const char **const_realnames = (const char**)malloc(count * sizeof(const char*));
+				const char **const_realnames = static_cast<const char**>(malloc(count * sizeof(const char*)));
 				for (int idx = 0; idx < count; idx++) {
 					const_realnames[idx] = realnames[idx];
 				}

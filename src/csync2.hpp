@@ -83,7 +83,7 @@ typedef const char * peername_p;
 #define INO_FORMAT "%" PRIu64
 #else
 #define DEV_FORMAT "%" PRIu64
-#define INO_FORMAT "%"PRIu64
+#define INO_FORMAT "%" PRIu64
 #endif
 
 #define DB_SCHEMA_VERSION 2
