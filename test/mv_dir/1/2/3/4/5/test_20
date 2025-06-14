@@ -1,5 +1,0 @@
-echo "far" > "test/$NAME/delete_both"
-check "Copy delete_both"
-rm  "test/$NAME/delete_both"
-rm  "test/$PEER/delete_both"
-check "Deleted both"
