@@ -959,7 +959,7 @@ int csync_update_directory(int conn, const char *myname, peername_p peername, co
 				return rc;
 			}
 		}
-		csync_info(3, "update_directory: Setting directory time %s %zu.\n", dirname, dir_st.st_mtime);
+		csync_info(2, "update_directory: Setting directory time %s %zu.\n", dirname, dir_st.st_mtime);
 		rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
 		return rc;
 	}
@@ -1545,7 +1545,7 @@ static void csync_directory_add(textlist_p *directory_list, const char *director
 		char *dir_copy = static_cast<char*>(malloc(len + 1));
 		strncpy(dir_copy, directory, len);
 		dir_copy[len] = '\0';
-		csync_log(LOG_DEBUG, 3, "Directory %s\n", dir_copy);
+		csync_log(LOG_DEBUG, 2, "Directory time %s %s\n", dir_copy, directory);
 		textlist_add_new(directory_list, dir_copy, 0);
 		free(dir_copy);
 	}
@@ -1652,8 +1652,8 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 			if (other) {
 				csync_directory_add(&directory_list, other);
 			}
-			if (S_ISDIR(st.st_mode))
-				textlist_add_new(&directory_list, filename, 0);
+//			if (S_ISDIR(st.st_mode))
+//				textlist_add_new(&directory_list, filename, 0);
 			last_tn = &(t->next);
 		} else {
 			/* File not found */
@@ -1701,6 +1701,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 	rc = 0;
 	if (!(flags & FLAG_DRY_RUN))
 		for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
+			csync_log(LOG_DEBUG, 2, "SETTIME %s:%s\n", peername, t->value);
 			rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
 			if (rc == CONN_CLOSE) {
 				csync_error(0, "Connection closed on setting time on directory %s\n", t->value);
