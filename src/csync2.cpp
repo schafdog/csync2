@@ -60,16 +60,6 @@
 #include "action.hpp"
 #include "checktxt.hpp"
 
-// Helper function to convert std::vector<std::string> to const char** array
-static std::vector<const char*> string_vector_to_c_array(const std::vector<std::string>& strings) {
-	std::vector<const char*> c_array;
-	c_array.reserve(strings.size());
-	for (const auto& str : strings) {
-		c_array.push_back(str.c_str());
-	}
-	return c_array;
-}
-
 #ifdef REAL_DBDIR
 #  undef DBDIR
 #  define DBDIR REAL_DBDIR
@@ -382,9 +372,8 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 				csync_check(db, file, flags);
 			}
 			std::vector<std::string> patlist = {file};
-			std::vector<const char*> const_patlist = string_vector_to_c_array(patlist);
-			// Delay until we dont get more files or have enough and do it on common path
-			csync_update(db, g_myhostname, g_active_peers, const_patlist.data(), const_patlist.size(), g_ip_version, csync_update_host, flags);
+			// Use the new C++ API directly
+			csync_update(db, g_myhostname, g_active_peers, patlist, g_ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -1196,10 +1185,8 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, csync_update_host, flags);
 		} else {
 			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
-			// Create const char** array for csync_update call
-			std::vector<const char*> const_realnames = string_vector_to_c_array(realnames);
-			csync_update(db, g_myhostname, g_active_peers, const_realnames.data(), const_realnames.size(), g_ip_version, csync_update_host,
-					flags);
+			// Use the new C++ API directly
+			csync_update(db, g_myhostname, g_active_peers, realnames, g_ip_version, csync_update_host, flags);
 			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
 	}
@@ -1248,10 +1235,8 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 		} else {
 			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags);
 			if (!realnames.empty()) {
-				// Create const char** array for csync_update call
-				std::vector<const char*> const_realnames = string_vector_to_c_array(realnames);
-				csync_update(db, g_myhostname, g_active_peers, const_realnames.data(), const_realnames.size(), g_ip_version,
-						updater, flags);
+				// Use the new C++ API directly
+				csync_update(db, g_myhostname, g_active_peers, realnames, g_ip_version, updater, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
 			}

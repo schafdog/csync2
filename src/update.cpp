@@ -2232,4 +2232,58 @@ void csync_remove_old(db_conn_p db, filename_p pattern) {
 	textlist_free(tl);
 	csync_log(LOG_DEBUG, 1, "remove_old: end\n");
 }
+
+// C++ API implementations using std::vector<std::string>
+
+void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
+                  const std::vector<std::string>& patlist, int ip_version, update_func func, int flags) {
+	// Convert std::vector<std::string> to const char** for the existing implementation
+	std::vector<const char*> c_patlist;
+	c_patlist.reserve(patlist.size());
+	for (const auto& path : patlist) {
+		c_patlist.push_back(path.c_str());
+	}
+
+	// Call the existing C-style implementation
+	csync_update(db, myhostname, active_peers, c_patlist.data(), c_patlist.size(), ip_version, func, flags);
+}
+
+void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
+                       const std::vector<std::string>& patlist, int ip_version, int flags) {
+	// Convert std::vector<std::string> to const char** for the existing implementation
+	std::vector<const char*> c_patlist;
+	c_patlist.reserve(patlist.size());
+	for (const auto& path : patlist) {
+		c_patlist.push_back(path.c_str());
+	}
+
+	// Call the existing C-style implementation
+	csync_update_host(db, myname, peername, c_patlist.data(), c_patlist.size(), ip_version, flags);
+}
+
+void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
+                     const std::vector<std::string>& patlist, int ip_version, int flags) {
+	// Convert std::vector<std::string> to const char** for the existing implementation
+	std::vector<const char*> c_patlist;
+	c_patlist.reserve(patlist.size());
+	for (const auto& path : patlist) {
+		c_patlist.push_back(path.c_str());
+	}
+
+	// Call the existing C-style implementation
+	csync_sync_host(db, myname, peername, c_patlist.data(), c_patlist.size(), ip_version, flags);
+}
+
+void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
+                     const std::vector<std::string>& patlist, int ip_version, int flags) {
+	// Convert std::vector<std::string> to const char** for the existing implementation
+	std::vector<const char*> c_patlist;
+	c_patlist.reserve(patlist.size());
+	for (const auto& path : patlist) {
+		c_patlist.push_back(path.c_str());
+	}
+
+	// Call the existing C-style implementation
+	csync_ping_host(db, myname, peername, c_patlist.data(), c_patlist.size(), ip_version, flags);
+}
 ;

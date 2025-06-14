@@ -20,6 +20,9 @@
 
 #ifndef CSYNC2_UPDATE_H
 #define CSYNC2_UPDATE_H 1
+
+#include <vector>
+#include <string>
 int get_auto_method(peername_p peername, filename_p filename);
 int csync_auto_resolve_time_size(int auto_method, time_t time_l, time_t time_p, long long size_l, long long size_p);
 int compare_files(filename_p filename, const char *pattern, int recursive);
@@ -34,6 +37,19 @@ extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peernam
 
 extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
 			    const char **patlist, int patnum, int ip_version, int flags);
+
+// C++ API with std::vector<std::string>
+extern void csync_update(db_conn_p db, const char *myname, char **peers,
+			 const std::vector<std::string>& patlist, int ip_version, update_func func, int flags);
+
+extern void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
+		      const std::vector<std::string>& patlist, int ip_version, int flags);
+
+extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
+		    const std::vector<std::string>& patlist, int ip_version, int flags);
+
+extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
+		    const std::vector<std::string>& patlist, int ip_version, int flags);
 
 extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
 extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version, int flags);
