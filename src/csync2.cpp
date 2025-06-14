@@ -44,6 +44,8 @@
 #endif
 #include "version.hpp"
 #include "redis.hpp"
+#include <vector>
+#include <memory>
 #include "db_api.hpp"
 #include "db.hpp"
 #include "conn.hpp"
@@ -550,21 +552,28 @@ int protocol_version;
 const char* (*db_decode)(const char *value);
 const char* (*db_encode)(const char *value);
 
+static std::vector<char*> peers_storage;
 char **peers = NULL;
 
 char** parse_peerlist(char *peerlist) {
 	if (peerlist == NULL)
 		return peers;
-	peers = static_cast<char**>(calloc(100, sizeof(peers)));
-	int i = 0;
+
+	// Clear previous storage
+	peers_storage.clear();
+	peers_storage.reserve(100);
+
 	char *saveptr = NULL;
+	char *token;
 	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
-	while ((peers[i] = strtok_r(peerlist, ",", &saveptr))) {
-		csync_log(LOG_DEBUG, 2, "New peer: %s\n", peers[i]);
+	while ((token = strtok_r(peerlist, ",", &saveptr))) {
+		csync_log(LOG_DEBUG, 2, "New peer: %s\n", token);
+		peers_storage.push_back(token);
 		peerlist = NULL;
-		++i;
-	};
-	peers[i] = NULL;
+	}
+	peers_storage.push_back(nullptr); // NULL terminator
+
+	peers = peers_storage.data();
 	return peers;
 }
 
@@ -599,31 +608,32 @@ static void free_realname(char *real_name) {
 	free(real_name);
 }
 
-static int check_file_args(db_conn_p db, char *files[], int file_count, char *realnames[], int flags) {
-	int count = 0;
+static std::vector<char*> check_file_args(db_conn_p db, char *files[], int file_count, int flags) {
+	std::vector<char*> realnames;
+	realnames.reserve(file_count);
+
 	for (int i = 0; i < file_count; i++) {
 		char *real_name = getrealfn(files[i]);
 		if (real_name == NULL) {
 			csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 		} else {
 			if (!csync_check_usefullness(real_name, flags)) {
-				realnames[count] = real_name;
+				realnames.push_back(real_name);
 				if (flags & FLAG_DO_CHECK) {
-					csync_check(db, realnames[count], flags);
-					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", realnames[count], flags);
+					csync_check(db, real_name, flags);
+					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", real_name, flags);
 				}
-				count++;
 			} else {
 				free(real_name);
 			}
 		}
 	}
-	return count;
+	return realnames;
 }
 
-static void csync_realnames_free(char *files[], int count) {
-	for (int i = 0; i < count; i++) {
-		free(files[i]);
+static void csync_realnames_free(const std::vector<char*>& files) {
+	for (char* file : files) {
+		free(file);
 	}
 }
 
@@ -1172,19 +1182,16 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			csync_check(db, "/", flags);
 			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, csync_update_host, flags);
 		} else {
-			int arg_count = argc - optind;
-			char **realnames = static_cast<char**>(malloc(arg_count * sizeof(char*)));
-			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
+			std::vector<char*> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
 			// Create const char** array for csync_update call
-			const char **const_realnames = static_cast<const char**>(malloc(count * sizeof(const char*)));
-			for (int i = 0; i < count; i++) {
-				const_realnames[i] = realnames[i];
+			std::vector<const char*> const_realnames;
+			const_realnames.reserve(realnames.size());
+			for (char* name : realnames) {
+				const_realnames.push_back(name);
 			}
-			csync_update(db, g_myhostname, g_active_peers, const_realnames, count, g_ip_version, csync_update_host,
+			csync_update(db, g_myhostname, g_active_peers, const_realnames.data(), const_realnames.size(), g_ip_version, csync_update_host,
 					flags);
-			csync_realnames_free(realnames, count);
-			free(realnames);
-			free(const_realnames);
+			csync_realnames_free(realnames);
 		}
 	}
 	if (mode == MODE_HINT) {
@@ -1209,16 +1216,13 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			}
 			textlist_free(tl);
 		} else {
-			int arg_count = argc - optind;
-			char **realnames = static_cast<char**>(malloc(arg_count * sizeof(char*)));
-			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags | FLAG_DO_CHECK);
-			if (count > 0)
-				csync_realnames_free(realnames, count);
+			std::vector<char*> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
+			if (!realnames.empty())
+				csync_realnames_free(realnames);
 			else {
 				csync_debug(0, "No argument was matched in configuration\n");
 				exit(2);
 			}
-			free(realnames);
 		}
 	};
 
@@ -1234,23 +1238,20 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 		if (argc <= optind) {
 			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, updater, flags);
 		} else {
-			int arg_count = argc - optind;
-			char **realnames = static_cast<char**>(malloc(arg_count * sizeof(char*)));
-			int count = check_file_args(db, argv + optind, argc - optind, realnames, flags);
-			if (count > 0) {
+			std::vector<char*> realnames = check_file_args(db, argv + optind, argc - optind, flags);
+			if (!realnames.empty()) {
 				// Create const char** array for csync_update call
-				const char **const_realnames = static_cast<const char**>(malloc(count * sizeof(const char*)));
-				for (int idx = 0; idx < count; idx++) {
-					const_realnames[idx] = realnames[idx];
+				std::vector<const char*> const_realnames;
+				const_realnames.reserve(realnames.size());
+				for (char* name : realnames) {
+					const_realnames.push_back(name);
 				}
-				csync_update(db, g_myhostname, g_active_peers, const_realnames, count, g_ip_version,
+				csync_update(db, g_myhostname, g_active_peers, const_realnames.data(), const_realnames.size(), g_ip_version,
 						updater, flags);
-				free(const_realnames);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
 			}
-			csync_realnames_free(realnames, count);
-			free(realnames);
+			csync_realnames_free(realnames);
 		}
 	};
 
@@ -1377,9 +1378,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	csync_run_commands(db);
 	csync_db_close(db);
 	csync_config_destroy();
-	if (g_active_peers) {
-		free(g_active_peers);
-	}
+	// g_active_peers is now managed by std::vector, no need to free
 	if (mode & MODE_DAEMON) {
 		csync_log(LOG_INFO, 4, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 
