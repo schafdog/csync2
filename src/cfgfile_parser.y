@@ -83,15 +83,15 @@ static void add_host(char *hostname, char *peername, int slave)
 {
     int i;
     for (i=0; hostname[i]; i++)
-	hostname[i] = tolower(hostname[i]);
+		hostname[i] = tolower(hostname[i]);
     for (i=0; peername[i]; i++)
-	peername[i] = tolower(peername[i]);
+		peername[i] = tolower(peername[i]);
     if ( strcmp(hostname, g_myhostname) == 0 ) {
-	csync_group->local_slave = slave;
-	if (!csync_group->myname)
-	    csync_group->myname = peername;
-	else
-	    free(peername);
+		csync_group->local_slave = slave;
+		if (!csync_group->myname)
+			csync_group->myname = peername;
+		else
+			free(peername);
     } else {
 	struct csync_group_host *t =
 	    calloc(1, sizeof(struct csync_group_host));

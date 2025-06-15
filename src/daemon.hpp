@@ -20,8 +20,11 @@
 
 #ifndef CSYNC2_DAEMON_H
 #define CSYNC2_DAEMON_H 1
-extern void csync_daemon_session(int conn, int conn_out, db_conn_p db, int protocol_version, int mode);
-extern int csync_copy_file(int fd_in, int fd_out);
-extern int csync_dir_count(db_conn_p db, filename_p filename);
+#include "db_api.hpp"
+void csync_daemon_session(int conn, int conn_out, db_conn_p db, int protocol_version, int mode);
+int csync_copy_file(int fd_in, int fd_out);
+int csync_dir_count(db_conn_p db, filename_p filename);
 
+int csync_start(int mode, int flags, int argc, char *argv[], update_func updater, int listenfd, int cmd_db_version,
+				int cmd_ip_version);
 #endif /* CSYNC2_DAEMON_H */

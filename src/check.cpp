@@ -234,7 +234,7 @@ static textlist_p check_old_operation(const char *file, operation_t operation,
 }
 
 static void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer,
-					  const char *peerfilter, operation_t operation_org, const char *checktxt,
+							 const std::set<std::string>& peerfilter, operation_t operation_org, const char *checktxt,
 					  const char *dev, const char *ino, const char *org_other, int mode,
 					  int mtime) {
 	BUF_P buffer = buffer_init();
@@ -257,10 +257,11 @@ static void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer
 		const char *myname = pl[pl_idx].myname;
 		operation = operation_org;
 		other = org_other;
-		if (!peerfilter || !strcmp(peerfilter, peername)) {
+
+		if (peerfilter.empty() || peerfilter.find(peername) != peerfilter.end()) {
 			csync_info(1, "mark other operation: '%s' '%s:%s' '%s'.\n",
-					csync_mode_op_str(rc_file ? 0 : st_file.st_mode, operation),
-					peername, file, (other ? other : "-"));
+					   csync_mode_op_str(rc_file ? 0 : st_file.st_mode, operation),
+					   peername, file, (other ? other : "-"));
 			if (operation == OP_MOVE && other == NULL) {
 				csync_info(1, "mark other MV operation missing other %s %s \n",
 						peername, file);
@@ -319,10 +320,9 @@ static void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer
 }
 
 void csync_mark(db_conn_p db, const char *file, const char *thispeer,
-		const char *peerfilter, operation_t operation, const char *checktxt,
-		const char *dev, const char *ino, int mode, int mtime) {
-	csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev,
-			ino, 0, mode, mtime);
+				const std::set<std::string>& peerfilter, operation_t operation, const char *checktxt,
+				const char *dev, const char *ino, int mode, int mtime) {
+	csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode, mtime);
 }
 
 /* Return path that doesn't exist */
@@ -716,7 +716,7 @@ static int csync_check_file_mod(db_conn_p db, const char *file, struct stat *fil
 			char ino_str[100];
 			sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 			sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-			csync_mark_other(db, file, 0, 0, operation, checktxt_encoded,
+			csync_mark_other(db, file, 0, std::set<std::string>(), operation, checktxt_encoded,
 					dev_str, ino_str, other, file_stat->st_mode,
 					file_stat->st_mtime);
 		}

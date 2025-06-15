@@ -22,6 +22,10 @@
 #define CSYNC2_CHECK_H 1
 
 #include <sys/stat.h>
+#ifdef __cplusplus
+#include <vector>
+#include <string>
+#endif
 #include "db_api.hpp"
 #include "buffer.hpp"
 
@@ -81,8 +85,11 @@ int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
 int get_file_type(int st_mode);
 
 /* Peer list functions */
-char ** parse_peerlist(char *peerlist);
-int match_peer(char **active_peers, const char *peer);
+void parse_peerlist(char *peerlist);
+#ifdef __cplusplus
+int match_peer(const std::set<std::string>& active_peers, const char *peer);
+#endif
+int match_peer(char **active_peers, const char *peer); // Legacy C-style interface
 
 /* Operation string conversion */
 extern const char *csync_mode_op_str(int st_mode, int op);
@@ -98,8 +105,9 @@ extern int csync_check_mod(db_conn_p db, const char *file, int flags, int *count
 extern int csync_check_dir(db_conn_p db, const char* file, int flags);
 
 /* Mark and path functions */
-extern void csync_mark(db_conn_p db, filename_p file, const char *thispeer, const char *peerfilter, operation_t op,
-		       const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
+extern void csync_mark(db_conn_p db, filename_p file, const char *thispeer,
+					   const std::set<std::string>& peerfilter, operation_t op,
+					   const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(filename_p filename); 
 extern int   csync_check_pure(filename_p filename);

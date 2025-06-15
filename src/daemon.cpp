@@ -39,6 +39,8 @@
 #include <w32api/windows.h>
 #endif
 
+
+#include "update.hpp"
 #include "daemon.hpp"
 #include "conn.hpp"
 #include "action.hpp"
@@ -47,13 +49,11 @@
 #include "utils.hpp"
 #include "rsync.hpp"
 #include "checktxt.hpp"
-#include "update.hpp"
 #include "digest.hpp"
 #include "uidgid.hpp"
 #include "resolv.hpp"
 #include "redis.hpp"
 #include "buffer.hpp"
-
 
 #define OK        0
 #define IDENTICAL 1
@@ -141,7 +141,7 @@ static int csync_rmdir_recursive(db_conn_p db, filename_p file, peername_p peern
 	} else {
 		while (n--) {
 			if (strcmp(namelist[n]->d_name, ".") && strcmp(namelist[n]->d_name, "..")) {
-				char *fn = (char*)malloc(strlen(file) + strlen(namelist[n]->d_name) + 2);
+				char *fn = static_cast<char*>(malloc(strlen(file) + strlen(namelist[n]->d_name) + 2));
 				sprintf(fn, "%s/%s", !strcmp(file, "/") ? "" : file, namelist[n]->d_name);
 				struct stat st;
 				int rc_stat = lstat(fn, &st);
@@ -327,7 +327,9 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 		// NOTE: disabled!
 		if (0 && !rc && operation && peername) {
 			//csync_log(LOG_DEBUG, 0, "check dirty: peername %s \n", peername);
-			csync_mark(db, filename, g_myhostname, peername, operation,
+			std::set<std::string> peerset;
+			peerset.insert(peername);
+			csync_mark(db, filename, g_myhostname, peerset, operation,
 			NULL, NULL, NULL, 0, time(NULL));
 		}
 	}
@@ -345,7 +347,7 @@ static void daemon_file_update(db_conn_p db, filename_p filename, peername_p pee
 		SET_USER | SET_GROUP, db->version);
 		if (S_ISREG(st.st_mode)) {
 			int size = 4 * DIGEST_MAX_SIZE + 1;
-			digest = (char*)malloc(size);
+			digest = static_cast<char*>(malloc(size));
 			int rc = dsync_digest_path_hex(filename, "sha1", digest, size);
 			if (rc) {
 				csync_error(0, "ERROR: generating digest %s for '%s': %d", "sha1", filename, rc);
@@ -364,8 +366,8 @@ static void daemon_file_update(db_conn_p db, filename_p filename, peername_p pee
 }
 
 static int csync_backup_rename(filename_p filename, int length, int generations) {
-	char *backup_name = (char*)malloc(length + 10);
-	char *backup_other = (char*)malloc(length + 10);
+	char *backup_name = static_cast<char*>(malloc(length + 10));
+	char *backup_other = static_cast<char*>(malloc(length + 10));
 	struct stat st;
 	memcpy(backup_name, filename, length);
 	memcpy(backup_other, filename, length);
@@ -415,7 +417,7 @@ int csync_file_backup(filename_p filename, const char **cmd_error) {
 
 			int back_dir_len = strlen(g->backup_directory);
 			int filename_len = strlen(filename);
-			char *backup_filename = (char*)malloc(back_dir_len + filename_len + 10);
+			char *backup_filename = static_cast<char*>(malloc(back_dir_len + filename_len + 10));
 			int fd_in, fd_out, i;
 			int lastSlash = 0;
 			mode_t mode;
@@ -683,8 +685,9 @@ static int verify_peername(db_conn_p db, const char *name, address_t *peeraddr) 
 		/* peeraddr IPv6, but actually ::ffff:I.P.v.4,
 		 * and forward lookup returned IPv4 only */
 		if (af == AF_INET6 && rp->ai_family == AF_INET && try_mapped_ipv4
-				&& !memcmp(&((struct sockaddr_in*) rp->ai_addr)->sin_addr,
-						(unsigned char*) &peeraddr->sa_in6.sin6_addr + 12, sizeof(struct in_addr)))
+				&& !memcmp(&( (struct sockaddr_in*) rp->ai_addr)->sin_addr,
+						   (unsigned char*) &peeraddr->sa_in6.sin6_addr + 12,
+						   sizeof(struct in_addr)))
 			break;
 	}
 
@@ -764,7 +767,7 @@ static int setup_tag(const char *tag[32], char *line) {
 static void destroy_tag(const char *tag[32]) {
 	int i = 0;
 	for (i = 0; i < 32; i++)
-		free((void*)tag[i]);
+		free((void *) tag[i]);
 }
 // Works with both GCC and Clang
 #if defined(__GNUC__) || defined(__clang__)
@@ -935,7 +938,7 @@ static const char* csync_daemon_check_perm(db_conn_p db, struct csync_command *c
 		int perm = csync_perm(filename, key, peername, cmd->check_perm == COMPARE_MODE);
 		if (perm) {
 			if (perm == 2) {
-				csync_mark(db, filename, peername, 0, OP_MOD, NULL, NULL, NULL, 0, time(NULL));
+				csync_mark(db, filename, peername, std::set<std::string>(), OP_MOD, NULL, NULL, NULL, 0, time(NULL));
 				cmd_error = "Permission denied for slave!";
 			} else
 				cmd_error = "Permission denied!";
@@ -1036,7 +1039,7 @@ static void csync_daemon_type(int conn, const char *filename, const char **cmd_e
 
 		conn_printf(conn, "OK (data_follows).\n");
 		while ((rc = fread(buffer, 1, 512, f)) > 0)
-			if (conn_write(conn, buffer, rc) != (ssize_t) rc) {
+			if (conn_write(conn, buffer, rc) != static_cast<ssize_t>(rc)) {
 				conn_printf(conn, "[[ %s ]]", strerror(errno));
 				break;
 			}
@@ -1050,7 +1053,7 @@ static void csync_daemon_get_size_time(int conn, const char *filename, struct cs
 	struct stat sbuf;
 	conn_printf(conn, "OK (data_follows).\n");
 	if (!lstat_strict(filename, &sbuf))
-		conn_printf(conn, "%ld\n", cmd->action == A_GETTM ? (long) sbuf.st_mtime : (long) sbuf.st_size);
+		conn_printf(conn, "%ld\n", cmd->action == A_GETTM ? static_cast<long>(sbuf.st_mtime) : static_cast<long>(sbuf.st_size));
 	else
 		conn_printf(conn, "-1\n");
 
@@ -1131,6 +1134,7 @@ static const char* csync_daemon_hello_ping(db_conn_p db, char **peername, addres
 		*peername = NULL;
 	}
 	// Hack to allow test cases on local machine
+
 	if ((g_allow_peer && !strcmp(g_allow_peer, newpeername)) || verify_peername(db, newpeername, peeraddr)) {
 		*peername = strdup(newpeername);
 	} else {
@@ -1148,7 +1152,7 @@ static const char* csync_daemon_hello_ping(db_conn_p db, char **peername, addres
 		 So we need a new db
 		 */
 		csync_debug(0, "PING child fork: %s %s\n", *peername, g_cfgname);
-		g_active_peers = parse_peerlist(*peername);
+		parse_peerlist(*peername); // updates g_active_peers
 		csync_server_child_pid = getpid();
 		int rc = csync_start(MODE_UPDATE, FLAG_RECURSIVE, optind, 0, csync_update_host, -1, db->version, ip_version);
 		exit(rc);
@@ -1308,7 +1312,7 @@ static int csync_daemon_symlink(filename_p filename, const char *target, const c
 	int rc = lstat(filename, &st);
 	if (rc == 0) {
 		if (S_ISLNK(st.st_mode)) {
-			char *tmp = (char*)malloc(st.st_size + 1);
+			char *tmp = static_cast<char*>(malloc(st.st_size + 1));
 			int r = readlink(filename, tmp, st.st_size + 1);
 			tmp[r] = 0;
 			if (!strcmp(target, tmp)) {
@@ -1419,7 +1423,7 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 		break;
 	}
 	case A_MARK:
-		csync_mark(db, filename, *peername, 0, OP_MOD, NULL, NULL, NULL, 0, time(NULL));
+		csync_mark(db, filename, *peername, std::set<std::string>(), OP_MOD, NULL, NULL, NULL, 0, time(NULL));
 		break;
 	case A_TYPE:
 		csync_daemon_type(conn_out, filename, cmd_error);

@@ -285,9 +285,9 @@ int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue, c
 	return rc == DB_ROW;
 }
 
-const void* csync_db_colblob(void *stmtx, int col) {
-	db_stmt_p stmt = (db_stmt_p)stmtx;
-	const char  *ptr = (const char*)stmt->get_column_blob(stmt, col);
+const char* csync_db_colblob(void *stmtx, int col) {
+	db_stmt_p stmt = static_cast<db_stmt_p>(stmtx);
+	const char  *ptr = static_cast<const char*>(stmt->get_column_blob(stmt, col));
 	if (stmt->db && stmt->db->logger) {
 		stmt->db->logger(LOG_DEBUG, 4, "DB get blob: %s ", ptr);
 	}
@@ -295,7 +295,7 @@ const void* csync_db_colblob(void *stmtx, int col) {
 }
 
 long csync_db_long(void *stmtx, int col, long *result) {
-	const char *ptr = (const char*) csync_db_colblob(stmtx, col);
+	const char *ptr = static_cast<const char*>(csync_db_colblob(stmtx, col));
 	char *rest;
 	if (!ptr) {
 		return -1;
@@ -306,7 +306,7 @@ long csync_db_long(void *stmtx, int col, long *result) {
 }
 
 void csync_db_fin(void *vmx, const char *err) {
-	db_stmt_p stmt = (db_stmt_p) vmx;
+	db_stmt_p stmt = static_cast<db_stmt_p>(vmx);
 	int rc, busyc = 0;
 
 	if (vmx == NULL)

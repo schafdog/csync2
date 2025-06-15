@@ -139,9 +139,9 @@ static const char* db_sqlite_stmt_get_column_text(db_stmt_p stmt, int column) {
 }
 
 #if defined(HAVE_SQLITE3)
-static const void* db_sqlite_stmt_get_column_blob(db_stmt_p stmtx, int col) {
+static const char *db_sqlite_stmt_get_column_blob(db_stmt_p stmtx, int col) {
 	sqlite3_stmt *stmt = (sqlite3_stmt*)stmtx->private_data;
-	return f.sqlite3_column_blob_fn(stmt, col);
+	return (const char *) f.sqlite3_column_blob_fn(stmt, col);
 }
 #endif
 

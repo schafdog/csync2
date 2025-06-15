@@ -60,6 +60,10 @@
 #include "action.hpp"
 #include "checktxt.hpp"
 
+int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func,
+				int listenfd, int cmd_db_version, int cmd_ip_version);
+
+
 #ifdef REAL_DBDIR
 #  undef DBDIR
 #  define DBDIR REAL_DBDIR
@@ -76,7 +80,8 @@ static const char *dbdir = DBDIR;
 const char *g_cfgname = "";
 char *g_active_grouplist = 0;
 char *g_active_peerlist = 0;
-char **g_active_peers = 0;
+std::set<std::string> g_active_peers;
+
 const char *g_update_format = 0;
 char *g_allow_peer = 0;
 int g_db_version = 1;
@@ -371,9 +376,8 @@ static int csync_tail(db_conn_p db, int fileno, int flags) {
 			} else {
 				csync_check(db, file, flags);
 			}
-			std::vector<std::string> patlist = {file};
-			// Use the new C++ API directly
-			csync_update(db, g_myhostname, g_active_peers, patlist, g_ip_version, csync_update_host, flags);
+			std::set<std::string> patlist = {file};
+			csync_update(db, std::string(g_myhostname), g_active_peers, patlist, g_ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -552,52 +556,49 @@ int protocol_version;
 const char* (*db_decode)(const char *value);
 const char* (*db_encode)(const char *value);
 
-static std::vector<std::string> peers_storage;
-static std::vector<char*> peers_c_array;
+void parse_peerlist(char *peerlist) {
+	g_active_peers.clear();
 
-char** parse_peerlist(char *peerlist) {
 	if (peerlist == NULL) {
-		peers_c_array.clear();
-		peers_c_array.push_back(nullptr);
-		return peers_c_array.data();
+		return;
 	}
-
-	// Clear previous storage
-	peers_storage.clear();
-	peers_storage.reserve(100);
 
 	char *saveptr = NULL;
 	char *token;
 	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
 	while ((token = strtok_r(peerlist, ",", &saveptr))) {
 		csync_log(LOG_DEBUG, 2, "New peer: %s\n", token);
-		peers_storage.emplace_back(token);
+		g_active_peers.insert(token);
 		peerlist = NULL;
 	}
-
-	// Create C-style array for compatibility
-	peers_c_array.clear();
-	peers_c_array.reserve(peers_storage.size() + 1);
-	for (const auto& peer : peers_storage) {
-		peers_c_array.push_back(const_cast<char*>(peer.c_str()));
-	}
-	peers_c_array.push_back(nullptr); // NULL terminator
-
-	return peers_c_array.data();
 }
 
-int match_peer(char **active_peers, const char *peer) {
-	int i = 0;
-	int match = 1;
-	if (active_peers) {
-		match = 0;
-		while (active_peers[i]) {
-			if (!strcmp(active_peers[i], peer))
-				return 1;
-			i++;
+int match_peer(const std::set<std::string>& active_peers, const char *peer) {
+	if (active_peers.empty()) {
+		return 1; // If no peers specified, match all
+	}
+
+	for (const auto& active_peer : active_peers) {
+		if (active_peer == peer) {
+			return 1;
 		}
 	}
-	return match;
+	return 0;
+}
+
+// Legacy C-style interface for backward compatibility
+int match_peer(char **active_peers, const char *peer) {
+	if (!active_peers) {
+		return 1; // If no peers specified, match all
+	}
+
+	int i = 0;
+	while (active_peers[i]) {
+		if (!strcmp(active_peers[i], peer))
+			return 1;
+		i++;
+	}
+	return 0;
 }
 
 /**
@@ -617,9 +618,8 @@ static void free_realname(char *real_name) {
 	free(real_name);
 }
 
-static std::vector<std::string> check_file_args(db_conn_p db, char *files[], int file_count, int flags) {
-	std::vector<std::string> realnames;
-	realnames.reserve(file_count);
+static std::set<std::string> check_file_args(db_conn_p db, char *files[], int file_count, int flags) {
+	std::set<std::string> realnames;
 
 	for (int i = 0; i < file_count; i++) {
 		char *real_name = getrealfn(files[i]);
@@ -627,7 +627,7 @@ static std::vector<std::string> check_file_args(db_conn_p db, char *files[], int
 			csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
 		} else {
 			if (!csync_check_usefullness(real_name, flags)) {
-				realnames.emplace_back(real_name);
+				realnames.insert(real_name);
 				if (flags & FLAG_DO_CHECK) {
 					csync_check(db, real_name, flags);
 					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", real_name, flags);
@@ -786,7 +786,7 @@ int main(int argc, char **argv) {
 			break;
 		case 'P':
 			g_active_peerlist = optarg;
-			g_active_peers = parse_peerlist(g_active_peerlist);
+			parse_peerlist(g_active_peerlist);
 			break;
 		case 'B':
 			db_blocking_mode = 0;
@@ -1182,11 +1182,13 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	if (mode == MODE_SIMPLE) {
 		if (argc == optind) {
 			csync_check(db, "/", flags);
-			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, csync_update_host, flags);
+			std::set<std::string> patlist = { "/"} ;
+			csync_update(db, std::string(g_myhostname), g_active_peers, patlist, g_ip_version,
+						 csync_update_host, flags);
 		} else {
-			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
+			std::set<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
 			// Use the new C++ API directly
-			csync_update(db, g_myhostname, g_active_peers, realnames, g_ip_version, csync_update_host, flags);
+			csync_update(db, std::string(g_myhostname), g_active_peers, realnames, g_ip_version, csync_update_host, flags);
 			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
 	}
@@ -1212,7 +1214,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			}
 			textlist_free(tl);
 		} else {
-			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
+			std::set<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
 			if (realnames.empty()) {
 				csync_debug(0, "No argument was matched in configuration\n");
 				exit(2);
@@ -1231,12 +1233,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 
 	if (mode & MODE_UPDATE || mode & MODE_EQUAL) {
 		if (argc <= optind) {
-			csync_update(db, g_myhostname, g_active_peers, 0, 0, g_ip_version, updater, flags);
+			csync_update(db, std::string(g_myhostname), g_active_peers, std::set<std::string>(), g_ip_version, updater, flags);
 		} else {
-			std::vector<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags);
+			std::set<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags);
 			if (!realnames.empty()) {
 				// Use the new C++ API directly
-				csync_update(db, g_myhostname, g_active_peers, realnames, g_ip_version, updater, flags);
+				csync_update(db, std::string(g_myhostname), g_active_peers, realnames, g_ip_version, updater, flags);
 			} else {
 				csync_debug(0, "No argument was matched in configuration\n");
 			}
@@ -1267,7 +1269,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	if (mode == MODE_MARK) {
 		for (int i = optind; i < argc; i++) {
 			char *realname = getrealfn(argv[i]);
-			db->mark(db, g_active_peerlist, realname, flags & FLAG_RECURSIVE);
+			db->mark(db, g_active_peers, realname, flags & FLAG_RECURSIVE);
 		}
 	};
 
@@ -1367,7 +1369,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	csync_run_commands(db);
 	csync_db_close(db);
 	csync_config_destroy();
-	// g_active_peers is now managed by std::vector, no need to free
+	// g_active_peers is now managed by std::set, no need to free
 	if (mode & MODE_DAEMON) {
 		csync_log(LOG_INFO, 4, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 

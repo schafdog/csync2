@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <string.h>
+#include <string>
 #include <stdlib.h>
 #include <unistd.h>
 #include <netdb.h>
@@ -74,6 +74,8 @@
 #define ERROR_LOCKED       -15
 #define ERROR_CREATE       -16
 #define ERROR_OTHER        -20
+
+using namespace std;
 
 operation_t csync_operation(const char *operation) {
 	if (!operation) {
@@ -393,8 +395,9 @@ static void cmd_printf(int conn, const char *cmd, const char *key, filename_p fi
 
 	if (st) {
 		conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %zu %zu\n", cmd, key, filename, secondname, st->st_uid,
-				st->st_gid, uid, gid, st->st_mode, digest ? digest : "-", (long long) st->st_size,
-				(long long) st->st_mtime);
+					st->st_gid, uid, gid, st->st_mode, digest ? digest : "-",
+					static_cast<long long>(st->st_size),
+					static_cast<long long>(st->st_mtime));
 
 	} else {
 		conn_printf(conn, "%s %s %s %s\n", cmd, key, filename, secondname);
@@ -911,7 +914,7 @@ static int csync_stat(filename_p filename, struct stat *st, char uid[MAX_UID_SIZ
 
 static int csync_update_file_settime(int conn, peername_p peername, const char *key_enc, filename_p filename,
 		filename_p filename_enc, const struct stat *st) {
-	conn_printf(conn, "SETTIME %s %s %zu\n", key_enc, filename_enc, (long long) st->st_mtime);
+	conn_printf(conn, "SETTIME %s %s %zu\n", key_enc, filename_enc, static_cast<long long>(st->st_mtime));
 	if (read_conn_status(conn, filename, peername))
 		return ERROR;
 	return OK;
@@ -1573,10 +1576,12 @@ static int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char
 	return use_this;
 }
 
-void csync_ping_host(db_conn_p db, const char *myname, peername_p peername, const char **patlist, int patnum,
-		int ip_version, int flags) {
+void csync_ping_host(db_conn_p db, const std::string& myname, peername_p peername,
+                     const std::set<std::string>& patlist, int ip_version, int flags) {
 	// unused
-	csync_debug(4, "Unused parameters %p %d %d", patlist, patnum, flags);
+	(void) patlist;
+	(void) flags;
+	//csync_debug(4, "Unused parameters %p %d %d", patlist, patlist.size(), flags);
 	/* 
 	 textlist_p tl = 0, t, next_t;
 	 textlist_p tl_del = 0, *last_tn=&tl;
@@ -1587,7 +1592,7 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername, cons
 	 return;
 	 }
 	 */
-	int conn = connect_to_host(db, myname, peername, ip_version);
+	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
@@ -1596,27 +1601,27 @@ void csync_ping_host(db_conn_p db, const char *myname, peername_p peername, cons
 		return;
 	}
 
-	conn_printf(conn, "PING %s %s\n", myname, g_cfgname);
+	conn_printf(conn, "PING %s %s\n", myname.c_str(), g_cfgname);
 	int rc = read_conn_status(conn, 0, peername);
-	csync_debug(1, "Sent PING %s %s to %s: %d \n", myname, g_cfgname, peername, rc);
+	csync_debug(1, "Sent PING %s %s to %s: %d \n", myname.c_str(), g_cfgname, peername, rc);
 	conn_printf(conn, "BYE\n");
 	read_conn_status(conn, 0, peername);
 	conn_close(conn);
 	return;
 }
 
-void csync_update_host(db_conn_p db, const char *myname, peername_p peername, const char **patlist, int patnum,
-		int ip_version, int flags) {
+void csync_update_host(db_conn_p db, const std::string& myname, peername_p peername,
+                       const std::set<std::string>& patlist, int ip_version, int flags) {
 	textlist_p tl = 0, t, next_t;
 	textlist_p tl_del = 0, *last_tn = &tl;
 	struct stat st;
-	tl = db->get_dirty_by_peer_match(db, myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
+	tl = db->get_dirty_by_peer_match(db, myname.c_str(), peername, flags & FLAG_RECURSIVE, patlist, compare_files);
 	/* just return if there are no files to update */
 	if (!tl) {
 		return;
 	}
 	csync_debug(1, "Got dirty files from host %s\n", peername);
-	int conn = connect_to_host(db, myname, peername, ip_version);
+	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
@@ -1625,7 +1630,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 		return;
 	}
 
-	conn_printf(conn, "HELLO %s\n", myname);
+	conn_printf(conn, "HELLO %s\n", myname.c_str());
 	if (read_conn_status(conn, 0, peername)) {
 		conn_printf(conn, "BYE\n");
 		read_conn_status(conn, 0, peername);
@@ -1642,7 +1647,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 		next_t = t->next;
 		//csync_debug(1, "DIRTY %s '%s'\n", filename, digest);
 		if (lstat_strict(filename, &st) == 0 && !csync_check_pure(filename)) {
-			rc = csync_update_file_mod(conn, db, myname, peername, filename, operation, other, checktxt, digest, forced,
+			rc = csync_update_file_mod(conn, db, myname.c_str(), peername, filename, operation, other, checktxt, digest, forced,
 					flags & FLAG_DRY_RUN);
 			if (rc == CONN_CLOSE) {
 				csync_error(0, "Connection closed on updating %s\n", filename);
@@ -1661,9 +1666,11 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 			if (t->operation != OP_RM && t->operation != OP_MARK) {
 				csync_warn(1, "Unable to %s %s:%s. File has disappeared since check.\n", csync_operation_str(operation),
 						peername, filename);
-				csync_mark(db, filename, 0, peername, OP_RM, NULL, NULL, NULL, 0, time(NULL));
+				std::set<string> peerlist;
+				peerlist.insert(peername);
+				csync_mark(db, filename, 0, peerlist, OP_RM, NULL, NULL, NULL, 0, time(NULL));
 				if (other) {
-					csync_mark(db, other, 0, peername, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
+					csync_mark(db, other, 0, peerlist, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
 					csync_log(LOG_DEBUG, 0, "make other dirty %s\n", other);
 				}
 			} else {
@@ -1702,7 +1709,7 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 	if (!(flags & FLAG_DRY_RUN))
 		for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
 			csync_log(LOG_DEBUG, 2, "SETTIME %s:%s\n", peername, t->value);
-			rc = csync_update_directory(conn, myname, peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
+			rc = csync_update_directory(conn, myname.c_str(), peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
 			if (rc == CONN_CLOSE) {
 				csync_error(0, "Connection closed on setting time on directory %s\n", t->value);
 				break;
@@ -1717,24 +1724,24 @@ void csync_update_host(db_conn_p db, const char *myname, peername_p peername, co
 	conn_close(conn);
 }
 
-void csync_sync_host(db_conn_p db, const char *myname, peername_p peername, const char **patlist, int patnum,
-		int ip_version, int flags) {
+// NOT FULLY IMPLEMENTED
+void csync_sync_host(db_conn_p db, const std::string&  myname, peername_p peername,
+                     const std::set<std::string>& patlist, int ip_version, int flags) {
 	textlist_p tl = 0, t = 0;
-	int i, use_this = patnum == 0;
 	int dry_run = flags & FLAG_DRY_RUN;
 
 	csync_log(LOG_DEBUG, 0, "csync_sync_host\n");
-	for (i = 0; i < patnum && !use_this; i++) {
-		tl = db->non_dirty_files_match(db, patlist[i]);
-		if (tl)
-			use_this = 1;
+	for (std::string pattern : patlist) {
+		tl = db->non_dirty_files_match(db, pattern.c_str());
+		if (tl) // Only use first pattern?
+			break;
 	}
 	/* just return if there are no files to update */
 	if (!tl) {
 		csync_log(LOG_DEBUG, 0, "csync_sync_host: no files to sync\n");
 		return;
 	}
-	int conn = connect_to_host(db, myname, peername, ip_version);
+	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
@@ -1743,7 +1750,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername, cons
 		return;
 	}
 
-	conn_printf(conn, "HELLO %s\n", myname);
+	conn_printf(conn, "HELLO %s\n", myname.c_str());
 	int rc;
 	if ((rc = read_conn_status(conn, 0, peername)) < OK) {
 		conn_printf(conn, "BYE\n");
@@ -1770,7 +1777,7 @@ void csync_sync_host(db_conn_p db, const char *myname, peername_p peername, cons
 			int rc_exist = csync_stat(filename, &st, uid, gid);
 			if (!rc_exist) {
 				int last_conn_status;
-				rc = csync_update_file_sig_rs_diff(conn, myname, peername, key_enc, filename, filename_enc, &st,
+				rc = csync_update_file_sig_rs_diff(conn, myname.c_str(), peername, key_enc, filename, filename_enc, &st,
 												   uid, gid, chk_local, digest, &last_conn_status, 2);
 				if (rc == CONN_CLOSE) {
 					csync_error(0, "Error while sync_host %s:%s. Connection closed", peername, filename);
@@ -1806,38 +1813,33 @@ static int csync_match(const char *filename, const char *patlist[], int patnum, 
 	return 0;
 }
 
-void csync_update(db_conn_p db, const char *myhostname, char *active_peers[], const char **patlist, int patnum,
+void csync_update(db_conn_p db, const std::string& myhostname,
+				  const std::set<std::string>& active_peers, 
+                  const std::set<std::string>& patlist,
 				  int ip_version, update_func func, int flags) {
 	textlist_p tl = 0, t;
 	if (flags & FLAG_DO_ALL) {
-		int i = 0;
-		if (active_peers)
-			while (active_peers[i]) {
-				func(db, myhostname, active_peers[i], patlist, patnum, ip_version, flags);
-				i++;
-			}
-		else
+		for (std::string peer : active_peers) {
+			func(db, myhostname, peer.c_str(), patlist, ip_version, flags);
+		}
+		if (active_peers.empty()) {
 			csync_error(0, "No active peers given. Unable to iterate without");
+		}
 	} else {
 		tl = db->get_dirty_hosts(db);
 		int found = 1;
 		for (t = tl; t != 0; t = t->next) {
-			if (active_peers) {
-				int i = 0;
+			if (!active_peers.empty()) {
 				found = 0;
-				while (active_peers[i] && !found) {
-					if (!strcmp(active_peers[i], t->value)) {
+				for (std::string peer : active_peers) {
+					if (peer == t->value) {
 						found = 1;
-						while (active_peers[i]) {
-							active_peers[i] = active_peers[i + 1];
-							++i;
-						}
+						break;
 					}
-					i++;
 				}
 			}
 			if (found)
-				func(db, myhostname, t->value, patlist, patnum, ip_version, flags);
+				func(db, myhostname, t->value, patlist, ip_version, flags);
 		}
 		textlist_free(tl);
 	}
@@ -1850,13 +1852,13 @@ static int finish_close(int conn) {
 }
 ;
 
-static int csync_insynctest_file(int conn, const char *myname, peername_p peername, const char *key_enc, filename_p filename,
-		int *last_conn_status) {
+static int csync_insynctest_file(int conn, const std::string& myname, peername_p peername, const char *key_enc,
+								 filename_p filename, int *last_conn_status) {
 	filename_p filename_enc = url_encode(prefixencode(filename));
 	struct stat st;
 	char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
 	int rc_exist = csync_stat(filename, &st, uid, gid);
-	int rc = csync_update_file_sig_rs_diff(conn, myname, peername, key_enc, filename, filename_enc,
+	int rc = csync_update_file_sig_rs_diff(conn, myname.c_str(), peername, key_enc, filename, filename_enc,
 			(!rc_exist ? &st : NULL), uid, gid,
 			NULL, NULL, last_conn_status, 0);
 	if (rc < 0 && rc != ERROR_PATH_MISSING) {
@@ -1870,7 +1872,7 @@ static int csync_insynctest_file(int conn, const char *myname, peername_p peerna
 	return rc;
 }
 
-int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version) {
+int csync_diff(db_conn_p db, const std::string& myname, peername_p peername, filename_p filename, int ip_version) {
 	FILE *p;
 	void (*old_sigpipe_handler)(int);
 	const struct csync_group *g = 0;
@@ -1879,7 +1881,7 @@ int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p
 	char buffer[512];
 	int found = 0;
 	while (!found && (g = csync_find_next(g, filename, 0))) {
-		if (!g->myname || strcmp(g->myname, myname))
+		if (!g->myname || myname != g->myname)
 			continue;
 		for (h = g->host; h; h = h->next)
 			if (!strcmp(h->hostname, peername)) {
@@ -1894,14 +1896,14 @@ int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p
 		return 0;
 	}
 
-	int conn = connect_to_host(db, myname, peername, ip_version);
+	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
 		return 0;
 	}
 
-	conn_printf(conn, "HELLO %s\n", url_encode(myname));
+	conn_printf(conn, "HELLO %s\n", url_encode(myname.c_str()));
 	if (read_conn_status(conn, 0, peername))
 		return finish_close(conn);
 	const char *key_enc = url_encode(g->key);
@@ -1933,7 +1935,7 @@ int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p
 
 	/* avoid unwanted side effects due to special chars in filenames,
 	 * pass them in the environment */
-	snprintf(buffer, 512, "%s:%s", myname, filename);
+	snprintf(buffer, 512, "%s:%s", myname.c_str(), filename);
 	setenv("my_label", buffer, 1);
 	snprintf(buffer, 512, "%s:%s", peername, filename);
 	setenv("peer_label", buffer, 1);
@@ -1953,7 +1955,7 @@ int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p
 	}
 	if (rc < 0)
 		csync_info(0, "Diff %s:%s failed with connection read %s %d", peername, filename, strerror(errno), errno);
-	csync_log(LOG_DEBUG, 2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d ", myname, filename,
+	csync_log(LOG_DEBUG, 2, "diff -Nus --label \"%s:%s\" - --label \"%s:%s\" bytes read: %d ", myname.c_str(), filename,
 			peername, filename, length);
 	pclose(p);
 	signal(SIGPIPE, old_sigpipe_handler);
@@ -2004,7 +2006,7 @@ static int csync_insynctest_readline(int conn, char **file, char **checktxt) {
 	return 0;
 }
 
-int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version,
+int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peername, filename_p filename, int ip_version,
 		int flags) {
 	int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
 	int recursive = flags & FLAG_RECURSIVE;
@@ -2017,7 +2019,7 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, file
 
 	int found = 0;
 	for (g = csync_group; !found && g; g = g->next) {
-		if (!g->myname || strcmp(g->myname, myname))
+		if (!g->myname || myname != g->myname)
 			continue;
 		for (h = g->host; h; h = h->next)
 			if (!strcmp(h->hostname, peername)) {
@@ -2032,19 +2034,19 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, file
 		return 0;
 	}
 
-	int conn = connect_to_host(db, myname, peername, ip_version);
+	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername);
 		return 0;
 	}
 
-	conn_printf(conn, "HELLO %s\n", url_encode(myname));
+	conn_printf(conn, "HELLO %s\n", url_encode(myname.c_str()));
 	read_conn_status(conn, 0, peername);
 	filename_p filename_enc = (filename ? url_encode(prefixencode(filename)) : "/");
 	found = 0;
 	for (g = csync_group; g && !found; g = g->next) {
-		if (!g->myname || strcmp(g->myname, myname))
+		if (!g->myname || myname != g->myname)
 			continue;
 		for (h = g->host; h; h = h->next)
 			if (!strcmp(h->hostname, peername)) {
@@ -2059,34 +2061,37 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, file
 			if (auto_diff)
 				textlist_add(&diff_list, r_file, 0);
 			else {
-				textlist_p tl = db->list_file(db, r_file, myname, peername, 0);
+				textlist_p tl = db->list_file(db, r_file, myname.c_str(), peername, 0);
  				const char *chk_local = "---";
 				if (tl) {
 					chk_local = tl->value;
 				}
 				int i;
 				if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
-					csync_info(1, "D\t%s\t%s\t%s\n", myname, peername, r_file);
+					csync_info(1, "D\t%s\t%s\t%s\n", myname.c_str(), peername, r_file);
 					csync_log(LOG_DEBUG, 2, "'%s' is different:\n", filename);
 					char *local_copy = NULL; 
 					if (csync_zero_mtime_debug) {
 						filter_mtime(r_checktxt);
 						local_copy = filter_mtime_copy(chk_local);
 					}
-					csync_log(LOG_DEBUG, 2, ">>> %s %s\n>>> %s %s\n", r_checktxt, peername, chk_local, myname);
+					csync_log(LOG_DEBUG, 2, ">>> %s %s\n>>> %s %s\n", r_checktxt, peername, chk_local, myname.c_str());
 					if (local_copy) {
 						free(local_copy);
 					}
 					count_diff++;
 				} else
-					csync_info(1, "S\t%s\t%s\t%s\n", myname, peername, r_file);
+					csync_info(1, "S\t%s\t%s\t%s\n", myname.c_str(), peername, r_file);
 
 				textlist_free(tl);
 			}
 			ret = 0;
-			if (flags & FLAG_INIT_RUN)
-				csync_mark(db, r_file, 0, (flags & FLAG_INIT_RUN_STRAIGHT) ? peername : 0,
-				OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0, time(NULL));
+			if (flags & FLAG_INIT_RUN) {
+				std::set<string> peerlist;
+				if (flags & FLAG_INIT_RUN_STRAIGHT)
+					peerlist.insert(peername);
+				csync_mark(db, r_file, 0, peerlist, OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0, time(NULL));
+			}
 		}
 	}
 	csync_debug(3, "count_diff: %d", count_diff);
@@ -2101,25 +2106,24 @@ int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, file
 	conn_close(conn);
 
 	for (diff_ent = diff_list; diff_ent; diff_ent = diff_ent->next)
-		csync_diff(db, myname, peername, diff_ent->value, ip_version);
+		csync_diff(db, myname.c_str(), peername, diff_ent->value, ip_version);
 	textlist_free(diff_list);
 
 	return ret;
 }
 
-static int peer_in(char *active_peers[], const char *peer) {
-	if (!active_peers)
+static int peer_in(const std::set<std::string>& active_peers, const std::string& peername) {
+	if (active_peers.empty())
 		return 1;
-	int index = 0;
-	while (active_peers[index]) {
-		if (!strcmp(active_peers[index], peer))
+	for (std::string peer : active_peers) {
+		if (peer == peername)
 			return 1;
-		index++;
 	}
 	return 0;
 }
 
-int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags) {
+int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, const std::set<std::string>& active_peers,
+						 int flags) {
 	csync_log(LOG_DEBUG, 3, "csync_insynctest_all: flags %d \n", flags);
 	textlist_p myname_list = 0, myname;
 	int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
@@ -2128,10 +2132,12 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char
 	if (auto_diff && filename) {
 		int pl_idx;
 		struct peer *pl = csync_find_peers(filename, 0);
-		for (pl_idx = 0; pl && pl[pl_idx].peername; pl_idx++)
-			if (peer_in(active_peers, pl[pl_idx].peername)) {
-				csync_diff(db, pl[pl_idx].myname, pl[pl_idx].peername, filename, ip_version);
+		for (pl_idx = 0; pl && pl[pl_idx].peername; pl_idx++) {
+			std::string peername(pl[pl_idx].peername);
+			if (peer_in(active_peers, peername)) {
+				csync_diff(db, std::string(pl[pl_idx].myname), peername.c_str(), filename, ip_version);
 			}
+		}
 		free(pl);
 		return ret;
 	}
@@ -2233,57 +2239,4 @@ void csync_remove_old(db_conn_p db, filename_p pattern) {
 	csync_log(LOG_DEBUG, 1, "remove_old: end\n");
 }
 
-// C++ API implementations using std::vector<std::string>
 
-void csync_update(db_conn_p db, const char *myhostname, char *active_peers[],
-                  const std::vector<std::string>& patlist, int ip_version, update_func func, int flags) {
-	// Convert std::vector<std::string> to const char** for the existing implementation
-	std::vector<const char*> c_patlist;
-	c_patlist.reserve(patlist.size());
-	for (const auto& path : patlist) {
-		c_patlist.push_back(path.c_str());
-	}
-
-	// Call the existing C-style implementation
-	csync_update(db, myhostname, active_peers, c_patlist.data(), c_patlist.size(), ip_version, func, flags);
-}
-
-void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-                       const std::vector<std::string>& patlist, int ip_version, int flags) {
-	// Convert std::vector<std::string> to const char** for the existing implementation
-	std::vector<const char*> c_patlist;
-	c_patlist.reserve(patlist.size());
-	for (const auto& path : patlist) {
-		c_patlist.push_back(path.c_str());
-	}
-
-	// Call the existing C-style implementation
-	csync_update_host(db, myname, peername, c_patlist.data(), c_patlist.size(), ip_version, flags);
-}
-
-void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
-                     const std::vector<std::string>& patlist, int ip_version, int flags) {
-	// Convert std::vector<std::string> to const char** for the existing implementation
-	std::vector<const char*> c_patlist;
-	c_patlist.reserve(patlist.size());
-	for (const auto& path : patlist) {
-		c_patlist.push_back(path.c_str());
-	}
-
-	// Call the existing C-style implementation
-	csync_sync_host(db, myname, peername, c_patlist.data(), c_patlist.size(), ip_version, flags);
-}
-
-void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
-                     const std::vector<std::string>& patlist, int ip_version, int flags) {
-	// Convert std::vector<std::string> to const char** for the existing implementation
-	std::vector<const char*> c_patlist;
-	c_patlist.reserve(patlist.size());
-	for (const auto& path : patlist) {
-		c_patlist.push_back(path.c_str());
-	}
-
-	// Call the existing C-style implementation
-	csync_ping_host(db, myname, peername, c_patlist.data(), c_patlist.size(), ip_version, flags);
-}
-;

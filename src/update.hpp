@@ -23,38 +23,52 @@
 
 #include <vector>
 #include <string>
+#include "db_api.hpp"
+
+typedef void (*update_func)(db_conn_p db, const std::string& myname, peername_p peername, 
+							const std::set<std::string>& patlist,
+							int ip_version, int flags);
+
+typedef const std::set<std::string>& pattern_t;
+
+
 int get_auto_method(peername_p peername, filename_p filename);
 int csync_auto_resolve_time_size(int auto_method, time_t time_l, time_t time_p, long long size_l, long long size_p);
 int compare_files(filename_p filename, const char *pattern, int recursive);
-extern void csync_update(db_conn_p db, const char *myname, char **peers,
-			 const char **patlist, int patnum, int ip_version, update_func func, int flags);
 
-extern void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-			      const char **patlist, int patnum, int ip_version, int flags);
+void csync_update_host(db_conn_p db, const std::string& myname, peername_p peername,
+					   pattern_t  patlist, int ip_version, int flags);
 
-extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
-			    const char **patlist, int patnum, int ip_version, int flags);
+void csync_sync_host(db_conn_p db, const std::string& myname, peername_p peername,
+					 const std::set<std::string>& patlist, int ip_version, int flags);
 
-extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
-			    const char **patlist, int patnum, int ip_version, int flags);
+void csync_ping_host(db_conn_p db, const std::string& myname, peername_p peername,
+					 const std::set<std::string> patlist, int ip_version, int flags);
 
-// C++ API with std::vector<std::string>
-extern void csync_update(db_conn_p db, const char *myname, char **peers,
-			 const std::vector<std::string>& patlist, int ip_version, update_func func, int flags);
+// C++ API with std::set<std::string>
+void csync_update(db_conn_p db, const std::string& myname,
+				  const std::set<std::string>& active_peers,
+				  const std::set<std::string>& patlist,
+				  int ip_version, update_func func, int flags);
 
-extern void csync_update_host(db_conn_p db, const char *myname, peername_p peername,
-		      const std::vector<std::string>& patlist, int ip_version, int flags);
+void csync_update_host(db_conn_p db, const std::string& myname, peername_p peername,
+					   const std::set<std::string>& patlist, int ip_version, int flags);
 
-extern void csync_sync_host(db_conn_p db, const char *myname, peername_p peername,
-		    const std::vector<std::string>& patlist, int ip_version, int flags);
+void csync_sync_host(db_conn_p db, const std::string& myname, peername_p peername,
+					 const std::set<std::string>& patlist, int ip_version, int flags);
 
-extern void csync_ping_host(db_conn_p db, const char *myname, peername_p peername,
-		    const std::vector<std::string>& patlist, int ip_version, int flags);
+void csync_ping_host(db_conn_p db, const std::string& myname, peername_p peername,
+					 const std::set<std::string>& patlist, int ip_version, int flags);
 
-extern int csync_diff(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version);
-extern int csync_insynctest(db_conn_p db, const char *myname, peername_p peername, filename_p filename, int ip_version, int flags);
-extern int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, char *active_peers[], int flags);
-extern void csync_remove_old(db_conn_p db, filename_p pattern);
+int csync_diff(db_conn_p db, const std::string& myname, peername_p peername, filename_p filename, int ip_version);
+
+int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peername, filename_p filename,
+					 int ip_version, int flags);
+int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version,
+								const std::set<std::string>& active_peers, int flags);
+
+void csync_remove_old(db_conn_p db, filename_p pattern);
+
 int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peername, const char *key_enc,
 								  filename_p filename, filename_p filename_enc,
 								  const struct stat *st,

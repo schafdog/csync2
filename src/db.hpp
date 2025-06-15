@@ -36,7 +36,7 @@ extern void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...)
 extern int csync_db_next(void *vmx, const char *err,
 		int *pN, const char ***pazValue, const char ***pazColName);
 extern void csync_db_fin(void *vmx, const char *err);
-extern const void * csync_db_colblob(void *stmtx,int col);
+extern const char* csync_db_colblob(void *stmtx,int col);
 extern long  csync_db_long(void *stmtx,int col, long *result);
 extern char *db_default_database(const char *dbdir, const char *myhostname, const char *cfg_name);
 extern const char *csync_db_escape(const char *);
@@ -65,7 +65,7 @@ extern const char* (*db_decode) (const char *value);
 			SQL_COUNT++;
 
 #define SQL_V(col)				\
-    (csync_db_colblob(SQL_VM,(col)))
+    (static_cast<const char *>(csync_db_colblob(SQL_VM,(col))))
 
 #define SQL_V_long(col, result)			\
     (csync_db_long(SQL_VM,(col), (result)))

@@ -178,7 +178,7 @@ static int db_postgres_exec(db_conn_p conn, const char *sql) {
 	}
 }
 
-static const void* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column) {
+static const char* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column) {
 	PGresult *result;
 	int *row_p;
 

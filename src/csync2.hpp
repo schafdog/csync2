@@ -37,11 +37,15 @@
 #include <string.h>
 #include <syslog.h>
 
+#ifdef __cplusplus
+#include <vector>
+#include <set>
+#include <string>
+#endif
+
 typedef int operation_t;
 typedef const char * filename_p;
 typedef const char * peername_p;
-
-#include "db_api.hpp"
 
 #define MATCH_NEXT 2
 #define MATCH_INTO 1
@@ -133,15 +137,6 @@ enum {
 	if (__ret < 0) \
 	  csync_fatal("Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__); \
 } while (0)
-
-
-typedef void (*update_func)(db_conn_p db, const char *myname, const char *peer,
-							const char **patlist, int patnum, int ip_version, int flags);
-
-/* csync2.c */
-
-int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func,
-				int listenfd, int cmd_db_version, int cmd_ip_version);
 
 /* check.c */
 #define DEV_INO_SAME 0
@@ -318,7 +313,11 @@ extern int csync_dump_dir_fd;
 
 extern char *csync_use_ip;
 extern int csync_compare_mode;
+#ifdef __cplusplus
+extern std::set<std::string> g_active_peers;
+#else
 extern char **g_active_peers;
+#endif
 
 #ifdef HAVE_LIBGNUTLS
 extern int csync_conn_usessl;

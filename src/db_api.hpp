@@ -44,13 +44,13 @@ struct db_conn_t {
 	const char* (*escape)(db_conn_p conn, const char *string);
 	void (*free)(db_conn_p conn, const char *escaped);
 	void (*shutdown)(void);
-	void (*mark)(db_conn_p conn, char *active_peerlist, const char *realname, int recursive);
+	void (*mark)(db_conn_p conn, const std::set<std::string> active_peers, const char *realname, int recursive);
 
 	// Update functions (deprecated)
 	int (*upgrade_to_schema)(db_conn_p db, int version);
 	int (*schema_version)(db_conn_p db);
 	// query functions 
-	int (*list_dirty)(db_conn_p conn, char **active_peers, const char *realname, int recursive);
+	int (*list_dirty)(db_conn_p conn, const std::set<std::string>& active_peers, const char *realname, int recursive);
 	void (*list_hint)(db_conn_p conn);
 	void (*list_files)(db_conn_p conn, filename_p filename);
 	textlist_p (*list_file)(db_conn_p conn, filename_p filename, const char *myname, peername_p peername,
@@ -75,7 +75,8 @@ struct db_conn_t {
 	void (*remove_dirty)(db_conn_p conn, peername_p peername, filename_p filename, int recursive);
 
 	textlist_p (*get_dirty_by_peer_match)(db_conn_p db, const char *myname, peername_p peername, int recursive,
-			const char *patlist[], int num, int (*match_func)(const char *file, filename_p pattern, int recursive));
+										  const std::set<std::string>& patlist,
+										  int (*match_func)(const char *file, filename_p pattern, int recursive));
 
 //    void        (*clear_dirty)     (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
 	void (*clear_operation)(db_conn_p conn, const char *myname, peername_p peername,
@@ -123,7 +124,7 @@ struct db_stmt_t {
 	void *private_data2;
 	db_conn_p db;
 	const char* (*get_column_text)(db_stmt_p vmx, int column);
-	const void* (*get_column_blob)(db_stmt_p vmx, int column);
+	const char* (*get_column_blob)(db_stmt_p vmx, int column);
 	int (*get_column_int)(db_stmt_p vmx, int column);
 	int (*next)(db_stmt_p stmt);
 	int (*close)(db_stmt_p stmt);

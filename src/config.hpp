@@ -268,7 +268,7 @@ extern int csync_server_child_pid;
 extern int csync_timestamps;
 extern int csync_new_force;
 
-extern char g_myhostname[];
+//extern char g_myhostname[];
 extern const char *csync_port;
 extern const char *csync_confdir;
 extern char *g_active_grouplist;

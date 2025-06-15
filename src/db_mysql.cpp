@@ -212,7 +212,7 @@ static int db_mysql_exec(db_conn_p conn, const char *sql) {
 	return rc > 0 ? -rc : rc;
 }
 
-static const void* db_mysql_stmt_get_column_blob(db_stmt_p stmt, int column) {
+static const char* db_mysql_stmt_get_column_blob(db_stmt_p stmt, int column) {
 	if (!stmt || !stmt->private_data2) {
 		return 0;
 	}
