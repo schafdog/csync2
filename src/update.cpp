@@ -33,6 +33,7 @@
 #include <signal.h>
 #include <time.h>
 #include <limits.h>
+#include <list>
 
 #include "update.hpp"
 #include "rsync.hpp"
@@ -1541,16 +1542,13 @@ int compare_files(filename_p filename, const char *pattern, int recursive) {
 	return 0;
 }
 
-static void csync_directory_add(textlist_p *directory_list, const char *directory) {
-	const char *pos = strrchr(directory, '/');
-	if (pos) {
-		size_t len = pos - directory;
-		char *dir_copy = static_cast<char*>(malloc(len + 1));
-		strncpy(dir_copy, directory, len);
-		dir_copy[len] = '\0';
-		csync_log(LOG_DEBUG, 2, "Directory time %s %s\n", dir_copy, directory);
-		textlist_add_new(directory_list, dir_copy, 0);
-		free(dir_copy);
+static void csync_directory_add(std::list<std::string>& dirlist, const std::string& filepath) {
+	std::string directory = filepath.substr(0, filepath.find_last_of('/')); 
+	if (directory.size() > 0) {
+		if (std::find(dirlist.begin(), dirlist.end(), directory) == dirlist.end()) {
+		csync_log(LOG_DEBUG, 2, "Directory time %s %s\n", directory.c_str(), filepath.c_str());
+			dirlist.push_front(directory);
+		}
 	}
 }
 
@@ -1638,7 +1636,7 @@ void csync_update_host(db_conn_p db, const std::string& myname, peername_p peern
 		return;
 	}
 	int rc = -1;
-	textlist_p directory_list = 0;
+	std::list<std::string> directory_list;
 	char *last_dir_deleted = NULL;
 	for (t = tl; t != 0; t = next_t) {
 		filename_p filename = t->value, other = t->value3;
@@ -1653,12 +1651,13 @@ void csync_update_host(db_conn_p db, const std::string& myname, peername_p peern
 				csync_error(0, "Connection closed on updating %s\n", filename);
 				break;
 			}
-			csync_directory_add(&directory_list, filename);
+			std::string fn_str(filename);
+			csync_directory_add(directory_list, fn_str);
 			if (other) {
-				csync_directory_add(&directory_list, other);
+				std::string other_str(other);
+				csync_directory_add(directory_list, other_str);
 			}
-//			if (S_ISDIR(st.st_mode))
-//				textlist_add_new(&directory_list, filename, 0);
+
 			last_tn = &(t->next);
 		} else {
 			/* File not found */
@@ -1707,17 +1706,16 @@ void csync_update_host(db_conn_p db, const std::string& myname, peername_p peern
 	textlist_free(tl_del);
 	rc = 0;
 	if (!(flags & FLAG_DRY_RUN))
-		for (t = directory_list; rc != CONN_CLOSE && t != 0; t = t->next) {
-			csync_log(LOG_DEBUG, 2, "SETTIME %s:%s\n", peername, t->value);
-			rc = csync_update_directory(conn, myname.c_str(), peername, t->value, t->intvalue, flags & FLAG_DRY_RUN);
+		for (const std::string& directory : directory_list) {
+			csync_log(LOG_DEBUG, 2, "SETTIME %s:%s\n", peername, directory.c_str());
+			rc = csync_update_directory(conn, myname.c_str(), peername, directory.c_str(), 0, flags & FLAG_DRY_RUN);
 			if (rc == CONN_CLOSE) {
-				csync_error(0, "Connection closed on setting time on directory %s\n", t->value);
+				csync_error(0, "Connection closed on setting time on directory %s\n", directory.c_str());
 				break;
 			}
 		}
 	else
 		csync_info(2, "Skipping directories due to dry run");
-	textlist_free(directory_list);
 
 	conn_printf(conn, "BYE\n");
 	read_conn_status(conn, 0, peername);
