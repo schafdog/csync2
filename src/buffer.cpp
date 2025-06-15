@@ -37,9 +37,9 @@ BUF_P buffer_init(void) {
 void buffer_resize(BUF_P handle, int new_size);
 
 BUF_P buffer_init_size(int size) {
-	BUF_P handle = (BUF_P)malloc(sizeof(*handle));
+	BUF_P handle = static_cast<BUF_P>(malloc(sizeof(*handle)));
 	handle->size = size;
-	handle->buffer = (char**)calloc(size, sizeof(void*));
+	handle->buffer = static_cast<char**>(calloc(size, sizeof(void*)));
 	handle->current = 0;
 	return handle;
 }
@@ -50,7 +50,7 @@ void buffer_resize(BUF_P handle, int new_size) {
 	int size = handle->size;
 	if (new_size <= size)
 		return;
-	handle->buffer = (char**)calloc(new_size, sizeof(*handle->buffer));
+	handle->buffer = static_cast<char**>(calloc(new_size, sizeof(*handle->buffer)));
 	if (old_buffer) {
 		memcpy(handle->buffer, old_buffer, size * sizeof(*handle->buffer));
 		free(old_buffer);
@@ -74,7 +74,7 @@ void buffer_add(BUF_P handle, char *string) {
 char* buffer_malloc(BUF_P handle, size_t length) {
 	char *out = NULL;
 	if (handle) {
-		out = (char*)malloc(length);
+		out = static_cast<char*>(malloc(length));
 		out[0] = 0;
 		buffer_add(handle, out);
 	}
@@ -93,7 +93,7 @@ char* buffer_strdup(BUF_P handle, const char *cpy) {
 char* buffer_quote(BUF_P handle, const char *cpy) {
 	char *out = NULL;
 	if (handle && cpy) {
-		out = (char*)malloc(strlen(cpy) + 3);
+		out = static_cast<char*>(malloc(strlen(cpy) + 3));
 		sprintf(out, "'%s'", cpy);
 		csync_log(LOG_DEBUG, 4, "QUOTE: %s => %s\n", cpy, out);
 		buffer_add(handle, out);
