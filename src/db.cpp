@@ -109,8 +109,8 @@ static void csync_db_maycommit(db_conn_p db) {
 	if (wait_length && (now - last_wait_cycle) > 10) {
 		SQL(db, "COMMIT", "COMMIT ");
 		if (wait_length) {
-			csync_info(2, "Waiting %d secs so others can lock the database (%d - %d)...\n", wait_length, (int )now,
-					(int )last_wait_cycle);
+			csync_info(2, "Waiting %d secs so others can lock the database (%d - %d)...\n", wait_length, static_cast<int>(now),
+					static_cast<int>(last_wait_cycle));
 			sleep(wait_length);
 		}
 		last_wait_cycle = 0;
@@ -248,11 +248,11 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 }
 
 static const char* csync_db_get_column_text(void *stmt, int column) {
-	return db_stmt_get_column_text((db_stmt_p)stmt, column);
+	return db_stmt_get_column_text(static_cast<db_stmt_p>(stmt), column);
 }
 
 static int csync_db_get_column_int(void *stmt, int column) {
-	return db_stmt_get_column_int((db_stmt_p) stmt, column);
+	return db_stmt_get_column_int(static_cast<db_stmt_p>(stmt), column);
 }
 
 int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue, const char ***pazColName) {
@@ -261,7 +261,7 @@ int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue, c
 	(void) pazValue;
 	(void) pazColName;
 
-	db_stmt_p stmt = (db_stmt_p)vmx;
+	db_stmt_p stmt = static_cast<db_stmt_p>(vmx);
 	int rc, busyc = 0;
 
 	csync_info(4, "Trying to fetch a row from the database.\n");

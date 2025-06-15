@@ -635,7 +635,7 @@ struct csync_command cmdtab[] = {
 	{ "ping", NO_PERM, 0, 0, NOP, NO, A_PING },
 	{ "hello", NO_PERM, 0, 0, NOP, NO, A_HELLO },
 	{ "bye", NO_PERM, 0, 0, NOP, NO, A_BYE },
-	{ 0, NO_PERM, 0, 0, NOP, NO, (enum action_t)0 } };
+	{ 0, NO_PERM, 0, 0, NOP, NO, static_cast<enum action_t>(0) } };
 
 /*
  * Loops (to cater for multihomed peers) through the address list returned by
@@ -671,22 +671,22 @@ static int verify_peername(db_conn_p db, const char *name, address_t *peeraddr) 
 
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
 		char ip_string[INET6_ADDRSTRLEN];
-		csync_info(2, "IP: %s\n", csync_inet_ntop((address_t* ) rp->ai_addr, ip_string, sizeof(ip_string)));
+		csync_info(2, "IP: %s\n", csync_inet_ntop(reinterpret_cast<address_t*>(rp->ai_addr), ip_string, sizeof(ip_string)));
 		/* IPv4 */
 		if (af == AF_INET && rp->ai_family == AF_INET
-				&& !memcmp(&((struct sockaddr_in*) rp->ai_addr)->sin_addr, &peeraddr->sa_in.sin_addr,
+				&& !memcmp(&(reinterpret_cast<struct sockaddr_in*>(rp->ai_addr))->sin_addr, &peeraddr->sa_in.sin_addr,
 						sizeof(struct in_addr)))
 			break;
 		/* IPv6 */
 		if (af == AF_INET6 && rp->ai_family == AF_INET6
-				&& !memcmp(&((struct sockaddr_in6*) rp->ai_addr)->sin6_addr, &peeraddr->sa_in6.sin6_addr,
+				&& !memcmp(&(reinterpret_cast<struct sockaddr_in6*>(rp->ai_addr))->sin6_addr, &peeraddr->sa_in6.sin6_addr,
 						sizeof(struct in6_addr)))
 			break;
 		/* peeraddr IPv6, but actually ::ffff:I.P.v.4,
 		 * and forward lookup returned IPv4 only */
 		if (af == AF_INET6 && rp->ai_family == AF_INET && try_mapped_ipv4
-				&& !memcmp(&( (struct sockaddr_in*) rp->ai_addr)->sin_addr,
-						   (unsigned char*) &peeraddr->sa_in6.sin6_addr + 12,
+				&& !memcmp(&(reinterpret_cast<struct sockaddr_in*>(rp->ai_addr))->sin_addr,
+						   reinterpret_cast<unsigned char*>(&peeraddr->sa_in6.sin6_addr) + 12,
 						   sizeof(struct in_addr)))
 			break;
 	}
@@ -767,7 +767,7 @@ static int setup_tag(const char *tag[32], char *line) {
 static void destroy_tag(const char *tag[32]) {
 	int i = 0;
 	for (i = 0; i < 32; i++)
-		free((void *) tag[i]);
+		free(const_cast<char*>(tag[i]));
 }
 // Works with both GCC and Clang
 #if defined(__GNUC__) || defined(__clang__)

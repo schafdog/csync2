@@ -138,7 +138,7 @@ static void db_postgres_close(db_conn_p conn) {
 		return;
 	if (!conn->private_data)
 		return;
-	f.PQfinish_fn((PGconn*)conn->private_data);
+	f.PQfinish_fn(static_cast<PGconn*>(conn->private_data));
 	conn->private_data = 0;
 }
 
@@ -147,7 +147,7 @@ static const char* db_postgres_errmsg(db_conn_p conn) {
 		return "(no connection)";
 	if (!conn->private_data)
 		return "(no private_data data in conn)";
-	return f.PQerrorMessage_fn((PGconn*)conn->private_data);
+	return f.PQerrorMessage_fn(static_cast<PGconn*>(conn->private_data));
 }
 
 static int db_postgres_exec(db_conn_p conn, const char *sql) {
@@ -160,7 +160,7 @@ static int db_postgres_exec(db_conn_p conn, const char *sql) {
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
-	res = f.PQexec_fn((PGconn*)conn->private_data, sql);
+	res = f.PQexec_fn(static_cast<PGconn*>(conn->private_data), sql);
 	conn->affected_rows = 0;
 
 	switch (f.PQresultStatus_fn(res)) {
@@ -185,8 +185,8 @@ static const char* db_postgres_stmt_get_column_blob(db_stmt_p stmt, int column) 
 	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
-	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private_data2;
+	result = static_cast<PGresult*>(stmt->private_data);
+	row_p = static_cast<int*>(stmt->private_data2);
 
 	if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
 		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(result));
@@ -202,8 +202,8 @@ static const char* db_postgres_stmt_get_column_text(db_stmt_p stmt, int column) 
 	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
-	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private_data2;
+	result = static_cast<PGresult*>(stmt->private_data);
+	row_p = static_cast<int*>(stmt->private_data2);
 
 	if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
 		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(result));
@@ -219,8 +219,8 @@ static int db_postgres_stmt_get_column_int(db_stmt_p stmt, int column) {
 	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
-	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private_data2;
+	result = static_cast<PGresult*>(stmt->private_data);
+	row_p = static_cast<int*>(stmt->private_data2);
 
 	if (*row_p >= f.PQntuples_fn(result) || *row_p < 0) {
 		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(result));
@@ -236,8 +236,8 @@ static int db_postgres_stmt_next(db_stmt_p stmt) {
 	if (!stmt || !stmt->private_data || !stmt->private_data2) {
 		return 0;
 	}
-	result = (PGresult*) stmt->private_data;
-	row_p = (int*) stmt->private_data2;
+	result = static_cast<PGresult*>(stmt->private_data);
+	row_p = static_cast<int*>(stmt->private_data2);
 
 	(*row_p)++;
 	if (*row_p >= f.PQntuples_fn(result))
@@ -247,7 +247,7 @@ static int db_postgres_stmt_next(db_stmt_p stmt) {
 }
 
 static int db_postgres_stmt_close(db_stmt_p stmt) {
-	PGresult *res = (PGresult*)stmt->private_data;
+	PGresult *res = static_cast<PGresult*>(stmt->private_data);
 
 	f.PQclear_fn(res);
 	free(stmt->private_data2);
@@ -344,7 +344,7 @@ static const char* db_postgres_escape(db_conn_p conn, const char *string) {
 	}
 	size_t length = strlen(string);
 	char *escaped_buffer = ringbuffer_malloc(2 * length + 1);
-	f.PQescapeStringConn_fn((PGconn*)conn->private_data, escaped_buffer, string, length, &rc);
+	f.PQescapeStringConn_fn(static_cast<PGconn*>(conn->private_data), escaped_buffer, string, length, &rc);
 
 	return escaped_buffer;
 }
@@ -384,7 +384,7 @@ static int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
-	result = f.PQexec_fn((PGconn*)conn->private_data, sql);
+	result = f.PQexec_fn(static_cast<PGconn*>(conn->private_data), sql);
 
 	if (result == NULL) {
 		csync_fatal("No memory for result\n");
@@ -401,13 +401,13 @@ static int db_postgres_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_
 		return DB_ERROR;
 	}
 
-	row_p = (int*)malloc(sizeof(*row_p));
+	row_p = static_cast<int*>(malloc(sizeof(*row_p)));
 	if (row_p == NULL) {
 		csync_fatal("No memory for row\n");
 	}
 	*row_p = -1;
 
-	db_stmt_p stmt = (db_stmt_p)malloc(sizeof(*stmt));
+	db_stmt_p stmt = static_cast<db_stmt_p>(malloc(sizeof(*stmt)));
 	if (stmt == NULL) {
 		csync_fatal("No memory for stmt\n");
 	}
@@ -431,7 +431,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	PGconn *pg_conn;
 	char *host = NULL, *user = NULL, *pass = NULL, *database = NULL;
 	unsigned int port = 5432; /* default postgres port */
-	char *db_url = (char*)malloc(strlen(file) + 1);
+	char *db_url = static_cast<char*>(malloc(strlen(file) + 1));
 	char *pg_conn_info;
 
 	db_postgres_dlopen();
@@ -508,7 +508,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 		}
 	}
 
-	db_conn_p conn = (db_conn_p)calloc(1, sizeof(*conn));
+	db_conn_p conn = static_cast<db_conn_p>(calloc(1, sizeof(*conn)));
 	if (conn == NULL) {
 		csync_fatal("No memory for conn\n");
 	}

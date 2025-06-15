@@ -407,7 +407,7 @@ int csync_check_pure(filename_p filename) {
 		return cached.has_symlink;
 
 	{ /* new block for myfilename[] */
-		char *myfilename = (char*)malloc(dir_len + 1);
+		char *myfilename = static_cast<char*>(malloc(dir_len + 1));
 		char *to_be_cached;
 		int has_symlink = 0;
 		memcpy(myfilename, filename, dir_len);
@@ -579,7 +579,7 @@ int csync_check_dir(db_conn_p db, const char *directory, int flags) {
 			on_cygwin_lowercase(namelist[n]->d_name);
 			if (strcmp(namelist[n]->d_name, ".")
 					&& strcmp(namelist[n]->d_name, "..")) {
-				char *fn = (char*)malloc(strlen(directory) + strlen(namelist[n]->d_name) + 2);
+				char *fn = static_cast<char*>(malloc(strlen(directory) + strlen(namelist[n]->d_name) + 2));
 				sprintf(fn, "%s/%s", !strcmp(directory, "/") ? "" : directory,
 						namelist[n]->d_name);
 				if (csync_check_mod(db, fn, flags, &count_dirty, &g))

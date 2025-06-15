@@ -37,7 +37,7 @@
 #define xxprintf(...) \
 	{ \
 	int t = snprintf(NULL, 0, ##__VA_ARGS__);	\
-	elements[elidx]=(char*)alloca(t+1);		\
+	elements[elidx]=static_cast<char*>(alloca(t+1));		\
 	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
 	len+=t; elidx++; }
 
@@ -57,10 +57,10 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 	xxprintf("v%d", version);
 
 	//	if ( !S_ISLNK(st->st_mode) && !S_ISDIR(st->st_mode))
-	xxprintf(":mtime=%llu", flags & IGNORE_MTIME ? (long long)0 : (long long)st->st_mtime);
+	xxprintf(":mtime=%llu", flags & IGNORE_MTIME ? static_cast<long long>(0) : static_cast<long long>(st->st_mtime));
 
 	if (!csync_ignore_mod)
-		xxprintf(":mode=%d", (int )st->st_mode);
+		xxprintf(":mode=%d", static_cast<int>(st->st_mode));
 
 	char user[100];
 	int rc = uid_to_name(st->st_uid, user, 100, NULL);
@@ -68,7 +68,7 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 		if (!rc && (flags & SET_USER)) {
 			xxprintf(":user=%s", user);
 		} else {
-			xxprintf(":uid=%d", (int )st->st_uid);
+			xxprintf(":uid=%d", static_cast<int>(st->st_uid));
 		}
 	}
 
@@ -78,12 +78,12 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 		if (!rc && (flags & SET_GROUP)) {
 			xxprintf(":group=%s", group);
 		} else {
-			xxprintf(":gid=%d", (int )st->st_gid);
+			xxprintf(":gid=%d", static_cast<int>(st->st_gid));
 		}
 	}
 
 	if (S_ISREG(st->st_mode)) {
-		xxprintf(":type=reg:size=%llu", (long long )st->st_size);
+		xxprintf(":type=reg:size=%llu", static_cast<long long>(st->st_size));
 		// TODO would be nice with the real count,
 		// but for now just an indicator for hard links
 
@@ -94,10 +94,10 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 		xxprintf(":type=dir");
 
 	if (S_ISCHR(st->st_mode))
-		xxprintf(":type=chr:dev=%d", (int )st->st_rdev);
+		xxprintf(":type=chr:dev=%d", static_cast<int>(st->st_rdev));
 
 	if (S_ISBLK(st->st_mode))
-		xxprintf(":type=blk:dev=%d", (int )st->st_rdev);
+		xxprintf(":type=blk:dev=%d", static_cast<int>(st->st_rdev));
 
 	if (S_ISFIFO(st->st_mode))
 		xxprintf(":type=fifo");
@@ -124,7 +124,7 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 
 	if (buffer)
 		free(buffer);
-	buffer = (char*)malloc(len);
+	buffer = static_cast<char*>(malloc(len));
 
 	for (i = j = 0; j < elidx; j++)
 		for (k = 0; elements[j][k]; k++)
@@ -193,7 +193,7 @@ int csync_cmpchecktxt_component(const char *a, const char *b, int flags) {
 }
 
 time_t csync_checktxt_get_time(const char *checktxt) {
-	return (time_t) csync_checktxt_get_long_long(checktxt, ":mtime=");
+	return static_cast<time_t>(csync_checktxt_get_long_long(checktxt, ":mtime="));
 }
 
 long long csync_checktxt_get_size(const char *checktxt) {

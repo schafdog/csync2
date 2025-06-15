@@ -122,7 +122,7 @@ enum {
 
 #define DEFAULT_PORT "30865" 
 #define ERROR_DIRTY_STR "File is also marked dirty here!"
-#define ERROR_DIRTY_LEN ((int)sizeof ERROR_DIRTY_STR - 1)
+#define ERROR_DIRTY_LEN (static_cast<int>(sizeof ERROR_DIRTY_STR) - 1)
 
 #include "error.hpp"
 

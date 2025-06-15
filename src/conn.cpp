@@ -77,7 +77,7 @@ static struct sockaddr * csync_lookup_addr(const char *hostname, const char *por
 	if (result == NULL) {
 		return NULL;
 	}
-    struct sockaddr *addr_copy = (struct sockaddr*)malloc(result->ai_addrlen);
+    struct sockaddr *addr_copy = static_cast<struct sockaddr*>(malloc(result->ai_addrlen));
     if (!addr_copy) {
         freeaddrinfo(result);
         return NULL;
@@ -105,10 +105,10 @@ static socklen_t get_sockaddr_len(const struct sockaddr *sa) {
 // Converts a sockaddr to a human-readable IP string
 static const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_t outlen) {
     if (sa->sa_family == AF_INET) {
-        const struct sockaddr_in *sin = (const struct sockaddr_in *)sa;
+        const struct sockaddr_in *sin = reinterpret_cast<const struct sockaddr_in *>(sa);
         return inet_ntop(AF_INET, &(sin->sin_addr), out, outlen);
     } else if (sa->sa_family == AF_INET6) {
-        const struct sockaddr_in6 *sin6 = (const struct sockaddr_in6 *)sa;
+        const struct sockaddr_in6 *sin6 = reinterpret_cast<const struct sockaddr_in6 *>(sa);
         return inet_ntop(AF_INET6, &(sin6->sin6_addr), out, outlen);
     } else {
         snprintf(out, outlen, "Unknown AF: %d", sa->sa_family);
@@ -207,7 +207,7 @@ int conn_set(int infd, int outfd) {
 	// when running in server mode, this has been done already
 	// in csync2.c with more restrictive error handling..
 	// FIXME don't even try in "ssh" mode
-	if (setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, (socklen_t) sizeof(on)) < 0)
+	if (setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, static_cast<socklen_t>(sizeof(on))) < 0)
 		csync_error(1, "Can't set TCP_NODELAY option on TCP socket (outfd): %d.\n", outfd);
 
 	return 0;
@@ -265,8 +265,8 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 		gnutls_certificate_server_set_request(conn_tls_session, GNUTLS_CERT_REQUIRE);
 	}
 
-	gnutls_transport_set_ptr2(conn_tls_session, (gnutls_transport_ptr_t) (size_t) conn_fd_in,
-			(gnutls_transport_ptr_t) (size_t) conn_fd_out);
+	gnutls_transport_set_ptr2(conn_tls_session, reinterpret_cast<gnutls_transport_ptr_t>(static_cast<size_t>(conn_fd_in)),
+			reinterpret_cast<gnutls_transport_ptr_t>(static_cast<size_t>(conn_fd_out)));
 
 	err = gnutls_handshake(conn_tls_session);
 	switch (err) {
@@ -314,7 +314,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 	}
 
 	{
-		char *certdata = (char*)malloc(2 * peercerts[0].size + 1);
+		char *certdata = static_cast<char*>(malloc(2 * peercerts[0].size + 1));
 		size_t size;
 		for (size = 0; size < peercerts[0].size; size++)
 			sprintf(&certdata[2 * size], "%02X", peercerts[0].data[size]);
@@ -323,7 +323,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 		SQL_BEGIN(db, "Checking peer x509 certificate.",
 				"SELECT certdata FROM x509_cert WHERE peername = '%s'",
 				url_encode(peername))
-{				if (!strcmp((const char*)SQL_V(0), certdata))
+{				if (!strcmp(static_cast<const char*>(SQL_V(0)), certdata))
 				cert_is_ok = 1;
 				else
 				cert_is_ok = 0;
@@ -589,7 +589,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	*buffer = NULL;
 	if (chunk_size > 0) {
 		size_t bytes_received = 0;
-		*buffer = (char*)malloc(chunk_size);
+		*buffer = static_cast<char*>(malloc(chunk_size));
 		while (bytes_received < chunk_size) {
 			ssize_t n = recv(sockfd, *buffer + bytes_received, chunk_size - bytes_received, 0);
 			csync_debug(3, "Read %ld bytes from peer", n);
@@ -604,7 +604,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	char tmp[2];
 	recv(sockfd, tmp, 2, 0);
 	csync_debug(3, "Chunk read %zx %lu\n", *size, *size);
-	return (ssize_t) *size;
+	return static_cast<ssize_t>(*size);
 }
 
 int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
@@ -652,7 +652,7 @@ int conn_read_file_chunked(int sockfd, FILE *file) {
 /* Rewritten not to mask errors, read in batch */
 ssize_t conn_read(int fd, char *buf, size_t count) {
 	size_t size = 0;
-	char *char_buf = (char *)buf;  /* Cast once to avoid repeated void* arithmetic */
+	char *char_buf = static_cast<char *>(buf);  /* Cast once to avoid repeated void* arithmetic */
 	while ((size < count)) {
 		ssize_t bytes_read = conn_raw_read(fd, char_buf + size, count - size);
 		if (bytes_read < 0)
@@ -744,7 +744,7 @@ void conn_printf(int fd, const char *fmt, ...) {
 
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = (char*)alloca(size + 1);
+	buffer = static_cast<char*>(alloca(size + 1));
 	va_end(ap);
 
 	va_start(ap, fmt);
@@ -765,7 +765,7 @@ static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, 
 	csync_debug(2, "conn_printf_cmd_filepath: unused parameters cmd %s file %s key_enc %s", cmd, file, key_enc);
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
-	buffer = (char*)alloca(size + 1);
+	buffer = static_cast<char*>(alloca(size + 1));
 	va_end(ap);
 
 	va_start(ap, fmt);
@@ -792,7 +792,7 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 		}
 	}
 	s[i] = 0;
-	return rc ? rc : (ssize_t) i;
+	return rc ? rc : static_cast<ssize_t>(i);
 }
 
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {

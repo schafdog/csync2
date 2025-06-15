@@ -28,7 +28,7 @@
 
 static char* my_get_current_dir_name(void) {
 #if defined __CYGWIN__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __NetBSD__ || defined __DARWIN_C_LEVEL
-	char *r = (char*)malloc(1024);
+	char *r = static_cast<char*>(malloc(1024));
 	if (!getcwd(r, 1024))
 		strcpy(r, "/__PATH_TO_LONG__");
 	return r;

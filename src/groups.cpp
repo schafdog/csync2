@@ -91,7 +91,7 @@ static int csync_step_into(const char *file, int compare_mode) {
 			if (p->iscompare && !compare_mode)
 				continue;
 			if ((p->pattern[0] == '/' || p->pattern[0] == '%') && p->isinclude) {
-				char *t = (char*)malloc(strlen(p->pattern) + 1);
+				char *t = static_cast<char*>(malloc(strlen(p->pattern) + 1));
 				char *l;
 				int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
 				strcpy(t, p->pattern);
@@ -176,7 +176,7 @@ struct peer* csync_find_peers(const char *file, const char *thispeer) {
 			while (plist && plist[i].peername)
 				if (!strcmp(plist[i++].peername, h->hostname))
 					goto next_host;
-			plist = (struct peer*)realloc(plist, sizeof(struct peer) * (++pl_size + 1));
+			plist = static_cast<struct peer*>(realloc(plist, sizeof(struct peer) * (++pl_size + 1)));
 			plist[pl_size - 1].peername = h->hostname;
 			plist[pl_size - 1].myname = g->myname;
 			plist[pl_size].peername = 0;

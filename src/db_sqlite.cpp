@@ -103,7 +103,7 @@ static void db_sqlite_close(db_conn_p conn) {
 		return;
 	if (!conn->private_data)
 		return;
-	f.sqlite3_close_fn((sqlite3*)conn->private_data);
+	f.sqlite3_close_fn(static_cast<sqlite3*>(conn->private_data));
 	conn->private_data = 0;
 }
 
@@ -112,7 +112,7 @@ static const char* db_sqlite_errmsg(db_conn_p conn) {
 		return "(no connection)";
 	if (!conn->private_data)
 		return "(no private data in conn)";
-	return f.sqlite3_errmsg_fn((sqlite3*)conn->private_data);
+	return f.sqlite3_errmsg_fn(static_cast<sqlite3*>(conn->private_data));
 }
 
 static int db_sqlite_exec(db_conn_p conn, const char *sql) {
@@ -124,7 +124,7 @@ static int db_sqlite_exec(db_conn_p conn, const char *sql) {
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
-	rc = f.sqlite3_exec_fn((sqlite3*)conn->private_data, sql, 0, 0, 0);
+	rc = f.sqlite3_exec_fn(static_cast<sqlite3*>(conn->private_data), sql, 0, 0, 0);
 	return db_sqlite_error_map(rc);
 }
 
@@ -132,33 +132,33 @@ static const char* db_sqlite_stmt_get_column_text(db_stmt_p stmt, int column) {
 	if (!stmt || !stmt->private_data) {
 		return 0;
 	}
-	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt*)stmt->private_data;
+	sqlite3_stmt *sqlite_stmt = static_cast<sqlite3_stmt*>(stmt->private_data);
 	const unsigned char *result = f.sqlite3_column_text_fn(sqlite_stmt, column);
 	/* error handling */
-	return (const char*) result;
+	return reinterpret_cast<const char*>(result);
 }
 
 #if defined(HAVE_SQLITE3)
 static const char *db_sqlite_stmt_get_column_blob(db_stmt_p stmtx, int col) {
-	sqlite3_stmt *stmt = (sqlite3_stmt*)stmtx->private_data;
-	return (const char *) f.sqlite3_column_blob_fn(stmt, col);
+	sqlite3_stmt *stmt = static_cast<sqlite3_stmt*>(stmtx->private_data);
+	return static_cast<const char*>(f.sqlite3_column_blob_fn(stmt, col));
 }
 #endif
 
 static int db_sqlite_stmt_get_column_int(db_stmt_p stmt, int column) {
-	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt*)stmt->private_data;
+	sqlite3_stmt *sqlite_stmt = static_cast<sqlite3_stmt*>(stmt->private_data);
 	int rc = f.sqlite3_column_int_fn(sqlite_stmt, column);
 	return db_sqlite_error_map(rc);
 }
 
 static int db_sqlite_stmt_next(db_stmt_p stmt) {
-	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt*)stmt->private_data;
+	sqlite3_stmt *sqlite_stmt = static_cast<sqlite3_stmt*>(stmt->private_data);
 	int rc = f.sqlite3_step_fn(sqlite_stmt);
 	return db_sqlite_error_map(rc);
 }
 
 static int db_sqlite_stmt_close(db_stmt_p stmt) {
-	sqlite3_stmt *sqlite_stmt = (sqlite3_stmt*)stmt->private_data;
+	sqlite3_stmt *sqlite_stmt = static_cast<sqlite3_stmt*>(stmt->private_data);
 	int rc = f.sqlite3_finalize_fn(sqlite_stmt);
 	free(stmt);
 	return db_sqlite_error_map(rc);
@@ -167,7 +167,7 @@ static int db_sqlite_stmt_close(db_stmt_p stmt) {
 static char* db_my_escape(const char *string) {
 	if (string == NULL)
 		return NULL;
-	char *escaped = (char*)malloc(strlen(string) * 2 + 1);
+	char *escaped = static_cast<char*>(malloc(strlen(string) * 2 + 1));
 	const char *p = string;
 	char *e = escaped;
 	while (*p != 0) {
@@ -257,10 +257,10 @@ static int db_sqlite_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p,
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
-	db_stmt_p stmt = (db_stmt_p)malloc(sizeof(*stmt));
+	db_stmt_p stmt = static_cast<db_stmt_p>(malloc(sizeof(*stmt)));
 	sqlite3_stmt *sqlite_stmt = 0;
 	/* TODO avoid strlen, use configurable limit? */
-	rc = f.sqlite3_prepare_v2_fn((sqlite3*)conn->private_data, sql, strlen(sql), &sqlite_stmt, pptail);
+	rc = f.sqlite3_prepare_v2_fn(static_cast<sqlite3*>(conn->private_data), sql, strlen(sql), &sqlite_stmt, pptail);
 	if (rc != SQLITE_OK)
 		return db_sqlite_error_map(rc);
 	stmt->private_data = sqlite_stmt;
@@ -283,7 +283,7 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p) {
 	if (rc != SQLITE_OK) {
 		return db_sqlite_error_map(rc);
 	};
-	db_conn_p conn = (db_conn_p)calloc(1, sizeof(*conn));
+	db_conn_p conn = static_cast<db_conn_p>(calloc(1, sizeof(*conn)));
 	if (conn == NULL) {
 		return DB_ERROR;
 	}

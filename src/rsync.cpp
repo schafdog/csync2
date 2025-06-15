@@ -83,7 +83,7 @@ static size_t strlcpy(char *d, const char *s, size_t bufsize)
 /* This has been taken from rsync sources: receiver.c */
 
 #define TMPNAME_SUFFIX ".XXXXXX"
-#define TMPNAME_SUFFIX_LEN ((int)sizeof TMPNAME_SUFFIX - 1)
+#define TMPNAME_SUFFIX_LEN (static_cast<int>(sizeof TMPNAME_SUFFIX) - 1)
 #define MAX_UNIQUE_NUMBER 999999
 #define MAX_UNIQUE_LOOP 100
 
@@ -142,7 +142,7 @@ static int get_tmpname(char *fnametmp, const char *fname, int make_unique) {
 
 	if (make_unique) {
 		if (!counter_limit) {
-			counter_limit = (unsigned) getpid() + MAX_UNIQUE_LOOP;
+			counter_limit = static_cast<unsigned>(getpid()) + MAX_UNIQUE_LOOP;
 			if (counter_limit > MAX_UNIQUE_NUMBER || counter_limit < MAX_UNIQUE_LOOP)
 				counter_limit = MAX_UNIQUE_LOOP;
 		}
@@ -374,7 +374,7 @@ int csync_recv_file(int conn, FILE *out) {
 
 char *to_hex(const char str[], size_t length, char result[]) {
     for (size_t index = 0; index < length ; index++) {
-        sprintf(result+index*2, "%02x", (unsigned char) str[index]);
+        sprintf(result+index*2, "%02x", static_cast<unsigned char>(str[index]));
     }
 	return result;
 }
@@ -435,7 +435,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	if (sig_file) {
 		fflush(sig_file);
 		ssize_t size_tell = ftell(sig_file);
-		if ((ssize_t) size != size_tell) {
+		if (static_cast<ssize_t>(size) != size_tell) {
 			csync_info(2, "rs_check: Signature size differs: local=%d, peer=%Ld\n", ftell(sig_file), size);
 			found_diff = 1;
 		}
@@ -679,7 +679,7 @@ int csync_rs_patch(int conn, filename_p filename) {
 
     if (winfh == INVALID_HANDLE_VALUE) {
       csync_error(0, "Win32 I/O Error %d in rsync-patch: %s\n",
-		  (int)GetLastError(), winfilename);
+		  static_cast<int>(GetLastError()), winfilename);
       errno = EACCES;
       rsync_error(errno, winfilename, 0, 0, 0);
     }

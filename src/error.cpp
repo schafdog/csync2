@@ -49,7 +49,7 @@ void csync_printtime(void) {
 			strftime(ftbuffer, 128, "%Y-%m-%d %H:%M:%S %Z (GMT%z)", localtime(&now));
 
 			if (csync_timestamp_out)
-				fprintf(csync_timestamp_out, "<%d> TIMESTAMP: %s\n", (int) getpid(), ftbuffer);
+				fprintf(csync_timestamp_out, "<%d> TIMESTAMP: %s\n", static_cast<int>(getpid()), ftbuffer);
 
 			if (csync_timestamps) {
 				if (csync_server_child_pid)
@@ -69,7 +69,7 @@ void csync_printtotaltime(void) {
 		csync_printtime();
 
 		if (csync_timestamp_out)
-			fprintf(csync_timestamp_out, "<%d> TOTALTIME: %d:%02d:%02d\n", (int) getpid(), seconds / (60 * 60),
+			fprintf(csync_timestamp_out, "<%d> TOTALTIME: %d:%02d:%02d\n", static_cast<int>(getpid()), seconds / (60 * 60),
 					(seconds / 60) % 60, seconds % 60);
 
 		if (csync_timestamps) {

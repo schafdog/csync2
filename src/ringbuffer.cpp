@@ -57,7 +57,7 @@ void ringbuffer_add(char *string, free_fn_t free_fn) {
 
 char* ringbuffer_malloc(size_t length) {
 	char *out;
-	out = (char*)malloc(length);
+	out = static_cast<char*>(malloc(length));
 	out[0] = 0;
 
 	ringbuffer_add(out, 0);
