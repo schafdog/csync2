@@ -60,10 +60,6 @@
 #include "action.hpp"
 #include "checktxt.hpp"
 
-int csync_start(int mode, int flags, int argc, char *argv[], update_func update_func,
-				int listenfd, int cmd_db_version, int cmd_ip_version);
-
-
 #ifdef REAL_DBDIR
 #  undef DBDIR
 #  define DBDIR REAL_DBDIR

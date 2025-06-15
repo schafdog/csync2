@@ -759,8 +759,8 @@ static int setup_tag(const char *tag[32], char *line) {
 #pragma GCC diagnostic push
 #if defined(__DARWIN_C_LEVEL) 
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
-#else
-#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+//#else
+//#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 #endif
 #endif
 
