@@ -9,6 +9,7 @@ int csync_redis_check_connection(void);
 
 time_t csync_redis_get(const char *key);
 time_t csync_redis_get_custom(const char *key, const char *domain);
+time_t csync_redis_get_custom(const std::string& key, const std::string& domain);
 
 int csync_redis_set(const char *key, const char *domain, const char *value, int nx, int expire);
 int csync_redis_set_int(const char *key, const char *domain, int number, int nx, int expire);

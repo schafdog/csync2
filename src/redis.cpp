@@ -89,6 +89,11 @@ static const char* redis_str(redisReply *reply) {
 	return reply ? reply->str : "<no response>";
 }
 
+time_t csync_redis_get_custom(const std::string& key, const std::string& key domain) {
+	return csync_redis_get_custom(key.c_str(), domain.c_str());
+}
+
+
 time_t csync_redis_get_custom(const char *key, const char *domain) {
 	if (redis_context == NULL)
 		return 0;
