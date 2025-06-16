@@ -38,7 +38,7 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	const struct csync_group_action_pattern *p = NULL;
 	const struct csync_group_action_command *c = NULL;
 
-	while ((g = csync_find_next(g, filename, 0))) {
+	while ((g = csync_find_next(g, filename.c_str(), 0))) {
 		for (a = g->action; a; a = a->next) {
 			if (!islocal && a->do_local_only)
 				continue;
@@ -48,10 +48,10 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 				goto found_matching_pattern;
 			for (p = a->pattern; p; p = p->next) {
 				const char *prefix = prefixsubst(p->pattern);
-				csync_log(LOG_DEBUG, 1, "File pattern: %s => %s ", p->pattern,
+				csync_debug(1, "File pattern: %s => %s ", p->pattern,
 						prefix);
 				int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
-				if (!fnmatch(prefix, filename,
+				if (!fnmatch(prefix, filename.c_str(),
 				FNM_LEADING_DIR | fnm_pathname))
 					goto found_matching_pattern;
 			}
@@ -101,7 +101,7 @@ static void csync_run_single_command(db_conn_p db, const char *command,
 		assert(strlen(real_command) + 1 < len);
 	}
 
-	csync_log(LOG_INFO, 1, "Running '%s' ...\n", real_command);
+	csync_info(1, "Running '%s' ...\n", real_command);
 
 	pid = fork();
 	if (!pid) {

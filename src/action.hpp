@@ -20,11 +20,8 @@
 
 #ifndef CSYNC2_ACTION_H
 #define CSYNC2_ACTION_H 1
-
+#include "csync2.hpp"
 #include "db_api.hpp"
-
-/* Forward declarations */
-typedef const char * filename_p;
 
 /* action.c - Action scheduling and execution */
 extern void  csync_schedule_commands(db_conn_p db, filename_p filename, int islocal);
