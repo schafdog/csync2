@@ -209,14 +209,14 @@ static textlist_p db_sql_non_dirty_files_match(db_conn_p db, const char *pattern
 
 static textlist_p db_sql_get_dirty_hosts(db_conn_p db) {
 	textlist_p tl = 0;
-	csync_log(LOG_DEBUG, 3, "get dirty host\n");
+	csync_debug(3, "get dirty host\n");
 	SQL_BEGIN(db, "Get hosts from dirty table",
 			"SELECT peername FROM dirty WHERE myname = '%s' "
 			"AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername",
 			g_myhostname
 	)
 {			textlist_add(&tl, db_decode(SQL_V(0)), 0);
-			csync_log(LOG_DEBUG, 3, "dirty host %s \n", tl->value);
+			csync_debug(3, "dirty host %s \n", tl->value);
 		}SQL_END;
 
 	return tl;
@@ -438,7 +438,7 @@ static textlist_p db_sql_list_file(db_conn_p db, filename_p filename, const char
 {			if ( csync_match_file_host(db_decode(SQL_V(1)),
 							myhostname, peername, 0) ) {
 				textlist_add2( &tl, SQL_V(0), SQL_V(1), 0);
-				csync_log(LOG_DEBUG, 2, "db_sql_list_file  %s:%s\n", peername, filename);
+				csync_debug(2, "db_sql_list_file  %s:%s\n", peername, filename);
 			}
 		}SQL_END;
 
@@ -456,7 +456,7 @@ static int db_sql_move_file(db_conn_p db, filename_p filename, const char *newna
 		"WHERE filename = '%s' or filename like '%s/%%'";
 	ASPRINTF(&update_sql, update_sql_format,
 			 newname_encoded, filename_length+1, filename_encoded, filename_encoded);
-	csync_log(LOG_DEBUG, 1, "SQL MOVE: %s\n", update_sql);
+	csync_debug(1, "SQL MOVE: %s\n", update_sql);
 	SQL(db, "Update moved files in DB ", update_sql_format,
 		newname_encoded, filename_length+1, filename_encoded, filename_encoded);
 	free(update_sql);
@@ -631,7 +631,7 @@ static textlist_p db_sql_get_dirty_by_peer_match(db_conn_p db, const char *myhos
 		int forced = forced_str ? atoi(forced_str) : 0;
 		int found = 0;
 		for (std::string pattern : patlist) {
-			csync_log(LOG_DEBUG, 3, "compare file with pattern %s\n", pattern.c_str());
+			csync_debug(3, "compare file with pattern %s\n", pattern.c_str());
 			if (get_dirty_by_peer == NULL || get_dirty_by_peer(filename, pattern.c_str(), recursive)) {
 				textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
 				found = 1;
@@ -784,7 +784,7 @@ static int db_sql_check_delete(db_conn_p db, const char *file, int recursive, in
 	csync_info(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
 	const char *file_encoded = db_escape(db, file);
 	char *where_rec = csync_generate_recursive_sql(file_encoded, recursive, 0, 1);
-	csync_log(LOG_DEBUG, 3, "file %s encoded %s. Hostname: %s \n", file, file_encoded, g_myhostname);
+	csync_debug(3, "file %s encoded %s. Hostname: %s \n", file, file_encoded, g_myhostname);
 
 	char *last_dir_deleted = NULL;
 	SQL_BEGIN(db, "Checking for removed files - check_delete",
@@ -812,7 +812,7 @@ static int db_sql_check_delete(db_conn_p db, const char *file, int recursive, in
 	for (t = tl; t != 0; t = t->next) {
 		if (!init_run) {
 			std::set<string> peerlist;
-			//csync_log(LOG_DEBUG, 0, "check_dirty (rm): before mark (all) \n");
+			//csync_debug(0, "check_dirty (rm): before mark (all) \n");
 			csync_mark(db, t->value, 0, peerlist, OP_RM, t->value2, t->value3, t->value4, t->intvalue, now);
 			count_deletes++;
 		}

@@ -60,7 +60,7 @@ static void *dl_handle;
 
 static void db_sqlite_dlopen(void)
 {
-    csync_log(LOG_DEBUG, 3, "Opening shared library libsqlite.so\n");
+    csync_debug(3, "Opening shared library libsqlite.so\n");
 
     dl_handle = dlopen("libsqlite.so", RTLD_LAZY);
     if (dl_handle == NULL) {
@@ -71,7 +71,7 @@ static void db_sqlite_dlopen(void)
 			dlerror());
 	}
     }
-    csync_log(LOG_DEBUG, 3, "Opening shared library libsqlite.so\n");
+    csync_debug(3, "Opening shared library libsqlite.so\n");
 
     LOOKUP_SYMBOL(dl_handle, sqlite_open);
     LOOKUP_SYMBOL(dl_handle, sqlite_close);

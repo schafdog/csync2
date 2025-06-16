@@ -24,9 +24,6 @@
 #include <sys/stat.h>
 #include "db_api.hpp"
 
-/* Forward declarations */
-typedef const char * filename_p;
-
 /* db.c - Database operations and SQL macros */
 extern db_conn_p csync_db_open(const char *file);
 extern void csync_db_close(db_conn_p db);

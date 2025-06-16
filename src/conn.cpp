@@ -125,12 +125,12 @@ static int conn_connect(peername_p myhostname, peername_p peername, int ip_versi
 		if (!strcmp(peername, p->name)) {
 			peername = p->host;
 			port = p->port;
-			csync_log(LOG_DEBUG, 2, "Using alternative port to %s:%s \n", peername, port);
+			csync_debug(2, "Using alternative port to %s:%s \n", peername, port);
 			break;
 		}
 		p = p->next;
 	}
-	csync_log(LOG_DEBUG, 2, "Connecting to %s:%s \n", peername, port);
+	csync_debug(2, "Connecting to %s:%s \n", peername, port);
 
 	sfd = socket(ip_version, SOCK_STREAM, 0);
 	if (sfd == -1) {
@@ -162,7 +162,7 @@ static int conn_connect(peername_p myhostname, peername_p peername, int ip_versi
 		csync_error(0, "Failed to connect to peer %s:%s: %d, %s\n", peername, port, errno, strerror(errno));
 		return -1;
 	}
-	csync_log(LOG_DEBUG, 2, "Connected to %s:%s \n", peername, port);
+	csync_debug(2, "Connected to %s:%s \n", peername, port);
 	return sfd;
 }
 
@@ -330,7 +330,7 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 			}SQL_END;
 
 		if (cert_is_ok < 0) {
-			csync_log(LOG_DEBUG, 1, "Adding peer x509 certificate to db: %s\n", certdata);
+			csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
 			SQL(db, "Adding peer x509 sha1 hash to database.",
 					"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')", url_encode(peername),
 					url_encode(certdata));
@@ -528,7 +528,7 @@ ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 		csync_error(0, "Failed to content-length: '%s'\n", buffer);
 	}
 
-	csync_log(LOG_DEBUG, 2, "Content length in buffer: '%s' size: %lld rc: %d (%s)\n", buffer, *size, rc, typestr);
+	csync_debug(2, "Content length in buffer: '%s' size: %lld rc: %d (%s)\n", buffer, *size, rc, typestr);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
 		return -1;

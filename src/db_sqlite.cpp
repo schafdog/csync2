@@ -59,7 +59,7 @@ static void *dl_handle;
 #define SO_FILE "libsqlite3" SO_FILE_EXT
 
 static void db_sqlite3_dlopen(void) {
-	csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
+	csync_debug(3, "Opening shared library %s\n", SO_FILE);
 
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL) {
@@ -67,7 +67,7 @@ static void db_sqlite3_dlopen(void) {
 				"Could not open %s: %s\nPlease install sqlite3 client library (libsqlite3) or use other database (postgres, mysql)\n",
 				SO_FILE, dlerror());
 	}
-	csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
+	csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
 
 	LOOKUP_SYMBOL(dl_handle, sqlite3_open);
 	LOOKUP_SYMBOL(dl_handle, sqlite3_close);

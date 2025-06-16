@@ -443,7 +443,7 @@ static void csync_openlog(int facility) {
 }
 
 static int csync_server_bind(char *service_port, int ip_version) {
-	csync_log(LOG_DEBUG, 2, "Binding to %s IPv%d \n", service_port, ip_version);
+	csync_debug(2, "Binding to %s IPv%d \n", service_port, ip_version);
 	int listenfd = csync_bind(service_port, ip_version);
 	if (listenfd < 0)
 		goto error;
@@ -561,9 +561,9 @@ void parse_peerlist(char *peerlist) {
 
 	char *saveptr = NULL;
 	char *token;
-	csync_log(LOG_DEBUG, 2, "parse_peerlist %s\n", peerlist);
+	csync_debug(2, "parse_peerlist %s\n", peerlist);
 	while ((token = strtok_r(peerlist, ",", &saveptr))) {
-		csync_log(LOG_DEBUG, 2, "New peer: %s\n", token);
+		csync_debug(2, "New peer: %s\n", token);
 		g_active_peers.insert(token);
 		peerlist = NULL;
 	}
@@ -626,7 +626,7 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 				realnames.insert(real_name);
 				if (flags & FLAG_DO_CHECK) {
 					csync_check(db, real_name, flags);
-					csync_log(LOG_DEBUG, 2, "csync_file_args: '%s' flags %d \n", real_name, flags);
+					csync_debug(2, "csync_file_args: '%s' flags %d \n", real_name, flags);
 				}
 			}
 			free(real_name); // Always free since we copied to string
@@ -979,8 +979,8 @@ int main(int argc, char **argv) {
 	int listenfd = 0;
 	long server_standalone = mode & MODE_STANDALONE;
 	char *myport = strdup(csync_port);
-	csync_log(LOG_DEBUG, 3, "csync_hostinfo %p\n", csync_hostinfo);
-	csync_log(LOG_DEBUG, 3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
+	csync_debug(3, "csync_hostinfo %p\n", csync_hostinfo);
+	csync_debug(3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 	if (server_standalone > 0) {
 		csync_info(3, "server standalone %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 		if (!csync_port_cmdline) {
@@ -991,7 +991,7 @@ int main(int argc, char **argv) {
 			struct csync_hostinfo *myhostinfo = csync_hostinfo;
 			while (myhostinfo != NULL) {
 				if (!strcmp(myhostinfo->name, g_myhostname)) {
-					csync_log(LOG_DEBUG, 1, "Found my alias %s %s %s \n", myhostinfo->name, myhostinfo->host,
+					csync_debug(1, "Found my alias %s %s %s \n", myhostinfo->name, myhostinfo->host,
 							myhostinfo->port);
 					myport = strdup(myhostinfo->port);
 					break;
@@ -1288,11 +1288,11 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 		int fileno = 0;
 		if (optind < argc) {
 			fileno = open(argv[optind], O_RDONLY);
-			csync_log(LOG_DEBUG, 1, "monitor: Opening %s %d \n", argv[optind], fileno);
+			csync_debug(1, "monitor: Opening %s %d \n", argv[optind], fileno);
 			// TODO load "saved position" in cases of restart
 			lseek(fileno, 0, SEEK_END);
 		} else {
-			csync_log(LOG_DEBUG, 1, "tailing stdin \n");
+			csync_debug(1, "tailing stdin \n");
 		}
 		csync_tail(db, fileno, flags);
 	};
@@ -1367,10 +1367,10 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	csync_config_destroy();
 	// g_active_peers is now managed by std::set, no need to free
 	if (mode & MODE_DAEMON) {
-		csync_log(LOG_INFO, 4, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+		csync_info(4, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
 
 		if (mode & MODE_NOFORK) {
-			csync_log(LOG_DEBUG, 1, "goto nofork.\n");
+			csync_debug(1, "goto nofork.\n");
 			goto nofork;
 		}
 	}

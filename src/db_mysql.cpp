@@ -66,7 +66,7 @@ static void *dl_handle;
 #define SO_FILE_ALT "libmariadbclient" SO_FILE_EXT
 
 static void db_mysql_dlopen(void) {
-	csync_log(LOG_DEBUG, 3, "Opening shared library %s\n", SO_FILE);
+	csync_debug(3, "Opening shared library %s\n", SO_FILE);
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL && (dl_handle = dlopen(SO_FILE_ALT, RTLD_LAZY)) == NULL) {
 		csync_fatal(
@@ -74,7 +74,7 @@ static void db_mysql_dlopen(void) {
 				dlerror());
 	}
 
-	csync_log(LOG_DEBUG, 3, "Reading symbols from shared library " SO_FILE "\n");
+	csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
 
 	LOOKUP_SYMBOL(dl_handle, mysql_init);
 	LOOKUP_SYMBOL(dl_handle, mysql_real_connect);
@@ -273,7 +273,7 @@ static int db_mysql_replace_file(db_conn_p db, filename_p encoded, const char *c
 #define FILE_LENGTH 250
 #define HOST_LENGTH  50
 static int db_mysql_upgrade_to_schema(db_conn_p conn, int version) {
-	csync_log(LOG_DEBUG, 2, "Upgrading database schema to version %d.\n", version);
+	csync_debug(2, "Upgrading database schema to version %d.\n", version);
 
 	/* We want proper logging, so use the csync sql function instead
 	 * of that from the database layer.
@@ -440,7 +440,7 @@ int db_mysql_open(const char *file, db_conn_p *conn_p) {
 			if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
 				ASPRINTF(&create_database_statement, "create database %s", database);
 
-				csync_log(LOG_DEBUG, 2, "creating database %s\n", database);
+				csync_debug(2, "creating database %s\n", database);
 				if (f.mysql_query_fn(db, create_database_statement) != 0)
 					csync_fatal("Cannot create database %s: Error: %s\n", database, f.mysql_error_fn(db));
 				free(create_database_statement);
@@ -457,7 +457,7 @@ int db_mysql_open(const char *file, db_conn_p *conn_p) {
 		}
 	}
 	const char *encoding = mysql_character_set_name(db);
-	csync_log(LOG_DEBUG, 2, "Default encoding %s\n", encoding);
+	csync_debug(2, "Default encoding %s\n", encoding);
 	if (mysql_set_character_set(db, "utf8")) {
 		csync_fatal("Cannot set character set to utf8\n");
 	}

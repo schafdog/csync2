@@ -2,12 +2,12 @@
 #ifndef TEXTLIST_HPP
 #define TEXTLIST_HPP
 
+#include "modern_logging.hpp"
 #include "csync2.hpp"
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <stdarg.h>
 #include "error.hpp"
-#include <syslog.h>
 
 struct textlist {
     struct textlist *next;
@@ -87,8 +87,21 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 	(*listhandle)->next = tmp;
 }
 
+static inline void textlist_add5(struct textlist **listhandle, const std::string& item, const std::string& item2, 
+				 const std::string& item3, const std::string& item4, const std::string& item5,
+				 int intitem, int operation)
+{
+    textlist_add5(listhandle, item.c_str(), item2.c_str(), item3.c_str(), item4.c_str(), item5.c_str(), intitem, operation);
+}
+
+static inline void textlist_add4(struct textlist **listhandle, const std::string& item, const std::string& item2, const std::string& item3, 
+                				 const std::string& item4, int intitem) 
+{
+    textlist_add5(listhandle, item.c_str(), item2.c_str(), item3.c_str(), item4.c_str(), 0, intitem, 0);
+}
+
 static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, 
-				 const char *item4, int intitem)
+				 const char *item4, int intitem) 
 {
     textlist_add5(listhandle, item, item2, item3, item4, 0, intitem, 0);
 }
@@ -109,16 +122,22 @@ static inline int textlist_in_list(struct textlist *listhandle, const char *item
   return 0;
 }
 
+static inline int textlist_in_list(struct textlist *listhandle, const std::string& item, int intitem) {
+    return textlist_in_list(listhandle, item.c_str(), intitem);
+}
+
+
 static inline void textlist_add_new2(struct textlist **listhandle,
 				     const char *item, const char *item2, int intitem)
 {
     if (!(*listhandle) || !textlist_in_list(*listhandle, item, intitem)) {
 		textlist_add(listhandle, item, intitem);
 		(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
-		csync_log(LOG_DEBUG, 3, "Adding textlist_add_new: %s\n", item);
+		csync_debug(3, "Adding textlist_add_new: %s\n", item);
     }
+    
     else {
-		csync_log(LOG_DEBUG, 3, "Skipping textlist_add_new: %s\n", item);
+		csync_debug(3, "Skipping textlist_add_new: %s\n", item);
 	}
 }
 
@@ -137,14 +156,19 @@ static inline void textlist_add3(struct textlist **listhandle, const char *item,
   textlist_add4(listhandle, item, item2, item3, 0, intitem);
 }
 
+static inline void textlist_add3(struct textlist **listhandle, const std::string& item, const char *item2, const char *item3, int intitem)
+{
+  textlist_add4(listhandle, item.c_str(), item2, item3, 0, intitem);
+}
+
 static inline void textlist_add_new3(struct textlist **listhandle, filename_p filename, const char *checktxt, const char *operation)
 {
     if (!(*listhandle) || !textlist_in_list(*listhandle, filename, 0)) {
 	textlist_add3(listhandle, filename, checktxt, operation, 0);
-	csync_log(LOG_DEBUG, 3, "Adding textlist_add_new3: %s\n", filename);
+	    csync2::g_logger.log(csync2::LogLevel::Debug, 3, "Adding textlist_add_new3: %s\n", filename.c_str());
     }
     else {
-	csync_log(LOG_DEBUG, 3, "Skipping textlist_add_new3: %s\n", filename);
+	    csync_debug(3, "Skipping textlist_add_new3: %s\n", filename.c_str());
   }
 }
 

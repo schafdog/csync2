@@ -95,7 +95,7 @@ char* buffer_quote(BUF_P handle, const char *cpy) {
 	if (handle && cpy) {
 		out = static_cast<char*>(malloc(strlen(cpy) + 3));
 		sprintf(out, "'%s'", cpy);
-		csync_log(LOG_DEBUG, 4, "QUOTE: %s => %s\n", cpy, out);
+		csync_debug(4, "QUOTE: %s => %s\n", cpy, out);
 		buffer_add(handle, out);
 		return out;
 	}

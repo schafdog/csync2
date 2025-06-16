@@ -24,8 +24,6 @@
 #include <sys/stat.h>
 
 /* Forward declarations */
-typedef const char * filename_p;
-typedef const char * peername_p;
 struct csync_group;
 
 /* groups.c - Group management and peer handling */

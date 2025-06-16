@@ -227,7 +227,7 @@ void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 	in_sql_query++;
 	csync_db_maybegin(db);
 
-	csync_log(LOG_DEBUG, 3, "SQL: %s\n", sql);
+	csync_debug(3, "SQL: %s\n", sql);
 	while (1) {
 		rc = db_prepare_stmt(db, sql, &stmt, &ppTail);
 		if (rc != DB_BUSY)

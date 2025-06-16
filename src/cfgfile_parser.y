@@ -19,13 +19,13 @@
  */
 
 %{
-#include "csync2.hpp"
+#include "csync2.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <fnmatch.h>
 #include <ctype.h>
-#include "utils.hpp"
+#include "utils.h"
 
 struct csync_group    *csync_group  = 0;
 struct csync_prefix   *csync_prefix = 0;
@@ -55,7 +55,7 @@ extern int yylineno;
 
 void yyerror(const char *text)
 {
-	csync_fatal("Near line %d: %s\n", yylineno, text);
+	csync_fatal_c("Near line %d: %s\n", yylineno, text);
 }
 
 static void create_group(char *name)
@@ -76,7 +76,7 @@ static void create_group(char *name)
 	t->pattern = 0;
 	t->flags = 0;
 	csync_group = t;
-	csync_log(LOG_DEBUG, 3, "New group: %s\n", name);
+	csync_log_c(LOG_DEBUG, 3, "New group: %s\n", name);
 }
 
 static void add_host(char *hostname, char *peername, int slave)
@@ -100,7 +100,7 @@ static void add_host(char *hostname, char *peername, int slave)
 	t->slave = slave;
 	t->next = csync_group->host;
 	csync_group->host = t;
-	csync_log(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
+	csync_log_c(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
     }
     free(hostname);
 }
@@ -140,7 +140,7 @@ static void add_patt(int patterntype, const char *p_pattern)
 	t->pattern = strdup(prefixsubst(pattern));
 	t->next = csync_group->pattern;
 	csync_group->pattern = t;
-	csync_log(LOG_DEBUG, 3, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);
+	csync_log_c(LOG_DEBUG, 3, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);
 	free(pattern);
 }
 
@@ -150,25 +150,27 @@ static void set_key(char *keyfilename)
     char line[1024];
     int i;
 
-    if ( csync_group->key )
-	csync_fatal("Config error: a group might only have one key.\n");
+    if ( csync_group->key ) {
+		csync_fatal_c("Config error: a group might only have one key.\n");
+	}
     
-    if ( (keyfile = fopen(keyfilename, "r")) == 0 ||
-	 fgets(line, 1024, keyfile) == 0 )
-	csync_fatal("Config error: Can't read keyfile %s.\n", keyfilename);
-
+    if ((keyfile = fopen(keyfilename, "r")) == 0 ||
+	 fgets(line, 1024, keyfile) == 0 ) {
+		csync_fatal_c("Config error: Can't read keyfile %s.\n", keyfilename);
+	 }
+	
     for (i=0; line[i]; i++) {
 	if (line[i] == '\n') { line[i]=0; break; }
 	if ( !(line[i] >= 'A' && line[i] <= 'Z') &&
 	     !(line[i] >= 'a' && line[i] <= 'z') &&
 	     !(line[i] >= '0' && line[i] <= '9') &&
 	     line[i] != '.' && line[i] != '_' )
-	    csync_fatal("Unallowed character '%c' in key file %s.\n",
+	    csync_fatal_c("Unallowed character '%c' in key file %s.\n",
 			line[i], keyfilename);
     }
 
     if ( strlen(line) < 32 )
-	csync_fatal("Config error: Key in file %s is too short.\n", keyfilename);
+	csync_fatal_c("Config error: Key in file %s is too short.\n", keyfilename);
 
     csync_group->key = strdup(line);
     free(keyfilename);
@@ -180,7 +182,7 @@ static void set_auto(char *auto_method)
     int method_id = -1;
     
     if (csync_group->auto_method >= 0)
-	csync_fatal("Config error: a group might only have one auto-setting.\n");
+	csync_fatal_c("Config error: a group might only have one auto-setting.\n");
     
     if (!strcmp(auto_method, "none"))
 	method_id = CSYNC_AUTO_METHOD_NONE;
@@ -207,7 +209,7 @@ static void set_auto(char *auto_method)
 	method_id = CSYNC_AUTO_METHOD_RIGHT;
 
     if (method_id < 0)
-	csync_fatal("Config error: Unknown auto-setting '%s' (use "
+	csync_fatal_c("Config error: Unknown auto-setting '%s' (use "
 		    "'none', 'younger', 'older', 'bigger', 'smaller', "
 		    "'left' or 'right').\n", auto_method);
 
@@ -235,7 +237,7 @@ static void set_flags(char *flags)
 static void check_group(void)
 {
     if ( ! csync_group->key )
-	csync_fatal("Config error: every group must have a key.\n");
+	csync_fatal_c("Config error: every group must have a key.\n");
 
     if ( csync_group->auto_method < 0 )
 	csync_group->auto_method = CSYNC_AUTO_METHOD_NONE;
@@ -448,7 +450,7 @@ static void set_patch_mode(char *mode)
   free(mode);
 }
 
-static void set_redis(filename_p filename)
+static void set_redis(const char *filename)
 {
     csync_redis = strdup(filename);
 }
@@ -473,7 +475,7 @@ static void create_hostinfo_entry(char *name, char *host, char *service)
      p->name = name;
      p->host = host;
      p->port = service;
-     csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
+     csync_log_c(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
      csync_hostinfo = p;
 }
 
@@ -501,7 +503,7 @@ static void create_prefix_entry(char *pattern,  char *path)
 	int i;
 
 	if (path[0] != '/')
-		csync_fatal("Config error: Prefix '%s' is not an absolute path.\n", path);
+		csync_fatal_c("Config error: Prefix '%s' is not an absolute path.\n", path);
 
 	if (!csync_prefix->path && !fnmatch(pattern, g_myhostname, 0)) {
 #ifdef __CYGWIN__
@@ -522,7 +524,7 @@ static void create_prefix_entry(char *pattern,  char *path)
 			else
 				break;
 
-		csync_log(LOG_DEBUG, 3, "Prefix '%s' is set to '%s'.\n", csync_prefix->name, path);
+		csync_log_c(LOG_DEBUG, 3, "Prefix '%s' is set to '%s'.\n", csync_prefix->name, path);
 		csync_prefix->path = path;
 	} else
 		free(path);
@@ -561,13 +563,13 @@ static void create_ignore(char *propname)
 	if ( !strcmp(propname, "mod") )
 		csync_ignore_mod = 1;
 	else
-		csync_fatal("Config error: Unknown 'ignore' property: '%s'.\n", propname);
+		csync_fatal_c("Config error: Unknown 'ignore' property: '%s'.\n", propname);
 
 	free(propname);
 }
 
 void csync_config_destroy(void) {
-    csync_debug(3, "csync_config_destroy\n");
+    csync_debug_c(3, "csync_config_destroy\n");
     prefix_destroy(csync_prefix);
     csync_prefix = NULL;
     nossl_destroy(csync_nossl);
@@ -581,17 +583,17 @@ void csync_config_destroy(void) {
     csync_hostinfo_destroy(csync_hostinfo);
     csync_hostinfo = NULL;
     // TOOD other struct
-    csync_debug(3, "csync_config_destroy end\n");
+    csync_debug_c(3, "csync_config_destroy end\n");
 }
 
 static void disable_cygwin_lowercase_hack(void)
 {
 #ifdef __CYGWIN__
 	if (csync_lowercyg_used)
-		csync_fatal("Config error: 'nocygwinlowercase' must be at the top of the config file.\n");
+		csync_fatal_c("Config error: 'nocygwinlowercase' must be at the top of the config file.\n");
 	csync_lowercyg_disable = 1;
 #else
-	csync_fatal("Config error: Found 'nocygwinlowercase' but this is not a cygwin csync2.\n");
+	csync_fatal_c("Config error: Found 'nocygwinlowercase' but this is not a cygwin csync2.\n");
 #endif
 }
 

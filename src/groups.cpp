@@ -49,7 +49,7 @@ static int match_pattern_list(filename_p filename, const char *basename, const s
 			}
 		}
 		if (matched) {
-			csync_log(LOG_DEBUG, 3, "Match (%c): %s on %s\n", p->isinclude ? '+' : '-', p->pattern, filename);
+			csync_debug(3, "Match (%c): %s on %s\n", p->isinclude ? '+' : '-', p->pattern, filename);
 		}
 		next_pattern: p = p->next;
 	}
