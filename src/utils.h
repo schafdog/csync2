@@ -18,17 +18,12 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CSYNC2_UTILS_HPP
-#define CSYNC2_UTILS_HPP 1
-/* getrealfn.c */
-extern char *getrealfn(const char *filename);
+#ifndef CSYNC2_UTILS_H
+#define CSYNC2_UTILS_H 1
 
 /* prefixsubst.c */
 /* another ringbuffer here. so use it with care!! */
-extern "C" {
-#include "utils.h"
-}
+const char *prefixsubst(const char *in);
+const char *prefixencode(const char *filename);
 
-extern char *filter_mtime(char *chktxt);
-extern char *filter_mtime_copy(const char *chktxt);
-#endif /* CSYNC2_UTILS_HPP */
+#endif /* CSYNC2_UTILS_H */
