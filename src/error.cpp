@@ -19,6 +19,7 @@
  */
 
 #include "csync2.hpp"
+#include "error.hpp"
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
