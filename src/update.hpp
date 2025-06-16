@@ -18,7 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CSYNC2_UPDATE_H
+#ifndef CSYNC2_UPDATE_H 
 #define CSYNC2_UPDATE_H 1
 
 #include <vector>
