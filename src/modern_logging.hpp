@@ -231,22 +231,23 @@ public:
 #define CSYNC_LOG_SCOPE(name) csync2::LogGuard _log_guard(name)
 
 /// Convenience macros for backward compatibility
-#define csync_log(level, debug_level, ...) \
-    csync2::g_logger.log(csync2::LogLevel::level, debug_level, __VA_ARGS__)
+#define csync_log_cpp(level, debug_level, ...) \
+    csync2::g_logger.zlog(csync2::LogLevel::level, debug_level, __VA_ARGS__)
+#endif
 
-#define csync_debug(level, ...) \
-    csync2::g_logger.log(csync2::LogLevel::Debug, level, __VA_ARGS__)
+#define csync_debug_cpp(level, ...) \
+    csync2::g_logger.log_new(csync2::LogLevel::Debug, level, __VA_ARGS__)
 
-#define csync_info(level, ...) \
+#define csync_info_cpp(level, ...) \
     csync2::g_logger.log(csync2::LogLevel::Info, level, __VA_ARGS__)
 
-#define csync_warn(level, ...) \
+#define csync_warn_cpp(level, ...) \
     csync2::g_logger.log(csync2::LogLevel::Warning, level, __VA_ARGS__)
 
-#define csync_error(level, ...) \
+#define csync_error_cpp(level, ...) \
     csync2::g_logger.log(csync2::LogLevel::Error, level, __VA_ARGS__)
 
-#define csync_fatal(...) do { \
+#define csync_fatal_cpp(...) do { \
     csync2::g_logger.log(csync2::LogLevel::Critical, 0, __VA_ARGS__); \
     exit(1); \
 } while(0)
@@ -258,7 +259,7 @@ public:
 #define CSYNC_DEBUG_STREAM(level) \
     csync2::g_logger.stream(csync2::LogLevel::Debug, level)
 
-#define csync_info_STREAM(level) \
+#define CSYNC_INFO_STREAM(level) \
     csync2::g_logger.stream(csync2::LogLevel::Info, level)
 
 #define CSYNC_WARN_STREAM(level) \
