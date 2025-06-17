@@ -67,6 +67,9 @@ const char* url_encode(const char *in) {
 		ringbuff_counter = 0;
 	return out;
 }
+const char *url_encode(peername_p in) {
+	return url_encode(in.c_str());
+}
 
 const char* url_decode(const char *in) {
 	char *out, num[3] = "XX";
@@ -98,5 +101,8 @@ const char* url_decode(const char *in) {
 		ringbuff_counter = 0;
 
 	return out;
+}
+const char *url_decode(peername_p in) {
+	return url_decode(in.c_str());
 }
 
