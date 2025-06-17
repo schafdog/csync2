@@ -226,6 +226,9 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 	freeReplyObject(redis_reply);
 	return rc;
 }
+int csync_redis_del_custom(filename_p key, filename_p domain) {
+	return csync_redis_del_custom(key.c_str(), domain.c_str());
+}
 
 int csync_redis_del(const char *key) {
 	return csync_redis_del_custom(key, NULL);

@@ -66,6 +66,9 @@ int dsync_digest_path_hex(const char *filename, const char *digest_name, char *d
 	dsync_digest_hex(md_value, md_len, digest_str);
 	return 0;
 }
+int dsync_digest_path_hex(filename_p filename, const char *digest_name, char *digest_str, unsigned int size) {
+	return dsync_digest_path_hex(filename.c_str(), digest_name, digest_str, size);
+}
 
 #ifdef DIGEST_STANDALONE
 int main(int argc, char *argv[])

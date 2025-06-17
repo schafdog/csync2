@@ -199,12 +199,14 @@ const char* csync_key(peername_p hostname, filename_p filename) {
 	return 0;
 }
 
-int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode) {
+int csync_perm(filename_p filename, const char *key, peername_p str_hostname, int compare_mode) {
+	const char *hostname = str_hostname.c_str();	
 	const struct csync_group *g = NULL;
 	struct csync_group_host *h;
 	int false_retcode = 1;
 
 	while ((g = csync_find_next(g, filename, compare_mode))) {
+		//  TODO verify
 		if (!hostname)
 			continue;
 		for (h = g->host; h; h = h->next)

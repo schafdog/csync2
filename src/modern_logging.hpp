@@ -203,18 +203,6 @@ private:
     }
 };
 
-/// Initialize static member
-std::unordered_map<LogLevel, std::string> Logger::level_names_ = {
-    {LogLevel::Emergency, "EMERG"},
-    {LogLevel::Alert,     "ALERT"},
-    {LogLevel::Critical,  "CRIT"},
-    {LogLevel::Error,     "ERROR"},
-    {LogLevel::Warning,   "WARN"},
-    {LogLevel::Notice,    "NOTICE"},
-    {LogLevel::Info,      "INFO"},
-    {LogLevel::Debug,     "DEBUG"}
-};
-
 /// Global logger instance
 extern csync2::Logger g_logger;
 

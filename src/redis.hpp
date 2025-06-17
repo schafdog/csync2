@@ -16,7 +16,7 @@ int csync_redis_set_int(const char *key, const char *domain, int number, int nx,
 
 int csync_redis_del(const char *filename);
 int  csync_redis_del_custom(const char *key, const char *domain);
-int  csync_redis_del_custom(const std::string& key, const std::string& domain);
+int  csync_redis_del_custom(filename_p key, filename_p domain);
 
 time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const char *domain);
 time_t csync_redis_lock(filename_p filename);

@@ -92,8 +92,8 @@ extern void csync_hint(db_conn_p db, const char *file, int recursive);
 extern void csync_check(db_conn_p db, filename_p filename, int flags);
 extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g); 
 extern int csync_check_del(db_conn_p db, filename_p filename, int flags);
-extern int csync_check_mod(db_conn_p db, const char *file, int flags, int *count_dirty, const struct csync_group **);
-extern int csync_check_dir(db_conn_p db, const char* file, int flags);
+extern int csync_check_mod(db_conn_p db, peername_p file, int flags, int *count_dirty, const struct csync_group **);
+extern int csync_check_dir(db_conn_p db, peername_p file, int flags);
 
 /* Mark and path functions */
 extern void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,

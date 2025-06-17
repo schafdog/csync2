@@ -23,7 +23,7 @@ bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
 
-csync2_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l check.cpp	\
+csync2_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l check.cpp \
                  checktxt.cpp csync2.cpp global.cpp daemon.cpp db.cpp \
 		 error.cpp error.hpp getrealfn.cpp modern_logging.cpp \
                  groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
@@ -86,7 +86,7 @@ AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	-std=c++17 -O0 -Wno-deprecated-declarations \
+	-std=c++20 -O0 -Wno-deprecated-declarations \
 	$(WARNING_CXXFLAGS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'

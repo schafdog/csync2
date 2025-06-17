@@ -933,7 +933,7 @@ static int csync_daemon_check_identify(int conn, struct csync_command *cmd, peer
 	return 0;
 }
 
-static const char* csync_daemon_check_perm(db_conn_p db, struct csync_command *cmd, const char *filename, const char *peername,
+static const char* csync_daemon_check_perm(db_conn_p db, struct csync_command *cmd, filename_p filename, filename_p peername,
 										   const char *key) {
 	const char *cmd_error = 0;
 //	on_cygwin_lowercase(filename);

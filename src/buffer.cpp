@@ -102,6 +102,14 @@ char* buffer_quote(BUF_P handle, const char *cpy) {
 	return buffer_strdup(handle, "NULL");
 }
 
+char* buffer_strdup(BUF_P handle, filename_p cpy) {
+	return buffer_strdup(handle, cpy.c_str());
+}
+
+char* buffer_quote(BUF_P handle, filename_p cpy) {
+	return buffer_quote(handle, cpy.c_str());
+}
+
 void buffer_destroy(BUF_P handle) {
 	int index;
 

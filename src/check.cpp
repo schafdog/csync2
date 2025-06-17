@@ -244,7 +244,7 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 	csync_schedule_commands(db, file, thispeer == "");
 
 	if (!pl) {
-		csync_info(2, "Not in one of my groups: %s (%s)\n", file.c_str(), thispeer);
+		csync_info(2, "Not in one of my groups: %s (%s)\n", file.c_str(), thispeer.c_str());
 		return;
 	}
 
@@ -318,7 +318,7 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 	buffer_destroy(buffer);
 }
 
-void csync_mark(db_conn_p db, const char *file, peername_p thispeer,
+void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 				const std::set<std::string>& peerfilter, operation_t operation, const char *checktxt,
 				const char *dev, const char *ino, int mode, int mtime) {
 	csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode, mtime);
@@ -451,6 +451,10 @@ int csync_check_del(db_conn_p db, const char *file, int flags) {
 	return db->check_delete(db, file, flags & FLAG_RECURSIVE,
 			flags & (FLAG_INIT_RUN | FLAG_INIT_RUN_STRAIGHT
 					 | FLAG_INIT_RUN_REMOVAL));
+}
+
+int csync_check_del(db_conn_p db, filename_p file, int flags) {
+	return csync_check_del(db, file.c_str(), flags);
 }
 
 static textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename,
@@ -640,6 +644,9 @@ int csync_calc_digest(const char *file, BUF_P buffer, char **digest) {
 		// TODO ???
 	}
 	return rc;
+}
+int csync_calc_digest(filename_p file, BUF_P buffer, char **digest) {
+	return csync_calc_digest(file.c_str(), buffer, digest);
 }
 
 static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *file_stat, int flags) {

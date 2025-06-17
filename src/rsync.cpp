@@ -19,11 +19,12 @@
  */
 
 #include "csync2.hpp"
-#include <librsync.h>
 #include "rsync.hpp"
 #include "conn.hpp"
 #include "redis.hpp"
-
+extern "C" {
+	#include <librsync.h>
+}
 #if defined(RS_MD4_LENGTH)
 #define STRONG_LEN 16
 #elif defined(RS_MAX_STRONG_SUM_LENGTH) 
@@ -109,6 +110,7 @@ static size_t strlcpy(char *d, const char *s, size_t bufsize)
  * transfer is in progress. */
 
 static int get_tmpname(char *fnametmp, const char *fname, int make_unique) {
+	
 	int maxname, added, length = 0;
 	const char *f;
 	char *suf;
@@ -715,7 +717,8 @@ static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE
 }
 
 #define BUF_SIZE (4*4096)
-int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
+int csync_rs_recv_delta_and_patch(int sock, filename_p str_fname) {
+	const char *fname = str_fname.c_str();
 	char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
 	char tmpfname[MAXPATHLEN];
 	/* Open tmp file */
@@ -815,3 +818,5 @@ int csync_rs_recv_delta_and_patch(int sock, const char *fname) {
 	csync_info(3, "File '%s' has been patched successfully.\n", fname);
 	return 0;
 }
+
+
