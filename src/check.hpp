@@ -96,7 +96,7 @@ extern int csync_check_mod(db_conn_p db, const char *file, int flags, int *count
 extern int csync_check_dir(db_conn_p db, const char* file, int flags);
 
 /* Mark and path functions */
-extern void csync_mark(db_conn_p db, filename_p file, const char *thispeer,
+extern void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 					   const std::set<std::string>& peerfilter, operation_t op,
 					   const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);

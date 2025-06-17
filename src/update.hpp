@@ -40,25 +40,16 @@ void csync_update_host(db_conn_p db, const std::string& myname, peername_p peern
 					   pattern_t  patlist, int ip_version, int flags);
 
 void csync_sync_host(db_conn_p db, const std::string& myname, peername_p peername,
-					 const std::set<std::string>& patlist, int ip_version, int flags);
+					 pattern_t patlist, int ip_version, int flags);
 
 void csync_ping_host(db_conn_p db, const std::string& myname, peername_p peername,
-					 const std::set<std::string> patlist, int ip_version, int flags);
+					 pattern_t patlist, int ip_version, int flags);
 
 // C++ API with std::set<std::string>
 void csync_update(db_conn_p db, const std::string& myname,
 				  const std::set<std::string>& active_peers,
 				  const std::set<std::string>& patlist,
 				  int ip_version, update_func func, int flags);
-
-void csync_update_host(db_conn_p db, const std::string& myname, peername_p peername,
-					   const std::set<std::string>& patlist, int ip_version, int flags);
-
-void csync_sync_host(db_conn_p db, const std::string& myname, peername_p peername,
-					 const std::set<std::string>& patlist, int ip_version, int flags);
-
-void csync_ping_host(db_conn_p db, const std::string& myname, peername_p peername,
-					 const std::set<std::string>& patlist, int ip_version, int flags);
 
 int csync_diff(db_conn_p db, const std::string& myname, peername_p peername, filename_p filename, int ip_version);
 

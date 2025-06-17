@@ -191,9 +191,6 @@ private:
             oss << "<" << child_pid_ << "> ";
         }
         
-        // Log level (optional)
-        // oss << "[" << level_names_[level] << "] ";
-        
         // Message
         oss << message;
         

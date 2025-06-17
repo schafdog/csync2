@@ -128,7 +128,7 @@ int csync_check_usefullness(filename_p filename, int recursive) {
 	return -1;
 }
 
-int csync_match_file_host(filename_p filename, const char *myname, peername_p peername, const char **keys) {
+int csync_match_file_host(filename_p filename, peername_p myname, peername_p peername, const char **keys) {
 	const struct csync_group *g = NULL;
 
 	while ((g = csync_find_next(g, filename, 0))) {

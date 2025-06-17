@@ -233,19 +233,18 @@ static textlist_p check_old_operation(filename_p filename, operation_t operation
 	return tl;
 }
 
-static void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer,
+static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 							 const std::set<std::string>& peerfilter, operation_t operation_org, const char *checktxt,
-					  const char *dev, const char *ino, const char *org_other, int mode,
-					  int mtime) {
+							 const char *dev, const char *ino, const char *org_other, int mode,
+							 int mtime) {
 	BUF_P buffer = buffer_init();
 	struct peer *pl = csync_find_peers(file.c_str(), thispeer);
 	int pl_idx;
 	operation_t operation = operation_org;
-	csync_schedule_commands(db, file, thispeer == 0);
+	csync_schedule_commands(db, file, thispeer == "");
 
 	if (!pl) {
-		csync_info(2, "Not in one of my groups: %s (%s)\n", file.c_str(),
-				thispeer ? thispeer : "NULL");
+		csync_info(2, "Not in one of my groups: %s (%s)\n", file.c_str(), thispeer);
 		return;
 	}
 
@@ -319,7 +318,7 @@ static void csync_mark_other(db_conn_p db, filename_p file, const char *thispeer
 	buffer_destroy(buffer);
 }
 
-void csync_mark(db_conn_p db, const char *file, const char *thispeer,
+void csync_mark(db_conn_p db, const char *file, peername_p thispeer,
 				const std::set<std::string>& peerfilter, operation_t operation, const char *checktxt,
 				const char *dev, const char *ino, int mode, int mtime) {
 	csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev, ino, 0, mode, mtime);
