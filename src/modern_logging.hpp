@@ -232,11 +232,11 @@ public:
 
 /// Convenience macros for backward compatibility
 #define csync_log_cpp(level, debug_level, ...) \
-    csync2::g_logger.zlog(csync2::LogLevel::level, debug_level, __VA_ARGS__)
+    csync2::g_logger.log(csync2::LogLevel::level, debug_level, __VA_ARGS__)
 #endif
 
 #define csync_debug_cpp(level, ...) \
-    csync2::g_logger.log_new(csync2::LogLevel::Debug, level, __VA_ARGS__)
+    csync2::g_logger.log(csync2::LogLevel::Debug, level, __VA_ARGS__)
 
 #define csync_info_cpp(level, ...) \
     csync2::g_logger.log(csync2::LogLevel::Info, level, __VA_ARGS__)
