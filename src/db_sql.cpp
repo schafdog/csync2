@@ -916,7 +916,7 @@ static textlist_p db_sql_check_file_same_dev_inode(db_conn_p db, filename_p str_
 		" AND device = %lu "
 		" AND inode = %llu "
 		" AND filename != '%s'"
-		" AND ('NULL' = '%s' OR "
+		" AND ('' = '%s' OR "
 		"     filename NOT IN (SELECT filename FROM dirty WHERE peername = '%s' AND device = f.device AND inode = f.inode))"
 		" ORDER BY filename;";
 //	" AND checktxt  = '%s' "

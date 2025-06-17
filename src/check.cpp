@@ -689,7 +689,7 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	}
 	if ((is_upgrade || is_dirty) && !csync_compare_mode) {
 		if ((operation == OP_NEW && digest) || operation == OP_MKDIR) {
-			textlist_p tl = csync_check_file_same_dev_inode(db, filename.c_str(), checktxt, digest, file_stat, NULL);
+			textlist_p tl = csync_check_file_same_dev_inode(db, filename.c_str(), checktxt, digest, file_stat, "");
 			textlist_p ptr = tl;
 			while (ptr != NULL) {
 				csync_info(2, "check same file (%d) %s -> %s \n", ptr->intvalue,
