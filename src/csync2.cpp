@@ -225,7 +225,7 @@ static void help(const char *cmd) {
 }
 
 static int create_keyfile(filename_p filename) {
-	int fd = open(filename, O_WRONLY | O_CREAT | O_EXCL, 0600);
+	int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
 	int rand = open("/dev/urandom", O_RDONLY);
 	char matrix[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
 	unsigned char n;

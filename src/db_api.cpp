@@ -119,6 +119,16 @@ const char* db_escape(db_conn_p conn, const char *string) {
 	return string;
 }
 
+const char* db_escape(db_conn_p conn, filename_p filename) {
+	const char *string = filename.c_str();
+	if (!string)
+		return string;
+	if (conn && conn->escape)
+		return conn->escape(conn, string);
+	csync_error(0, "No Connection (%p) or escape method configured.", conn, (conn ? conn->escape : 0));
+	return string;
+}
+
 int db_exec(db_conn_p conn, const char *sql) {
 	if (conn && conn->exec)
 		return conn->exec(conn, sql);

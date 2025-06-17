@@ -21,7 +21,9 @@
 #ifndef CSYNC2_UTILS_HPP
 #define CSYNC2_UTILS_HPP 1
 /* getrealfn.c */
-extern char *getrealfn(const char *filename);
+char *getrealfn(filename_p filename);
+const char *prefixsubst(filename_p filename);
+const char *prefixencode(filename_p filename);
 
 /* prefixsubst.c */
 /* another ringbuffer here. so use it with care!! */
@@ -29,6 +31,6 @@ extern "C" {
 #include "utils.h"
 }
 
-extern char *filter_mtime(char *chktxt);
-extern char *filter_mtime_copy(const char *chktxt);
+char *filter_mtime(char *chktxt);
+char *filter_mtime_copy(const char *chktxt);
 #endif /* CSYNC2_UTILS_HPP */

@@ -89,10 +89,9 @@ static const char* redis_str(redisReply *reply) {
 	return reply ? reply->str : "<no response>";
 }
 
-time_t csync_redis_get_custom(const std::string& key, const std::string& key domain) {
+time_t csync_redis_get_custom(const std::string& key, const std::string& domain) {
 	return csync_redis_get_custom(key.c_str(), domain.c_str());
 }
-
 
 time_t csync_redis_get_custom(const char *key, const char *domain) {
 	if (redis_context == NULL)
@@ -169,10 +168,10 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 
 extern int csync_zero_mtime_debug;
 
-int csync_redis_set_int(const char *key, const char *domain, int number, int nx, int expire) {
+int csync_redis_set_int(filename_p key, const char *domain, int number, int nx, int expire) {
 	char value[20];
 	sprintf(value, "%d", number);
-	return csync_redis_set(key, domain, value, nx, expire);
+	return csync_redis_set(key.c_str(), domain, value, nx, expire);
 }
 
 time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const char *domain) {
@@ -180,9 +179,9 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const 
 		return 0;
 	time_t unix_time = time(NULL);
 	if (domain)
-		csync_debug(2, "Locking '%s:%s'\n", domain, filename);
+		csync_debug(2, "Locking '%s:%s'\n", domain, filename.c_str());
 	else
-		csync_debug(2, "Locking '%s'\n", filename);
+		csync_debug(2, "Locking '%s'\n", filename.c_str());
 	int rc = csync_redis_set_int(filename, domain, unix_time, 1, custom_lock_time);
 	if (rc < 0) {
 		// Failed to get OK reply
@@ -190,7 +189,7 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const 
 	}
 	if (!csync_zero_mtime_debug || unix_time == -1)
 		csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: %s %s:%s %d %d\n",
-				   rc == 1 ? "OK" : "ERR", domain, filename, unix_time, custom_lock_time);
+				   rc == 1 ? "OK" : "ERR", domain, filename.c_str(), unix_time, custom_lock_time);
 	return unix_time;
 }
 
@@ -231,6 +230,9 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 int csync_redis_del(const char *key) {
 	return csync_redis_del_custom(key, NULL);
 }
+int csync_redis_del(filename_p key) {
+	return csync_redis_del_custom(key.c_str(), NULL);
+}	
 
 void csync_redis_unlock(filename_p lock, time_t unix_time) {
 	if (redis_context == NULL)
@@ -238,7 +240,7 @@ void csync_redis_unlock(filename_p lock, time_t unix_time) {
 	time_t now = time(NULL);
 	// Not working if custom lock time
 	if (unix_time > 0 && now > unix_time + csync_lock_time) {
-		csync_debug(1, "operation %s took longer than lock time: %d (%d)\n", lock, now - unix_time, csync_lock_time);
+		csync_debug(1, "operation %s took longer than lock time: %d (%d)\n", lock.c_str(), now - unix_time, csync_lock_time);
 	} else {
 		csync_redis_del(lock);
 	}

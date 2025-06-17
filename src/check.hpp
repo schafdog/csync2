@@ -29,15 +29,6 @@
 #include "db_api.hpp"
 #include "buffer.hpp"
 
-/* Forward declarations */
-typedef const char * filename_p;
-typedef const char * peername_p;
-typedef int operation_t;
-struct csync_group;
-struct textlist;
-
-/* check.c - File checking and operations */
-
 /* Device/Inode comparison flags */
 #define DEV_INO_SAME 0
 #define DEV_CHANGED 1

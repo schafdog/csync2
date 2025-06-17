@@ -18,8 +18,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CSYNC2_H
-#define CSYNC2_H 1
+#ifndef CSYNC2_HPP
+#define CSYNC2_HPP 1
 
 // #define CSYNC2_VERSION "2.0-rc2"
 
@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
-#include <syslog.h>
+#include <ctype.h>
 
 #ifdef __cplusplus
 #include <vector>
@@ -44,8 +44,10 @@
 #endif
 
 typedef int operation_t;
-typedef const char * filename_p;
-typedef const char * peername_p;
+#ifdef __cplusplus
+typedef const std::string& filename_p;
+typedef const std::string& peername_p;
+#endif
 
 #define MATCH_NEXT 2
 #define MATCH_INTO 1
@@ -180,101 +182,12 @@ int yylex_destroy(void);
 }
 #endif
 
-/* config structures */
-
-struct csync_nossl;
-struct csync_group;
-struct csync_group_host;
-struct csync_group_pattern;
-struct csync_hostinfo; 
-
-struct csync_hostinfo {
-    char *name; // Alias
-    char *host; 
-    char *port; // service or port number
-    struct csync_hostinfo *next;
-};
-
-struct csync_group_host {
-	struct csync_group_host *next;
-        char *hostname;
-        char *port; // service or port number
-	int on_left_side;
-	int slave;
-};
-
-struct csync_group_pattern {
-	struct csync_group_pattern *next;
-	int isinclude, iscompare, star_matches_slashes;
-	char *pattern;
-};
-
-struct csync_group_action_pattern {
-	struct csync_group_action_pattern *next;
-	int star_matches_slashes;
-	char *pattern;
-};
-
-struct csync_group_action_command {
-	struct csync_group_action_command *next;
-	char *command;
-};
-
-struct csync_group_action {
-	struct csync_group_action *next;
-	struct csync_group_action_pattern *pattern;
-	struct csync_group_action_command *command;
-	char *logfile;
-	int do_local;
-	int do_local_only;
-};
-
-struct csync_group {
-    struct csync_group *next;
-    struct csync_group_host *host;
-    struct csync_group_pattern *pattern;
-    struct csync_group_action *action;
-    char *key, *myname, *gname;
-    int auto_method, local_slave;
-    char *backup_directory;
-    int backup_generations;
-    int hasactivepeers;
-    int flags;
-};
-
-struct csync_prefix {
-	char *name, *path;
-	struct csync_prefix *next;
-};
-
-struct csync_nossl {
-	struct csync_nossl *next;
-	char *pattern_from;
-	char *pattern_to;
-};
-
-enum CSYNC_AUTO_METHOD {
-	CSYNC_AUTO_METHOD_NONE,
-	CSYNC_AUTO_METHOD_FIRST,
-
-	CSYNC_AUTO_METHOD_YOUNGER,
-	CSYNC_AUTO_METHOD_OLDER,
-
-	CSYNC_AUTO_METHOD_BIGGER,
-	CSYNC_AUTO_METHOD_SMALLER,
-
-	CSYNC_AUTO_METHOD_LEFT,
-	CSYNC_AUTO_METHOD_RIGHT,
-
-	CSYNC_AUTO_METHOD_LEFT_RIGHT_LOST
-};
-
 /* global variables */
-
-extern struct csync_group  *csync_group;
-extern struct csync_prefix *csync_prefix;
-extern struct csync_nossl  *csync_nossl;
-extern struct csync_hostinfo  *csync_hostinfo;
+extern "C" {
+#include "csync2.h"
+#include "error.h"
+#include "utils.h"
+}
 
 extern unsigned csync_lock_timeout;
 extern unsigned csync_lock_time;
@@ -327,17 +240,6 @@ extern int csync_conn_usessl;
 extern int csync_lowercyg_disable;
 extern int csync_lowercyg_used;
 extern int csync_cygwin_case_check(filename_p filename);
-#endif
-
-static inline int lstat_strict(filename_p filename, struct stat *buf) {
-#ifdef __CYGWIN__
-	if (csync_lowercyg_disable && !csync_cygwin_case_check(filename)) {
-		errno = ENOENT;
-		return -1;
-	}
-#endif
-	return lstat(filename, buf);
-}
 
 static inline char *on_cygwin_lowercase(char *cchar) {
 #ifdef __CYGWIN__
@@ -351,6 +253,21 @@ static inline char *on_cygwin_lowercase(char *cchar) {
 #endif
 	return cchar;
 }
+#endif
 
-#endif /* CSYNC2_H */
+static inline int lstat_strict(const char *filename, struct stat *buf) {
+#ifdef __CYGWIN__
+	if (csync_lowercyg_disable && !csync_cygwin_case_check(filename)) {
+		errno = ENOENT;
+		return -1;
+	}
+#endif
+	return lstat(filename, buf);
+}
+
+static inline int lstat_strict(filename_p& filename, struct stat *buf) {
+ 	return lstat_strict(filename.c_str(), buf);
+}
+
+#endif /* CSYNC2_HPP */
 

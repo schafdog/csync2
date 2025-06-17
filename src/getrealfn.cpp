@@ -46,7 +46,7 @@ char* getrealfn(filename_p filename) {
 	char *tempfn;
 
 	/* create working copy of filename */
-	tempfn = strdup(filename);
+	tempfn = strdup(filename.c_str());
 
 	/* make the path absolute */
 	if (*tempfn != '/') {

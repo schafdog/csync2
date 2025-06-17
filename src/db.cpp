@@ -140,7 +140,7 @@ db_conn_p csync_db_open(const char *file) {
 	if (rc != DB_OK || db == NULL)
 		csync_fatal("Can't open database: %s\n", file);
 
-	db_set_logger(db, csync_log);
+	db_set_logger(db, csync_log_c);
 
 	/* ignore errors on table creation */
 	in_sql_query++;

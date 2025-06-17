@@ -104,7 +104,7 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 
 	if (S_ISLNK(st->st_mode)) {
 		char tmp[4096];
-		int r = readlink(filename, tmp, 4095);
+		int r = readlink(filename.c_str(), tmp, 4095);
 		tmp[r >= 0 ? r : 0] = 0;
 		xxprintf(":type=lnk:target=%s", (version == 1 ? url_encode(tmp) : tmp));
 	}

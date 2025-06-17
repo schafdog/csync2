@@ -175,7 +175,7 @@ static void print_warnings(int level, MYSQL *m) {
 	row = f.mysql_fetch_row_fn(res);
 
 	while (row) {
-		csync_log(LOG_WARNING, level, "MySql Warning: %s\n", row[2]);
+		csync_warn(level, "MySql Warning: %s\n", row[2]);
 		row = f.mysql_fetch_row_fn(res);
 	}
 
@@ -260,7 +260,7 @@ static int db_mysql_replace_file(db_conn_p db, filename_p encoded, const char *c
 			"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
 					"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON DUPLICATE KEY UPDATE "
 					"checktxt = '%s', device = %lu, inode = %llu, "
-					"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded, checktxt_encoded,
+					"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded.c_str(), checktxt_encoded,
 			fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode, file_stat->st_size,
 			file_stat->st_mtime, get_file_type(file_stat->st_mode),
 			// SET

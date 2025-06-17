@@ -24,9 +24,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-/* Forward declarations */
-typedef const char * filename_p;
-
 /* rsync.c - Rsync operations and file transfer */
 extern int csync_rs_check(int conn, filename_p filename, int isreg);
 extern void csync_rs_sig( int conn, filename_p filename);
@@ -35,6 +32,7 @@ extern int csync_rs_patch(int conn, filename_p filename);
 extern int csync_recv_file(int conn, FILE *file);
 extern int csync_send_file(int conn, FILE *file);
 extern int csync_rs_recv_delta_and_patch(int sock, const char *fname);
+extern int csync_rs_recv_delta_and_patch(int sock, filename_p fname);
 
 /* Utility functions */
 extern char *to_hex(const char str[], size_t length, char hexbuffer[]);

@@ -117,12 +117,13 @@ static const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_
 }
 
 /* getaddrinfo stuff mostly copied from its manpage */
-static int conn_connect(peername_p myhostname, peername_p peername, int ip_version) {
+static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_version) {
 	int sfd;
 	struct csync_hostinfo *p = csync_hostinfo;
-	const char *port = csync_port;
+	const char *peername = str_peername.c_str(); 
+	const  char *port = csync_port;
 	while (p) {
-		if (!strcmp(peername, p->name)) {
+		if (peername == p->name) {
 			peername = p->host;
 			port = p->port;
 			csync_debug(2, "Using alternative port to %s:%s \n", peername, port);
@@ -138,7 +139,7 @@ static int conn_connect(peername_p myhostname, peername_p peername, int ip_versi
 		return -1;
 	}
 			
-	struct sockaddr *localaddr = csync_lookup_addr(myhostname, NULL, ip_version);
+	struct sockaddr *localaddr = csync_lookup_addr(myhostname.c_str(), NULL, ip_version);
 	if (localaddr == NULL) {
 		csync_error(0, "Failed to look up locala address address from %s\n", peername);
 	}	
@@ -190,7 +191,7 @@ int conn_open(peername_p myhostname, peername_p peername, int ip_version) {
 		free(active_peer);
 		csync_error(0, "Connection not closed on open?");
 	}
-	active_peer = strdup(peername);
+	active_peer = strdup(peername.c_str());
 	return conn_fd_in;
 }
 
@@ -216,7 +217,8 @@ int conn_set(int infd, int outfd) {
 #ifdef HAVE_LIBGNUTLS
 
 static void ssl_log(int prio, const char *msg) {
-	csync_log(prio, 3, "%s", msg);
+	//TODO from int to LogLevel
+	// csync_log(csync2::LogLevel::Info, 3, "%s", msg);
 }
 
 static const char *ssl_keyfile = ETCDIR "/csync2_ssl_key.pem";

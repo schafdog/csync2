@@ -151,6 +151,12 @@ static inline void textlist_add2(struct textlist **listhandle, const char *item,
   textlist_add4(listhandle, item, item2, 0, 0, intitem);
 }
 
+static inline void textlist_add2(struct textlist **listhandle, filename_p item, filename_p item2, int intitem)
+{
+  textlist_add4(listhandle, item, item2, 0, 0, intitem);
+}
+
+
 static inline void textlist_add3(struct textlist **listhandle, const char *item, const char *item2, const char *item3, int intitem)
 {
   textlist_add4(listhandle, item, item2, item3, 0, intitem);

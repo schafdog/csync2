@@ -69,13 +69,13 @@
 /* First part of user prologue.  */
 #line 21 "cfgfile_parser_processed.y"
 
-#include "csync2.hpp"
+#include "csync2.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <fnmatch.h>
 #include <ctype.h>
-#include "utils.hpp"
+#include "utils.h"
 
 struct csync_group    *csync_group  = 0;
 struct csync_prefix   *csync_prefix = 0;
@@ -105,7 +105,7 @@ extern int yylineno;
 
 void yyerror(const char *text)
 {
-	csync_fatal("Near line %d: %s\n", yylineno, text);
+	csync_fatal_c("Near line %d: %s\n", yylineno, text);
 }
 
 static void create_group(char *name)
@@ -126,7 +126,7 @@ static void create_group(char *name)
 	t->pattern = 0;
 	t->flags = 0;
 	csync_group = t;
-	csync_log(LOG_DEBUG, 3, "New group: %s\n", name);
+	csync_log_c(LOG_DEBUG, 3, "New group: %s\n", name);
 }
 
 static void add_host(char *hostname, char *peername, int slave)
@@ -150,7 +150,7 @@ static void add_host(char *hostname, char *peername, int slave)
 	t->slave = slave;
 	t->next = csync_group->host;
 	csync_group->host = t;
-	csync_log(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
+	csync_log_c(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
     }
     free(hostname);
 }
@@ -190,7 +190,7 @@ static void add_patt(int patterntype, const char *p_pattern)
 	t->pattern = strdup(prefixsubst(pattern));
 	t->next = csync_group->pattern;
 	csync_group->pattern = t;
-	csync_log(LOG_DEBUG, 3, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);
+	csync_log_c(LOG_DEBUG, 3, "New group:host:pattern %s %s %s\n",csync_group->gname, csync_group->host->hostname, pattern);
 	free(pattern);
 }
 
@@ -200,25 +200,27 @@ static void set_key(char *keyfilename)
     char line[1024];
     int i;
 
-    if ( csync_group->key )
-	csync_fatal("Config error: a group might only have one key.\n");
+    if ( csync_group->key ) {
+		csync_fatal_c("Config error: a group might only have one key.\n");
+	}
     
-    if ( (keyfile = fopen(keyfilename, "r")) == 0 ||
-	 fgets(line, 1024, keyfile) == 0 )
-	csync_fatal("Config error: Can't read keyfile %s.\n", keyfilename);
-
+    if ((keyfile = fopen(keyfilename, "r")) == 0 ||
+	 fgets(line, 1024, keyfile) == 0 ) {
+		csync_fatal_c("Config error: Can't read keyfile %s.\n", keyfilename);
+	 }
+	
     for (i=0; line[i]; i++) {
 	if (line[i] == '\n') { line[i]=0; break; }
 	if ( !(line[i] >= 'A' && line[i] <= 'Z') &&
 	     !(line[i] >= 'a' && line[i] <= 'z') &&
 	     !(line[i] >= '0' && line[i] <= '9') &&
 	     line[i] != '.' && line[i] != '_' )
-	    csync_fatal("Unallowed character '%c' in key file %s.\n",
+	    csync_fatal_c("Unallowed character '%c' in key file %s.\n",
 			line[i], keyfilename);
     }
 
     if ( strlen(line) < 32 )
-	csync_fatal("Config error: Key in file %s is too short.\n", keyfilename);
+	csync_fatal_c("Config error: Key in file %s is too short.\n", keyfilename);
 
     csync_group->key = strdup(line);
     free(keyfilename);
@@ -230,7 +232,7 @@ static void set_auto(char *auto_method)
     int method_id = -1;
     
     if (csync_group->auto_method >= 0)
-	csync_fatal("Config error: a group might only have one auto-setting.\n");
+	csync_fatal_c("Config error: a group might only have one auto-setting.\n");
     
     if (!strcmp(auto_method, "none"))
 	method_id = CSYNC_AUTO_METHOD_NONE;
@@ -257,7 +259,7 @@ static void set_auto(char *auto_method)
 	method_id = CSYNC_AUTO_METHOD_RIGHT;
 
     if (method_id < 0)
-	csync_fatal("Config error: Unknown auto-setting '%s' (use "
+	csync_fatal_c("Config error: Unknown auto-setting '%s' (use "
 		    "'none', 'younger', 'older', 'bigger', 'smaller', "
 		    "'left' or 'right').\n", auto_method);
 
@@ -285,7 +287,7 @@ static void set_flags(char *flags)
 static void check_group(void)
 {
     if ( ! csync_group->key )
-	csync_fatal("Config error: every group must have a key.\n");
+	csync_fatal_c("Config error: every group must have a key.\n");
 
     if ( csync_group->auto_method < 0 )
 	csync_group->auto_method = CSYNC_AUTO_METHOD_NONE;
@@ -498,7 +500,7 @@ static void set_patch_mode(char *mode)
   free(mode);
 }
 
-static void set_redis(filename_p filename)
+static void set_redis(const char *filename)
 {
     csync_redis = strdup(filename);
 }
@@ -523,7 +525,7 @@ static void create_hostinfo_entry(char *name, char *host, char *service)
      p->name = name;
      p->host = host;
      p->port = service;
-     csync_log(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
+     csync_log_c(LOG_DEBUG, 3, "New host alias: %s: %s %s\n", p->name, p->host, p->port);
      csync_hostinfo = p;
 }
 
@@ -551,7 +553,7 @@ static void create_prefix_entry(char *pattern,  char *path)
 	int i;
 
 	if (path[0] != '/')
-		csync_fatal("Config error: Prefix '%s' is not an absolute path.\n", path);
+		csync_fatal_c("Config error: Prefix '%s' is not an absolute path.\n", path);
 
 	if (!csync_prefix->path && !fnmatch(pattern, g_myhostname, 0)) {
 #ifdef __CYGWIN__
@@ -572,7 +574,7 @@ static void create_prefix_entry(char *pattern,  char *path)
 			else
 				break;
 
-		csync_log(LOG_DEBUG, 3, "Prefix '%s' is set to '%s'.\n", csync_prefix->name, path);
+		csync_log_c(LOG_DEBUG, 3, "Prefix '%s' is set to '%s'.\n", csync_prefix->name, path);
 		csync_prefix->path = path;
 	} else
 		free(path);
@@ -611,13 +613,13 @@ static void create_ignore(char *propname)
 	if ( !strcmp(propname, "mod") )
 		csync_ignore_mod = 1;
 	else
-		csync_fatal("Config error: Unknown 'ignore' property: '%s'.\n", propname);
+		csync_fatal_c("Config error: Unknown 'ignore' property: '%s'.\n", propname);
 
 	free(propname);
 }
 
 void csync_config_destroy(void) {
-    csync_debug(3, "csync_config_destroy\n");
+    csync_debug_c(3, "csync_config_destroy\n");
     prefix_destroy(csync_prefix);
     csync_prefix = NULL;
     nossl_destroy(csync_nossl);
@@ -631,22 +633,22 @@ void csync_config_destroy(void) {
     csync_hostinfo_destroy(csync_hostinfo);
     csync_hostinfo = NULL;
     // TOOD other struct
-    csync_debug(3, "csync_config_destroy end\n");
+    csync_debug_c(3, "csync_config_destroy end\n");
 }
 
 static void disable_cygwin_lowercase_hack(void)
 {
 #ifdef __CYGWIN__
 	if (csync_lowercyg_used)
-		csync_fatal("Config error: 'nocygwinlowercase' must be at the top of the config file.\n");
+		csync_fatal_c("Config error: 'nocygwinlowercase' must be at the top of the config file.\n");
 	csync_lowercyg_disable = 1;
 #else
-	csync_fatal("Config error: Found 'nocygwinlowercase' but this is not a cygwin csync2.\n");
+	csync_fatal_c("Config error: Found 'nocygwinlowercase' but this is not a cygwin csync2.\n");
 #endif
 }
 
 
-#line 650 "cfgfile_parser_processed.c"
+#line 652 "cfgfile_parser_processed.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -781,11 +783,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 601 "cfgfile_parser_processed.y"
+#line 603 "cfgfile_parser_processed.y"
 
 	char *txt;
 
-#line 789 "cfgfile_parser_processed.c"
+#line 791 "cfgfile_parser_processed.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -1258,13 +1260,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   618,   618,   620,   624,   626,   625,   629,   632,   634,
-     636,   638,   640,   642,   644,   646,   648,   649,   651,   653,
-     657,   659,   663,   665,   669,   671,   673,   678,   680,   685,
-     689,   691,   692,   696,   697,   698,   699,   700,   702,   704,
-     706,   708,   712,   714,   716,   718,   721,   723,   725,   729,
-     731,   735,   737,   741,   743,   749,   748,   754,   756,   760,
-     761,   762,   764,   766,   770,   772,   776,   778
+       0,   620,   620,   622,   626,   628,   627,   631,   634,   636,
+     638,   640,   642,   644,   646,   648,   650,   651,   653,   655,
+     659,   661,   665,   667,   671,   673,   675,   680,   682,   687,
+     691,   693,   694,   698,   699,   700,   701,   702,   704,   706,
+     708,   710,   714,   716,   718,   720,   723,   725,   727,   731,
+     733,   737,   739,   743,   745,   751,   750,   756,   758,   762,
+     763,   764,   766,   768,   772,   774,   778,   780
 };
 #endif
 
@@ -1906,241 +1908,241 @@ yyreduce:
   switch (yyn)
     {
   case 5: /* $@1: %empty  */
-#line 626 "cfgfile_parser_processed.y"
+#line 628 "cfgfile_parser_processed.y"
                 { create_prefix((yyvsp[0].txt)); }
-#line 1912 "cfgfile_parser_processed.c"
+#line 1914 "cfgfile_parser_processed.c"
     break;
 
   case 6: /* block: TK_PREFIX TK_STRING $@1 TK_BLOCK_BEGIN prefix_list TK_BLOCK_END  */
-#line 628 "cfgfile_parser_processed.y"
+#line 630 "cfgfile_parser_processed.y"
                 { }
-#line 1918 "cfgfile_parser_processed.c"
+#line 1920 "cfgfile_parser_processed.c"
     break;
 
   case 7: /* block: TK_HOSTS TK_BLOCK_BEGIN alias_list TK_BLOCK_END  */
-#line 631 "cfgfile_parser_processed.y"
+#line 633 "cfgfile_parser_processed.y"
                 { }
-#line 1924 "cfgfile_parser_processed.c"
+#line 1926 "cfgfile_parser_processed.c"
     break;
 
   case 8: /* block: TK_NOSSL TK_STRING TK_STRING TK_STEND  */
-#line 633 "cfgfile_parser_processed.y"
+#line 635 "cfgfile_parser_processed.y"
                 { create_nossl((yyvsp[-2].txt), (yyvsp[-1].txt)); }
-#line 1930 "cfgfile_parser_processed.c"
+#line 1932 "cfgfile_parser_processed.c"
     break;
 
   case 9: /* block: TK_DATABASE TK_STRING TK_STEND  */
-#line 635 "cfgfile_parser_processed.y"
+#line 637 "cfgfile_parser_processed.y"
                 { set_database((yyvsp[-1].txt)); }
-#line 1936 "cfgfile_parser_processed.c"
+#line 1938 "cfgfile_parser_processed.c"
     break;
 
   case 10: /* block: TK_DB_VERSION TK_STRING TK_STEND  */
-#line 637 "cfgfile_parser_processed.y"
+#line 639 "cfgfile_parser_processed.y"
                 { set_database_version((yyvsp[-1].txt)); }
-#line 1942 "cfgfile_parser_processed.c"
+#line 1944 "cfgfile_parser_processed.c"
     break;
 
   case 11: /* block: TK_REDIS TK_STRING TK_STEND  */
-#line 639 "cfgfile_parser_processed.y"
+#line 641 "cfgfile_parser_processed.y"
                 { set_redis((yyvsp[-1].txt)); }
-#line 1948 "cfgfile_parser_processed.c"
+#line 1950 "cfgfile_parser_processed.c"
     break;
 
   case 12: /* block: TK_PROTOCOL_VERSION TK_STRING TK_STEND  */
-#line 641 "cfgfile_parser_processed.y"
+#line 643 "cfgfile_parser_processed.y"
                 { set_protocol_version((yyvsp[-1].txt)); }
-#line 1954 "cfgfile_parser_processed.c"
+#line 1956 "cfgfile_parser_processed.c"
     break;
 
   case 13: /* block: TK_PATCH_MODE TK_STRING TK_STEND  */
-#line 643 "cfgfile_parser_processed.y"
+#line 645 "cfgfile_parser_processed.y"
                 { set_patch_mode((yyvsp[-1].txt)); }
-#line 1960 "cfgfile_parser_processed.c"
+#line 1962 "cfgfile_parser_processed.c"
     break;
 
   case 14: /* block: TK_IP_VERSION TK_STRING TK_STEND  */
-#line 645 "cfgfile_parser_processed.y"
+#line 647 "cfgfile_parser_processed.y"
                 { set_ip_version((yyvsp[-1].txt)); }
-#line 1966 "cfgfile_parser_processed.c"
+#line 1968 "cfgfile_parser_processed.c"
     break;
 
   case 15: /* block: TK_TEMPDIR TK_STRING TK_STEND  */
-#line 647 "cfgfile_parser_processed.y"
+#line 649 "cfgfile_parser_processed.y"
                 { set_tempdir((yyvsp[-1].txt)); }
-#line 1972 "cfgfile_parser_processed.c"
+#line 1974 "cfgfile_parser_processed.c"
     break;
 
   case 17: /* block: TK_NOCYGLOWER TK_STEND  */
-#line 650 "cfgfile_parser_processed.y"
+#line 652 "cfgfile_parser_processed.y"
                 { disable_cygwin_lowercase_hack(); }
-#line 1978 "cfgfile_parser_processed.c"
+#line 1980 "cfgfile_parser_processed.c"
     break;
 
   case 18: /* block: TK_LOCK_TIMEOUT TK_STRING TK_STEND  */
-#line 652 "cfgfile_parser_processed.y"
+#line 654 "cfgfile_parser_processed.y"
                 { set_lock_timeout((yyvsp[-1].txt)); }
-#line 1984 "cfgfile_parser_processed.c"
+#line 1986 "cfgfile_parser_processed.c"
     break;
 
   case 19: /* block: TK_LOCK_TIME TK_STRING TK_STEND  */
-#line 654 "cfgfile_parser_processed.y"
+#line 656 "cfgfile_parser_processed.y"
                 { set_lock_time((yyvsp[-1].txt)); }
-#line 1990 "cfgfile_parser_processed.c"
+#line 1992 "cfgfile_parser_processed.c"
     break;
 
   case 21: /* ignore_list: TK_STRING ignore_list  */
-#line 660 "cfgfile_parser_processed.y"
+#line 662 "cfgfile_parser_processed.y"
                 { create_ignore((yyvsp[-1].txt)); }
-#line 1996 "cfgfile_parser_processed.c"
+#line 1998 "cfgfile_parser_processed.c"
     break;
 
   case 23: /* prefix_list: prefix_list TK_ON TK_STRING TK_COLON TK_STRING TK_STEND  */
-#line 666 "cfgfile_parser_processed.y"
+#line 668 "cfgfile_parser_processed.y"
                 { create_prefix_entry((yyvsp[-3].txt), on_cygwin_lowercase((yyvsp[-1].txt))); }
-#line 2002 "cfgfile_parser_processed.c"
+#line 2004 "cfgfile_parser_processed.c"
     break;
 
   case 25: /* alias_list: alias_list TK_STRING TK_COLON TK_STRING TK_STEND  */
-#line 672 "cfgfile_parser_processed.y"
+#line 674 "cfgfile_parser_processed.y"
                 { create_hostinfo_entry((yyvsp[-3].txt), (yyvsp[-1].txt), strdup(csync_port)); }
-#line 2008 "cfgfile_parser_processed.c"
+#line 2010 "cfgfile_parser_processed.c"
     break;
 
   case 26: /* alias_list: alias_list TK_STRING TK_COLON TK_STRING TK_COLON TK_STRING TK_STEND  */
-#line 674 "cfgfile_parser_processed.y"
+#line 676 "cfgfile_parser_processed.y"
                 { create_hostinfo_entry((yyvsp[-5].txt), (yyvsp[-3].txt), (yyvsp[-1].txt)); }
-#line 2014 "cfgfile_parser_processed.c"
+#line 2016 "cfgfile_parser_processed.c"
     break;
 
   case 27: /* block_header: TK_GROUP  */
-#line 679 "cfgfile_parser_processed.y"
+#line 681 "cfgfile_parser_processed.y"
                 { create_group(0);  }
-#line 2020 "cfgfile_parser_processed.c"
+#line 2022 "cfgfile_parser_processed.c"
     break;
 
   case 28: /* block_header: TK_GROUP TK_STRING  */
-#line 681 "cfgfile_parser_processed.y"
+#line 683 "cfgfile_parser_processed.y"
                 { create_group((yyvsp[0].txt)); }
-#line 2026 "cfgfile_parser_processed.c"
+#line 2028 "cfgfile_parser_processed.c"
     break;
 
   case 29: /* block_body: TK_BLOCK_BEGIN stmts TK_BLOCK_END  */
-#line 686 "cfgfile_parser_processed.y"
+#line 688 "cfgfile_parser_processed.y"
                 { check_group(); }
-#line 2032 "cfgfile_parser_processed.c"
+#line 2034 "cfgfile_parser_processed.c"
     break;
 
   case 37: /* stmt: TK_KEY TK_STRING  */
-#line 701 "cfgfile_parser_processed.y"
+#line 703 "cfgfile_parser_processed.y"
                 { set_key((yyvsp[0].txt)); }
-#line 2038 "cfgfile_parser_processed.c"
+#line 2040 "cfgfile_parser_processed.c"
     break;
 
   case 38: /* stmt: TK_AUTO TK_STRING  */
-#line 703 "cfgfile_parser_processed.y"
+#line 705 "cfgfile_parser_processed.y"
                 { set_auto((yyvsp[0].txt)); }
-#line 2044 "cfgfile_parser_processed.c"
+#line 2046 "cfgfile_parser_processed.c"
     break;
 
   case 39: /* stmt: TK_BAK_DIR TK_STRING  */
-#line 705 "cfgfile_parser_processed.y"
+#line 707 "cfgfile_parser_processed.y"
                 { set_bak_dir((yyvsp[0].txt)); }
-#line 2050 "cfgfile_parser_processed.c"
+#line 2052 "cfgfile_parser_processed.c"
     break;
 
   case 40: /* stmt: TK_BAK_GEN TK_STRING  */
-#line 707 "cfgfile_parser_processed.y"
+#line 709 "cfgfile_parser_processed.y"
                 { set_bak_gen((yyvsp[0].txt)); }
-#line 2056 "cfgfile_parser_processed.c"
+#line 2058 "cfgfile_parser_processed.c"
     break;
 
   case 41: /* stmt: TK_FLAGS TK_STRING  */
-#line 709 "cfgfile_parser_processed.y"
+#line 711 "cfgfile_parser_processed.y"
                 { set_flags((yyvsp[0].txt)); }
-#line 2062 "cfgfile_parser_processed.c"
+#line 2064 "cfgfile_parser_processed.c"
     break;
 
   case 43: /* host_list: host_list TK_STRING  */
-#line 715 "cfgfile_parser_processed.y"
+#line 717 "cfgfile_parser_processed.y"
                 { add_host((yyvsp[0].txt), strdup((yyvsp[0].txt)), 0); }
-#line 2068 "cfgfile_parser_processed.c"
+#line 2070 "cfgfile_parser_processed.c"
     break;
 
   case 44: /* host_list: host_list TK_STRING TK_AT TK_STRING  */
-#line 717 "cfgfile_parser_processed.y"
+#line 719 "cfgfile_parser_processed.y"
                 { add_host((yyvsp[-2].txt), (yyvsp[0].txt), 0); }
-#line 2074 "cfgfile_parser_processed.c"
+#line 2076 "cfgfile_parser_processed.c"
     break;
 
   case 47: /* host_list_slaves: host_list_slaves TK_STRING  */
-#line 724 "cfgfile_parser_processed.y"
+#line 726 "cfgfile_parser_processed.y"
                 { add_host((yyvsp[0].txt), strdup((yyvsp[0].txt)), 1); }
-#line 2080 "cfgfile_parser_processed.c"
+#line 2082 "cfgfile_parser_processed.c"
     break;
 
   case 48: /* host_list_slaves: host_list_slaves TK_STRING TK_AT TK_STRING  */
-#line 726 "cfgfile_parser_processed.y"
+#line 728 "cfgfile_parser_processed.y"
                 { add_host((yyvsp[-2].txt), (yyvsp[0].txt), 1); }
-#line 2086 "cfgfile_parser_processed.c"
+#line 2088 "cfgfile_parser_processed.c"
     break;
 
   case 50: /* excl_list: excl_list TK_STRING  */
-#line 732 "cfgfile_parser_processed.y"
+#line 734 "cfgfile_parser_processed.y"
                 { add_patt(0, on_cygwin_lowercase((yyvsp[0].txt))); }
-#line 2092 "cfgfile_parser_processed.c"
+#line 2094 "cfgfile_parser_processed.c"
     break;
 
   case 52: /* incl_list: incl_list TK_STRING  */
-#line 738 "cfgfile_parser_processed.y"
+#line 740 "cfgfile_parser_processed.y"
                 { add_patt(1, on_cygwin_lowercase((yyvsp[0].txt))); }
-#line 2098 "cfgfile_parser_processed.c"
+#line 2100 "cfgfile_parser_processed.c"
     break;
 
   case 54: /* comp_list: incl_list TK_STRING  */
-#line 744 "cfgfile_parser_processed.y"
+#line 746 "cfgfile_parser_processed.y"
                 { add_patt(2, on_cygwin_lowercase((yyvsp[0].txt))); }
-#line 2104 "cfgfile_parser_processed.c"
+#line 2106 "cfgfile_parser_processed.c"
     break;
 
   case 55: /* $@2: %empty  */
-#line 749 "cfgfile_parser_processed.y"
+#line 751 "cfgfile_parser_processed.y"
                 { create_action(); }
-#line 2110 "cfgfile_parser_processed.c"
+#line 2112 "cfgfile_parser_processed.c"
     break;
 
   case 61: /* action_stmt: TK_LOGFILE TK_STRING  */
-#line 763 "cfgfile_parser_processed.y"
+#line 765 "cfgfile_parser_processed.y"
                 { set_action_logfile((yyvsp[0].txt)); }
-#line 2116 "cfgfile_parser_processed.c"
+#line 2118 "cfgfile_parser_processed.c"
     break;
 
   case 62: /* action_stmt: TK_DOLOCAL  */
-#line 765 "cfgfile_parser_processed.y"
+#line 767 "cfgfile_parser_processed.y"
                 { set_action_dolocal(); }
-#line 2122 "cfgfile_parser_processed.c"
+#line 2124 "cfgfile_parser_processed.c"
     break;
 
   case 63: /* action_stmt: TK_DOLOCALONLY  */
-#line 767 "cfgfile_parser_processed.y"
+#line 769 "cfgfile_parser_processed.y"
                 { set_action_dolocal_only(); }
-#line 2128 "cfgfile_parser_processed.c"
+#line 2130 "cfgfile_parser_processed.c"
     break;
 
   case 65: /* action_pattern_list: action_pattern_list TK_STRING  */
-#line 773 "cfgfile_parser_processed.y"
+#line 775 "cfgfile_parser_processed.y"
                 { add_action_pattern(on_cygwin_lowercase((yyvsp[0].txt))); }
-#line 2134 "cfgfile_parser_processed.c"
+#line 2136 "cfgfile_parser_processed.c"
     break;
 
   case 67: /* action_exec_list: action_exec_list TK_STRING  */
-#line 779 "cfgfile_parser_processed.y"
+#line 781 "cfgfile_parser_processed.y"
                 { add_action_exec((yyvsp[0].txt)); }
-#line 2140 "cfgfile_parser_processed.c"
+#line 2142 "cfgfile_parser_processed.c"
     break;
 
 
-#line 2144 "cfgfile_parser_processed.c"
+#line 2146 "cfgfile_parser_processed.c"
 
       default: break;
     }

@@ -91,7 +91,7 @@ static void csync_printtime_prefix(void) {
 
 const char *syslog_prio[] = { "EMERG ", "ALERT ", "CRIT  ", "ERROR ", "WARN  ", "NOTICE", "INFO  ", "DEBUG " };
 
-void csync_log(int priority, int lv, const char *fmt, ...) {
+void csync_log_c(int priority, int lv, const char *fmt, ...) {
 	va_list ap;
 	if (csync_level_debug < lv)
 		return;

@@ -26,5 +26,7 @@
  */
 const char *url_encode(const char *in);
 const char *url_decode(const char *in);
+const char *url_encode(peername_p in);
+const char *url_decode(peername_p in);
 
 #endif /* CSYNC2_URLENCODE_H */

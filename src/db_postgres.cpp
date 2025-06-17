@@ -358,7 +358,7 @@ static int db_postgres_insert_update_file(db_conn_p db, filename_p encoded, cons
 					"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
 							"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON CONFLICT (filename, hostname) DO UPDATE SET "
 							"checktxt = '%s', device = %lu, inode = %llu, "
-							"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded,
+							"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded.c_str(),
 					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
 					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode),
 					// SET

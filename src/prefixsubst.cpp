@@ -56,7 +56,11 @@ const char* prefixsubst(const char *in) {
 	return 0;
 }
 
-const char* prefixencode(filename_p filename) {
+const char *prefixsubst(filename_p filename) {
+	return prefixsubst(filename.c_str());
+}
+
+const char* prefixencode(const char *filename) {
 #ifdef __CYGWIN__
 	if (!strcmp(filename, "/")) {
 		filename = "/cygdrive";
@@ -88,3 +92,6 @@ const char* prefixencode(filename_p filename) {
 	return filename;
 }
 
+const char* prefixencode(filename_p filename) {
+	return prefixencode(filename.c_str());
+}

@@ -76,7 +76,7 @@ struct db_conn_t {
 
 	textlist_p (*get_dirty_by_peer_match)(db_conn_p db, const char *myname, peername_p peername, int recursive,
 										  const std::set<std::string>& patlist,
-										  int (*match_func)(const char *file, filename_p pattern, int recursive));
+										  int (*match_func)(filename_p filename, filename_p pattern, int recursive));
 
 //    void        (*clear_dirty)     (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
 	void (*clear_operation)(db_conn_p conn, const char *myname, peername_p peername,
@@ -113,8 +113,8 @@ struct db_conn_t {
 	textlist_p (*non_dirty_files_match)(db_conn_p db, filename_p pattern);
 	textlist_p (*get_dirty_hosts)(db_conn_p db);
 	int (*dir_count)(db_conn_p db, const char *dirname);
-	int (*move_file)(db_conn_p db, const char *oldfile, const char *newfile);
-	void (*update_dirty_hardlinks)(db_conn_p db, const char *peername, const char *newfile, struct stat *st);
+	int (*move_file)(db_conn_p db, filename_p oldfile, filename_p newfile);
+	void (*update_dirty_hardlinks)(db_conn_p db, peername_p peername, filename_p newfile, struct stat *st);
 	long (*get_affected_rows)(db_conn_p db);
 	long affected_rows;
 };
@@ -152,4 +152,5 @@ int db_schema_version(db_conn_p db);
 int db_upgrade_to_schema(db_conn_p db, int version);
 const char* db_errmsg(db_conn_p conn);
 const char* db_escape(db_conn_p conn, const char *string);
+const char* db_escape(db_conn_p conn, filename_p string);
 #endif

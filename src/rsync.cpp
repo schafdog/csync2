@@ -390,8 +390,8 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	size_t size = 0;
 	char *peer = peerbuf;
 
-	csync_debug(3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n", filename, isreg,
-			isreg ? "regular file" : "non-regular file");
+	csync_debug(3, "Csync2 / Librsync: csync_rs_check('%s', %d [%s])\n", filename.c_str(), isreg,
+				isreg ? "regular file" : "non-regular file");
 
 	csync_debug(3, "rs_check: Opening basis_file and sig_file..\n");
 
@@ -402,7 +402,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 	*/
 
 	if (isreg) {
-		basis_file = fopen(filename, "rb");
+		basis_file = fopen(filename.c_str(), "rb");
 		if (!basis_file)
 			basis_file = fopen("/dev/null", "rb");
 		csync_debug(3, "Running rs_sig_file() from librsync....\n");
@@ -445,7 +445,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 		found_diff = 1;
 	}
 
-	csync_info(2, "rs_check: Receiving signature %Ld bytes for %s\n", size, filename);
+	csync_info(2, "rs_check: Receiving signature %Ld bytes for %s\n", size, filename.c_str());
 	while (size > 0) {
 		chunk = size > CHUNK_SIZE ? CHUNK_SIZE : size;
 		if (cfg_patch_mode == CHUNKED_MODE) 
@@ -462,7 +462,8 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 
 		if (sig_file) {
 			if (fread(local, read, 1, sig_file) != 1) {
-				csync_info(2, "rs_check: Found EOF in local sig file (%s) before reading chuck (%d) .\n", filename, read);
+				csync_info(2, "rs_check: Found EOF in local sig file (%s) before reading chuck (%d) .\n",
+						   filename.c_str(), read);
 				found_diff = 1;
 			} else if (memcmp(peer, local, read) != 0) {
 				csync_info(2, "rs_check: Found diff in sig at -%Ld:-%Ld\n", size, size - read);
@@ -490,7 +491,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 }
 
 static int rsync_check_io_error(int err_no, filename_p filename, FILE *basis_file, FILE *sig_file, FILE *new_file) {
-	csync_error(0, "I/O Error '%s' in rsync-check: %s\n", strerror(errno), filename);
+	csync_error(0, "I/O Error '%s' in rsync-check: %s\n", strerror(errno), filename.c_str());
 	return rsync_close_error(err_no, basis_file, sig_file, new_file);
 }
 
@@ -499,7 +500,7 @@ void csync_rs_sig(int conn, filename_p filename) {
 	rs_stats_t stats;
 	rs_result result;
 
-	csync_debug(3, "Csync2 / Librsync: csync_rs_sig('%s')\n", filename);
+	csync_debug(3, "Csync2 / Librsync: csync_rs_sig('%s')\n", filename.c_str());
 
 	csync_debug(3, "Opening basis_file and sig_file..\n");
 
@@ -509,7 +510,7 @@ void csync_rs_sig(int conn, filename_p filename) {
 		return;
 	}
 
-	basis_file = fopen(filename, "rb");
+	basis_file = fopen(filename.c_str(), "rb");
 	if (!basis_file)
 		basis_file = fopen("/dev/null", "rb");
 
@@ -523,7 +524,7 @@ void csync_rs_sig(int conn, filename_p filename) {
 	if (result != RS_DONE)
 		csync_fatal("Got an error from librsync, too bad!\n");
 
-	csync_debug(2, "Sending sig_file for %s to peer.\n", filename);
+	csync_debug(2, "Sending sig_file for %s to peer.\n", filename.c_str());
 	csync_send_file(conn, sig_file);
 
 	csync_debug(2, "Signature has been sent to peer successfully.\n");
@@ -533,8 +534,8 @@ void csync_rs_sig(int conn, filename_p filename) {
 	return;
 }
 
-static void io_error(const char *filename, FILE *basis_file, FILE *sig_file) {
-	csync_debug(0, "I/O Error '%s' in rsync-sig: %s\n", strerror(errno), filename);
+static void io_error(filename_p filename, FILE *basis_file, FILE *sig_file) {
+	csync_debug(0, "I/O Error '%s' in rsync-sig: %s\n", strerror(errno), filename.c_str());
 	if (basis_file)
 		fclose(basis_file);
 	if (sig_file)
@@ -542,7 +543,7 @@ static void io_error(const char *filename, FILE *basis_file, FILE *sig_file) {
 }
 
 static int rsync_delta_io_error(int err_no, filename_p filename, FILE *new_file, FILE *delta_file, FILE *sig_file) {
-	csync_error(0, "I/O Error '%s' in rsync-delta: %s\n", strerror(errno), filename);
+	csync_error(0, "I/O Error '%s' in rsync-delta: %s\n", strerror(errno), filename.c_str());
 	return rsync_close_error(err_no, new_file, delta_file, sig_file);
 }
 
@@ -552,7 +553,7 @@ int csync_rs_delta(int conn, filename_p filename) {
 	rs_signature_t *sumset;
 	rs_stats_t stats;
 
-	csync_debug(3, "Csync2 / Librsync: csync_rs_delta('%s')\n", filename);
+	csync_debug(3, "Csync2 / Librsync: csync_rs_delta('%s')\n", filename.c_str());
 
 	csync_debug(3, "Receiving sig_file from peer..\n");
 	sig_file = paranoid_tmpfile();
@@ -570,11 +571,11 @@ int csync_rs_delta(int conn, filename_p filename) {
 	sig_file = NULL;
 
 	csync_debug(3, "Opening new_file and delta_file..\n");
-	new_file = fopen(filename, "rb");
+	new_file = fopen(filename.c_str(), "rb");
 	if (!new_file) {
 		int backup_errno = errno;
 		csync_debug(0, "I/O Error '%s' while %s in rsync-delta: %s\n", strerror(errno),
-				"opening data file for reading", filename);
+					"opening data file for reading", filename.c_str());
 		csync_send_error(conn);
 		errno = backup_errno;
 		return -1;
@@ -607,7 +608,7 @@ int csync_rs_delta(int conn, filename_p filename) {
 }
 
 static int rsync_patch_io_error(const char *errstr, filename_p filename, FILE *delta_file, FILE *basis_file, FILE *new_file) {
-	csync_error(0, "I/O Error '%s' while %s in rsync-patch: %s\n", strerror(errno), errstr, filename);
+	csync_error(0, "I/O Error '%s' while %s in rsync-patch: %s\n", strerror(errno), errstr, filename.c_str());
 	return rsync_close_error(errno, delta_file, basis_file, new_file);
 }
 
@@ -618,7 +619,7 @@ int csync_rs_patch(int conn, filename_p filename) {
 	const char *errstr = "?";
 	char tmpfname[MAXPATHLEN];
 
-	csync_debug(3, "Csync2 / Librsync: csync_rs_patch('%s')\n", filename);
+	csync_debug(3, "Csync2 / Librsync: csync_rs_patch('%s')\n", filename.c_str());
 
 	csync_debug(3, "Receiving delta_file from peer..\n");
 	delta_file = paranoid_tmpfile();
@@ -631,7 +632,7 @@ int csync_rs_patch(int conn, filename_p filename) {
 		return rsync_close_error(errno, basis_file, delta_file, patched_file);
 	}
 	csync_debug(3, "Opening to be patched file on local host..\n");
-	basis_file = fopen(filename, "rb");
+	basis_file = fopen(filename.c_str(), "rb");
 	if (!basis_file) {
 		basis_file = paranoid_tmpfile();
 		if (!basis_file) {
@@ -640,13 +641,13 @@ int csync_rs_patch(int conn, filename_p filename) {
 		}
 	}
 	csync_debug(3, "Opening temp file for new data on local host..\n");
-	patched_file = open_temp_file(tmpfname, filename);
+	patched_file = open_temp_file(tmpfname, filename.c_str());
 
 	if (!patched_file) {
 		errstr = "creating new data temp file";
 		return rsync_patch_io_error(errstr, filename, basis_file, delta_file, patched_file);
 	}
-	csync_debug(3, "Running rs_patch_file() from librsync..\n", filename);
+	csync_debug(3, "Running rs_patch_file() from librsync..\n", filename.c_str());
 	result = rs_patch_file(basis_file, delta_file, patched_file, &stats);
 	if (result != RS_DONE) {
 		csync_debug(0, "Internal error from rsync library (RS_DONE)!\n");
@@ -693,17 +694,17 @@ int csync_rs_patch(int conn, filename_p filename) {
 	csync_debug(3, "Renaming tmp file to orig. filename..\n");
 	//  This will break any hardlink to filename.
 	csync_redis_lock_custom(filename, csync_lock_time, "MOVED_TO");
-	if (rename(tmpfname, filename) == 0) {
-		csync_info(3, "File '%s' has been patched successfully.\n", filename);
+	if (rename(tmpfname, filename.c_str()) == 0) {
+		csync_info(3, "File '%s' has been patched successfully.\n", filename.c_str());
 		return 0;
 	}
 	csync_redis_del_custom(filename, "MOVED_TO");
-	return rsync_patch_io_error("renaming tmp file to to orig file", filename, delta_file, basis_file, patched_file);
+	return rsync_patch_io_error("renaming tmp file to to orig file", filename.c_str(), delta_file, basis_file, patched_file);
 }
 
 static int csync_delta_patch_error(const char *errstr, filename_p filename, FILE *old, FILE *newfile, rs_job_t *job,
 								   int err_no) {
-	csync_error(0, errstr, filename, err_no);
+	csync_error(0, errstr, filename.c_str(), err_no);
 	if (old)
 		rs_file_close(old);
 	if (newfile)
