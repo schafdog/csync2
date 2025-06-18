@@ -149,7 +149,8 @@ static int read_conn_status_raw(int fd, filename_p filename, peername_p peername
 		return ERROR_CREATE;
 	if (!strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN)) {
 		// Return the missing path
-		memcpy(line, line+PATH_NOT_FOUND_LEN, strlen(line+PATH_NOT_FOUND_LEN)+1);
+		for (int index = 0 ; index < (int) strlen(line+PATH_NOT_FOUND_LEN)+1 ; index++)
+			line[index] = line[index + PATH_NOT_FOUND_LEN];
 		return ERROR_PATH_MISSING;
 	}
 
