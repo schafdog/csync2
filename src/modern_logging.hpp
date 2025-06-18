@@ -16,6 +16,21 @@
 #include <regex>
 #include <variant>
 
+// C++20 std::format support
+#if __cplusplus >= 202002L && __has_include(<format>)
+    #include <format>
+    #define CSYNC_HAS_STD_FORMAT 1
+#else
+    #define CSYNC_HAS_STD_FORMAT 0
+    // Fallback to fmt library if available
+    #if __has_include(<fmt/format.h>)
+        #include <fmt/format.h>
+        #define CSYNC_HAS_FMT_FORMAT 1
+    #else
+        #define CSYNC_HAS_FMT_FORMAT 0
+    #endif
+#endif
+
 namespace csync2 {
 
 /// Log levels matching syslog priorities
@@ -85,13 +100,42 @@ public:
         return debug_level <= debug_level_;
     }
     
-    /// Main logging function with variadic templates
+    /// Main logging function with variadic templates (C++20 std::format style)
     template<typename... Args>
     void log(LogLevel level, int debug_level, const std::string& format, Args&&... args) {
         if (!should_log(level, debug_level)) return;
 
-        std::string message = format_string(format, std::forward<Args>(args)...);
+        std::string message = format_message(format, std::forward<Args>(args)...);
         write_log(level, message);
+    }
+
+    /// C++20 std::format style logging
+    template<typename... Args>
+    void log_format(LogLevel level, int debug_level, const std::string& format_str, Args&&... args) {
+        if (!should_log(level, debug_level)) return;
+
+#if CSYNC_HAS_STD_FORMAT
+        try {
+            std::string message = std::vformat(format_str, std::make_format_args(args...));
+            write_log(level, message);
+        } catch (const std::format_error&) {
+            // Fallback to printf-style if format string is not compatible
+            std::string message = format_printf_style(format_str, std::forward<Args>(args)...);
+            write_log(level, message);
+        }
+#elif CSYNC_HAS_FMT_FORMAT
+        try {
+            std::string message = fmt::vformat(format_str, fmt::make_format_args(args...));
+            write_log(level, message);
+        } catch (const fmt::format_error&) {
+            // Fallback to printf-style if format string is not compatible
+            std::string message = format_printf_style(format_str, std::forward<Args>(args)...);
+            write_log(level, message);
+        }
+#else
+        std::string message = format_printf_style(format_str, std::forward<Args>(args)...);
+        write_log(level, message);
+#endif
     }
     
     /// Stream-based logging
@@ -127,18 +171,42 @@ public:
     }
     
 private:
-    /// Format string with arguments (C++20 std::format style simulation)
+    /// Format message with arguments - supports both printf-style and C++20 std::format
     template<typename... Args>
-    std::string format_string(const std::string& format, Args&&... args) {
+    std::string format_message(const std::string& format, Args&&... args) {
         if constexpr (sizeof...(args) == 0) {
             return format;
         } else {
-            // Simple printf-style formatting for compatibility
-            size_t size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
-            std::unique_ptr<char[]> buf(new char[size]);
-            std::snprintf(buf.get(), size, format.c_str(), args...);
-            return std::string(buf.get(), buf.get() + size - 1);
+#if CSYNC_HAS_STD_FORMAT
+            // Try C++20 std::vformat for runtime format strings
+            try {
+                return std::vformat(format, std::make_format_args(args...));
+            } catch (const std::format_error&) {
+                // Fallback to printf-style if format string is not compatible
+                return format_printf_style(format, std::forward<Args>(args)...);
+            }
+#elif CSYNC_HAS_FMT_FORMAT
+            // Use fmt library if available
+            try {
+                return fmt::vformat(format, fmt::make_format_args(args...));
+            } catch (const fmt::format_error&) {
+                // Fallback to printf-style if format string is not compatible
+                return format_printf_style(format, std::forward<Args>(args)...);
+            }
+#else
+            // Fallback to printf-style formatting
+            return format_printf_style(format, std::forward<Args>(args)...);
+#endif
         }
+    }
+
+    /// Printf-style formatting fallback
+    template<typename... Args>
+    std::string format_printf_style(const std::string& format, Args&&... args) {
+        size_t size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
+        std::unique_ptr<char[]> buf(new char[size]);
+        std::snprintf(buf.get(), size, format.c_str(), args...);
+        return std::string(buf.get(), buf.get() + size - 1);
     }
     
     /// Write formatted log message
@@ -230,7 +298,7 @@ public:
 
 #define CSYNC_LOG_SCOPE(name) csync2::LogGuard _log_guard(name)
 
-/// Convenience macros for backward compatibility
+/// Convenience macros for backward compatibility (printf-style)
 #define csync_log_cpp(level, debug_level, ...) \
     csync2::g_logger.log(csync2::LogLevel::level, debug_level, __VA_ARGS__)
 
@@ -248,6 +316,27 @@ public:
 
 #define csync_fatal_cpp(...) do { \
     csync2::g_logger.log(csync2::LogLevel::Critical, 0, __VA_ARGS__); \
+    exit(1); \
+} while(0)
+
+/// C++20 std::format style macros
+#define CSYNC_LOG_FORMAT(level, debug_level, ...) \
+    csync2::g_logger.log_format(csync2::LogLevel::level, debug_level, __VA_ARGS__)
+
+#define CSYNC_DEBUG_FORMAT(level, ...) \
+    csync2::g_logger.log_format(csync2::LogLevel::Debug, level, __VA_ARGS__)
+
+#define CSYNC_INFO_FORMAT(level, ...) \
+    csync2::g_logger.log_format(csync2::LogLevel::Info, level, __VA_ARGS__)
+
+#define CSYNC_WARN_FORMAT(level, ...) \
+    csync2::g_logger.log_format(csync2::LogLevel::Warning, level, __VA_ARGS__)
+
+#define CSYNC_ERROR_FORMAT(level, ...) \
+    csync2::g_logger.log_format(csync2::LogLevel::Error, level, __VA_ARGS__)
+
+#define CSYNC_FATAL_FORMAT(...) do { \
+    csync2::g_logger.log_format(csync2::LogLevel::Critical, 0, __VA_ARGS__); \
     exit(1); \
 } while(0)
 

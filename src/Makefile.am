@@ -86,7 +86,7 @@ AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	-std=c++20 -O0 -Wno-deprecated-declarations \
+	$(CXX_STD_FLAG) -O0 -Wno-deprecated-declarations \
 	$(WARNING_CXXFLAGS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'

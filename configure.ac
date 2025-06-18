@@ -36,6 +36,47 @@ AC_CONFIG_HEADERS(src/config.h)
 AC_PROG_CXX
 AC_PROG_INSTALL
 
+# Set C++ standard (prefer C++20, fallback to C++17)
+AC_LANG_PUSH([C++])
+AC_MSG_CHECKING([for C++ standard support])
+old_CXXFLAGS="$CXXFLAGS"
+
+# Try C++20 first
+CXXFLAGS="$old_CXXFLAGS -std=c++20"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if __cplusplus < 201703L
+#error "C++17 or later required"
+#endif
+]], [[]])],
+    [AC_MSG_RESULT([C++20]); CXX_STD_FLAG="-std=c++20"],
+    [
+        # Try C++2a as fallback
+        CXXFLAGS="$old_CXXFLAGS -std=c++2a"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if __cplusplus < 201703L
+#error "C++17 or later required"
+#endif
+        ]], [[]])],
+            [AC_MSG_RESULT([C++2a]); CXX_STD_FLAG="-std=c++2a"],
+            [
+                # Fallback to C++17
+                CXXFLAGS="$old_CXXFLAGS -std=c++17"
+                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if __cplusplus < 201703L
+#error "C++17 not supported"
+#endif
+                ]], [[]])],
+                    [AC_MSG_RESULT([C++17]); CXX_STD_FLAG="-std=c++17"],
+                    [AC_MSG_ERROR([C++17 or later required])]
+                )
+            ]
+        )
+    ]
+)
+CXXFLAGS="$old_CXXFLAGS"
+AC_LANG_POP([C++])
+AC_SUBST([CXX_STD_FLAG])
+
 # macOS-specific: Prioritize Homebrew bison over system bison
 case "$host_os" in
     darwin*)
