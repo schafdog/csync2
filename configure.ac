@@ -129,6 +129,7 @@ WARNING_CXXFLAGS=""
 for flag in \
     -Wall \
     -Wextra \
+    -Wpedantic \
     -Wformat=2 \
     -Wformat-security \
     -Wformat-nonliteral \
@@ -155,7 +156,9 @@ for flag in \
     -Wno-cast-align \
     -Woverloaded-virtual \
     -Wnon-virtual-dtor \
-    -Wold-style-cast
+    -Wold-style-cast \
+    -fsanitize=address \
+    -fno-omit-frame-pointer 
 do
     AC_MSG_CHECKING([whether $CXX accepts $flag])
     old_CXXFLAGS="$CXXFLAGS"
