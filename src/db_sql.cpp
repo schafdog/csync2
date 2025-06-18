@@ -805,8 +805,8 @@ static int filter_child_to_deleted_dir(const char *filename, const char *checktx
 	return 0;
 }
 
-static int db_sql_check_delete(db_conn_p db, filename_p filename_p, int recursive, int init_run) {
-	const char *file = filename_p.c_str();
+static int db_sql_check_delete(db_conn_p db, filename_p str_filename, int recursive, int init_run) {
+	const char *file = str_filename.c_str();
 	textlist_p tl = 0, t;
 	struct stat st;
 

@@ -518,12 +518,12 @@ ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	*size = 0;
 	int rc = !conn_gets(fd, buffer, 200);
 	const char *typestr = "None";
-	if (sscanf(buffer, "octet-stream %ld\n", size) == 1) {
-		csync_info(2, "Got octet-stream %ld\n", *size);
+	if (sscanf(buffer, "octet-stream %zu\n", size) == 1) {
+		csync_info(2, "Got octet-stream %zu\n", *size);
 		*type = OCTET_STREAM;
 		typestr = "octet-stream";
-	} else if (sscanf(buffer, "chunked %ld\n", size) == 1) {
-		csync_info(2, "Got chuncked-stream %ld\n", *size);
+	} else if (sscanf(buffer, "chunked %zu\n", size) == 1) {
+		csync_info(2, "Got chuncked-stream %zu\n", *size);
 		*type = CHUNKED_MODE;
 		typestr = "chunked";
 	} else {
