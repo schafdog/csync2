@@ -387,7 +387,7 @@ static int csync_backup_rename(filename_p std_filename, int length, int generati
 			if (rc == 0) {
 				csync_debug(2, "Remove backup %s due to generation %d \n", backup_other, generations);
 				if (S_ISDIR(st.st_mode))
-					csync_rmdir_recursive(NULL, backup_other, NULL, NULL, 1);
+					csync_rmdir_recursive(NULL, backup_other, "", NULL, 1);
 				else {
 					unlink(backup_other);
 				}

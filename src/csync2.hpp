@@ -45,8 +45,8 @@
 
 typedef int operation_t;
 #ifdef __cplusplus
-typedef const std::string& filename_p;
-typedef const std::string& peername_p;
+typedef const std::string filename_p;
+typedef const std::string peername_p;
 #endif
 
 #define MATCH_NEXT 2

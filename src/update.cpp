@@ -1581,7 +1581,7 @@ static int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char
 	return use_this;
 }
 
-void csync_ping_host(db_conn_p db, const std::string& myname, peername_p peername,
+void csync_ping_host(db_conn_p db, peername_p  myname, peername_p peername,
                      const std::set<std::string>& patlist, int ip_version, int flags) {
 	// unused
 	(void) patlist;
@@ -1732,7 +1732,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 }
 
 // NOT FULLY IMPLEMENTED
-void csync_sync_host(db_conn_p db, const std::string&  myname, peername_p peername,
+void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
                      const std::set<std::string>& patlist, int ip_version, int flags) {
 	textlist_p tl = 0, t = 0;
 	int dry_run = flags & FLAG_DRY_RUN;
@@ -1820,7 +1820,7 @@ static int csync_match(const char *filename, const char *patlist[], int patnum, 
 	return 0;
 }
 
-void csync_update(db_conn_p db, const std::string& myhostname,
+void csync_update(db_conn_p db, peername_p myhostname,
 				  const std::set<std::string>& active_peers, 
                   const std::set<std::string>& patlist,
 				  int ip_version, update_func func, int flags) {

@@ -25,7 +25,7 @@
 #include <string>
 #include "db_api.hpp"
 
-typedef void (*update_func)(db_conn_p db, const std::string& myname, peername_p peername, 
+typedef void (*update_func)(db_conn_p db, peername_p myname, peername_p peername, 
 							const std::set<std::string>& patlist,
 							int ip_version, int flags);
 
@@ -36,22 +36,22 @@ int get_auto_method(peername_p peername, filename_p filename);
 int csync_auto_resolve_time_size(int auto_method, time_t time_l, time_t time_p, long long size_l, long long size_p);
 int compare_files(filename_p filename, filename_p pattern, int recursive);
 
-void csync_update_host(db_conn_p db, const std::string& myname, peername_p peername,
+void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 					   pattern_t  patlist, int ip_version, int flags);
 
-void csync_sync_host(db_conn_p db, const std::string& myname, peername_p peername,
+void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 					 pattern_t patlist, int ip_version, int flags);
 
-void csync_ping_host(db_conn_p db, const std::string& myname, peername_p peername,
+void csync_ping_host(db_conn_p db, peername_p myname, peername_p peername,
 					 pattern_t patlist, int ip_version, int flags);
 
 // C++ API with std::set<std::string>
-void csync_update(db_conn_p db, const std::string& myname,
+void csync_update(db_conn_p db, peername_p myname,
 				  const std::set<std::string>& active_peers,
 				  const std::set<std::string>& patlist,
 				  int ip_version, update_func func, int flags);
 
-int csync_diff(db_conn_p db, const std::string& myname, peername_p peername, filename_p filename, int ip_version);
+int csync_diff(db_conn_p db, peername_p myname, peername_p peername, filename_p filename, int ip_version);
 
 int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peername, filename_p filename,
 					 int ip_version, int flags);
