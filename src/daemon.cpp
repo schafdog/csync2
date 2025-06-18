@@ -328,7 +328,7 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 		// Already checked in single_file
 		// NOTE: disabled!
 		if (0 && !rc && operation && peername != "") {
-			//csync_debug(0, "check dirty: peername %s \n", peername);
+			csync_debug(0, "check dirty: peername %s from %s\n", peername.c_str(), g_myhostname);
 			std::set<std::string> peerset;
 			peerset.insert(peername);
 			csync_mark(db, filename, g_myhostname, peerset, operation,
@@ -923,9 +923,9 @@ static struct csync_command* find_command(const char *cmd) {
 	return &cmdtab[cmdnr];
 }
 
-static int csync_daemon_check_identify(int conn, struct csync_command *cmd, peername_p peername, address_t *peeraddr) {
+static int csync_daemon_check_identify(int conn, struct csync_command *cmd, char *peername, address_t *peeraddr) {
 	char buf[INET6_ADDRSTRLEN];
-	if (cmd->need_ident == YES && peername != "") {
+	if (cmd->need_ident == YES && peername == NULL) {
 		conn_printf(conn, "Dear %s, please identify first.\n",
 				csync_inet_ntop(peeraddr, buf, sizeof(buf)) ? buf : "stranger");
 		return -1;
@@ -933,13 +933,17 @@ static int csync_daemon_check_identify(int conn, struct csync_command *cmd, peer
 	return 0;
 }
 
-static const char* csync_daemon_check_perm(db_conn_p db, struct csync_command *cmd, filename_p filename, filename_p peername,
+static const char* csync_daemon_check_perm(db_conn_p db, struct csync_command *cmd, filename_p filename, char *peername,
 										   const char *key) {
 	const char *cmd_error = 0;
 //	on_cygwin_lowercase(filename);
 
 	if (cmd->check_perm) {
-		int perm = csync_perm(filename, key, peername, cmd->check_perm == COMPARE_MODE);
+		if (peername == NULL) {
+			csync_error(1, "No peername in csync_daemon_check_perm");
+			return "Permission denied! No peername";
+		}
+  		int perm = csync_perm(filename, key, peername, cmd->check_perm == COMPARE_MODE);
 		if (perm) {
 			if (perm == 2) {
 				csync_mark(db, filename, peername, std::set<std::string>(), OP_MOD, NULL, NULL, NULL, 0, time(NULL));
@@ -1354,6 +1358,10 @@ static int daemon_check_slave_status(filename_p filename) {
 
 extern char *autoresolve_str[];
 static int daemon_check_auto_resolve(const char *peername, filename_p std_filename, time_t ftime, long long size) {
+	if (peername == NULL) {
+		csync_error(1, "No peername in daemon_check_auto_resolve\n");
+		return 0;
+	}
 	const char *filename = std_filename.c_str();
 	int auto_resolved = 0;
 	if (daemon_check_slave_status(filename))
@@ -1417,7 +1425,8 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 	// unused
 	(void) conn;
 
-	if (cmd->action != A_FLUSH && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
+	// Investigate. select commands only
+	if (cmd->action != A_FLUSH && *peername != NULL && filename != NULL && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
 		csync_debug(1, "daemon dispatch: Remote %s:%s won auto resolved. clear dirty\n", *peername, filename);
 		db->remove_dirty(db, "%", filename, 0);
 	}
@@ -1681,7 +1690,6 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 			continue;
 		}
 		int rc = OK;
-
 		if ((cmd_error = csync_daemon_check_perm(db, cmd, filename, peername, tag[1]))) {
 			csync_error(1, "File %s:%s no perm. Abort cmd %s", peername, filename, cmd_error);
 			rc = ABORT_CMD;
@@ -1690,7 +1698,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 		struct command params;
 		
 		parse_tags(tag, &params);
-		if (rc == OK && cmd->check_dirty
+		if (rc == OK && cmd->check_dirty && filename != NULL && peername != NULL
 				&& csync_daemon_check_dirty(db, filename, peername, cmd->action,
 						daemon_check_auto_resolve(peername, filename, params.ftime, params.size), &cmd_error)) {
 			rc = ABORT_CMD;

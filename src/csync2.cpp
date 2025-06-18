@@ -618,17 +618,19 @@ void parse_peerlist(const char *peerlist)
 	{
 		return;
 	}
-
+	csync_debug(1, "parse_peerlist %s\n", peerlist);
 	char *saveptr = NULL;
 	char *token;
-	csync_debug(2, "parse_peerlist %s\n", peerlist);
 	char *peerlist_copy = strdup(peerlist);
 	while ((token = strtok_r(peerlist_copy, ",", &saveptr)))
 	{
-		csync_debug(2, "New peer: %s\n", token);
+		csync_debug(1, "New peer: %s\n", token);
 		g_active_peers.insert(token);
+		free(peerlist_copy);
+		peerlist_copy = NULL;
 	}
-	free(peerlist_copy);
+	if (peerlist_copy)
+		free(peerlist_copy);
 }
 
 int match_peer(const std::set<std::string> &active_peers, const char *peer)
@@ -1273,10 +1275,10 @@ nofork:
 	if (!csync_database)
 		csync_database = db_default_database(dbdir, g_myhostname, g_cfgname);
 
-	csync_info(1, "My hostname is %s.\n", g_myhostname);
-	csync_info(1, "Database File: %s\n", csync_database);
-	csync_info(1, "DB Version:    %d\n", g_db_version);
-	csync_info(1, "IP Version:    %s\n", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
+	csync_info(2, "My hostname is %s.\n", g_myhostname);
+	csync_info(2, "Database File: %s\n", csync_database);
+	csync_info(2, "DB Version:    %d\n", g_db_version);
+	csync_info(2, "IP Version:    %s\n", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
 	csync_info(3, "GIT:           %s\n", CSYNC_GIT_VERSION);
 
 	{

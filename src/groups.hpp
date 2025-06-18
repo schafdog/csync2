@@ -53,6 +53,6 @@ extern int csync_match_file_host(filename_p file, peername_p myname, peername_p 
 extern struct peer *csync_find_peers(filename_p file, peername_p thispeer);
 extern const char *csync_key(const char *hostname, const char *filename);
 extern const char *csync_key(peername_p hostname, filename_p filename);
-extern int csync_perm(filename_p filename, const char *key, peername_p hostname, int compare_mode);
+extern int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode);
 
 #endif /* CSYNC2_GROUPS_H */

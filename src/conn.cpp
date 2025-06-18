@@ -122,12 +122,12 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 	struct csync_hostinfo *p = csync_hostinfo;
 	const char *peername = str_peername.c_str(); 
 	const  char *port = csync_port;
-	csync_debug(1, "Looking for alternative host:port for %s\n", peername);
+	csync_debug(2, "Looking for alternative host:port for %s\n", peername);
 	while (p) {
 		if (str_peername == p->name) {
 			peername = p->host;
 			port = p->port;
-			csync_debug(1, "Using alternative port to %s:%s \n", peername, port);
+			csync_debug(2, "Using alternative port to %s:%s \n", peername, port);
 			break;
 		}
 		p = p->next;
@@ -170,7 +170,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 
 char *active_peer = 0;
 
-int conn_open(peername_p myhostname, peername_p peername, int ip_version) {
+int conn_open(peername_p myhostname	, peername_p peername, int ip_version) {
 	int on = 1;
 	int conn_fd_in = conn_connect(myhostname, peername, ip_version);
 	if (conn_fd_in < 0) {

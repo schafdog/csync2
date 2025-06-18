@@ -588,7 +588,7 @@ int csync_check_dir(db_conn_p db, const char *directory, int flags) {
 				char *fn = static_cast<char*>(malloc(strlen(directory) + strlen(namelist[n]->d_name) + 2));
 				sprintf(fn, "%s/%s", !strcmp(directory, "/") ? "" : directory,
 						namelist[n]->d_name);
-				csync_debug(1, "Calling check_mod on %s from %s\n", fn, directory);
+				csync_debug(2, "Calling check_mod on %s from %s\n", fn, directory);
 				if (csync_check_mod(db, fn, flags, &count_dirty, &g))
 					dirdump_this = FLAG_DIRDUMP;
 				free(fn);

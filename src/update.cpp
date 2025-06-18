@@ -2100,7 +2100,7 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 				std::set<string> peerlist;
 				if (flags & FLAG_INIT_RUN_STRAIGHT)
 					peerlist.insert(peername);
-				csync_mark(db, r_file, 0, peerlist, OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0, time(NULL));
+				csync_mark(db, r_file, "", peerlist, OP_MOD /* | PEER */, NULL, "NULL", "NULL", 0, time(NULL));
 			}
 		}
 	}

@@ -86,7 +86,7 @@ AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	$(CXX_STD_FLAG) -O0 -Wno-deprecated-declarations \
+	$(CXX_STD_FLAG) -g -O0 -Wno-deprecated-declarations \
 	$(WARNING_CXXFLAGS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
@@ -97,7 +97,7 @@ AM_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	-O0 -Wno-deprecated-declarations \
+	-g -O0 -Wno-deprecated-declarations \
 	$(WARNING_CFLAGS)
 
 # Explicit rules to compile scanner and parser as C
@@ -136,5 +136,16 @@ warnings:
 warnings-count:
 	@echo "Counting warnings..."
 	@$(MAKE) -s 2>&1 | grep -c "warning:" || echo "0"
+
+# Debug build with extra debugging features
+debug: clean
+	@echo "Building with debug symbols and AddressSanitizer..."
+	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
+	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
+
+# Debug build without AddressSanitizer (for use with other tools like Valgrind)
+debug-simple: clean
+	@echo "Building with debug symbols only..."
+	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG" CFLAGS="-g -O0 -DDEBUG"
 
 FORCE:
