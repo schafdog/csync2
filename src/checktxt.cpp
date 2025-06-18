@@ -36,9 +36,9 @@
 
 #define xxprintf(...) \
 	{ \
-	int t = snprintf(NULL, 0, ##__VA_ARGS__);	\
+	int t = snprintf(NULL, 0 __VA_OPT__(, ) __VA_ARGS__);	\
 	elements[elidx]=static_cast<char*>(alloca(t+1));		\
-	snprintf(elements[elidx], t+1, ##__VA_ARGS__);	\
+	snprintf(elements[elidx], t+1  __VA_OPT__(, ) __VA_ARGS__);	\
 	len+=t; elidx++; }
 
 const char* csync_genchecktxt(const struct stat *st, filename_p filename, int flags) {

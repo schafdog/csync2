@@ -42,7 +42,7 @@ extern const char *csync_db_quote(filename_p filename);
 extern const char *csync_db_escape_quote(filename_p filename); 
 dev_t fstat_dev(struct stat *file_stat);
 
-#define SQL(db, e, s, rest...) csync_db_sql(db, e, s, ##rest)
+#define SQL(db, e, s, ...) csync_db_sql(db, e, s __VA_OPT__(, ) __VA_ARGS__)
 
 extern const char* (*db_decode) (const char *value); 
 //extern const char* (*db_encode) (const char *value); 
@@ -50,7 +50,7 @@ extern const char* (*db_decode) (const char *value);
 #define SQL_BEGIN(db, e, s, ...) \
 { \
     const char *SQL_ERR = e; \
-	void *SQL_VM = csync_db_begin(db, SQL_ERR, s, ##__VA_ARGS__); \
+	void *SQL_VM = csync_db_begin(db, SQL_ERR, s __VA_OPT__(, ) __VA_ARGS__); \
 	int SQL_COUNT = 0; \
 	(void) SQL_COUNT; \
 \

@@ -715,7 +715,7 @@ static void set_peername_from_env(address_t *p, const char *env) {
 	int s;
 
 	char *val = getenv(env);
-	csync_debug(3, "getenv(%s): >>%s<<\n", env, val ? : "");
+	csync_debug(3, "getenv(%s): >>%s<<\n", env, val ? val : "");
 	if (!val)
 		return;
 	val = strdup(val);
@@ -927,7 +927,7 @@ static int csync_daemon_check_identify(int conn, struct csync_command *cmd, peer
 	char buf[INET6_ADDRSTRLEN];
 	if (cmd->need_ident == YES && peername != "") {
 		conn_printf(conn, "Dear %s, please identify first.\n",
-				csync_inet_ntop(peeraddr, buf, sizeof(buf)) ? : "stranger");
+				csync_inet_ntop(peeraddr, buf, sizeof(buf)) ? buf : "stranger");
 		return -1;
 	}
 	return 0;

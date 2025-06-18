@@ -470,7 +470,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 		struct sockaddr_storage ss;
 	} addr;
 	printf("Csync2 daemon running. Waiting for connections.\n");
-	csync2::g_logger.configure(csync2::LogLevel::Debug, 5, csync2::Output::Console);
+	csync2::g_logger.configure(csync2::LogLevel::Debug, 5, csync2::Logger::Output::Console);
 	while (1) {
 		unsigned addrlen = sizeof(addr);
 		*conn = accept(listenfd, &addr.sa, &addrlen);
@@ -499,7 +499,7 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn) {
 				goto error;
 
 			if (csync_syslog) {
-				csync2::g_logger.configure(csync2::LogLevel::Debug, 5, csync2::Output::Syslog);
+				csync2::g_logger.configure(csync2::LogLevel::Debug, 5, csync2::Logger::Output::Syslog);
 				csync_openlog(csync_facility);
 				csync_info(1, "New connection from %s:%s.\n", hbuf, sbuf);
 			} else {

@@ -52,18 +52,19 @@
 
 #include "error.h"
 
+/*
 #define ASPRINTF(s, fmt, ...) do {\
-	int __ret = asprintf(s, fmt, ##__VA_ARGS__);\
+	int __ret = asprintf(s, fmt __VA_OPT__(, ) __VA_ARGS__);\
 	if (__ret < 0) \
 	  csync_fatal("Out of memory in asprintf at %s:%d\n", __FILE__, __LINE__); \
 } while (0)
 
-#define VASPRINTF(s, fmt, args...) do {\
-	int __ret = vasprintf(s, fmt, ##args);\
+#define VASPRINTF(s, fmt, ...) do {\
+	int __ret = vasprintf(s, fmt __VA_OPT__(, ) __VA_ARGS__;\
 	if (__ret < 0) \
 	  csync_fatal("Out of memory in vasprintf at %s:%d\n", __FILE__, __LINE__); \
 } while (0)
-
+*/
 
 /* config structures */
 
