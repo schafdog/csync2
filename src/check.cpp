@@ -252,7 +252,8 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 	int rc_file = stat(file.c_str(), &st_file);
 	const char *other = 0;
 	for (pl_idx = 0; pl[pl_idx].peername; pl_idx++) {
-		peername_p peername = pl[pl_idx].peername;
+		// Safe initialization from potentially NULL pointers
+		peername_p peername = pl[pl_idx].peername ? pl[pl_idx].peername : "";
 		const char *myname = pl[pl_idx].myname;
 		operation = operation_org;
 		other = org_other;
@@ -587,6 +588,7 @@ int csync_check_dir(db_conn_p db, const char *directory, int flags) {
 				char *fn = static_cast<char*>(malloc(strlen(directory) + strlen(namelist[n]->d_name) + 2));
 				sprintf(fn, "%s/%s", !strcmp(directory, "/") ? "" : directory,
 						namelist[n]->d_name);
+				csync_debug(1, "Calling check_mod on %s from %s\n", fn, directory);
 				if (csync_check_mod(db, fn, flags, &count_dirty, &g))
 					dirdump_this = FLAG_DIRDUMP;
 				free(fn);
@@ -724,7 +726,7 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 			char ino_str[100];
 			sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 			sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-			csync_mark_other(db, filename, 0, std::set<std::string>(), operation, checktxt_encoded,
+			csync_mark_other(db, filename, "", std::set<std::string>(), operation, checktxt_encoded,
 					dev_str, ino_str, other, file_stat->st_mode,
 					file_stat->st_mtime);
 		}
@@ -748,7 +750,7 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 
 int csync_check_mod(db_conn_p db, filename_p filename, int flags, int *count,
 		const struct csync_group **g) {
-	int check_type = csync_match_file(filename.c_str(), 0, g);
+	int check_type = csync_match_file(filename, 0, g);
 	// Combine with flags on group like IGN_MTIME
 	if (g && *g) {
 		flags |= (*g)->flags;
@@ -770,7 +772,7 @@ int csync_check_mod(db_conn_p db, filename_p filename, int flags, int *count,
 
 	switch (check_type) {
 	case MATCH_NEXT:
-		*count += csync_check_file_mod(db, filename.c_str(), &st, flags);
+		*count += csync_check_file_mod(db, filename, &st, flags);
 		dirdump_this = FLAG_DIRDUMP;
 		dirdump_parent = FLAG_DIRDUMP;
 		 __attribute__ ((fallthrough));

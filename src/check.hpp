@@ -76,7 +76,7 @@ int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
 int get_file_type(int st_mode);
 
 /* Peer list functions */
-void parse_peerlist(char *peerlist);
+void parse_peerlist(const char *peerlist);
 #ifdef __cplusplus
 int match_peer(const std::set<std::string>& active_peers, const char *peer);
 #endif
