@@ -171,6 +171,9 @@ enum {
 #define CALC_DIGEST 4
 #define DEV_CHANGE  8
 
+/* Check conversion of char pointer to std::string */
+std::string  check_string(const char *str);
+
 #include "textlist.hpp"
 
 #include "groups.hpp"
@@ -270,7 +273,7 @@ static inline int lstat_strict(const char *filename, struct stat *buf) {
 	return lstat(filename, buf);
 }
 
-static inline int lstat_strict(filename_p& filename, struct stat *buf) {
+static inline int lstat_strict(filename_p filename, struct stat *buf) {
  	return lstat_strict(filename.c_str(), buf);
 }
 
