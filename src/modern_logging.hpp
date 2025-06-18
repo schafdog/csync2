@@ -233,7 +233,6 @@ public:
 /// Convenience macros for backward compatibility
 #define csync_log_cpp(level, debug_level, ...) \
     csync2::g_logger.log(csync2::LogLevel::level, debug_level, __VA_ARGS__)
-#endif
 
 #define csync_debug_cpp(level, ...) \
     csync2::g_logger.log(csync2::LogLevel::Debug, level, __VA_ARGS__)
@@ -267,14 +266,5 @@ public:
 
 #define CSYNC_ERROR_STREAM(level) \
     csync2::g_logger.stream(csync2::LogLevel::Error, level)
-
-/// C interface for backward compatibility
-extern "C" {
-    void csync_log_cpp(int priority, int level, const char* format, ...);
-    void csync_configure_logger(int min_level, int debug_level, int output_type);
-    void csync_set_log_file(const char* filename);
-    void csync_set_timestamps(int enable);
-    void csync_set_child_pid(int pid);
-}
 
 #endif // MODERN_LOGGING_HPP
