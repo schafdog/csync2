@@ -198,7 +198,7 @@ static int connect_to_host(db_conn_p db, peername_p myhostname, peername_p std_p
 	if (use_ssl) {
 #if HAVE_LIBGNUTLS
 		conn_printf(conn, "SSL\n");
-		if ((rc = read_conn_status(conn, 0, peername)) < OK) {
+		if ((rc = read_conn_status(conn, "<SSL>", peername)) < OK) {
 			csync_error(1, "SSL command failed.\n");
 			conn_close(conn);
 			return rc;
@@ -212,14 +212,14 @@ static int connect_to_host(db_conn_p db, peername_p myhostname, peername_p std_p
 #endif
 	}
 	conn_printf(conn, "CONFIG %s\n", url_encode(g_cfgname));
-	if ((rc = read_conn_status(conn, 0, peername)) != OK) {
+	if ((rc = read_conn_status(conn, "<CONFIG>", peername)) != OK) {
 		csync_error(0, "Config command failed.\n");
 		conn_close(conn);
 		return rc;
 	}
 
 	conn_printf(conn, "DEBUG %d\n", csync_level_debug);
-	if ((rc = read_conn_status(conn, 0, peername)) != OK) {
+	if ((rc = read_conn_status(conn, "<DEBUG>", peername)) != OK) {
 		csync_error(0, "DEBUG command failed.\n");
 		conn_close(conn);
 		return rc;
@@ -227,7 +227,7 @@ static int connect_to_host(db_conn_p db, peername_p myhostname, peername_p std_p
 
 	if (g_active_grouplist) {
 		conn_printf(conn, "GROUP %s\n", url_encode(g_active_grouplist));
-		if ((rc = read_conn_status(conn, 0, peername)) != OK) {
+		if ((rc = read_conn_status(conn, "<GROUP>", peername)) != OK) {
 			csync_error(0, "GROUP command failed.\n");
 			conn_close(conn);
 			return rc;
@@ -1607,10 +1607,10 @@ void csync_ping_host(db_conn_p db, peername_p  myname, peername_p peername,
 	}
 
 	conn_printf(conn, "PING %s %s\n", myname.c_str(), g_cfgname);
-	int rc = read_conn_status(conn, 0, peername);
+	int rc = read_conn_status(conn, "<PING>", peername);
 	csync_debug(1, "Sent PING %s %s to %s: %d \n", myname.c_str(), g_cfgname, peername.c_str(), rc);
 	conn_printf(conn, "BYE\n");
-	read_conn_status(conn, 0, peername);
+	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
 	return;
 }
@@ -1626,7 +1626,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		return;
 	}
 	csync_debug(1, "Got dirty files from host %s\n", peername.c_str());
-	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
+	int conn = connect_to_host(db, myname, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `%s' failed.\n", peername.c_str());
@@ -1636,9 +1636,9 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 	}
 
 	conn_printf(conn, "HELLO %s\n", myname.c_str());
-	if (read_conn_status(conn, 0, peername)) {
+	if (read_conn_status(conn, "<HELLO>", peername)) {
 		conn_printf(conn, "BYE\n");
-		read_conn_status(conn, 0, peername);
+		read_conn_status(conn, "<BYE>", peername);
 		conn_close(conn);
 		return;
 	}
@@ -1676,9 +1676,9 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 						   peername.c_str(), filename.c_str());
 				std::set<string> peerlist;
 				peerlist.insert(peername);
-				csync_mark(db, filename, 0, peerlist, OP_RM, NULL, NULL, NULL, 0, time(NULL));
+				csync_mark(db, filename, "", peerlist, OP_RM, NULL, NULL, NULL, 0, time(NULL));
 				if (other) {
-					csync_mark(db, other, 0, peerlist, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
+					csync_mark(db, other, "", peerlist, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
 					csync_debug(0, "make other dirty %s\n", other);
 				}
 			} else {
@@ -1727,7 +1727,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		csync_info(2, "Skipping directories due to dry run");
 
 	conn_printf(conn, "BYE\n");
-	read_conn_status(conn, 0, peername);
+	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
 }
 
@@ -1759,9 +1759,9 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 
 	conn_printf(conn, "HELLO %s\n", myname.c_str());
 	int rc;
-	if ((rc = read_conn_status(conn, 0, peername)) < OK) {
+	if ((rc = read_conn_status(conn, "<HELLO>", peername)) < OK) {
 		conn_printf(conn, "BYE\n");
-		read_conn_status(conn, 0, peername);
+		read_conn_status(conn, "<BYE>", peername);
 		conn_close(conn);
 		return;
 	}
@@ -1806,7 +1806,7 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 	}
 	textlist_free(tl);
 	conn_printf(conn, "BYE\n");
-	read_conn_status(conn, 0, peername);
+	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
 }
 /* Dead */
@@ -1914,7 +1914,7 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filenam
 	}
 
 	conn_printf(conn, "HELLO %s\n", url_encode(myname.c_str()));
-	if (read_conn_status(conn, 0, peername))
+	if (read_conn_status(conn, "<HELLO>",peername))
 		return finish_close(conn);
 	const char *key_enc = url_encode(g->key);
 
@@ -1935,7 +1935,7 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filenam
 
 	conn_printf(conn, "TYPE %s %s\n", key_enc, filename);
 
-	if (read_conn_status(conn, 0, peername))
+	if (read_conn_status(conn, "<TYPE>", peername))
 		return finish_close(conn);
 
 	/* FIXME
@@ -2052,7 +2052,7 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	}
 
 	conn_printf(conn, "HELLO %s\n", url_encode(myname.c_str()));
-	read_conn_status(conn, 0, peername);
+	read_conn_status(conn, "<HELLO>", peername);
 	const char *filename_enc = (filename != "" ?  url_encode(prefixencode(filename)) : "/");
 	found = 0;
 	for (g = csync_group; g && !found; g = g->next) {
@@ -2112,7 +2112,7 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 		free(r_checktxt);
 
 	conn_printf(conn, "BYE\n");
-	read_conn_status(conn, 0, peername);
+	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
 
 	for (diff_ent = diff_list; diff_ent; diff_ent = diff_ent->next)
