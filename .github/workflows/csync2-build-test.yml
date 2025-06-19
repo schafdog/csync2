@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, master, cpp-std-string-type ]
   pull_request:
-    branches: [ main, master, autotools-modernization ]
+    branches: [ main, master, cpp-std-string-type ]
   workflow_dispatch:
 
 jobs:
