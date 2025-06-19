@@ -2,7 +2,7 @@ name: Csync2 Build and Test
 
 on:
   push:
-    branches: [ main, master, autotools-modernization ]
+    branches: [ main, master, cpp-std-string-type ]
   pull_request:
     branches: [ main, master, autotools-modernization ]
   workflow_dispatch:
