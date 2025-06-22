@@ -94,40 +94,15 @@ enum class CheckResult {
 class DatabaseConnection {
 public:
     virtual ~DatabaseConnection() = default;
-    
+
     // Core database operations
     virtual DatabaseResult exec(const std::string& sql) = 0;
     virtual std::unique_ptr<DatabaseStatement> prepare(const std::string& statement) = 0;
     virtual void close() = 0;
-    
+
     // Error handling
     virtual std::string error_message() const = 0;
     virtual std::string escape(const std::string& input) const = 0;
-    
-    // Schema operations
-    virtual int schema_version() = 0;
-    virtual DatabaseResult upgrade_to_schema(int version) = 0;
-    
-    // Csync2-specific operations
-    virtual void mark(const std::string& active_peerlist, const std::string& realname, bool recursive) = 0;
-    virtual int list_dirty(const std::vector<std::string>& active_peers, const std::string& realname, bool recursive) = 0;
-    virtual void list_hint() = 0;
-    virtual void list_files(const std::string& filename) = 0;
-    virtual std::vector<FileRecord> list_file(const std::string& filename, const std::string& myname, 
-                                               const std::string& peername, bool recursive) = 0;
-    virtual void list_sync(const std::string& myname, const std::string& peername) = 0;
-    
-    // File operations
-    virtual int check_file(const std::string& file, const std::string& enc, std::string& other,
-                          std::string& checktxt, struct stat* file_stat, BUF_P buffer,
-                          int& operation, std::string& digest, int flags, dev_t& old_no) = 0;
-
-    // Action operations
-    virtual int del_action(const std::string& filename, const std::string& prefix_command) = 0;
-    virtual int add_action(const std::string& filename, const std::string& prefix_command,
-                          const std::string& logfile) = 0;
-    virtual int remove_action_entry(const std::string& filename, const std::string& command,
-                                   const std::string& logfile) = 0;
 
     // Additional database operations
     virtual DatabaseResult open(const std::string& connection_string) = 0;
@@ -139,43 +114,7 @@ public:
     virtual int last_error_code() const = 0;
     virtual DatabaseType type() const = 0;
 
-    // Dirty file operations
-    virtual int is_dirty(const std::string& filename, const std::string& peername, int& operation, int& mode) = 0;
-    virtual void force(const std::string& realname, bool recursive) = 0;
-    virtual int add_dirty(const std::string& file_new, bool csync_new_force, const std::string& myname,
-                         const std::string& peername, const std::string& operation, const std::string& checktxt,
-                         const std::string& dev, const std::string& ino, const std::string& result_other,
-                         int op, int mode, int mtime) = 0;
-    virtual void remove_dirty(const std::string& peername, const std::string& filename, bool recursive) = 0;
 
-    // File management
-    virtual void add_hint(const std::string& filename, bool recursive) = 0;
-    virtual void remove_hint(const std::string& filename, bool recursive) = 0;
-    virtual void remove_file(const std::string& filename, bool recursive) = 0;
-    virtual void delete_file(const std::string& filename, bool recursive) = 0;
-    virtual int update_file(const std::string& encoded, const std::string& checktxt_encoded,
-                           struct stat* file_stat, const std::string& digest) = 0;
-    virtual int insert_file(const std::string& encoded, const std::string& checktxt_encoded,
-                           struct stat* file_stat, const std::string& digest) = 0;
-    virtual int insert_update_file(const std::string& encoded, const std::string& checktxt_encoded,
-                                  struct stat* file_stat, const std::string& digest) = 0;
-
-    // Query operations
-    virtual std::vector<DirtyRecord> get_dirty_by_peer_match(const std::string& myname, const std::string& peername,
-                                                             bool recursive, const std::set<std::string>& patlist) = 0;
-    virtual std::shared_ptr<DirtyRecord> get_old_operation(const std::string& checktxt, const std::string& peername,
-                                                        const std::string& filename, const std::string& device,
-                                                        const std::string& ino) = 0;
-    virtual std::vector<FileRecord> check_file_same_dev_inode(const std::string& filename, const std::string& checktxt,
-                                                               const std::string& digest, struct stat* st,
-                                                               const std::string& peername) = 0;
-    virtual std::vector<DirtyRecord> check_dirty_file_same_dev_inode(const std::string& peername, const std::string& filename,
-                                                                     const std::string& checktxt, const std::string& digest,
-                                                                     struct stat* st) = 0;
-    
-    // Properties
-    int version = 0;
-    
 protected:
     DatabaseConnection() = default;
 };
@@ -226,17 +165,17 @@ protected:
 class DatabaseFactory {
 public:
     static std::unique_ptr<DatabaseConnection> create_from_url(const std::string& connection_string);
-    static std::unique_ptr<DatabaseConnection> create(const std::string& file, DatabaseType type);
+    static std::unique_ptr<DatabaseConnection> create(DatabaseType type);
 };
 
 // Database manager class
 class DatabaseManager {
 public:
     static DatabaseManager& instance();
-    
+
     std::unique_ptr<DatabaseConnection> open(const std::string& connection_string);
     void close_all();
-    
+
 private:
     DatabaseManager() = default;
     std::vector<std::unique_ptr<DatabaseConnection>> connections_;

@@ -87,24 +87,3 @@ void DatabaseManager::close_all() {
 }
 
 } // namespace csync2
-
-// Legacy C-style interface implementation
-extern "C" {
-
-db_conn_p csync_db_open(const char *file) {
-    // Implementation would create a C++ connection and wrap it
-    return nullptr;
-}
-
-void csync_db_close(db_conn_p db) {
-    // Implementation would close and cleanup the connection
-}
-
-int csync_db_exec(db_conn_p db, const char *sql) {
-    // Implementation would execute SQL through C++ interface
-    return -1;
-}
-
-// Additional legacy functions would be implemented here...
-
-}
