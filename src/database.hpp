@@ -25,17 +25,26 @@
 #include <memory>
 #include <vector>
 #include <functional>
-#include "buffer.hpp"
+#include <set>
+#include <sys/stat.h>
+#include "dirty_record.hpp"
+
+// Forward declarations to avoid circular dependencies
+struct buffer;
+typedef struct buffer* BUF_P;
 
 namespace csync2 {
 
 // Forward declarations
 class DatabaseConnection;
 class DatabaseStatement;
-class TextList;
 
-using filename_p = const char *;
-using peername_p = const char *;
+// C++ type aliases (different from C-style typedefs)
+using cpp_filename_p = const std::string&;
+using cpp_peername_p = const std::string&;
+
+// Operation type for C++ interface
+using operation_t = int;
 
 // Database types
 enum class DatabaseType {
@@ -54,6 +63,31 @@ enum class DatabaseResult {
     NO_CONNECTION_REAL = -4,
     ROW = -100,
     DONE = -101
+};
+
+// File operation types
+enum class FileOperation {
+    UNDEF = 0,
+    MARK = 0,
+    MKDIR = 1,
+    NEW = 2,
+    MKFIFO = 4,
+    MKCHR = 8,
+    MOVE = 16,
+    HARDLINK = 32,
+    RM = 64,
+    MOD = 128,
+    MOD2 = 256,
+    SYNC = (MOD | MOD2)
+};
+
+// Check result flags
+enum class CheckResult {
+    DEV_INO_SAME = 0,
+    DEV_CHANGED = 1,
+    INO_CHANGED = 2,
+    DEV_MISSING = 4,
+    INO_MISSING = 8
 };
 
 // Abstract base class for database connections
@@ -79,21 +113,65 @@ public:
     virtual int list_dirty(const std::vector<std::string>& active_peers, const std::string& realname, bool recursive) = 0;
     virtual void list_hint() = 0;
     virtual void list_files(const std::string& filename) = 0;
-    virtual std::shared_ptr<TextList> list_file(const std::string& filename, const std::string& myname, 
+    virtual std::vector<FileRecord> list_file(const std::string& filename, const std::string& myname, 
                                                const std::string& peername, bool recursive) = 0;
     virtual void list_sync(const std::string& myname, const std::string& peername) = 0;
     
     // File operations
-    virtual int check_file(const std::string& file, const std::string& enc, std::string& other, 
-                          std::string& checktxt, struct stat* file_stat, Buffer& buffer, 
+    virtual int check_file(const std::string& file, const std::string& enc, std::string& other,
+                          std::string& checktxt, struct stat* file_stat, BUF_P buffer,
                           int& operation, std::string& digest, int flags, dev_t& old_no) = 0;
-    
+
     // Action operations
     virtual int del_action(const std::string& filename, const std::string& prefix_command) = 0;
-    virtual int add_action(const std::string& filename, const std::string& prefix_command, 
+    virtual int add_action(const std::string& filename, const std::string& prefix_command,
                           const std::string& logfile) = 0;
-    virtual int remove_action_entry(const std::string& filename, const std::string& command, 
+    virtual int remove_action_entry(const std::string& filename, const std::string& command,
                                    const std::string& logfile) = 0;
+
+    // Additional database operations
+    virtual DatabaseResult open(const std::string& connection_string) = 0;
+    virtual bool is_open() const = 0;
+    virtual DatabaseResult begin_transaction() = 0;
+    virtual DatabaseResult commit() = 0;
+    virtual DatabaseResult rollback() = 0;
+    virtual int64_t last_insert_id() const = 0;
+    virtual int last_error_code() const = 0;
+    virtual DatabaseType type() const = 0;
+
+    // Dirty file operations
+    virtual int is_dirty(const std::string& filename, const std::string& peername, int& operation, int& mode) = 0;
+    virtual void force(const std::string& realname, bool recursive) = 0;
+    virtual int add_dirty(const std::string& file_new, bool csync_new_force, const std::string& myname,
+                         const std::string& peername, const std::string& operation, const std::string& checktxt,
+                         const std::string& dev, const std::string& ino, const std::string& result_other,
+                         int op, int mode, int mtime) = 0;
+    virtual void remove_dirty(const std::string& peername, const std::string& filename, bool recursive) = 0;
+
+    // File management
+    virtual void add_hint(const std::string& filename, bool recursive) = 0;
+    virtual void remove_hint(const std::string& filename, bool recursive) = 0;
+    virtual void remove_file(const std::string& filename, bool recursive) = 0;
+    virtual void delete_file(const std::string& filename, bool recursive) = 0;
+    virtual int update_file(const std::string& encoded, const std::string& checktxt_encoded,
+                           struct stat* file_stat, const std::string& digest) = 0;
+    virtual int insert_file(const std::string& encoded, const std::string& checktxt_encoded,
+                           struct stat* file_stat, const std::string& digest) = 0;
+    virtual int insert_update_file(const std::string& encoded, const std::string& checktxt_encoded,
+                                  struct stat* file_stat, const std::string& digest) = 0;
+
+    // Query operations
+    virtual std::vector<DirtyRecord> get_dirty_by_peer_match(const std::string& myname, const std::string& peername,
+                                                             bool recursive, const std::set<std::string>& patlist) = 0;
+    virtual std::shared_ptr<DirtyRecord> get_old_operation(const std::string& checktxt, const std::string& peername,
+                                                        const std::string& filename, const std::string& device,
+                                                        const std::string& ino) = 0;
+    virtual std::vector<FileRecord> check_file_same_dev_inode(const std::string& filename, const std::string& checktxt,
+                                                               const std::string& digest, struct stat* st,
+                                                               const std::string& peername) = 0;
+    virtual std::vector<DirtyRecord> check_dirty_file_same_dev_inode(const std::string& peername, const std::string& filename,
+                                                                     const std::string& checktxt, const std::string& digest,
+                                                                     struct stat* st) = 0;
     
     // Properties
     int version = 0;
@@ -106,15 +184,40 @@ protected:
 class DatabaseStatement {
 public:
     virtual ~DatabaseStatement() = default;
-    
+
+    // Execute and fetch results
+    virtual DatabaseResult execute() = 0;
+    virtual DatabaseResult next() = 0;
+    virtual void reset() = 0;
+
+    // Bind parameters
+    virtual void bind(int index, const std::string& value) = 0;
+    virtual void bind(int index, int value) = 0;
+    virtual void bind(int index, int64_t value) = 0;
+    virtual void bind(int index, double value) = 0;
+    virtual void bind_null(int index) = 0;
+
+    // Get column values
     virtual std::string get_column_text(int column) const = 0;
     virtual const void* get_column_blob(int column) const = 0;
     virtual int get_column_int(int column) const = 0;
-    virtual bool next() = 0;
+    virtual int64_t get_column_int64(int column) const = 0;
+    virtual double get_column_double(int column) const = 0;
+    virtual std::vector<uint8_t> get_blob(int column) const = 0;
+    virtual bool is_null(int column) const = 0;
+
+    // Column information
+    virtual int column_count() const = 0;
+    virtual std::string column_name(int column) const = 0;
+    virtual std::string column_type(int column) const = 0;
+
+    // Legacy compatibility
+    virtual bool next_legacy() = 0;
     virtual void close() = 0;
-    
-    int affected_rows = 0;
-    
+
+    // Affected rows
+    virtual int affected_rows() const = 0;
+
 protected:
     DatabaseStatement() = default;
 };
@@ -143,9 +246,10 @@ private:
 
 // Legacy C-style interface for compatibility
 extern "C" {
-    // Include the original db_api.h definitions for compatibility
-    #include "db_api.hpp"
-    
+    // Forward declarations for C types
+    typedef struct db_conn *db_conn_p;
+    typedef struct db_stmt *db_stmt_p;
+
     // Database functions
     db_conn_p csync_db_open(const char *file);
     void csync_db_close(db_conn_p db);
