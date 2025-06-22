@@ -22,7 +22,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
 #include <time.h>
 #include <string.h>
 #include "db_api.hpp"

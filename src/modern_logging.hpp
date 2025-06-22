@@ -65,20 +65,20 @@ private:
     bool timestamps_ = true;
     bool show_pid_ = false;
     pid_t child_pid_ = 0;
-    
+
     static std::unordered_map<LogLevel, std::string> level_names_;
-    
+
 public:
     /// Constructor
     Logger() = default;
-    
+
     /// Configure logger
     void configure(LogLevel min_level, int debug_level, Output output = Output::Console) {
         min_level_ = min_level;
         debug_level_ = debug_level;
         output_type_ = output;
     }
-    
+
     /// Set log file
     void set_log_file(const std::string& filename) {
         file_stream_ = std::make_unique<std::ofstream>(filename, std::ios::app);
@@ -86,20 +86,20 @@ public:
             output_type_ = Output::Both;
         }
     }
-    
+
     /// Enable/disable timestamps
     void set_timestamps(bool enable) { timestamps_ = enable; }
-    
+
     /// Set child PID for server processes
     void set_child_pid(pid_t pid) { child_pid_ = pid; show_pid_ = (pid != 0); }
-    
+
     /// Check if level should be logged
     bool should_log(LogLevel level, int debug_level = 0) const {
         if (level <= LogLevel::Warning) return true;  // Always log warnings and above
         if (static_cast<int>(level) > static_cast<int>(min_level_)) return false;
         return debug_level <= debug_level_;
     }
-    
+
     /// Main logging function with variadic templates (C++20 std::format style)
     template<typename... Args>
     void log(LogLevel level, int debug_level, const std::string& format, Args&&... args) {
@@ -119,9 +119,7 @@ public:
             std::string message = std::vformat(format_str, std::make_format_args(args...));
             write_log(level, message);
         } catch (const std::format_error&) {
-            // Fallback to printf-style if format string is not compatible
-            std::string message = format_printf_style(format_str, std::forward<Args>(args)...);
-            write_log(level, message);
+
         }
 #elif CSYNC_HAS_FMT_FORMAT
         try {
@@ -137,7 +135,7 @@ public:
         write_log(level, message);
 #endif
     }
-    
+
     /// Stream-based logging
     class LogStream {
     private:
@@ -145,11 +143,11 @@ public:
         LogLevel level_;
         int debug_level_;
         std::ostringstream stream_;
-        
+
     public:
         LogStream(Logger* logger, LogLevel level, int debug_level)
             : logger_(logger), level_(level), debug_level_(debug_level) {}
-        
+
         template<typename T>
         LogStream& operator<<(const T& value) {
             if (logger_->should_log(level_, debug_level_)) {
@@ -157,19 +155,19 @@ public:
             }
             return *this;
         }
-        
+
         ~LogStream() {
             if (logger_->should_log(level_, debug_level_)) {
                 logger_->write_log(level_, stream_.str());
             }
         }
     };
-    
+
     /// Create log stream
     LogStream stream(LogLevel level, int debug_level = 0) {
         return LogStream(this, level, debug_level);
     }
-    
+
 private:
     /// Format message with arguments - supports both printf-style and C++20 std::format
     template<typename... Args>
@@ -183,7 +181,7 @@ private:
                 return std::vformat(format, std::make_format_args(args...));
             } catch (const std::format_error&) {
                 // Fallback to printf-style if format string is not compatible
-                return format_printf_style(format, std::forward<Args>(args)...);
+                return ""; // format_printf_style(format, std::forward<Args>(args)...);
             }
 #elif CSYNC_HAS_FMT_FORMAT
             // Use fmt library if available
@@ -208,28 +206,28 @@ private:
         std::snprintf(buf.get(), size, format.c_str(), args...);
         return std::string(buf.get(), buf.get() + size - 1);
     }
-    
+
     /// Write formatted log message
     void write_log(LogLevel level, const std::string& message) {
         std::lock_guard<std::mutex> lock(log_mutex_);
-        
+
         std::string formatted = format_log_line(level, message);
-        
+
         switch (output_type_) {
             case Output::Console:
                 std::cout << formatted << std::flush;
                 break;
-                
+
             case Output::File:
                 if (file_stream_ && file_stream_->is_open()) {
                     *file_stream_ << formatted << std::flush;
                 }
                 break;
-                
+
             case Output::Syslog:
                 syslog(static_cast<int>(level), "%s", message.c_str());
                 break;
-                
+
             case Output::Both:
                 std::cout << formatted << std::flush;
                 if (file_stream_ && file_stream_->is_open()) {
@@ -238,35 +236,35 @@ private:
                 break;
         }
     }
-    
+
     /// Format complete log line with timestamp, PID, etc.
     std::string format_log_line(LogLevel level, const std::string& message) {
         std::ostringstream oss;
-        
+
         // Timestamp
         if (timestamps_) {
             auto now = std::chrono::system_clock::now();
             auto time_t = std::chrono::system_clock::to_time_t(now);
             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                 now.time_since_epoch()) % 1000;
-            
+
             oss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
             oss << '.' << std::setfill('0') << std::setw(3) << ms.count() << " ";
         }
-        
+
         // Child PID
         if (show_pid_) {
             oss << "<" << child_pid_ << "> ";
         }
-        
+
         // Message
         oss << message;
-        
+
         // Ensure newline
         if (!message.empty() && message.back() != '\n') {
             oss << '\n';
         }
-        
+
         return oss.str();
     }
 };

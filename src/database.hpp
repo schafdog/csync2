@@ -27,7 +27,7 @@
 #include <functional>
 #include <set>
 #include <sys/stat.h>
-#include "dirty_record.hpp"
+//#include "dirty_record.hpp"
 
 // Forward declarations to avoid circular dependencies
 struct buffer;
@@ -225,7 +225,7 @@ protected:
 // Database factory
 class DatabaseFactory {
 public:
-    static std::unique_ptr<DatabaseConnection> create(const std::string& connection_string);
+    static std::unique_ptr<DatabaseConnection> create_from_url(const std::string& connection_string);
     static std::unique_ptr<DatabaseConnection> create(const std::string& file, DatabaseType type);
 };
 
@@ -243,33 +243,5 @@ private:
 };
 
 } // namespace csync2
-
-// Legacy C-style interface for compatibility
-extern "C" {
-    // Forward declarations for C types
-    typedef struct db_conn *db_conn_p;
-    typedef struct db_stmt *db_stmt_p;
-
-    // Database functions
-    db_conn_p csync_db_open(const char *file);
-    void csync_db_close(db_conn_p db);
-    int csync_db_exec(db_conn_p db, const char *sql);
-    
-    // Legacy functions that will be gradually replaced
-    int db_open(const char *file, int type, db_conn_p *db);
-    void db_close(void);
-    void db_conn_close(db_conn_p conn);
-    int db_exec(db_conn_p conn, const char *exec);
-    int db_prepare_stmt(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
-    const char* db_stmt_get_column_text(db_stmt_p stmt, int column);
-    int db_stmt_get_column_int(db_stmt_p stmt, int column);
-    int db_stmt_next(db_stmt_p stmt);
-    int db_stmt_close(db_stmt_p stmt);
-    void db_set_logger(db_conn_p conn, void (*logger)(int priority, int lv, const char *fmt, ...));
-    int db_schema_version(db_conn_p db);
-    int db_upgrade_to_schema(db_conn_p db, int version);
-    const char* db_errmsg(db_conn_p conn);
-    const char* db_escape(db_conn_p conn, const char *string);
-}
 
 #endif /* CSYNC2_DATABASE_HPP */
