@@ -643,6 +643,7 @@ static int csync_send_reg_file(int conn, peername_p peername, filename_p filenam
 	if (rc < -1) {
 		csync_error(0, "Failed to send file %s: %d", filename, errno);
 	}
+	fclose(file);
 	return read_conn_status(conn, filename, peername);
 }
 

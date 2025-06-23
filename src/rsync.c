@@ -477,6 +477,7 @@ int csync_rs_check(int conn, filename_p filename, int isreg) {
 			if (size == 0) {
 				// conn_read_chunk needs to read the zero size chunk
 				read = conn_read_chunk(conn, &peer, &chunk);
+				// Nothing is allocated when reading this.
 			} else {
 				free(peer);
 			}			
