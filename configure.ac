@@ -198,10 +198,10 @@ for flag in \
     -Woverloaded-virtual \
     -Wnon-virtual-dtor \
     -Wold-style-cast \
-    -fsanitize=address \
     -fno-omit-frame-pointer \
     -Wconversion-null
 #    -Wzero-as-null-pointer-constant
+#    -fsanitize=address \
 do
     AC_MSG_CHECKING([whether $CXX accepts $flag])
     old_CXXFLAGS="$CXXFLAGS"
