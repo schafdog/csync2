@@ -20,7 +20,7 @@
 
 #include "database.hpp"
 #include "database_sqlite.hpp"
-#include <algorithm>
+#include "database_mysql.hpp"
 
 namespace csync2 {
 
@@ -32,7 +32,7 @@ std::unique_ptr<DatabaseConnection> DatabaseFactory::create(DatabaseType type) {
             return std::make_unique<SQLiteConnection>();
         case DatabaseType::MYSQL:
             // Would return MySQL implementation
-            return nullptr;
+            return std::make_unique<MySQLConnection>();
         case DatabaseType::POSTGRESQL:
             // Would return PostgreSQL implementation
             return nullptr;

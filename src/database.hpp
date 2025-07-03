@@ -148,7 +148,7 @@ public:
     // Column information
     virtual int column_count() const = 0;
     virtual std::string column_name(int column) const = 0;
-    virtual std::string column_type(int column) const = 0;
+    //virtual std::string column_type(int column) const = 0;
 
     // Legacy compatibility
     virtual bool next_legacy() = 0;
