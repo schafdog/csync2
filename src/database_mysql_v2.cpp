@@ -1,65 +1,164 @@
+#include "database_mysql_v2.hpp"
+#include <dlfcn.h>
+#include <iostream>
+#include <map>
 #include <stdexcept>
 #include <variant>
-#include <map>
-#include "database_mysql_v2.hpp"
+#include <vector>
 #include <mysql/mysql.h>
 
-// --- MySQLConnection Implementation ---
+// Define function pointer types for the MySQL C API.
+using mysql_init_t = decltype(&mysql_init);
+using mysql_real_connect_t = decltype(&mysql_real_connect);
+using mysql_close_t = decltype(&mysql_close);
+using mysql_error_t = decltype(&mysql_error);
+using mysql_query_t = decltype(&mysql_query);
+using mysql_stmt_init_t = decltype(&mysql_stmt_init);
+using mysql_stmt_prepare_t = decltype(&mysql_stmt_prepare);
+using mysql_stmt_param_count_t = decltype(&mysql_stmt_param_count);
+using mysql_stmt_bind_param_t = decltype(&mysql_stmt_bind_param);
+using mysql_stmt_execute_t = decltype(&mysql_stmt_execute);
+using mysql_stmt_affected_rows_t = decltype(&mysql_stmt_affected_rows);
+using mysql_stmt_store_result_t = decltype(&mysql_stmt_store_result);
+using mysql_stmt_result_metadata_t = decltype(&mysql_stmt_result_metadata);
+using mysql_num_fields_t = decltype(&mysql_num_fields);
+using mysql_fetch_field_direct_t = decltype(&mysql_fetch_field_direct);
+using mysql_stmt_bind_result_t = decltype(&mysql_stmt_bind_result);
+using mysql_stmt_fetch_t = decltype(&mysql_stmt_fetch);
+using mysql_free_result_t = decltype(&mysql_free_result);
+using mysql_stmt_close_t = decltype(&mysql_stmt_close);
+using mysql_stmt_error_t = decltype(&mysql_stmt_error);
+
+std::vector<const char*> get_mysql_library_names() {
+#if defined(_WIN32) || defined(_WIN64)
+    return {"libmysql.dll", "libmariadb.dll"};
+#elif defined(__APPLE__)
+    return {"libmariadb.3.dylib", "libmariadb.dylib", "libmysqlclient.dylib"};
+#else
+    return {"libmysqlclient.so", "libmariadb.so"};
+#endif
+}
+
+struct MySQLAPI {
+    void* handle_;
+    mysql_init_t mysql_init;
+    mysql_real_connect_t mysql_real_connect;
+    mysql_close_t mysql_close;
+    mysql_error_t mysql_error;
+    mysql_query_t mysql_query;
+    mysql_stmt_init_t mysql_stmt_init;
+    mysql_stmt_prepare_t mysql_stmt_prepare;
+    mysql_stmt_param_count_t mysql_stmt_param_count;
+    mysql_stmt_bind_param_t mysql_stmt_bind_param;
+    mysql_stmt_execute_t mysql_stmt_execute;
+    mysql_stmt_affected_rows_t mysql_stmt_affected_rows;
+    mysql_stmt_store_result_t mysql_stmt_store_result;
+    mysql_stmt_result_metadata_t mysql_stmt_result_metadata;
+    mysql_num_fields_t mysql_num_fields;
+    mysql_fetch_field_direct_t mysql_fetch_field_direct;
+    mysql_stmt_bind_result_t mysql_stmt_bind_result;
+    mysql_stmt_fetch_t mysql_stmt_fetch;
+    mysql_free_result_t mysql_free_result;
+    mysql_stmt_close_t mysql_stmt_close;
+    mysql_stmt_error_t mysql_stmt_error;
+
+    MySQLAPI() {
+        std::vector<const char*> lib_names = get_mysql_library_names();
+        std::string error_msg = "Cannot open any of the MySQL/MariaDB libraries. Attempted:";
+        for (const char* lib_name : lib_names) {
+            handle_ = dlopen(lib_name, RTLD_LAZY);
+            if (handle_) {
+                break; // Successfully loaded
+            }
+            error_msg += " " + std::string(lib_name);
+        }
+
+        if (!handle_) {
+            throw DatabaseError(error_msg);
+        }
+
+        mysql_init = reinterpret_cast<mysql_init_t>(dlsym(handle_, "mysql_init"));
+        mysql_real_connect = reinterpret_cast<mysql_real_connect_t>(dlsym(handle_, "mysql_real_connect"));
+        mysql_close = reinterpret_cast<mysql_close_t>(dlsym(handle_, "mysql_close"));
+        mysql_error = reinterpret_cast<mysql_error_t>(dlsym(handle_, "mysql_error"));
+        mysql_query = reinterpret_cast<mysql_query_t>(dlsym(handle_, "mysql_query"));
+        mysql_stmt_init = reinterpret_cast<mysql_stmt_init_t>(dlsym(handle_, "mysql_stmt_init"));
+        mysql_stmt_prepare = reinterpret_cast<mysql_stmt_prepare_t>(dlsym(handle_, "mysql_stmt_prepare"));
+        mysql_stmt_param_count = reinterpret_cast<mysql_stmt_param_count_t>(dlsym(handle_, "mysql_stmt_param_count"));
+        mysql_stmt_bind_param = reinterpret_cast<mysql_stmt_bind_param_t>(dlsym(handle_, "mysql_stmt_bind_param"));
+        mysql_stmt_execute = reinterpret_cast<mysql_stmt_execute_t>(dlsym(handle_, "mysql_stmt_execute"));
+        mysql_stmt_affected_rows = reinterpret_cast<mysql_stmt_affected_rows_t>(dlsym(handle_, "mysql_stmt_affected_rows"));
+        mysql_stmt_store_result = reinterpret_cast<mysql_stmt_store_result_t>(dlsym(handle_, "mysql_stmt_store_result"));
+        mysql_stmt_result_metadata = reinterpret_cast<mysql_stmt_result_metadata_t>(dlsym(handle_, "mysql_stmt_result_metadata"));
+        mysql_num_fields = reinterpret_cast<mysql_num_fields_t>(dlsym(handle_, "mysql_num_fields"));
+        mysql_fetch_field_direct = reinterpret_cast<mysql_fetch_field_direct_t>(dlsym(handle_, "mysql_fetch_field_direct"));
+        mysql_stmt_bind_result = reinterpret_cast<mysql_stmt_bind_result_t>(dlsym(handle_, "mysql_stmt_bind_result"));
+        mysql_stmt_fetch = reinterpret_cast<mysql_stmt_fetch_t>(dlsym(handle_, "mysql_stmt_fetch"));
+        mysql_free_result = reinterpret_cast<mysql_free_result_t>(dlsym(handle_, "mysql_free_result"));
+        mysql_stmt_close = reinterpret_cast<mysql_stmt_close_t>(dlsym(handle_, "mysql_stmt_close"));
+        mysql_stmt_error = reinterpret_cast<mysql_stmt_error_t>(dlsym(handle_, "mysql_stmt_error"));
+    }
+
+    ~MySQLAPI() {
+        if (handle_) {
+            dlclose(handle_);
+        }
+    }
+};
 
 MySQLConnection::MySQLConnection(const std::string& host, const std::string& user, const std::string& passwd,
-				 const std::string& db, unsigned int port) {
-    mysql_ = mysql_init(nullptr);
+                                 const std::string& db, unsigned int port) {
+    mysql_api_ = std::make_shared<MySQLAPI>();
+    mysql_ = mysql_api_->mysql_init(nullptr);
     if (!mysql_) {
         throw DatabaseError("mysql_init failed");
     }
 
-    if (!mysql_real_connect(mysql_, host.c_str(), user.c_str(), passwd.c_str(), db.c_str(), port, nullptr, 0)) {
-        throw DatabaseError("mysql_real_connect failed: " + std::string(mysql_error(mysql_)));
+    if (!mysql_api_->mysql_real_connect(mysql_, host.c_str(), user.c_str(), passwd.c_str(), db.c_str(), port, nullptr, 0)) {
+        throw DatabaseError("mysql_real_connect failed: " + std::string(mysql_api_->mysql_error(mysql_)));
     }
 }
 
 MySQLConnection::~MySQLConnection() {
     if (mysql_) {
-        mysql_close(mysql_);
+        mysql_api_->mysql_close(mysql_);
     }
 }
 
 std::unique_ptr<PreparedStatement> MySQLConnection::prepare(const std::string& sql) {
-    return std::make_unique<MySQLPreparedStatement>(mysql_, sql);
+    return std::make_unique<MySQLPreparedStatement>(mysql_, sql, mysql_api_);
 }
 
 void MySQLConnection::begin_transaction() {
-    if (mysql_query(mysql_, "START TRANSACTION")) {
-        throw DatabaseError("Failed to start transaction: " + std::string(mysql_error(mysql_)));
+    if (mysql_api_->mysql_query(mysql_, "START TRANSACTION")) {
+        throw DatabaseError("Failed to start transaction: " + std::string(mysql_api_->mysql_error(mysql_)));
     }
 }
 
 void MySQLConnection::commit() {
-    if (mysql_query(mysql_, "COMMIT")) {
-        throw DatabaseError("Failed to commit transaction: " + std::string(mysql_error(mysql_)));
+    if (mysql_api_->mysql_query(mysql_, "COMMIT")) {
+        throw DatabaseError("Failed to commit transaction: " + std::string(mysql_api_->mysql_error(mysql_)));
     }
 }
 
 void MySQLConnection::rollback() {
-    if (mysql_query(mysql_, "ROLLBACK")) {
-        throw DatabaseError("Failed to rollback transaction: " + std::string(mysql_error(mysql_)));
+    if (mysql_api_->mysql_query(mysql_, "ROLLBACK")) {
+        throw DatabaseError("Failed to rollback transaction: " + std::string(mysql_api_->mysql_error(mysql_)));
     }
 }
 
-
-// --- MySQLPreparedStatement Implementation ---
-
-MySQLPreparedStatement::MySQLPreparedStatement(MYSQL* mysql, const std::string& sql) : mysql_(mysql) {
-    stmt_ = mysql_stmt_init(mysql_);
+MySQLPreparedStatement::MySQLPreparedStatement(MYSQL* mysql, const std::string& sql, std::shared_ptr<MySQLAPI> api)
+    : mysql_(mysql), api_(api) {
+    stmt_ = api_->mysql_stmt_init(mysql_);
     if (!stmt_) {
         throw DatabaseError("mysql_stmt_init failed");
     }
 
-    if (mysql_stmt_prepare(stmt_, sql.c_str(), sql.length())) {
-        throw DatabaseError("mysql_stmt_prepare failed: " + std::string(mysql_stmt_error(stmt_)));
+    if (api_->mysql_stmt_prepare(stmt_, sql.c_str(), sql.length())) {
+        throw DatabaseError("mysql_stmt_prepare failed: " + std::string(api_->mysql_stmt_error(stmt_)));
     }
 
-    int param_count = mysql_stmt_param_count(stmt_);
+    unsigned long param_count = api_->mysql_stmt_param_count(stmt_);
     if (param_count > 0) {
         params_.resize(param_count);
         param_values_.resize(param_count);
@@ -68,7 +167,7 @@ MySQLPreparedStatement::MySQLPreparedStatement(MYSQL* mysql, const std::string& 
 
 MySQLPreparedStatement::~MySQLPreparedStatement() {
     if (stmt_) {
-        mysql_stmt_close(stmt_);
+        api_->mysql_stmt_close(stmt_);
     }
 }
 
@@ -81,11 +180,12 @@ void MySQLPreparedStatement::bind(int index, long long value) {
 void MySQLPreparedStatement::bind(int index, double value) {
     param_values_[index - 1] = value;
 }
-void MySQLPreparedStatement::bind(int index, const std::string& value) {
-    param_values_[index - 1] = value;
-}
 void MySQLPreparedStatement::bind_null(int index) {
     param_values_[index - 1] = std::monostate{};
+}
+
+void MySQLPreparedStatement::bind(int index, const std::string& value) {
+    param_values_[index - 1] = value;
 }
 
 void MySQLPreparedStatement::bind_param() {
@@ -117,101 +217,96 @@ void MySQLPreparedStatement::bind_param() {
         }, param_values_[i]);
     }
 
-    if (mysql_stmt_bind_param(stmt_, params_.data())) {
-        throw DatabaseError("mysql_stmt_bind_param failed: " + std::string(mysql_stmt_error(stmt_)));
+    if (api_->mysql_stmt_bind_param(stmt_, params_.data())) {
+        throw DatabaseError("mysql_stmt_bind_param failed: " + std::string(api_->mysql_stmt_error(stmt_)));
     }
 }
 
 std::unique_ptr<ResultSet> MySQLPreparedStatement::execute_query() {
     bind_param();
-    if (mysql_stmt_execute(stmt_)) {
-        throw DatabaseError("mysql_stmt_execute failed: " + std::string(mysql_stmt_error(stmt_)));
+    if (api_->mysql_stmt_execute(stmt_)) {
+        throw DatabaseError("mysql_stmt_execute failed: " + std::string(api_->mysql_stmt_error(stmt_)));
     }
-    return std::make_unique<MySQLResultSet>(stmt_);
+    return std::make_unique<MySQLResultSet>(stmt_, api_);
 }
 
 long long MySQLPreparedStatement::execute_update() {
     bind_param();
-    if (mysql_stmt_execute(stmt_)) {
-        throw DatabaseError("mysql_stmt_execute failed: " + std::string(mysql_stmt_error(stmt_)));
+    if (api_->mysql_stmt_execute(stmt_)) {
+        throw DatabaseError("mysql_stmt_execute failed: " + std::string(api_->mysql_stmt_error(stmt_)));
     }
-    return mysql_stmt_affected_rows(stmt_);
+    return api_->mysql_stmt_affected_rows(stmt_);
 }
 
-
-// --- MySQLResultSet Implementation ---
-
-MySQLResultSet::MySQLResultSet(MYSQL_STMT* stmt) : stmt_(stmt) {
-    if (mysql_stmt_store_result(stmt_)) {
-        throw DatabaseError("mysql_stmt_store_result failed: " + std::string(mysql_stmt_error(stmt_)));
+MySQLResultSet::MySQLResultSet(MYSQL_STMT* stmt, std::shared_ptr<MySQLAPI> api) : stmt_(stmt), api_(api) {
+    if (api_->mysql_stmt_store_result(stmt_)) {
+        throw DatabaseError("mysql_stmt_store_result failed: " + std::string(api_->mysql_stmt_error(stmt_)));
     }
     bind_results();
 
-    // Populate column name to index map
     if (meta_result_) {
-        int num_fields = mysql_num_fields(meta_result_);
-        for (int i = 0; i < num_fields; ++i) {
-            MYSQL_FIELD* field = mysql_fetch_field_direct(meta_result_, i);
-            column_names_[field->name] = i + 1; // 1-based index
+        unsigned int num_fields = api_->mysql_num_fields(meta_result_);
+        for (unsigned int i = 0; i < num_fields; ++i) {
+            MYSQL_FIELD* field = api_->mysql_fetch_field_direct(meta_result_, i);
+            column_names_[field->name] = i + 1;
         }
     }
 }
 
 MySQLResultSet::~MySQLResultSet() {
     if (meta_result_) {
-        mysql_free_result(meta_result_);
+        api_->mysql_free_result(meta_result_);
     }
 }
 
 void MySQLResultSet::bind_results() {
-    meta_result_ = mysql_stmt_result_metadata(stmt_);
+    meta_result_ = api_->mysql_stmt_result_metadata(stmt_);
     if (!meta_result_) {
-        return; // Not a query that returns results
+        return;
     }
 
-    int num_fields = mysql_num_fields(meta_result_);
+    unsigned int num_fields = api_->mysql_num_fields(meta_result_);
     results_.resize(num_fields);
     result_buffers_.resize(num_fields);
     is_null_.resize(num_fields);
     length_.resize(num_fields);
 
-    for (int i = 0; i < num_fields; ++i) {
-        MYSQL_FIELD* field = mysql_fetch_field_direct(meta_result_, i);
-        results_[i] = {}; // Clear the struct
+    for (unsigned int i = 0; i < num_fields; ++i) {
+        MYSQL_FIELD* field = api_->mysql_fetch_field_direct(meta_result_, i);
+        results_[i] = {};
         results_[i].buffer_type = field->type;
         results_[i].is_null = &is_null_[i];
         results_[i].length = &length_[i];
 
-        // A more sophisticated implementation would use a smarter buffer pool
         size_t buffer_size = (field->max_length > 0) ? field->max_length : 32;
         result_buffers_[i].resize(buffer_size);
         results_[i].buffer = result_buffers_[i].data();
         results_[i].buffer_length = result_buffers_[i].size();
     }
 
-    if (mysql_stmt_bind_result(stmt_, results_.data())) {
-        throw DatabaseError("mysql_stmt_bind_result failed: " + std::string(mysql_stmt_error(stmt_)));
+    if (api_->mysql_stmt_bind_result(stmt_, results_.data())) {
+        throw DatabaseError("mysql_stmt_bind_result failed: " + std::string(api_->mysql_stmt_error(stmt_)));
     }
 }
 
 bool MySQLResultSet::next() {
     if (!meta_result_) return false;
-    int rc = mysql_stmt_fetch(stmt_);
+    int rc = api_->mysql_stmt_fetch(stmt_);
     if (rc == 0) {
-        return true; // Success
+        return true;
     }
     if (rc == MYSQL_NO_DATA) {
-        return false; // End of results
+        return false;
     }
-    throw DatabaseError("mysql_stmt_fetch failed: " + std::string(mysql_stmt_error(stmt_)));
+    throw DatabaseError("mysql_stmt_fetch failed: " + std::string(api_->mysql_stmt_error(stmt_)));
 }
 
-int MySQLResultSet::get_int(int index) const  {
+int MySQLResultSet::get_int(int index) const {
     if (is_null_[index - 1]) return 0;
     return *reinterpret_cast<int*>(results_[index - 1].buffer);
 }
 
-long long MySQLResultSet::get_long(int index) const  {
+long long MySQLResultSet::get_long(int index) const {
     if (is_null_[index - 1]) return 0;
     return *reinterpret_cast<long long*>(results_[index - 1].buffer);
 }

@@ -2,10 +2,17 @@
 #define DATABASE_SQLITE_V2_HPP
 
 #include <string>
-#include <sqlite3.h>
+#include <memory>
 #include "database_v2.hpp"
 
+// Forward declare SQLite types to avoid including sqlite3.h in the header.
+struct sqlite3;
+struct sqlite3_stmt;
+
 class SQLitePreparedStatement;
+
+// A struct to hold the dynamically loaded SQLite API.
+struct SQLiteAPI;
 
 class SQLiteConnection : public DatabaseConnection {
 public:
@@ -17,21 +24,22 @@ public:
     query(begin_str);
   }
 
-    void commit() override {
-      query(commit_str);
-    }
+  void commit() override {
+    query(commit_str);
+  }
 
-    void rollback() override {
-      query(rollback_str);
-    }
+  void rollback() override {
+    query(rollback_str);
+  }
 
 private:
   void query(const std::string& sql);
   sqlite3* db_;
+  std::shared_ptr<SQLiteAPI> sqlite_api_; // Holds the loaded library and function pointers.
+
   const std::string begin_str = "BEGIN TRANSACTION;";
   const std::string commit_str = "COMMIT;";
   const std::string rollback_str = "ROLLBACK;";
-
 };
 
 #endif

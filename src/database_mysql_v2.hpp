@@ -3,12 +3,12 @@
 
 #include <vector>
 #include <map>
+#include <memory>
 #include "database_v2.hpp"
 #include <mysql.h>
-
-// Forward declarations for the implementation
 class MySQLPreparedStatement;
 class MySQLResultSet;
+struct MySQLAPI;
 
 class MySQLConnection : public DatabaseConnection {
 public:
@@ -23,12 +23,13 @@ public:
 
 private:
     friend class MySQLPreparedStatement;
-    MYSQL* mysql_ = nullptr;  
+    MYSQL* mysql_ = nullptr;
+    std::shared_ptr<MySQLAPI> mysql_api_;
 };
 
 class MySQLPreparedStatement : public PreparedStatement {
 public:
-    MySQLPreparedStatement(MYSQL* mysql, const std::string& sql);
+    MySQLPreparedStatement(MYSQL* mysql, const std::string& sql, std::shared_ptr<MySQLAPI> api);
     ~MySQLPreparedStatement() override;
 
     void bind(int index, int value) override;
@@ -47,13 +48,13 @@ private:
     MYSQL* mysql_;
     MYSQL_STMT* stmt_ = nullptr;
     std::vector<MYSQL_BIND> params_;
-    // Holds the data for the MYSQL_BIND structs
-    std::vector<std::variant<std::monostate, int, long long, double, std::string>> param_values_; 
+    std::vector<std::variant<std::monostate, int, long long, double, std::string>> param_values_;
+    std::shared_ptr<MySQLAPI> api_;
 };
 
 class MySQLResultSet : public ResultSet {
 public:
-  MySQLResultSet(MYSQL_STMT* stmt);
+  MySQLResultSet(MYSQL_STMT* stmt, std::shared_ptr<MySQLAPI> api);
   ~MySQLResultSet() override;
 
     bool next() override;
@@ -63,7 +64,6 @@ public:
     double get_double(int index) const override;
     std::string get_string(int index) const override;
 
-      // New methods for column name lookup
     int get_int(const std::string& name) const override {
         return get_int(get_column_index(name));
     }
@@ -91,10 +91,11 @@ private:
     MYSQL_STMT* stmt_;
     MYSQL_RES* meta_result_ = nullptr;
     std::vector<MYSQL_BIND> results_;
-    std::vector<std::vector<char>> result_buffers_; // Raw buffers for string/blob data
-    std::vector<my_bool> is_null_; // To track NULL values
-    std::vector<unsigned long> length_; // To track string lengths
+    std::vector<std::vector<char>> result_buffers_;
+    std::vector<my_bool> is_null_;
+    std::vector<unsigned long> length_;
     std::map<std::string, int> column_names_;
+    std::shared_ptr<MySQLAPI> api_;
 };
 
 #endif // DATABASE_MYSQL_V2_HPP

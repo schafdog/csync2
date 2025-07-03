@@ -2,13 +2,19 @@
 #define DATABASE_POSTGRES_V2_HPP
 
 #include "database_v2.hpp"
-#include <libpq-fe.h>
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
 // Forward declarations
+struct pg_conn;
+struct pg_result;
+typedef struct pg_conn PGconn;
+typedef struct pg_result PGresult;
+
 class PostgresPreparedStatement;
+struct PostgresAPI;
 
 class PostgresConnection : public DatabaseConnection {
 public:
@@ -25,11 +31,12 @@ private:
     friend class PostgresPreparedStatement;
     PGconn* conn_ = nullptr;
     int statement_counter_ = 0; // To generate unique statement names
+    std::shared_ptr<PostgresAPI> pg_api_;
 };
 
 class PostgresPreparedStatement : public PreparedStatement {
 public:
-    PostgresPreparedStatement(PGconn* conn, const std::string& name, const std::string& sql);
+    PostgresPreparedStatement(PGconn* conn, const std::string& name, const std::string& sql, std::shared_ptr<PostgresAPI> api);
     ~PostgresPreparedStatement() override = default; // Nothing to do, server cleans up
 
     void bind(int index, int value) override;
@@ -46,11 +53,12 @@ private:
     std::string name_;
     std::vector<std::string> param_values_;
     std::vector<const char*> param_pointers_;
+    std::shared_ptr<PostgresAPI> api_;
 };
 
 class PostgresResultSet : public ResultSet {
 public:
-    explicit PostgresResultSet(PGresult* res);
+    explicit PostgresResultSet(PGresult* res, std::shared_ptr<PostgresAPI> api);
     ~PostgresResultSet() override;
 
     bool next() override;
@@ -76,6 +84,7 @@ private:
     int current_row_ = -1;
     int num_rows_ = 0;
     std::map<std::string, int> column_names_;
+    std::shared_ptr<PostgresAPI> api_;
 };
 
 #endif // DATABASE_POSTGRES_V2_HPP

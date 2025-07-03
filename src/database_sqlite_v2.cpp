@@ -1,56 +1,157 @@
-#include "database_v2.hpp"
-#include <sqlite3.h>
-#include <map>
 #include "database_sqlite_v2.hpp"
+#include <dlfcn.h>
+#include <iostream>
+#include <map>
+#include <stdexcept>
+#include <sqlite3.h>
 
-// --- Concrete Implementation for SQLite ---
+// Define function pointer types for the SQLite C API.
+using sqlite3_open_t = decltype(&sqlite3_open);
+using sqlite3_close_t = decltype(&sqlite3_close);
+using sqlite3_exec_t = decltype(&sqlite3_exec);
+using sqlite3_prepare_v2_t = decltype(&sqlite3_prepare_v2);
+using sqlite3_finalize_t = decltype(&sqlite3_finalize);
+using sqlite3_step_t = decltype(&sqlite3_step);
+using sqlite3_reset_t = decltype(&sqlite3_reset);
+using sqlite3_clear_bindings_t = decltype(&sqlite3_clear_bindings);
+using sqlite3_bind_int_t = decltype(&sqlite3_bind_int);
+using sqlite3_bind_int64_t = decltype(&sqlite3_bind_int64);
+using sqlite3_bind_double_t = decltype(&sqlite3_bind_double);
+using sqlite3_bind_text_t = decltype(&sqlite3_bind_text);
+using sqlite3_bind_null_t = decltype(&sqlite3_bind_null);
+using sqlite3_column_count_t = decltype(&sqlite3_column_count);
+using sqlite3_column_name_t = decltype(&sqlite3_column_name);
+using sqlite3_column_type_t = decltype(&sqlite3_column_type);
+using sqlite3_column_int_t = decltype(&sqlite3_column_int);
+using sqlite3_column_int64_t = decltype(&sqlite3_column_int64);
+using sqlite3_column_double_t = decltype(&sqlite3_column_double);
+using sqlite3_column_text_t = decltype(&sqlite3_column_text);
+using sqlite3_errmsg_t = decltype(&sqlite3_errmsg);
+using sqlite3_db_handle_t = decltype(&sqlite3_db_handle);
+using sqlite3_changes_t = decltype(&sqlite3_changes);
+using sqlite3_free_t = decltype(&sqlite3_free);
+
+const char* get_sqlite_library_name() {
+#if defined(_WIN32) || defined(_WIN64)
+    return "sqlite3.dll";
+#elif defined(__APPLE__)
+    return "libsqlite3.dylib";
+#else
+    return "libsqlite3.so";
+#endif
+}
+
+struct SQLiteAPI {
+    void* handle_;
+    sqlite3_open_t sqlite3_open;
+    sqlite3_close_t sqlite3_close;
+    sqlite3_exec_t sqlite3_exec;
+    sqlite3_prepare_v2_t sqlite3_prepare_v2;
+    sqlite3_finalize_t sqlite3_finalize;
+    sqlite3_step_t sqlite3_step;
+    sqlite3_reset_t sqlite3_reset;
+    sqlite3_clear_bindings_t sqlite3_clear_bindings;
+    sqlite3_bind_int_t sqlite3_bind_int;
+    sqlite3_bind_int64_t sqlite3_bind_int64;
+    sqlite3_bind_double_t sqlite3_bind_double;
+    sqlite3_bind_text_t sqlite3_bind_text;
+    sqlite3_bind_null_t sqlite3_bind_null;
+    sqlite3_column_count_t sqlite3_column_count;
+    sqlite3_column_name_t sqlite3_column_name;
+    sqlite3_column_type_t sqlite3_column_type;
+    sqlite3_column_int_t sqlite3_column_int;
+    sqlite3_column_int64_t sqlite3_column_int64;
+    sqlite3_column_double_t sqlite3_column_double;
+    sqlite3_column_text_t sqlite3_column_text;
+    sqlite3_errmsg_t sqlite3_errmsg;
+    sqlite3_db_handle_t sqlite3_db_handle;
+    sqlite3_changes_t sqlite3_changes;
+    sqlite3_free_t sqlite3_free;
+
+    SQLiteAPI() {
+        const char* lib_name = get_sqlite_library_name();
+        handle_ = dlopen(lib_name, RTLD_LAZY);
+        if (!handle_) {
+            throw DatabaseError("Cannot open " + std::string(lib_name));
+        }
+
+        sqlite3_open = reinterpret_cast<sqlite3_open_t>(dlsym(handle_, "sqlite3_open"));
+        sqlite3_close = reinterpret_cast<sqlite3_close_t>(dlsym(handle_, "sqlite3_close"));
+        sqlite3_exec = reinterpret_cast<sqlite3_exec_t>(dlsym(handle_, "sqlite3_exec"));
+        sqlite3_prepare_v2 = reinterpret_cast<sqlite3_prepare_v2_t>(dlsym(handle_, "sqlite3_prepare_v2"));
+        sqlite3_finalize = reinterpret_cast<sqlite3_finalize_t>(dlsym(handle_, "sqlite3_finalize"));
+        sqlite3_step = reinterpret_cast<sqlite3_step_t>(dlsym(handle_, "sqlite3_step"));
+        sqlite3_reset = reinterpret_cast<sqlite3_reset_t>(dlsym(handle_, "sqlite3_reset"));
+        sqlite3_clear_bindings = reinterpret_cast<sqlite3_clear_bindings_t>(dlsym(handle_, "sqlite3_clear_bindings"));
+        sqlite3_bind_int = reinterpret_cast<sqlite3_bind_int_t>(dlsym(handle_, "sqlite3_bind_int"));
+        sqlite3_bind_int64 = reinterpret_cast<sqlite3_bind_int64_t>(dlsym(handle_, "sqlite3_bind_int64"));
+        sqlite3_bind_double = reinterpret_cast<sqlite3_bind_double_t>(dlsym(handle_, "sqlite3_bind_double"));
+        sqlite3_bind_text = reinterpret_cast<sqlite3_bind_text_t>(dlsym(handle_, "sqlite3_bind_text"));
+        sqlite3_bind_null = reinterpret_cast<sqlite3_bind_null_t>(dlsym(handle_, "sqlite3_bind_null"));
+        sqlite3_column_count = reinterpret_cast<sqlite3_column_count_t>(dlsym(handle_, "sqlite3_column_count"));
+        sqlite3_column_name = reinterpret_cast<sqlite3_column_name_t>(dlsym(handle_, "sqlite3_column_name"));
+        sqlite3_column_type = reinterpret_cast<sqlite3_column_type_t>(dlsym(handle_, "sqlite3_column_type"));
+        sqlite3_column_int = reinterpret_cast<sqlite3_column_int_t>(dlsym(handle_, "sqlite3_column_int"));
+        sqlite3_column_int64 = reinterpret_cast<sqlite3_column_int64_t>(dlsym(handle_, "sqlite3_column_int64"));
+        sqlite3_column_double = reinterpret_cast<sqlite3_column_double_t>(dlsym(handle_, "sqlite3_column_double"));
+        sqlite3_column_text = reinterpret_cast<sqlite3_column_text_t>(dlsym(handle_, "sqlite3_column_text"));
+        sqlite3_errmsg = reinterpret_cast<sqlite3_errmsg_t>(dlsym(handle_, "sqlite3_errmsg"));
+        sqlite3_db_handle = reinterpret_cast<sqlite3_db_handle_t>(dlsym(handle_, "sqlite3_db_handle"));
+        sqlite3_changes = reinterpret_cast<sqlite3_changes_t>(dlsym(handle_, "sqlite3_changes"));
+        sqlite3_free = reinterpret_cast<sqlite3_free_t>(dlsym(handle_, "sqlite3_free"));
+    }
+
+    ~SQLiteAPI() {
+        if (handle_) {
+            dlclose(handle_);
+        }
+    }
+};
 
 class SQLiteResultSet : public ResultSet {
 public:
-    explicit SQLiteResultSet(sqlite3_stmt* stmt)
-        : stmt_(stmt) {
-        // Populate column name to index map
-        int col_count = sqlite3_column_count(stmt_);
+    explicit SQLiteResultSet(sqlite3_stmt* stmt, std::shared_ptr<SQLiteAPI> api)
+        : stmt_(stmt), api_(api) {
+        int col_count = api_->sqlite3_column_count(stmt_);
         for (int i = 0; i < col_count; ++i) {
-            column_names_[sqlite3_column_name(stmt_, i)] = i + 1; // 1-based index
+            column_names_[api_->sqlite3_column_name(stmt_, i)] = i + 1;
         }
     }
 
     ~SQLiteResultSet() override {
         if (stmt_) {
-            sqlite3_finalize(stmt_);
+            api_->sqlite3_finalize(stmt_);
         }
     }
 
     bool next() override {
-        int rc = sqlite3_step(stmt_);
+        int rc = api_->sqlite3_step(stmt_);
         if (rc == SQLITE_ROW) {
             return true;
         }
         if (rc == SQLITE_DONE) {
             return false;
         }
-        throw DatabaseError("Failed to step through result set: " + std::string(sqlite3_errmsg(sqlite3_db_handle(stmt_))));
+        throw DatabaseError("Failed to step through result set: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
     }
 
     int get_int(int index) const override {
-        return sqlite3_column_int(stmt_, index - 1);
+        return api_->sqlite3_column_int(stmt_, index - 1);
     }
 
     long long get_long(int index) const override {
-        return sqlite3_column_int64(stmt_, index - 1);
+        return api_->sqlite3_column_int64(stmt_, index - 1);
     }
 
     double get_double(int index) const override {
-        return sqlite3_column_double(stmt_, index - 1);
+        return api_->sqlite3_column_double(stmt_, index - 1);
     }
 
     std::string get_string(int index) const override {
-        const unsigned char* text = sqlite3_column_text(stmt_, index - 1);
+        const unsigned char* text = api_->sqlite3_column_text(stmt_, index - 1);
         return text ? reinterpret_cast<const char*>(text) : "";
     }
 
-    // New methods for column name lookup
     int get_int(const std::string& name) const override {
         return get_int(get_column_index(name));
     }
@@ -73,90 +174,93 @@ private:
         return it->second;
     }
 
-    sqlite3_stmt* stmt_; // The raw C-style statement handle, now owned by ResultSet
+    sqlite3_stmt* stmt_;
+    std::shared_ptr<SQLiteAPI> api_;
     std::map<std::string, int> column_names_;
 };
 
 class SQLitePreparedStatement : public PreparedStatement {
 public:
-    SQLitePreparedStatement(sqlite3* db, const std::string& sql) : db_(db), stmt_(nullptr) {
-        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt_, nullptr);
+    SQLitePreparedStatement(sqlite3* db, const std::string& sql, std::shared_ptr<SQLiteAPI> api)
+        : db_(db), stmt_(nullptr), api_(api) {
+        int rc = api_->sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt_, nullptr);
         if (rc != SQLITE_OK) {
-            throw DatabaseError("Failed to prepare statement: " + std::string(sqlite3_errmsg(db)));
+            throw DatabaseError("Failed to prepare statement: " + std::string(api_->sqlite3_errmsg(db)));
         }
     }
 
     ~SQLitePreparedStatement() override {
         if (stmt_) {
-            sqlite3_finalize(stmt_);
+            api_->sqlite3_finalize(stmt_);
         }
     }
 
     void bind(int index, int value) override {
-        sqlite3_bind_int(stmt_, index, value);
+        api_->sqlite3_bind_int(stmt_, index, value);
     }
 
     void bind(int index, long long value) override {
-        sqlite3_bind_int64(stmt_, index, value);
+        api_->sqlite3_bind_int64(stmt_, index, value);
     }
 
     void bind(int index, double value) override {
-        sqlite3_bind_double(stmt_, index, value);
+        api_->sqlite3_bind_double(stmt_, index, value);
     }
 
     void bind(int index, const std::string& value) override {
-        sqlite3_bind_text(stmt_, index, value.c_str(), -1, SQLITE_TRANSIENT);
+        api_->sqlite3_bind_text(stmt_, index, value.c_str(), -1, SQLITE_TRANSIENT);
     }
 
     void bind_null(int index) override {
-        sqlite3_bind_null(stmt_, index);
+        api_->sqlite3_bind_null(stmt_, index);
     }
 
     std::unique_ptr<ResultSet> execute_query() override {
-        // Transfer ownership of the statement to the ResultSet
-        std::unique_ptr<ResultSet> rs = std::make_unique<SQLiteResultSet>(stmt_);
-        stmt_ = nullptr; // Release ownership from PreparedStatement
+        std::unique_ptr<ResultSet> rs = std::make_unique<SQLiteResultSet>(stmt_, api_);
+        stmt_ = nullptr;
         return rs;
     }
 
     long long execute_update() override {
-        int rc = sqlite3_step(stmt_);
+        int rc = api_->sqlite3_step(stmt_);
         if (rc != SQLITE_DONE) {
-            throw DatabaseError("Failed to execute update: " + std::string(sqlite3_errmsg(db_)));
+            throw DatabaseError("Failed to execute update: " + std::string(api_->sqlite3_errmsg(db_)));
         }
-        sqlite3_reset(stmt_); // Reset for reuse
-        sqlite3_clear_bindings(stmt_); // Clear bindings for reuse
-        return sqlite3_changes(db_);
+        api_->sqlite3_reset(stmt_);
+        api_->sqlite3_clear_bindings(stmt_);
+        return api_->sqlite3_changes(db_);
     }
 
 private:
     sqlite3* db_;
     sqlite3_stmt* stmt_;
+    std::shared_ptr<SQLiteAPI> api_;
 };
 
 SQLiteConnection::SQLiteConnection(const std::string& db_path) : db_(nullptr) {
-  int rc = sqlite3_open(db_path.c_str(), &db_);
-  if (rc != SQLITE_OK) {
-    throw DatabaseError("Cannot open database: " + std::string(sqlite3_errmsg(db_)));
-  }
+    sqlite_api_ = std::make_shared<SQLiteAPI>();
+    int rc = sqlite_api_->sqlite3_open(db_path.c_str(), &db_);
+    if (rc != SQLITE_OK) {
+        throw DatabaseError("Cannot open database: " + std::string(sqlite_api_->sqlite3_errmsg(db_)));
+    }
 }
 
 SQLiteConnection::~SQLiteConnection() {
-  if (db_) {
-    sqlite3_close(db_);
-  }
+    if (db_) {
+        sqlite_api_->sqlite3_close(db_);
+    }
 }
 
 void SQLiteConnection::query(const std::string& sql) {
-  char* err_msg = nullptr;
-  int rc = sqlite3_exec(db_, sql.c_str(), 0, 0, &err_msg);
-  if (rc != SQLITE_OK) {
-    std::string msg = "SQL error: " + std::string(err_msg);
-    sqlite3_free(err_msg);
-    throw DatabaseError(msg);
-  }
+    char* err_msg = nullptr;
+    int rc = sqlite_api_->sqlite3_exec(db_, sql.c_str(), 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        std::string msg = "SQL error: " + std::string(err_msg);
+        sqlite_api_->sqlite3_free(err_msg);
+        throw DatabaseError(msg);
+    }
 }
 
 std::unique_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& sql) {
-  return std::make_unique<SQLitePreparedStatement>(db_, sql);
+    return std::make_unique<SQLitePreparedStatement>(db_, sql, sqlite_api_);
 }

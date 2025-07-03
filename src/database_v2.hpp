@@ -2,7 +2,6 @@
 #define DATABASE_V2_HPP
 
 #include <string>
-#include <vector>
 #include <memory>
 #include <stdexcept>
 #include <variant>

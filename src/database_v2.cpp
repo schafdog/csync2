@@ -7,6 +7,11 @@
 #include <map>
 #include <stdexcept>
 
+std::string parse_sqllite(std::map<std::string, std::string>& params) {
+    std::string filename = params.count("filename") > 0 ? params["filename"] : "";
+    return filename;
+}
+
 std::unique_ptr<DatabaseConnection> create_connection(const std::string& conn_string) {
     std::map<std::string, std::string> params;
     std::stringstream ss(conn_string);
@@ -42,9 +47,8 @@ std::unique_ptr<DatabaseConnection> create_connection(const std::string& conn_st
     }
     std::string reconstructed_conn_string = remaining_ss.str();
 
-
     if (type_str == "SQLite") {
-        return std::make_unique<SQLiteConnection>(reconstructed_conn_string);
+        return std::make_unique<SQLiteConnection>(parse_sqllite(params));
     } else if (type_str == "MySQL") {
         // For MySQL, use the parameters directly from the map
         std::string host = params.count("host") ? params["host"] : "";

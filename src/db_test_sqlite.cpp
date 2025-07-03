@@ -10,7 +10,7 @@ void test_sqlite() {
 
     try {
         // 1. Connect
-        const std::string conn_str = "type=SQLite;db=test_sqlite.db";
+        const std::string conn_str = "type=SQLite;dbname=test_sqlite.db";
         auto conn = create_connection(conn_str);
         std::cout << "Connected to SQLite database: " << conn_str << std::endl;
 
@@ -34,7 +34,7 @@ void test_sqlite() {
         insert_stmt->bind(1, "Bob");
         insert_stmt->bind(2, 42);
         insert_stmt->execute_update();
-        
+
         insert_stmt->bind(1, "Charlie");
         insert_stmt->bind_null(2); // Age is NULL
         insert_stmt->execute_update();
@@ -52,7 +52,7 @@ void test_sqlite() {
         while (rs->next()) {
             int id = rs->get_int("id");
             std::string name = rs->get_string("name");
-            int age = rs->get_int("age"); 
+            int age = rs->get_int("age");
             std::cout << id << "\t" << name << "\t" << age << std::endl;
         }
         std::cout << "--------------------" << std::endl;
