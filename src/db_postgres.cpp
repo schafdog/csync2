@@ -62,6 +62,13 @@ static struct db_postgres_fns {
 	char* (*PQerrorMessage_fn)(const PGconn*);
 	void (*PQfinish_fn)(PGconn*);
 	PGresult* (*PQexec_fn)(PGconn*, const char*);
+	PGresult* (*PQprepare_fn)(PGconn *conn,
+                    const char *stmtName, const char *query,
+                    int nParams, const Oid *paramTypes);
+	PGresult (*PQexecPrepared_fn)(PGconn *conn, const char *stmtName,
+                         int nParams, const char * const *paramValues,
+                         const int *paramLengths,const int *paramFormats,
+                         int resultFormat);
 	ExecStatusType (*PQresultStatus_fn)(const PGresult*);
 	char* (*PQresultErrorMessage_fn)(const PGresult*);
 	void (*PQclear_fn)(PGresult*);
@@ -89,6 +96,8 @@ static void db_postgres_dlopen(void) {
 	LOOKUP_SYMBOL(dl_handle, PQerrorMessage);
 	LOOKUP_SYMBOL(dl_handle, PQfinish);
 	LOOKUP_SYMBOL(dl_handle, PQexec);
+	LOOKUP_SYMBOL(dl_handle, PQprepare);
+	LOOKUP_SYMBOL(dl_handle, PQexecPrepared);
 	LOOKUP_SYMBOL(dl_handle, PQresultStatus);
 	LOOKUP_SYMBOL(dl_handle, PQresultErrorMessage);
 	LOOKUP_SYMBOL(dl_handle, PQclear);

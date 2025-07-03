@@ -61,7 +61,7 @@ public:
     // Column information
     int column_count() const override;
     std::string column_name(int column) const override;
-    std::string column_type(int column) const override;
+    std::string column_type(int column) const;
 
     // Legacy compatibility
     bool next_legacy() override;
@@ -97,9 +97,7 @@ public:
     DatabaseResult begin_transaction() override;
     DatabaseResult commit() override;
     DatabaseResult rollback() override;
-    int64_t last_insert_id() const override;
-    int last_error_code() const override;
-    DatabaseType type() const override;
+    DatabaseType type() const;
 
 private:
     sqlite3* db_;

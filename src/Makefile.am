@@ -31,6 +31,7 @@ csync2_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l check.c
 		 ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \
 		 csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp db_sqlite2.hpp dl.hpp \
 		 redis.hpp redis.cpp modern_logging.hpp \
+		 database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \
 		 csync2-compare \
 		 digest.cpp digest.hpp version.hpp \
 		 csync2.1
@@ -49,7 +50,21 @@ CLEANFILES = cfgfile_parser.c cfgfile_parser.h cfgfile_scanner.c	\
 # Link all required libraries
 csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_LIBS) \
                $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) $(LIBBSD_LIBS) $(LIBRSYNC_LIBS) \
-               -ldl
+               -ldl -lsqlite3
+
+# --- Tests for the new DB layer ---
+check_PROGRAMS = db_test_sqlite db_test_mysql db_test_postgres
+
+db_test_sqlite_SOURCES = db_test_sqlite.cpp database_sqlite_v2.cpp database_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp 
+db_test_sqlite_LDADD = -lsqlite3 $(LIBPQ_LIBS) $(MYSQL_LIBS) 
+
+db_test_mysql_SOURCES = db_test_mysql.cpp database_mysql_v2.cpp database_sqlite_v2.cpp database_v2.cpp database_postgres_v2.cpp
+db_test_mysql_LDADD = -lsqlite3 $(LIBPQ_LIBS) $(MYSQL_LIBS) 
+
+db_test_postgres_SOURCES = db_test_postgres.cpp database_postgres_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_v2.cpp
+db_test_postgres_LDADD = -lsqlite3 $(LIBPQ_LIBS) $(MYSQL_LIBS) 
+
+
 
 #-lssl -lcrypto
 

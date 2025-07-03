@@ -40,7 +40,7 @@
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
 #include "db_sql.hpp"
-#endif 
+#endif
 
 static struct db_mysql_fns {
 	MYSQL* (*mysql_init_fn)(MYSQL*);
@@ -48,6 +48,7 @@ static struct db_mysql_fns {
 			const char*, unsigned long);
 	int (*mysql_errno_fn)(MYSQL*);
 	int (*mysql_query_fn)(MYSQL*, const char*);
+	int (*mysql_stmt_prepare_fn)(MYSQL_STMT *stmt, const char *stmt_str, unsigned long length);
 	void (*mysql_close_fn)(MYSQL*);
 	const char* (*mysql_error_fn)(MYSQL*);
 	MYSQL_RES* (*mysql_store_result_fn)(MYSQL*);
@@ -80,6 +81,7 @@ static void db_mysql_dlopen(void) {
 	LOOKUP_SYMBOL(dl_handle, mysql_real_connect);
 	LOOKUP_SYMBOL(dl_handle, mysql_errno);
 	LOOKUP_SYMBOL(dl_handle, mysql_query);
+	LOOKUP_SYMBOL(dl_handle, mysql_stmt_prepare);
 	LOOKUP_SYMBOL(dl_handle, mysql_close);
 	LOOKUP_SYMBOL(dl_handle, mysql_error);
 	LOOKUP_SYMBOL(dl_handle, mysql_store_result);
@@ -108,7 +110,7 @@ static int db_mysql_parse_url(char *url, char **host, char **user, char **pass, 
 		} else
 			*pass = 0;
 	} else {
-		// No user/pass password 
+		// No user/pass password
 		*user = 0;
 		*pass = 0;
 	}
@@ -294,20 +296,20 @@ static int db_mysql_upgrade_to_schema(db_conn_p conn, int version) {
 	csync_db_sql(conn, "Creating dirty table", "CREATE TABLE `dirty` ("
 //		 "  id        bigint       AUTO_INCREMENT,"
 					"  filename  varchar(%u)  DEFAULT NULL,"
-					"  forced    int 	   DEFAULT NULL,"
+					"  forced    int 	      DEFAULT NULL,"
 					"  myname    varchar(%u)  DEFAULT NULL,"
 					"  peername  varchar(%u)  DEFAULT NULL,"
 					"  operation varchar(20)  DEFAULT NULL,"
-					"  op 	      int	   DEFAULT NULL,"
+					"  op 	      int	      DEFAULT NULL,"
 					"  checktxt  varchar(%u)  DEFAULT NULL,"
 					"  device    bigint       DEFAULT NULL,"
 					"  inode     bigint       DEFAULT NULL,"
 					"  other     varchar(%u)  DEFAULT NULL,"
 					"  file_id   bigint       DEFAULT NULL,"
 					"  digest    varchar(70)  DEFAULT NULL,"
-					"  mode      int	   DEFAULT NULL,"
-					"  mtime     int    	   DEFAULT NULL,"
-					"  type      int    	   DEFAULT NULL,"
+					"  mode      int	      DEFAULT NULL,"
+					"  mtime     int    	  DEFAULT NULL,"
+					"  type      int    	  DEFAULT NULL,"
 					"  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
 					"  UNIQUE KEY `filename_peername_myname` (`filename`(%u),`peername`,`myname`), "
 					"  KEY `idx_file_dev_inode` (`device`,`inode`) "
@@ -392,8 +394,8 @@ static int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, 
 		return DB_ERROR;
 	}
 
-	MYSQL_RES *mysql_stmt = f.mysql_store_result_fn(static_cast<MYSQL*>(conn->private_data));
-	if (mysql_stmt == NULL) {
+	MYSQL_RES *mysql_res = f.mysql_store_result_fn(static_cast<MYSQL*>(conn->private_data));
+	if (mysql_res == NULL) {
 		csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(static_cast<MYSQL*>(conn->private_data)));
 		return DB_ERROR;
 	}
@@ -406,7 +408,7 @@ static int db_mysql_prepare(db_conn_p conn, const char *sql, db_stmt_p *stmt_p, 
 		return DB_ERROR;
 	}
 
-	stmt->private_data = mysql_stmt;
+	stmt->private_data = mysql_res;
 	/* TODO error mapping / handling */
 	*stmt_p = stmt;
 	stmt->get_column_text = db_mysql_stmt_get_column_text;
