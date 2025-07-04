@@ -111,6 +111,8 @@ public:
      * @brief Rolls back the current transaction.
      */
     virtual void rollback() = 0;
+
+    virtual void query(const std::string& sql) = 0;
 };
 
 /**
