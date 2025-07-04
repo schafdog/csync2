@@ -32,8 +32,9 @@ public:
     query(rollback_str);
   }
 
+  void query(const std::string& sql) override;
+
 private:
-  void query(const std::string& sql);
   sqlite3* db_;
   std::shared_ptr<SQLiteAPI> sqlite_api_; // Holds the loaded library and function pointers.
 
