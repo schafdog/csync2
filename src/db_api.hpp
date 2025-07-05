@@ -2,8 +2,16 @@
 #ifndef DB_API_H
 #define DB_API_H
 
-#define DB_SQLITE2 1 
-#define DB_SQLITE3 2 
+#include <set>
+#include <string>
+#include <sys/stat.h>
+
+#include "csync2.hpp"
+#include "buffer.hpp"
+#include "error.hpp"
+
+#define DB_SQLITE2 1
+#define DB_SQLITE3 2
 #define DB_MYSQL   3
 #define DB_PGSQL   4
 
@@ -20,119 +28,115 @@
 #else
 #define SO_FILE_EXT ".so"
 #endif
-#include "buffer.hpp"
-#include "error.hpp"
-
-typedef struct db_conn_t *db_conn_p;
-typedef struct db_stmt_t *db_stmt_p;
 
 // Forward declarations to avoid circular includes
-
 struct textlist;
 typedef struct textlist *textlist_p;
 
-typedef textlist_p (*check_old_operation_f)(const char *file, int mode, struct stat *st_file, const char *old_filename,
-		const char *old_other, operation_t old_operation, const char *old_checktxt, peername_p peername, BUF_P buffer);
-
-struct db_conn_t {
-	void *private_data;
-	int version;
-	int (*exec)(db_conn_p conn, const char *exec);
-	int (*prepare)(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
-	void (*close)(db_conn_p conn);
-	void (*logger)(int priority, int lv, const char *fmt, ...);
-	const char* (*errmsg)(db_conn_p conn);
-	const char* (*escape)(db_conn_p conn, const char *string);
-	void (*free)(db_conn_p conn, const char *escaped);
-	void (*shutdown)(void);
-	void (*mark)(db_conn_p conn, const std::set<std::string> active_peers, const char *realname, int recursive);
-
-	// Update functions (deprecated)
-	int (*upgrade_to_schema)(db_conn_p db, int version);
-	int (*schema_version)(db_conn_p db);
-	// query functions 
-	int (*list_dirty)(db_conn_p conn, const std::set<std::string>& active_peers, const char *realname, int recursive);
-	void (*list_hint)(db_conn_p conn);
-	void (*list_files)(db_conn_p conn, filename_p filename);
-	textlist_p (*list_file)(db_conn_p conn, filename_p filename, const char *myname, peername_p peername,
-			int recursive);
-	void (*list_sync)(db_conn_p conn, peername_p myname, peername_p peername);
-
-	int (*is_dirty)(db_conn_p conn, filename_p filename, peername_p peername, int *operation, int *mode);
-	void (*force)(db_conn_p conn, const char *realname, int recursive);
-	int (*upgrade_db)(db_conn_p conn);
-	int (*update_format_v1_v2)(db_conn_p conn, filename_p filename, int recursive, int do_it);
-	void (*add_hint)(db_conn_p conn, filename_p filename, int recursive);
-	void (*remove_hint)(db_conn_p conn, filename_p filename, int recursive);
-	void (*remove_file)(db_conn_p conn, filename_p filename, int recursive);
-	void (*delete_file)(db_conn_p conn, filename_p filename, int recursive);
-	textlist_p (*find_dirty)(db_conn_p conn,
-			int (*filter_dirty)(filename_p filename, const char *localname, peername_p peername));
-	textlist_p (*find_file)(db_conn_p conn, filename_p pattern, int (*filter_file)(filename_p filename));
-	int (*add_dirty)(db_conn_p conn, const char *file_new, int csync_new_force, const char *myname, peername_p peername,
-			const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
-			int op, int mode, int mtime);
-
-	void (*remove_dirty)(db_conn_p conn, peername_p peername, filename_p filename, int recursive);
-
-	textlist_p (*get_dirty_by_peer_match)(db_conn_p db, const char *myname, peername_p peername, int recursive,
-										  const std::set<std::string>& patlist,
-										  int (*match_func)(filename_p filename, filename_p pattern, int recursive));
-
-//    void        (*clear_dirty)     (db_conn_p conn, peername_p peername, filename_p filename, int recursive);
-	void (*clear_operation)(db_conn_p conn, const char *myname, peername_p peername,
-			filename_p filename /*, int recursive */);
-
-	textlist_p (*get_old_operation)(db_conn_p db, const char *checktxt, peername_p peername, filename_p filename,
-			const char *device, const char *ino, BUF_P buffer);
-
-	textlist_p (*get_commands)(db_conn_p conn);
-	textlist_p (*get_command_filename)(db_conn_p conn, filename_p filename, const char *logfile);
-	textlist_p (*get_hosts)(db_conn_p conn);
-	textlist_p (*get_hints)(db_conn_p conn);
-
-	int (*update_file)(db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
-			const char *digest);
-	int (*insert_file)(db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
-			const char *digest);
-	int (*insert_update_file)(db_conn_p conn, filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
-			const char *digest);
-	int (*update_dev_no)(db_conn_p db, filename_p encoded, int recursive, dev_t old_no, dev_t new_no);
-	int (*check_delete)(db_conn_p conn, filename_p filename, int recursive, int init_run);
-
-	int (*del_action)(db_conn_p conn, filename_p filename, const char *prefix_command);
-	int (*add_action)(db_conn_p conn, filename_p filename, const char *prefix_command, const char *logfile);
-	int (*remove_action_entry)(db_conn_p conn, filename_p filename, const char *command, const char *logfile);
-
-	int (*check_file)(db_conn_p db, const char *file, const char *enc, char **other, char *checktxt,
-			struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int flags, dev_t *old_no);
-
-	textlist_p (*check_file_same_dev_inode)(db_conn_p db, filename_p filename, const char *checktxt, const char *digest,
-						struct stat *st, peername_p peername);
-	textlist_p (*check_dirty_file_same_dev_inode)(db_conn_p db, peername_p peername, filename_p filename,
-			const char *checktxt, const char *digest, struct stat *st);
-	textlist_p (*non_dirty_files_match)(db_conn_p db, filename_p pattern);
-	textlist_p (*get_dirty_hosts)(db_conn_p db);
-	int (*dir_count)(db_conn_p db, const char *dirname);
-	int (*move_file)(db_conn_p db, filename_p oldfile, filename_p newfile);
-	void (*update_dirty_hardlinks)(db_conn_p db, peername_p peername, filename_p newfile, struct stat *st);
-	long (*get_affected_rows)(db_conn_p db);
-	long affected_rows;
+class DbStmt {
+public:
+    virtual ~DbStmt() = default;
+    virtual const char* get_column_text(int column) = 0;
+    virtual const char* get_column_blob(int column) = 0;
+    virtual int get_column_int(int column) = 0;
+    virtual int next() = 0;
+    virtual int close() = 0;
+    virtual long get_affected_rows() = 0;
 };
 
-struct db_stmt_t {
-	void *private_data;
-	void *private_data2;
-	db_conn_p db;
-	const char* (*get_column_text)(db_stmt_p vmx, int column);
-	const char* (*get_column_blob)(db_stmt_p vmx, int column);
-	int (*get_column_int)(db_stmt_p vmx, int column);
-	int (*next)(db_stmt_p stmt);
-	int (*close)(db_stmt_p stmt);
-	int affected_rows;
+class DbApi {
+public:
+    virtual ~DbApi() = default;
+
+    virtual int exec(const char *exec) = 0;
+    virtual int prepare(const char *statement, DbStmt **stmt, const char **value) = 0;
+    virtual void close() = 0;
+    virtual void logger(int priority, int lv, const char *fmt, ...) = 0;
+    virtual const char* errmsg() = 0;
+    virtual const char* escape(const char *string) = 0;
+    virtual const char* escape(const std::string& string) = 0;
+    virtual void free(const char *escaped) = 0;
+    virtual void shutdown() = 0;
+    virtual void mark(const std::set<std::string>& active_peers, const char *realname, int recursive) = 0;
+
+    // Update functions (deprecated)
+    virtual int upgrade_to_schema(int version) = 0;
+    virtual int schema_version() = 0;
+    // query functions
+    virtual int list_dirty(const std::set<std::string>& active_peers, const char *realname, int recursive) = 0;
+    virtual void list_hint() = 0;
+    virtual void list_files(filename_p filename) = 0;
+    virtual textlist_p list_file(filename_p filename, const char *myname, peername_p peername,
+                                 int recursive) = 0;
+    virtual void list_sync(peername_p myname, peername_p peername) = 0;
+
+    virtual int is_dirty(filename_p filename, peername_p peername, int *operation, int *mode) = 0;
+    virtual void force(const char *realname, int recursive) = 0;
+    virtual int upgrade_db() = 0;
+    virtual int update_format_v1_v2(filename_p filename, int recursive, int do_it) = 0;
+    virtual void add_hint(filename_p filename, int recursive) = 0;
+    virtual void remove_hint(filename_p filename, int recursive) = 0;
+    virtual void remove_file(filename_p filename, int recursive) = 0;
+    virtual void delete_file(filename_p filename, int recursive) = 0;
+    virtual textlist_p find_dirty(
+        int (*filter_dirty)(filename_p filename, const char *localname, peername_p peername)) = 0;
+    virtual textlist_p find_file(filename_p pattern, int (*filter_file)(filename_p filename)) = 0;
+    virtual int add_dirty(const char *file_new, int csync_new_force, const char *myname, peername_p peername,
+                          const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
+                          int op, int mode, int mtime) = 0;
+
+    virtual void remove_dirty(peername_p peername, filename_p filename, int recursive) = 0;
+
+    virtual textlist_p get_dirty_by_peer_match(const char *myname, peername_p peername, int recursive,
+                                               const std::set<std::string>& patlist,
+                                               int (*match_func)(filename_p filename, filename_p pattern, int recursive)) = 0;
+
+    virtual void clear_operation(const char *myname, peername_p peername,
+                                 filename_p filename /*, int recursive */) = 0;
+
+    virtual textlist_p get_old_operation(const char *checktxt, peername_p peername, filename_p filename,
+                                         const char *device, const char *ino, BUF_P buffer) = 0;
+
+    virtual textlist_p get_commands() = 0;
+    virtual textlist_p get_command_filename(filename_p filename, const char *logfile) = 0;
+    virtual textlist_p get_hosts() = 0;
+    virtual textlist_p get_hints() = 0;
+
+    virtual int update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+                            const char *digest) = 0;
+    virtual int insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+                            const char *digest) = 0;
+    virtual int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+                                   const char *digest) = 0;
+    virtual int update_dev_no(filename_p encoded, int recursive, dev_t old_no, dev_t new_no) = 0;
+    virtual int check_delete(filename_p filename, int recursive, int init_run) = 0;
+
+    virtual int del_action(filename_p filename, const char *prefix_command) = 0;
+    virtual int add_action(filename_p filename, const char *prefix_command, const char *logfile) = 0;
+    virtual int remove_action_entry(filename_p filename, const char *command, const char *logfile) = 0;
+
+    virtual int check_file(const char *file, const char *enc, char **other, char *checktxt,
+                           struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int flags, dev_t *old_no) = 0;
+
+    virtual textlist_p check_file_same_dev_inode(filename_p filename, const char *checktxt, const char *digest,
+                                                 struct stat *st, peername_p peername) = 0;
+    virtual textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
+                                                       const char *checktxt, const char *digest, struct stat *st) = 0;
+    virtual textlist_p non_dirty_files_match(filename_p pattern) = 0;
+    virtual textlist_p get_dirty_hosts() = 0;
+    virtual int dir_count(const char *dirname) = 0;
+    virtual int move_file(filename_p oldfile, filename_p newfile) = 0;
+    virtual void update_dirty_hardlinks(peername_p peername, filename_p newfile, struct stat *st) = 0;
+    virtual long get_affected_rows() = 0;
+
+    int version;
+    long affected_rows;
+    void *private_data;
 };
 
-//struct db_conn *db_conn;
+// For compatibility
+typedef DbApi* db_conn_p;
+typedef DbStmt* db_stmt_p;
 
 int db_open(const char *file, int type, db_conn_p *db);
 void db_close(void);
@@ -154,4 +158,5 @@ int db_upgrade_to_schema(db_conn_p db, int version);
 const char* db_errmsg(db_conn_p conn);
 const char* db_escape(db_conn_p conn, const char *string);
 const char* db_escape(db_conn_p conn, filename_p string);
+
 #endif
