@@ -20,7 +20,7 @@ class PostgresConnection : public DatabaseConnection {
 public:
     explicit PostgresConnection(const std::string& conn_string);
     ~PostgresConnection() override;
-
+    void query(const std::string& sql) override;
     std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
 
     void begin_transaction() override;

@@ -43,14 +43,6 @@ int db_open(const char *file, int type, db_conn_p *db) {
 	type = db_detect_type(&db_str, type);
 	/* Switch between implementation */
 	switch (type) {
-	case DB_SQLITE2:
-		rc = db_sqlite2_open(db_str, db);
-
-		if (rc != DB_OK && db_str[0] != '/')
-			fprintf(csync_out_debug,
-					"Cannot open database file: %s, maybe you need three slashes (like sqlite:///var/lib/csync2/csync2.db)\n",
-					db_str);
-		break;
 	case DB_SQLITE3:
 		rc = db_sqlite_open(db_str, db);
 

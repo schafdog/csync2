@@ -125,6 +125,12 @@ MySQLConnection::~MySQLConnection() {
     }
 }
 
+void MySQLConnection::query(const std::string& sql) {
+    if (mysql_api_->mysql_query(mysql_, sql.c_str())) {
+        throw DatabaseError("query failed: " + std::string(mysql_api_->mysql_error(mysql_)));
+    }
+}
+
 std::unique_ptr<PreparedStatement> MySQLConnection::prepare(const std::string& sql) {
     return std::make_unique<MySQLPreparedStatement>(mysql_, sql, mysql_api_);
 }

@@ -113,6 +113,10 @@ std::unique_ptr<PreparedStatement> PostgresConnection::prepare(const std::string
     return std::make_unique<PostgresPreparedStatement>(conn_, stmt_name, sql, pg_api_);
 }
 
+void PostgresConnection::query(const std::string& sql) {
+    pg_exec(conn_, sql.c_str(), pg_api_);
+}
+
 void PostgresConnection::begin_transaction() {
     pg_exec(conn_, "BEGIN", pg_api_);
 }

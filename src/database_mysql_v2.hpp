@@ -14,7 +14,7 @@ class MySQLConnection : public DatabaseConnection {
 public:
     MySQLConnection(const std::string& host, const std::string& user, const std::string& passwd, const std::string& db, unsigned int port);
     ~MySQLConnection() override;
-
+    void query(const std::string& sql) override;
     std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
 
     void begin_transaction() override;
