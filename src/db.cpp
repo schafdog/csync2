@@ -287,9 +287,9 @@ int csync_db_next(void *vmx, const char *err, int *pN, const char ***pazValue, c
 
 const char* csync_db_colblob(void *stmtx, int col) {
 	db_stmt_p stmt = static_cast<db_stmt_p>(stmtx);
-	const char  *ptr = static_cast<const char*>(stmt->get_column_blob(stmt, col));
-	if (stmt->db && stmt->db->logger) {
-		stmt->db->logger(LOG_DEBUG, 4, "DB get blob: %s ", ptr);
+	const char  *ptr = static_cast<const char*>(stmt->get_column_blob(col));
+	if (stmt->getDB()) {
+		// stmt->db->logger(LOG_DEBUG, 4, "DB get blob: %s ", ptr);
 	}
 	return ptr;
 }

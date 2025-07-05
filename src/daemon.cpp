@@ -114,7 +114,7 @@ static int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
 		rc = unlink(filename.c_str());
 		if (db && !rc) {
 			csync_info(1, "Removing %s from file db.\n", filename.c_str());
-			db->remove_file(db, filename, 0);
+			db->remove_file(filename, 0);
 		}
 		if (rc) {
 			if (lock_time != -1)
@@ -200,7 +200,7 @@ static int csync_rmdir_recursive(db_conn_p db, filename_p filename, peername_p s
 		}
 	} else {
 		if (db)
-			db->remove_file(db, file, 1);
+			db->remove_file(file, 1);
 		rc_all = IDENTICAL;
 	}
 	return rc_all;
@@ -281,7 +281,7 @@ static int csync_unlink(db_conn_p db, filename_p filename, peername_p peername, 
 
 int csync_dir_count(db_conn_p db, filename_p filename) {
 	int count = 0;
-	return db->dir_count(db, filename.c_str());
+	return db->dir_count(filename.c_str());
 	return count;
 }
 
@@ -300,12 +300,12 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 
 	if (cmd == A_FLUSH)
 		return 0;
-	rc = db->is_dirty(db, peername, filename, &operation, &mode);
+	rc = db->is_dirty(peername, filename, &operation, &mode);
 	// Found dirty
 	if (rc == 1) {
 		if (auto_resolve) {
 			csync_debug(1, "Remote %s:%s won auto resolve.\n", peername.c_str(), filename.c_str());
-			db->remove_dirty(db, "%", filename, 0);
+			db->remove_dirty("%", filename, 0);
 			return 0;
 		}
 		csync_debug(2, "daemon_check_dirty: peer operation  %s %s %s\n", peername.c_str(), filename.c_str(),
@@ -314,12 +314,12 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 		if ((cmd == A_MKDIR || cmd == A_MOD) && (operation & (OP_MKDIR | OP_MOD)) && S_ISDIR(mode)) {
 			rc = 0;
 			csync_info(1, "Ignoring dirty directory %s\n", filename.c_str());
-			db->remove_dirty(db, "%", filename, 0);
+			db->remove_dirty("%", filename, 0);
 			return OK;
 		} else if (operation == OP_RM && cmd == A_DEL) {
 			// Delete both places
 			csync_info(1, "Deleted both places: %s\n", filename.c_str());
-			db->remove_dirty(db, "%", filename, 0);
+			db->remove_dirty("%", filename, 0);
 			return OK;
 		} else {
 			csync_info(1, "File %s is dirty here: %s %d\n", filename.c_str(), csync_operation_str(operation), operation);
@@ -340,9 +340,9 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 
 static void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername) {
 	struct stat st;
-	db->remove_dirty(db, peername, filename, 0);
+	db->remove_dirty(peername, filename, 0);
 	if (lstat_strict(filename, &st) != 0 || csync_check_pure(filename)) {
-		db->remove_file(db, filename, 0);
+		db->remove_file(filename, 0);
 	} else {
 		char *digest = NULL;
 		const char *checktxt = csync_genchecktxt_version(&st, filename,
@@ -358,7 +358,7 @@ static void daemon_file_update(db_conn_p db, filename_p filename, peername_p pee
 			}
 		}
 		csync_debug(3, "daemon_file_update: UPDATE/INSERT into file filename: %s\n", filename.c_str());
-		int count = db->insert_update_file(db, db->escape(db, filename.c_str()), db->escape(db, checktxt), &st, digest);
+		int count = db->insert_update_file(db->escape(filename.c_str()), db->escape(checktxt), &st, digest);
 		if (count < 0)
 			csync_warn(1, "Failed to update or insert %s: %d", filename.c_str(), count);
 		if (digest)
@@ -758,10 +758,10 @@ static int setup_tag(const char *tag[32], char *line) {
 	return 0;
 }
 
-// Works with both GCC and Clang                                                                                                     
+// Works with both GCC and Clang
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
-#if defined(__DARWIN_C_LEVEL) 
+#if defined(__DARWIN_C_LEVEL)
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
 //#else
 //#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
@@ -1107,7 +1107,7 @@ static int csync_daemon_settime(const char *filename, time_t time, const char **
 
 static void csync_daemon_list(int conn, db_conn_p db, const char *filename, const char *myname, const char *peername,
 							  int recursive) {
-	textlist_p tl = db->list_file(db, filename, myname, peername, recursive);
+	textlist_p tl = db->list_file(filename, myname, peername, recursive);
 	textlist_p t = tl;
 	while (t) {
 		conn_printf(conn, "%s\t%s\n", t->value, t->value2);
@@ -1308,12 +1308,12 @@ static int csync_daemon_mv(db_conn_p db, filename_p std_filename, const char *ne
 			csync_redis_del_custom(filename, operation);
 		return ABORT_CMD;
 	}
-	int rc = db->move_file(db, filename, newname);
+	int rc = db->move_file(filename, newname);
 	if (rc) {
 		csync_error(0, "ERROR: failed to update DB path for moved file %s -> %s\n", filename, newname);
 	}
-	db->remove_dirty(db, "%", filename, 0);
-	db->remove_dirty(db, "%", newname, 0);
+	db->remove_dirty("%", filename, 0);
+	db->remove_dirty("%", newname, 0);
 	return OK;
 }
 
@@ -1415,7 +1415,7 @@ static int daemon_flush(db_conn_p db, const char *filename) {
 			recursive = 1;
 		}
 	}
-	db->remove_dirty(db, "%", filename, recursive);
+	db->remove_dirty("%", filename, recursive);
 	return OK;
 }
 
@@ -1428,7 +1428,7 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 	// Investigate. select commands only
 	if (cmd->action != A_FLUSH && *peername != NULL && filename != NULL && daemon_check_auto_resolve(*peername, filename, params->ftime, params->size)) {
 		csync_debug(1, "daemon dispatch: Remote %s:%s won auto resolved. clear dirty\n", *peername, filename);
-		db->remove_dirty(db, "%", filename, 0);
+		db->remove_dirty("%", filename, 0);
 	}
 	switch (cmd->action) {
 	case A_STAT:
@@ -1463,7 +1463,7 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 	case A_CREATE:
 	case A_POST:
 	case A_PATCH: {
-		int rc; 
+		int rc;
 		if (cmd->action == A_PATCH)
 			rc = csync_daemon_patch(conn_out, filename, cmd_error);
 		else // A_CREATE or A_POST
@@ -1602,7 +1602,7 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 
 static void csync_end_command(int conn, filename_p std_filename, const char *tag[32], const char *cmd_error, int rc) {
 	const char *filename = std_filename.c_str();
-	csync_info(2, "Daemon end_command %s %s %d %s\n", filename, tag[0], rc, cmd_error != NULL ? cmd_error : ""); 
+	csync_info(2, "Daemon end_command %s %s %d %s\n", filename, tag[0], rc, cmd_error != NULL ? cmd_error : "");
 	if (cmd_error) {
 		csync_error(0, "ERROR: %s (%s)\n", cmd_error, filename ? filename : "<no file>");
 		conn_printf(conn, "%s (%s)\n", cmd_error, filename ? filename : "<no file>");
@@ -1696,7 +1696,7 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 		}
 
 		struct command params;
-		
+
 		parse_tags(tag, &params);
 		if (rc == OK && cmd->check_dirty && filename != NULL && peername != NULL
 				&& csync_daemon_check_dirty(db, filename, peername, cmd->action,

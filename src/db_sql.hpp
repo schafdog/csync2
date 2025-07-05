@@ -8,6 +8,9 @@
 
 class DbSql : public DbApi {
 public:
+    const char* escape(const char *string) override;
+    const char* escape(const std::string& string) override;
+
     int schema_version() override;
     int check_file(const char *file, const char *encoded, char **other, char *checktxt,
                    struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no) override;
@@ -36,6 +39,7 @@ public:
         int (*filter)(filename_p str_filename, const char *localname, peername_p str_peername)) override;
     textlist_p find_file(filename_p str_pattern, int (*filter_file)(filename_p filename)) override;
     void remove_file(filename_p str_filename, int recursive) override;
+    void delete_file(filename_p str_filename, int recursive) override;
     void clear_operation(const char *myhostname, peername_p peername,
                            filename_p filename /* , int recursive */) override;
     textlist_p get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,

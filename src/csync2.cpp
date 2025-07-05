@@ -1301,7 +1301,7 @@ nofork:
 
 	if (mode == MODE_UPGRADE_DB)
 	{
-		int rc = db->upgrade_db(db);
+		int rc = db->upgrade_db();
 		csync_db_close(db);
 		exit(rc);
 	}
@@ -1310,14 +1310,14 @@ nofork:
 	{
 		if (!strcmp(g_update_format, "v1-v2"))
 		{
-			int rc = db->update_format_v1_v2(db, "/", 1, 1);
+			int rc = db->update_format_v1_v2("/", 1, 1);
 			csync_db_close(db);
 			exit(rc);
 		}
 		else
 		{
 			printf("Update format %s unknown\n", g_update_format);
-			db->upgrade_db(db);
+			db->upgrade_db();
 			csync_db_close(db);
 			exit(1);
 		}
@@ -1350,7 +1350,7 @@ nofork:
 			if (realname != NULL)
 			{
 				if (!csync_check_usefullness(realname, flags & FLAG_RECURSIVE))
-					db->add_hint(db, realname, flags & FLAG_RECURSIVE);
+					db->add_hint(realname, flags & FLAG_RECURSIVE);
 			}
 			else
 			{
@@ -1364,11 +1364,11 @@ nofork:
 	{
 		if (argc == optind)
 		{
-			tl = db->get_hints(db);
+			tl = db->get_hints();
 			for (t = tl; t != 0; t = t->next)
 			{
 				csync_check(db, t->value, (t->intvalue ? flags | FLAG_RECURSIVE : flags));
-				db->remove_hint(db, t->value, t->intvalue);
+				db->remove_hint(t->value, t->intvalue);
 			}
 			textlist_free(tl);
 		}
@@ -1389,7 +1389,7 @@ nofork:
 		for (int i = optind; i < argc; i++)
 		{
 			char *realname = getrealfn(argv[i]);
-			db->force(db, realname, flags & FLAG_RECURSIVE);
+			db->force(realname, flags & FLAG_RECURSIVE);
 			free_realname(realname);
 		};
 	};
@@ -1448,14 +1448,15 @@ nofork:
 		for (int i = optind; i < argc; i++)
 		{
 			char *realname = getrealfn(argv[i]);
-			db->mark(db, g_active_peers, realname, flags & FLAG_RECURSIVE);
+			db->mark(g_active_peers, realname, flags & FLAG_RECURSIVE);
+			free_realname(realname);
 		}
 	};
 
 	if (mode == MODE_LIST_HINT)
 	{
 		retval = 2;
-		db->list_hint(db);
+		db->list_hint();
 	};
 
 	if (mode == MODE_LIST_FILE)
@@ -1466,7 +1467,7 @@ nofork:
 		{
 			realname = getrealfn(argv[optind]);
 		}
-		db->list_files(db, realname);
+		db->list_files(realname);
 	};
 
 	if (mode == MODE_TAIL)
@@ -1489,7 +1490,7 @@ nofork:
 
 	if (mode == MODE_LIST_SYNC)
 	{
-		db->list_sync(db, argv[optind], argv[optind + 1]);
+		db->list_sync(argv[optind], argv[optind + 1]);
 		retval = 2;
 		// ???
 	};
@@ -1544,7 +1545,7 @@ nofork:
 		{
 			realname = getrealfn(argv[optind]);
 		}
-		db->list_dirty(db, g_active_peers, realname != NULL ? realname : "", flags & FLAG_RECURSIVE);
+		db->list_dirty(g_active_peers, realname != NULL ? realname : "", flags & FLAG_RECURSIVE);
 		free_realname(realname);
 	}
 	if (mode == MODE_REMOVE_OLD)

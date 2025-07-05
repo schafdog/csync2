@@ -1,6 +1,6 @@
 /* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  DB API
- 
+
  */
 
 #include "csync2.hpp"
@@ -65,7 +65,7 @@ int db_open(const char *file, int type, db_conn_p *db) {
 		break;
 #else
   case DB_MYSQL:
-    csync_fatal("No Mysql support configured. Please reconfigure with --enable-mysql (database is %s).\n", file);    
+    csync_fatal("No Mysql support configured. Please reconfigure with --enable-mysql (database is %s).\n", file);
     rc = DB_ERROR;
     break;
 #endif
@@ -75,7 +75,7 @@ int db_open(const char *file, int type, db_conn_p *db) {
 		break;
 #else
   case DB_PGSQL:
-    csync_fatal("No Postgres SQL support configured. Please reconfigure with --enable-postgres (database is %s).\n", file);    
+    csync_fatal("No Postgres SQL support configured. Please reconfigure with --enable-postgres (database is %s).\n", file);
     rc = DB_ERROR;
     break;
 #endif
@@ -85,8 +85,8 @@ int db_open(const char *file, int type, db_conn_p *db) {
 		;
 		rc = DB_ERROR;
 	}
-	if (*db)
-		(*db)->logger = 0;
+	//if (*db)
+	//	(*db)->logger = 0;
 	return rc;
 }
 
@@ -94,18 +94,18 @@ void db_set_logger(db_conn_p conn, void (*logger)(int priority, int lv, const ch
 	if (conn == NULL)
 		csync_fatal("No connection in set_logger.\n");
 
-	conn->logger = logger;
+	//conn->logger = logger;
 }
 
 void db_conn_close(db_conn_p conn) {
-	if (!conn || !conn->close)
+	if (!conn)
 		return;
-	conn->close(conn);
+	conn->close();
 }
 
 const char* db_errmsg(db_conn_p conn) {
-	if (conn && conn->errmsg)
-		return conn->errmsg(conn);
+	if (conn)
+		return conn->errmsg();
 
 	return "(no error message function available)";
 }
@@ -113,9 +113,9 @@ const char* db_errmsg(db_conn_p conn) {
 const char* db_escape(db_conn_p conn, const char *string) {
 	if (!string)
 		return string;
-	if (conn && conn->escape)
-		return conn->escape(conn, string);
-	csync_error(0, "No Connection (%p) or escape method configured.", conn, (conn ? conn->escape : 0));
+	if (conn)
+		return conn->escape(string);
+	csync_error(0, "No Connection to escape %s.", string);
 	return string;
 }
 
@@ -123,70 +123,69 @@ const char* db_escape(db_conn_p conn, filename_p filename) {
 	const char *string = filename.c_str();
 	if (!string)
 		return string;
-	if (conn && conn->escape)
-		return conn->escape(conn, string);
-	csync_error(0, "No Connection (%p) or escape method configured.", conn, (conn ? conn->escape : 0));
+	if (conn)
+		return conn->escape(string);
+	csync_error(0, "No Connection configured.");
 	return string;
 }
 
 int db_exec(db_conn_p conn, const char *sql) {
-	if (conn && conn->exec)
-		return conn->exec(conn, sql);
+	if (conn)
+		return conn->exec(sql);
 
 	csync_error(0, "No exec function in db_exec.\n");
 	return DB_ERROR;
 }
 
 int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt, const char **pptail) {
-	if (conn && conn->prepare)
-		return conn->prepare(conn, sql, stmt, pptail);
+	if (conn)
+		return conn->prepare(sql, stmt, pptail);
 
-	csync_error(0, "No prepare function in db_prepare_stmt %p %p %s.\n", conn, (conn ? conn->prepare : NULL), sql);
+	csync_error(0, "No conn to prepare %s.\n", sql);
 	return DB_ERROR;
 }
 
 const char* db_stmt_get_column_text(db_stmt_p stmt, int column) {
-	if (stmt && stmt->get_column_text)
-		return stmt->get_column_text(stmt, column);
+	if (stmt)
+		return stmt->get_column_text(column);
 
 	csync_error(0, "No stmt in db_stmt_get_column_text / no function.\n");
 	return NULL;
 }
 
 int db_stmt_get_column_int(db_stmt_p stmt, int column) {
-	if (stmt && stmt->get_column_int)
-		return stmt->get_column_int(stmt, column);
+	if (stmt)
+		return stmt->get_column_int(column);
 
 	csync_error(0, "No stmt in db_stmt_get_column_int / no function.\n");
 	return 0;
 }
 
 int db_stmt_next(db_stmt_p stmt) {
-	if (stmt && stmt->next)
-		return stmt->next(stmt);
+	if (stmt)
+		return stmt->next();
 
 	csync_error(0, "No stmt in db_stmt_next / no function.\n");
 	return DB_ERROR;
 }
 
 int db_stmt_close(db_stmt_p stmt) {
-	if (stmt && stmt->close)
-		return stmt->close(stmt);
+	if (stmt)
+		return stmt->close();
 
 	csync_error(0, "No stmt in db_stmt_close / no function.\n");
 	return DB_ERROR;
 }
 
 int db_schema_version(db_conn_p db) {
-	int version = db->schema_version(db);
+	int version = db->schema_version();
 	csync_debug(2, "db_schema_version: %d\n", version);
 	return version;
 }
 
 int db_upgrade_to_schema(db_conn_p db, int version) {
 	csync_debug(0, "db_upgrade_to_schema: %d\n", version);
-	if (db && db->upgrade_to_schema)
-		return db->upgrade_to_schema(db, version);
+	if (db)
+		return db->upgrade_to_schema(version);
 	return DB_ERROR;
 }
-

@@ -1,4 +1,4 @@
-/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t - */
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
 
 #include "csync2.hpp"
 #include "check.hpp"
@@ -10,8 +10,42 @@
 #include <time.h>
 #include "db_sql.hpp"
 #include "db.hpp"
+#include "ringbuffer.hpp"
 
 using namespace std;
+
+static char* db_my_escape(const char *string) {
+	if (string == NULL)
+		return NULL;
+	char *escaped = static_cast<char*>(malloc(strlen(string) * 2 + 1));
+	const char *p = string;
+	char *e = escaped;
+	while (*p != 0) {
+		switch (*p) {
+		case '\'':
+		case '\\':
+			*(e++) = '\'';
+			;
+			__attribute__ ((fallthrough));
+		default:
+			*(e++) = *(p++);
+		}
+		*e = 0;
+	};
+	return escaped;
+}
+;
+
+const char* DbSql::escape(const char *string) {
+	char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
+	if (escaped)
+		ringbuffer_add(escaped, ::free);
+	return escaped;
+}
+
+const char* DbSql::escape(const std::string& string) {
+    return escape(string.c_str());
+}
 
 int DbSql::schema_version()
 {
@@ -681,6 +715,9 @@ textlist_p DbSql::find_file(filename_p str_pattern, int (*filter_file)(filename_
  return p_tl;
  }
  */
+ void DbSql::delete_file(filename_p str_filename, int recursive) {
+     remove_file(str_filename, recursive);
+ }
 
 void DbSql::remove_file(filename_p str_filename, int recursive)
 {

@@ -33,6 +33,7 @@
 struct textlist;
 typedef struct textlist *textlist_p;
 
+class DbApi;
 class DbStmt {
 public:
     virtual ~DbStmt() = default;
@@ -42,6 +43,9 @@ public:
     virtual int next() = 0;
     virtual int close() = 0;
     virtual long get_affected_rows() = 0;
+    virtual DbApi* getDB() { return db; }
+private:
+    DbApi *db = NULL;
 };
 
 class DbApi {
@@ -51,12 +55,12 @@ public:
     virtual int exec(const char *exec) = 0;
     virtual int prepare(const char *statement, DbStmt **stmt, const char **value) = 0;
     virtual void close() = 0;
-    virtual void logger(int priority, int lv, const char *fmt, ...) = 0;
+    // virtual void logger(int priority, int lv, const char *fmt, ...) = 0;
     virtual const char* errmsg() = 0;
     virtual const char* escape(const char *string) = 0;
     virtual const char* escape(const std::string& string) = 0;
-    virtual void free(const char *escaped) = 0;
-    virtual void shutdown() = 0;
+    // virtual void free(const char *escaped) = 0;
+    // virtual void shutdown() = 0;
     virtual void mark(const std::set<std::string>& active_peers, const char *realname, int recursive) = 0;
 
     // Update functions (deprecated)
@@ -99,7 +103,7 @@ public:
 
     virtual textlist_p get_commands() = 0;
     virtual textlist_p get_command_filename(filename_p filename, const char *logfile) = 0;
-    virtual textlist_p get_hosts() = 0;
+    // virtual textlist_p get_hosts() = 0;
     virtual textlist_p get_hints() = 0;
 
     virtual int update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
@@ -127,7 +131,7 @@ public:
     virtual int dir_count(const char *dirname) = 0;
     virtual int move_file(filename_p oldfile, filename_p newfile) = 0;
     virtual void update_dirty_hardlinks(peername_p peername, filename_p newfile, struct stat *st) = 0;
-    virtual long get_affected_rows() = 0;
+    // virtual long get_affected_rows() = 0;
 
     int version;
     long affected_rows;

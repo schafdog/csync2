@@ -58,8 +58,8 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 			continue;
 			found_matching_pattern: for (c = a->command; c; c = c->next) {
 				const char *prefix_cmd = prefixsubst(c->command);
-				db->del_action(db, filename, prefix_cmd);
-				db->add_action(db, filename, prefix_cmd, a->logfile);
+				db->del_action(filename, prefix_cmd);
+				db->add_action(filename, prefix_cmd, a->logfile);
 			}
 		}
 	}
@@ -73,7 +73,7 @@ static void csync_run_single_command(db_conn_p db, const char *command,
 	pid_t pid;
 
 	textlist_p tl = 0, t;
-	tl = db->get_command_filename(db, command, logfile);
+	tl = db->get_command_filename(command, logfile);
 	mark = strstr(command_clr, "%%");
 	if (!mark) {
 		real_command = strdup(command_clr);
@@ -120,16 +120,15 @@ static void csync_run_single_command(db_conn_p db, const char *command,
 		csync_fatal("ERROR: Waitpid returned error %s.\n", strerror(errno));
 
 	for (t = tl; t != 0; t = t->next)
-		db->remove_action_entry(db, t->value, command, logfile);
+		db->remove_action_entry(t->value, command, logfile);
 	textlist_free(tl);
 }
 
 void csync_run_commands(db_conn_p db) {
 	textlist_p tl = 0, t;
 
-	tl = db->get_commands(db);
+	tl = db->get_commands();
 	for (t = tl; t != 0; t = t->next)
 		csync_run_single_command(db, t->value, t->value2);
 	textlist_free(tl);
 }
-
