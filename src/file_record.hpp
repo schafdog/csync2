@@ -24,7 +24,6 @@
 #endif
 
 #include "modern_logging.hpp"
-#include "modern_textlist.hpp"
 #include "db_api.hpp"
 
 namespace csync2 {
