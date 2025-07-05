@@ -21,6 +21,7 @@
 #define SO_FILE_EXT ".so"
 #endif
 #include "buffer.hpp"
+#include "error.hpp"
 
 typedef struct db_conn_t *db_conn_p;
 typedef struct db_stmt_t *db_stmt_p;
