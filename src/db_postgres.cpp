@@ -340,6 +340,9 @@ const char* DbPostgres::escape(const char *string) {
 	if (!private_data) {
 		return 0;
 	}
+	if (string == NULL) {
+		return NULL;
+	}
 	size_t length = strlen(string);
 	char *escaped_buffer = ringbuffer_malloc(2 * length + 1);
 	f.PQescapeStringConn_fn(static_cast<PGconn*>(private_data), escaped_buffer, string, length, &rc);
