@@ -2,10 +2,12 @@ build-stamp
 configure-stamp
 *.o
 *~
+*.db
 .DS_Store
 .deps/
 .autotools
 .cproject
+*.dSYM/
 Makefile
 Makefile.in
 aclocal.m4
@@ -20,6 +22,10 @@ config.status
 configure
 configure.lineno
 src/csync2
+src/db_test_postgres
+src/db_test_sqlite
+src/db_test_mysql
+src/database_example
 #csync2.sql
 depcomp
 compile
