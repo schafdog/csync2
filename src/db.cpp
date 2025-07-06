@@ -214,6 +214,47 @@ long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...) {
 	return count;
 }
 
+long db_query(db_conn_p db, const char *err, const char *fmt, ...) {
+	char *sql;
+	va_list ap;
+	int rc, busyc = 0;
+
+	va_start(ap, fmt);
+	VASPRINTF(&sql, fmt, ap);
+	va_end(ap);
+
+	in_sql_query++;
+	csync_db_maybegin(db);
+
+	csync_info(3, "csync2_db_SQL: %s\n", sql);
+
+	while (1) {
+		rc = db_exec(db, sql);
+		if (rc != DB_BUSY)
+			break;
+		if (busyc++ > get_dblock_timeout()) {
+			db = 0;
+			csync_fatal(DEADLOCK_MESSAGE);
+		}
+		csync_warn(1, "Database is busy, sleeping before retry of SQL: '%s'\n", sql);
+		sleep(1);
+	}
+	long count = 0;
+	if (rc != DB_OK && err) {
+		csync_fatal("Database Error: %s [%d]: %s on executing %s\n", err, rc, db_errmsg(db), sql);
+	} else {
+		if (rc == DB_OK)
+			count = db->affected_rows;
+		else
+			count = rc;
+	}
+	free(sql);
+
+	csync_db_maycommit(db);
+	in_sql_query--;
+	return count;
+}
+
 void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...) {
 	db_stmt_p stmt = NULL;
 	char *sql;
