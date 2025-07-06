@@ -245,6 +245,7 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 
 	if (!pl) {
 		csync_info(2, "Not in one of my groups: %s (%s)\n", file.c_str(), thispeer.c_str());
+		buffer_destroy(buffer);
 		return;
 	}
 
