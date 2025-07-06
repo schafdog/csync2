@@ -162,8 +162,11 @@ int db_stmt_next(db_stmt_p stmt) {
 }
 
 int db_stmt_close(db_stmt_p stmt) {
-	if (stmt)
-		return stmt->close();
+	if (stmt) {
+		int rc =  stmt->close();
+		delete stmt;
+		return rc;
+	}
 
 	csync_error(0, "No stmt in db_stmt_close / no function.\n");
 	return DB_ERROR;
