@@ -418,24 +418,26 @@ static void set_action_dolocal_only(void)
 	csync_group->action->do_local_only = 1;
 }
 
-static void set_lock_timeout(const char *timeout)
+static void set_lock_timeout(char *timeout)
 {
 	csync_lock_time = atoi(timeout);
+	free(timeout);
 }
 
-static void set_lock_time(const char *time)
+static void set_lock_time(char *time)
 {
 	csync_lock_time = atoi(time);
+	free(time);
 }
 
-static void set_tempdir(const char *tempdir)
+static void set_tempdir(char *tempdir)
 {
-	csync_tempdir = strdup(tempdir);
+	csync_tempdir = tempdir;
 }
 
-static void set_database(const char *filename)
+static void set_database(char *filename)
 {
-    csync_database = strdup(filename);
+    csync_database = filename;
 }
 
 static void set_database_version(char *version)
@@ -450,9 +452,9 @@ static void set_patch_mode(char *mode)
   free(mode);
 }
 
-static void set_redis(const char *filename)
+static void set_redis(char *filename)
 {
-    csync_redis = strdup(filename);
+    csync_redis = filename;
 }
 
 static void set_protocol_version(char *version)
@@ -483,7 +485,7 @@ static void create_prefix(char *pname)
 {
 	struct csync_prefix *p =
 		calloc(1, sizeof(struct csync_prefix));
-	p->name = strdup(pname);
+	p->name = pname;
 	p->next = csync_prefix;
 	csync_prefix = p;
 }
