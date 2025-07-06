@@ -128,7 +128,7 @@ int DbSqlite::exec(const char *sql) {
 
 class DbSqliteStmt : public DbStmt {
 public:
-    DbSqliteStmt(sqlite3_stmt *stmt, DbApi *db) : private_data(stmt), db(db) {}
+    DbSqliteStmt(sqlite3_stmt *stmt, DbApi *db) : DbStmt(db), private_data(stmt) {}
     ~DbSqliteStmt() override { close(); };
 
     const char* get_column_text(int column) override;
@@ -140,7 +140,6 @@ public:
 
 private:
     sqlite3_stmt *private_data;
-    DbApi *db;
 };
 
 const char* DbSqliteStmt::get_column_text(int column) {

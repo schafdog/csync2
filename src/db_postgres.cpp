@@ -185,7 +185,7 @@ int DbPostgres::exec(const char *sql) {
 
 class DbPostgresStmt : public DbStmt {
 public:
-    DbPostgresStmt(PGresult *res, DbApi *db) : private_data(res), db(db) {
+    DbPostgresStmt(PGresult *res, DbApi *db) : DbStmt(db), private_data(res) {
         row_p = new int;
         *row_p = -1;
     }
@@ -201,7 +201,7 @@ public:
 private:
     PGresult *private_data;
     int *row_p;
-    DbApi *db;
+	DbApi *db_;
 };
 
 const char* DbPostgresStmt::get_column_blob(int column) {
@@ -253,10 +253,10 @@ int DbPostgresStmt::next() {
 }
 
 int DbPostgresStmt::close() {
-    if (!private_data)
-        return DB_OK;
-	f.PQclear_fn(private_data);
-    private_data = NULL;
+    if (private_data) {
+		f.PQclear_fn(private_data);
+		private_data = NULL;
+	}
     if (row_p) {
         delete row_p;
         row_p = NULL;
@@ -266,8 +266,8 @@ int DbPostgresStmt::close() {
 
 #define FILE_LENGTH 275
 #define HOST_LENGTH  50
-int DbPostgres::upgrade_to_schema(int version) {
-	csync_info(2, "Upgrading database schema to version %d.\n", version);
+int DbPostgres::upgrade_to_schema(int new_version) {
+	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
 
 	csync_db_sql(this, NULL, /* "Creating action table", */
 	    "CREATE TABLE action ("
@@ -408,6 +408,7 @@ int DbPostgres::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
 DbPostgres::DbPostgres() {}
 
 DbPostgres::~DbPostgres() {
+	close();
     if (dl_handle) {
         dlclose(dl_handle);
         dl_handle = NULL;
@@ -434,45 +435,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
 		f.PQfinish_fn(pg_conn);
 			return DB_ERROR;
-	} else {
-		char *create_database_statement;
-		PGresult *res;
-
-		csync_warn(1, "Database %s not found, trying to create it ...", database);
-		ASPRINTF(&create_database_statement, "create database %s", database);
-		res = f.PQexec_fn(pg_conn, create_database_statement);
-		
-		free(create_database_statement);
-
-		switch (f.PQresultStatus_fn(res)) {
-		case PGRES_COMMAND_OK:
-		case PGRES_TUPLES_OK:
-			break;
-
-		case PGRES_EMPTY_QUERY:
-		case PGRES_COPY_OUT:
-		case PGRES_COPY_IN:
-		default:
-			csync_error(0, "Could not create database %s: %s", database, f.PQerrorMessage_fn(pg_conn));
-			return DB_ERROR;
-		}
-
-		f.PQfinish_fn(pg_conn);
-
-		pg_conn_info = std::format("host='{}' user='{}' password='{}' dbname='{}' port={}",
-										   host, user, pass, database, port);
-
-		pg_conn = f.PQconnectdb_fn(pg_conn_info.c_str());
-		if (pg_conn == NULL) {
-			csync_fatal("No memory for postgress connection handle\n");
-		}
-		if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-			csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
-			f.PQfinish_fn(pg_conn);
-			return DB_ERROR;
-		}
 	}
-
     DbPostgres *conn = new DbPostgres();
 	if (conn == NULL) {
 		csync_fatal("No memory for conn\n");

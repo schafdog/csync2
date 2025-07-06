@@ -36,6 +36,7 @@ typedef struct textlist *textlist_p;
 class DbApi;
 class DbStmt {
 public:
+	DbStmt(DbApi *db) : db_(db) {}
     virtual ~DbStmt() = default;
     virtual const char* get_column_text(int column) = 0;
     virtual const char* get_column_blob(int column) = 0;
@@ -43,9 +44,9 @@ public:
     virtual int next() = 0;
     virtual int close() = 0;
     virtual long get_affected_rows() = 0;
-    virtual DbApi* getDB() { return db; }
-private:
-    DbApi *db = NULL;
+    virtual DbApi* getDB() { return db_; };
+protected:
+    DbApi *db_ = NULL;
 };
 
 class DbApi {

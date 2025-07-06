@@ -8,8 +8,8 @@
 
 class DbSql : public DbApi {
 public:
-    const char* escape(const char *string) override;
     const char* escape(const std::string& string) override;
+    const char* escape(const char *string) override;
 
     int schema_version() override;
     int check_file(const char *file, const char *encoded, char **other, char *checktxt,
