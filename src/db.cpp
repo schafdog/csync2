@@ -170,7 +170,7 @@ void csync_db_close(db_conn_p db) {
 	csync_info(4, "Closed db: %p\n", db);
 	begin_commit_recursion--;
 	global_db = 0;
-	free(db);
+	delete db;
 }
 
 long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...) {
