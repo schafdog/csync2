@@ -168,14 +168,17 @@ int DbPostgres::exec(const char *sql) {
 	switch (f.PQresultStatus_fn(res)) {
 	case PGRES_TUPLES_OK:
 		affected_rows = f.PQntuples_fn(res);
+		f.PQclear_fn(res);
 		return DB_OK;
 	case PGRES_COMMAND_OK:
+		f.PQclear_fn(res);
 		return DB_OK;
 
 	case PGRES_EMPTY_QUERY:
 	case PGRES_COPY_OUT:
 	case PGRES_COPY_IN:
 	default:
+		f.PQclear_fn(res);
 		return DB_ERROR;
 	}
 }
