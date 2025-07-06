@@ -10,6 +10,7 @@
 #include <time.h>
 #include "db_sql.hpp"
 #include "db.hpp"
+#include "sql_query.hpp"
 #include "ringbuffer.hpp"
 
 using namespace std;
@@ -499,12 +500,15 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const char *realn
 
 void DbSql::list_hint()
 {
-	SQL_BEGIN(this, "DB Dump - Hint",
-			  "SELECT recursive, filename FROM hint ORDER BY filename")
-	{
-		printf("%s\t%s\n", SQL_V(0), db_decode(SQL_V(1)));
+	try {
+		SqlQuery query(this, "DB Dump - Hint",
+					   "SELECT recursive, filename FROM hint ORDER BY filename");
+		while (query.next()) {
+			printf("%s\t%s\n", query.getColumnText(0), db_decode(query.getColumnText(1)));
+		}
+	} catch (const std::runtime_error& e) {
+		csync_fatal("Failed to list hints: %s\n", e.what());
 	}
-	SQL_END;
 }
 
 void DbSql::list_files(filename_p realname)

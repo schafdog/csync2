@@ -369,18 +369,18 @@ static void daemon_file_update(db_conn_p db, filename_p filename, peername_p pee
 
 static int csync_backup_rename(filename_p std_filename, int length, int generations) {
 	const char *filename = std_filename.c_str();
-	char *backup_name = static_cast<char*>(malloc(length + 10));
-	char *backup_other = static_cast<char*>(malloc(length + 10));
+	char *backup_name = static_cast<char*>(malloc(length + 15));
+	char *backup_other = static_cast<char*>(malloc(length + 15));
 	struct stat st;
 	memcpy(backup_name, filename, length);
 	memcpy(backup_other, filename, length);
 	int rc, i;
 	for (i = generations; i; i--) {
 		if (i != 1)
-			snprintf(backup_name + length, 10, ".%d", i - 1);
+			snprintf(backup_name + length, 15, ".%d", i - 1);
 		else
 			backup_name[length] = '\0';
-		snprintf(backup_other + length, 10, ".%d", i);
+		snprintf(backup_other + length, 15, ".%d", i);
 		if (i == generations) {
 			csync_debug(2, "check backup generation %s due  %d \n", backup_other, generations);
 			rc = lstat(backup_other, &st);

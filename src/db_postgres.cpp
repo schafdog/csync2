@@ -392,6 +392,8 @@ int DbPostgres::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
 
 	switch (f.PQresultStatus_fn(result)) {
 	case PGRES_COMMAND_OK:
+		f.PQclear_fn(result);
+		return DB_OK;
 	case PGRES_TUPLES_OK:
 		break;
 
