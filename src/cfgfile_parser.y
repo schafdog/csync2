@@ -386,7 +386,7 @@ static void add_action_pattern(const char *pattern)
     struct csync_group_action_pattern *t =
 		calloc(1, sizeof(struct csync_group_action_pattern));
     t->star_matches_slashes = !!strstr(pattern, "**");
-    t->pattern = strdup(pattern);
+    t->pattern = pattern;
     t->next = csync_group->action->pattern;
     csync_group->action->pattern = t;
 }
