@@ -29,6 +29,7 @@ extern db_conn_p csync_db_open(const char *file);
 extern void csync_db_close(db_conn_p db);
 
 extern long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...);
+extern long db_query(db_conn_p db, const char *err, const char *fmt, ...);
 extern void* csync_db_begin(db_conn_p db, const char *err, const char *fmt, ...);
 extern int csync_db_next(void *vmx, const char *err,
 		int *pN, const char ***pazValue, const char ***pazColName);
