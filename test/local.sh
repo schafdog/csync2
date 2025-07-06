@@ -91,7 +91,7 @@ function cmd {
 	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished | ./normalize_paths.sh >> ${TESTNAME}/${LEVEL}/${COUNT}.log
+        ASAN_OPTIONS=${ASAN_OPTIONS} $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished | ./normalize_paths.sh >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${LEVEL}/${COUNT}.log
