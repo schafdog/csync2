@@ -158,12 +158,15 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		if (bind(sfd, localaddr, sockaddr_size) == -1) {
 			csync_error(0, "Failed to bind to %s: %d, %s\n", ipstr, errno, strerror(errno));
 		}
+		free(localaddr);
 	}
 		
 	if (connect(sfd, peeraddr, sockaddr_size) == -1) {
 		csync_error(0, "Failed to connect to peer %s:%s: %d, %s\n", peername, port, errno, strerror(errno));
+		free(peeraddr);
 		return -1;
 	}
+	free(peeraddr);
 	csync_debug(2, "Connected to %s:%s \n", peername, port);
 	return sfd;
 }
