@@ -23,18 +23,7 @@ bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
 
-csync2_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l check.cpp file_record.cpp file_record.hpp \
-                 checktxt.cpp csync2.cpp global.cpp daemon.cpp db.cpp \
-		 error.cpp error.hpp getrealfn.cpp modern_logging.cpp \
-                 groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
-		 db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \
-		 ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \
-		 csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp db_sqlite2.hpp dl.hpp \
-		 redis.hpp redis.cpp modern_logging.hpp \
-		 database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \
-		 csync2-compare \
-		 digest.cpp digest.hpp version.hpp \
-		 csync2.1
+csync2_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l check.cpp file_record.cpp file_record.hpp \                 checktxt.cpp csync2.cpp global.cpp daemon.cpp db.cpp sql_query.cpp \         error.cpp error.hpp getrealfn.cpp modern_logging.cpp \                 groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \         db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \         ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \         csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp db_sqlite2.hpp dl.hpp \         redis.hpp redis.cpp modern_logging.hpp \         database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \         csync2-compare \         digest.cpp digest.hpp version.hpp \         csync2.1
 
 EXTRA_DIST = cfgfile_parser.y
 
