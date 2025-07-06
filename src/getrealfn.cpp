@@ -124,6 +124,7 @@ char* getrealfn(filename_p filename) {
 			chdir(oldpwd);
 		} else if (st_mark)
 			*st_mark = '/';
+		free(oldpwd);
 	}
 
 	return_filename:
