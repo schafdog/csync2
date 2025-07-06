@@ -153,7 +153,13 @@ warnings-count:
 	@$(MAKE) -s 2>&1 | grep -c "warning:" || echo "0"
 
 # Debug build with extra debugging features
-debug: clean
+debug-clean: clean
+	@echo "Building with debug symbols and AddressSanitizer..."
+	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
+	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
+
+# Debug build with extra debugging features
+debug: 
 	@echo "Building with debug symbols and AddressSanitizer..."
 	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
 	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
