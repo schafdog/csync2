@@ -266,8 +266,8 @@ int DbPostgresStmt::close() {
 
 #define FILE_LENGTH 275
 #define HOST_LENGTH  50
-int DbPostgres::upgrade_to_schema(int version) {
-	csync_info(2, "Upgrading database schema to version %d.\n", version);
+int DbPostgres::upgrade_to_schema(int new_version) {
+	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
 
 	csync_db_sql(this, NULL, /* "Creating action table", */
 	    "CREATE TABLE action ("
@@ -392,6 +392,8 @@ int DbPostgres::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
 
 	switch (f.PQresultStatus_fn(result)) {
 	case PGRES_COMMAND_OK:
+		f.PQclear_fn(result);
+		return DB_OK;
 	case PGRES_TUPLES_OK:
 		break;
 
