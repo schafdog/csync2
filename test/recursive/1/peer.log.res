@@ -113,7 +113,6 @@ Removing directory <TESTBASE>/test/peer/recursive/1/2/3 0
 Removing directory <TESTBASE>/test/peer/recursive/1/2 0
 Removing directory <TESTBASE>/test/peer/recursive/1 0
 Removing directory <TESTBASE>/test/peer/recursive 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer/recursive. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer/recursive): 6 1 
 Updated(del) local:<TESTBASE>/test/peer/recursive  
 IDENT (cmd_finished).
@@ -131,7 +130,6 @@ Deleting recursive from clean directory (<TESTBASE>/test/peer): 0
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer. Errors 0
 Removing <TESTBASE>/test/peer/* ..
 Removing directory <TESTBASE>/test/peer 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 0 1 
 Updated(del) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).

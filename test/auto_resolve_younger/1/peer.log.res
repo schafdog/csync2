@@ -113,7 +113,6 @@ Removing <TESTBASE>/test/peer/auto/younger/local_oldest from file db.
 Removing directory <TESTBASE>/test/peer/auto/younger 0
 Removing directory <TESTBASE>/test/peer/auto 0
 Removing directory <TESTBASE>/test/peer 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 Updated(del) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).

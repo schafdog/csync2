@@ -14,7 +14,7 @@ other	<TESTBASE>/test/local/new	MKDIR	NULL	1
 other	<TESTBASE>/test/local/new/new_file	NEW	NULL	2
 other	<TESTBASE>/test/local/new/was_hardlink	NEW	NULL	2
 other	<TESTBASE>/test/local/new/hardlinked	HARDLINK	<TESTBASE>/test/local/new/new_file	32
-other	<TESTBASE>/test/local/new/hardlinked_2	HARDLINK	<TESTBASE>/test/local/new/new_file	32
-other	<TESTBASE>/test/local/new/hardlinked_3	HARDLINK	<TESTBASE>/test/local/new/new_file	32
+other	<TESTBASE>/test/local/new/hardlinked_2	HARDLINK	<TESTBASE>/test/local/new/hardlinked	32
+other	<TESTBASE>/test/local/new/hardlinked_3	HARDLINK	<TESTBASE>/test/local/new/hardlinked	32
 other	<TESTBASE>/test/local/new/hardlinked_6	HARDLINK	<TESTBASE>/test/local/new/was_hardlink	32
 peer	<TESTBASE>/test/local/new/hardlinked_6	RM	NULL	64

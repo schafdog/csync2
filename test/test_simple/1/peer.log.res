@@ -73,7 +73,6 @@ Removing file <TESTBASE>/test/peer/.Test
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/.Test from file db.
 Removing directory <TESTBASE>/test/peer 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 Updated(del) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).

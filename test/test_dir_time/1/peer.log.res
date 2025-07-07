@@ -128,7 +128,6 @@ Removing directory <TESTBASE>/test/peer/usr/local/sbin 0
 Removing directory <TESTBASE>/test/peer/usr/local 0
 Removing directory <TESTBASE>/test/peer/usr 0
 Removing directory <TESTBASE>/test/peer 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 Updated(del) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).

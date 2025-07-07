@@ -61,7 +61,6 @@ Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer/type_change. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer/type_change): 1 1 
 Updated(patch) local:<TESTBASE>/test/peer/type_change  
 IDENT (cmd_finished).
@@ -128,7 +127,6 @@ Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer/type_change. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer/type_change): 1 1 
 Updated(patch) local:<TESTBASE>/test/peer/type_change  
 IDENT (cmd_finished).
@@ -156,7 +154,6 @@ Removing file <TESTBASE>/test/peer/type_change
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change from file db.
 Removing directory <TESTBASE>/test/peer 0
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 1 1 
 Updated(del) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
