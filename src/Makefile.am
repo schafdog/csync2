@@ -42,7 +42,7 @@ csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_L
                -ldl -lsqlite3
 
 # --- Tests for the new DB layer ---
-check_PROGRAMS = db_test_sqlite db_test_mysql db_test_postgres
+check_PROGRAMS = db_test_sqlite db_test_mysql db_test_database
 
 db_test_sqlite_SOURCES = db_test_sqlite.cpp database_sqlite_v2.cpp database_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp 
 db_test_sqlite_LDADD = 
@@ -50,7 +50,7 @@ db_test_sqlite_LDADD =
 db_test_mysql_SOURCES = db_test_mysql.cpp database_mysql_v2.cpp database_sqlite_v2.cpp database_v2.cpp database_postgres_v2.cpp
 db_test_mysql_LDADD = 
 
-db_test_postgres_SOURCES = db_test_postgres.cpp database_postgres_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_v2.cpp
+db_test_database_SOURCES = db_test_database.cpp database_postgres_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_v2.cpp
 db_test_postgres_LDADD = 
 
 
