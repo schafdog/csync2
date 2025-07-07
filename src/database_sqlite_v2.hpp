@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <map>
 #include "database_v2.hpp"
 
 // Forward declare SQLite types to avoid including sqlite3.h in the header.
@@ -19,6 +20,7 @@ public:
   SQLiteConnection(const std::string& db_path);
   ~SQLiteConnection() override;
   std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
+  std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) override;
 
   void begin_transaction() override {
     query(begin_str);
@@ -34,9 +36,12 @@ public:
 
   void query(const std::string& sql) override;
 
+  DBType getType() override { return DBType::SQLite; };
+
 private:
   sqlite3* db_;
   std::shared_ptr<SQLiteAPI> sqlite_api_; // Holds the loaded library and function pointers.
+  std::map<std::string, std::shared_ptr<PreparedStatement>> named_statements_;
 
   const std::string begin_str = "BEGIN TRANSACTION;";
   const std::string commit_str = "COMMIT;";

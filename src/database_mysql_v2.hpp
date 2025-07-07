@@ -16,15 +16,18 @@ public:
     ~MySQLConnection() override;
     void query(const std::string& sql) override;
     std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
+    std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) override;
 
     void begin_transaction() override;
     void commit() override;
     void rollback() override;
 
+    DBType getType() override { return DBType::MySQL; };
 private:
     friend class MySQLPreparedStatement;
     MYSQL* mysql_ = nullptr;
     std::shared_ptr<MySQLAPI> mysql_api_;
+    std::map<std::string, std::shared_ptr<PreparedStatement>> named_statements_;
 };
 
 class MySQLPreparedStatement : public PreparedStatement {

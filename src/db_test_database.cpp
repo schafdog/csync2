@@ -4,7 +4,6 @@
 
 void test_postgres(const std::string& conn_str) {
     std::cout << "--- Testing PostgreSQL ---" << std::endl;
-
     // Change this connection string to match your PostgreSQL server configuration.
     // ----------------------
 
@@ -16,28 +15,30 @@ void test_postgres(const std::string& conn_str) {
         // 2. Create a table
         conn->prepare("DROP TABLE IF EXISTS users;")->execute_update();
         conn->prepare(
-            "CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, age INT);"
-        )->execute_update();
+		      "CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, age INT);"
+		      )->execute_update();
+	
         std::cout << "Table 'users' created." << std::endl;
 
         // 3. Insert data in a transaction
         conn->begin_transaction();
         std::cout << "Transaction started." << std::endl;
 
-        auto insert_stmt = conn->prepare("INSERT INTO users (name, age) VALUES ($1, $2);");
-
-        insert_stmt->bind(1, "Alice");
-        insert_stmt->bind(2, 30);
-        insert_stmt->execute_update();
-
-        insert_stmt->bind(1, "Bob");
-        insert_stmt->bind(2, 42);
-        insert_stmt->execute_update();
-
-        insert_stmt->bind(1, "Charlie");
-        insert_stmt->bind_null(2); // Age is NULL
-        insert_stmt->execute_update();
-
+	std::string names[] = { "Alice", "Bob", "Charlie" };
+	int ages[] = { 30, 42, -1 };
+	int index = 0;
+	for (auto name : names) {
+	  auto insert_stmt = conn->prepare("insert", "INSERT INTO users (name, age) VALUES (?, ?);");
+	  insert_stmt->bind(1, name);
+	  int age = ages[index];
+	  if (age > 0) {
+	    insert_stmt->bind(2, ages[index]);
+	  } else {
+	    insert_stmt->bind_null(2); // Age is NULL
+	  }
+	  insert_stmt->execute_update();
+	  index++;
+	}
         conn->commit();
         std::cout << "Transaction committed." << std::endl;
 

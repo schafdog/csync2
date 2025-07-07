@@ -114,6 +114,13 @@ std::unique_ptr<PreparedStatement> PostgresConnection::prepare(const std::string
     return std::make_unique<PostgresPreparedStatement>(conn_, stmt_name, sql, pg_api_);
 }
 
+std::shared_ptr<PreparedStatement> PostgresConnection::prepare(const std::string& name, const std::string& sql) {
+    if (named_statements_.find(name) == named_statements_.end()) {
+        named_statements_[name] = std::make_shared<PostgresPreparedStatement>(conn_, name, sql, pg_api_);
+    }
+    return named_statements_[name];
+}
+
 void PostgresConnection::query(const std::string& sql) {
     pg_exec(conn_, sql.c_str(), pg_api_);
 }
@@ -142,13 +149,14 @@ PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::st
     api_->PQclear(res);
 
     int param_count = 0;
-    for (char c : sql) {
-        if (c == '?') {
+    for (char c : converted_sql) {
+        if (c == '$') {
             param_count++;
         }
     }
     param_values_.resize(param_count);
     param_pointers_.resize(param_count);
+	std::cout << "SQL: " << converted_sql << " PARAMS: " << param_count << std::endl;
 }
 
 std::string PostgresPreparedStatement::convert_sql_placeholders(const std::string& sql) {

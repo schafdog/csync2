@@ -70,7 +70,7 @@ struct MySQLAPI {
             if (handle_) {
                 break; // Successfully loaded
             }
-            error_msg += " " + std::string(lib_name);
+            error_msg += " " + std::string(lib_name) + ": " + dlerror();
         }
 
         if (!handle_) {
@@ -133,6 +133,13 @@ void MySQLConnection::query(const std::string& sql) {
 
 std::unique_ptr<PreparedStatement> MySQLConnection::prepare(const std::string& sql) {
     return std::make_unique<MySQLPreparedStatement>(mysql_, sql, mysql_api_);
+}
+
+std::shared_ptr<PreparedStatement> MySQLConnection::prepare(const std::string& name, const std::string& sql) {
+    if (named_statements_.find(name) == named_statements_.end()) {
+        named_statements_[name] = std::make_shared<MySQLPreparedStatement>(mysql_, sql, mysql_api_);
+    }
+    return named_statements_[name];
 }
 
 void MySQLConnection::begin_transaction() {

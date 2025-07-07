@@ -22,16 +22,19 @@ public:
     ~PostgresConnection() override;
     void query(const std::string& sql) override;
     std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
+    std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) override;
 
     void begin_transaction() override;
     void commit() override;
     void rollback() override;
 
+    DBType getType() override { return DBType::PostgreSQL; };
 private:
     friend class PostgresPreparedStatement;
     PGconn* conn_ = nullptr;
     int statement_counter_ = 0; // To generate unique statement names
     std::shared_ptr<PostgresAPI> pg_api_;
+    std::map<std::string, std::shared_ptr<PreparedStatement>> named_statements_;
 };
 
 class PostgresPreparedStatement : public PreparedStatement {

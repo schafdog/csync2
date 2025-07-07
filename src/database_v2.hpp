@@ -86,6 +86,13 @@ public:
  * This class represents a connection to a specific database. Its primary role
  * is to act as a factory for PreparedStatement objects.
  */
+
+enum class DBType {
+    SQLite,
+    MySQL,
+    PostgreSQL
+};
+
 class DatabaseConnection {
 public:
     virtual ~DatabaseConnection() = default;
@@ -96,6 +103,14 @@ public:
      * @return A unique_ptr to a PreparedStatement.
      */
     virtual std::unique_ptr<PreparedStatement> prepare(const std::string& sql) = 0;
+
+    /**
+     * @brief Creates or reuses a named prepared statement.
+     * @param name The name of the prepared statement.
+     * @param sql The SQL query to prepare.
+     * @return A shared_ptr to a PreparedStatement.
+     */
+    virtual std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) = 0;
 
     /**
      * @brief Begins a transaction.
@@ -113,6 +128,8 @@ public:
     virtual void rollback() = 0;
 
     virtual void query(const std::string& sql) = 0;
+
+  virtual DBType getType() = 0; 
 };
 
 /**
@@ -121,11 +138,7 @@ public:
  * This is how client code will get a connection without needing to know the
  * concrete implementation class.
  */
-enum class DBType {
-    SQLite,
-    MySQL,
-    PostgreSQL
-};
+
 
 std::unique_ptr<DatabaseConnection> create_connection(const std::string& conn_string);
 

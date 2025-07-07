@@ -264,3 +264,10 @@ void SQLiteConnection::query(const std::string& sql) {
 std::unique_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& sql) {
     return std::make_unique<SQLitePreparedStatement>(db_, sql, sqlite_api_);
 }
+
+std::shared_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& name, const std::string& sql) {
+    if (named_statements_.find(name) == named_statements_.end()) {
+        named_statements_[name] = std::make_shared<SQLitePreparedStatement>(db_, sql, sqlite_api_);
+    }
+    return named_statements_[name];
+}
