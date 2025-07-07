@@ -144,7 +144,7 @@ PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::st
     if (api_->PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::string error = api_->PQerrorMessage(conn_);
         api_->PQclear(res);
-        throw DatabaseError("PQprepare failed: " + error);
+        throw DatabaseError("PQprepare failed: " + error + " " + converted_sql);
     }
     api_->PQclear(res);
 
@@ -165,7 +165,7 @@ std::string PostgresPreparedStatement::convert_sql_placeholders(const std::strin
 	int param_index = 1;
 	for (char c : sql) {
 		if (c == '?') {
-			converted_sql += '$' + param_index;
+			converted_sql += std::format("${}", param_index);
 			param_index++;
 		} else {
 			converted_sql += c;
