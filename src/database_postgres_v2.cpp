@@ -1,3 +1,4 @@
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
 #include "database_postgres_v2.hpp"
 #include <dlfcn.h>
 #include <iostream>
@@ -131,7 +132,8 @@ void PostgresConnection::rollback() {
 
 PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::string& name, const std::string& sql, std::shared_ptr<PostgresAPI> api)
     : conn_(conn), name_(name), api_(api) {
-    PGresult* res = api_->PQprepare(conn_, name_.c_str(), sql.c_str(), 0, nullptr);
+    std::string converted_sql = convert_sql_placeholders(sql);
+    PGresult* res = api_->PQprepare(conn_, name_.c_str(), converted_sql.c_str(), 0, nullptr);
     if (api_->PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::string error = api_->PQerrorMessage(conn_);
         api_->PQclear(res);
@@ -141,12 +143,27 @@ PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::st
 
     int param_count = 0;
     for (char c : sql) {
-        if (c == '$') {
+        if (c == '?') {
             param_count++;
         }
     }
     param_values_.resize(param_count);
     param_pointers_.resize(param_count);
+}
+
+std::string PostgresPreparedStatement::convert_sql_placeholders(const std::string& sql) {
+	std::string converted_sql;
+	converted_sql.reserve(sql.length());
+	int param_index = 1;
+	for (char c : sql) {
+		if (c == '?') {
+			converted_sql += '$' + param_index;
+			param_index++;
+		} else {
+			converted_sql += c;
+		}
+	}
+    return converted_sql;
 }
 
 void PostgresPreparedStatement::bind(int index, int value) {

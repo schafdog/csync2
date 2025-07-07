@@ -49,6 +49,8 @@ public:
     long long execute_update() override;
 
 private:
+    std::string convert_sql_placeholders(const std::string& sql);
+
     PGconn* conn_;
     std::string name_;
     std::vector<std::string> param_values_;
