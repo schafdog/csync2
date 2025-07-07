@@ -2,9 +2,6 @@
 #include <iostream>
 #include <memory>
 
-// This is the implementation for the factory function, which we need to link against.
-std::unique_ptr<DatabaseConnection> create_connection(const std::string& conn_string);
-
 void test_sqlite() {
     std::cout << "--- Testing SQLite ---" << std::endl;
 
