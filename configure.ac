@@ -189,7 +189,6 @@ for flag in \
     -Wcast-align \
     -Wwrite-strings \
     -Wredundant-decls \
-    -Winline \
     -Wdisabled-optimization \
     -Wno-unused-parameter \
     -Wno-unused-function \
@@ -202,6 +201,7 @@ for flag in \
     -fno-omit-frame-pointer \
     -Wconversion-null
 #    -Wzero-as-null-pointer-constant
+#    -Winline \
 do
     AC_MSG_CHECKING([whether $CXX accepts $flag])
     old_CXXFLAGS="$CXXFLAGS"

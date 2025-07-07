@@ -190,6 +190,8 @@ static inline void textlist_free(struct textlist *listhandle)
 			free(listhandle->value3);
 		if ( listhandle->value4 )
 			free(listhandle->value4);
+		if ( listhandle->value5 )
+			free(listhandle->value5);
 		free(listhandle);
 		listhandle = next;
 	}

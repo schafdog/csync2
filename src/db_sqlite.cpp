@@ -128,7 +128,7 @@ int DbSqlite::exec(const char *sql) {
 
 class DbSqliteStmt : public DbStmt {
 public:
-    DbSqliteStmt(sqlite3_stmt *stmt, DbApi *db) : private_data(stmt), db(db) {}
+    DbSqliteStmt(sqlite3_stmt *stmt, DbApi *db) : DbStmt(db), private_data(stmt) {}
     ~DbSqliteStmt() override { close(); };
 
     const char* get_column_text(int column) override;
@@ -140,7 +140,6 @@ public:
 
 private:
     sqlite3_stmt *private_data;
-    DbApi *db;
 };
 
 const char* DbSqliteStmt::get_column_text(int column) {
@@ -167,21 +166,22 @@ int DbSqliteStmt::next() {
 }
 
 int DbSqliteStmt::close() {
-    if (!private_data)
+    if (!private_data) {
         return DB_OK;
+	}
 	int rc = f.sqlite3_finalize_fn(private_data);
     private_data = NULL;
 	return db_sqlite_error_map(rc);
 }
 
-int DbSqlite::upgrade_to_schema(int version) {
+int DbSqlite::upgrade_to_schema(int new_version) {
 	if (version < 0)
 		return DB_OK;
 
 	if (version > 0)
 		return DB_ERROR;
 
-	csync_info(2, "Upgrading database schema to version %d.\n", version);
+	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
 
 	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating file table", */
 	"CREATE TABLE file ("

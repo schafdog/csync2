@@ -210,7 +210,7 @@ int DbMySql::exec(const char *sql) {
 
 class DbMySqlStmt : public DbStmt {
 public:
-    DbMySqlStmt(MYSQL_RES *res, DbApi *db) : private_data(res), db(db) {}
+    DbMySqlStmt(MYSQL_RES *res, DbApi *db) : DbStmt(db), private_data(res) {}
     ~DbMySqlStmt() override { close(); };
 
     const char* get_column_text(int column) override;
@@ -223,7 +223,6 @@ public:
 private:
     MYSQL_RES *private_data;
     MYSQL_ROW private_data2;
-    DbApi *db;
 };
 
 const char* DbMySqlStmt::get_column_blob(int column) {
@@ -257,8 +256,9 @@ int DbMySqlStmt::next() {
 }
 
 int DbMySqlStmt::close() {
-    if (!private_data)
+    if (!private_data) {
         return DB_OK;
+	}
 	f.mysql_free_result_fn(private_data);
     private_data = NULL;
 	return DB_OK;
@@ -284,8 +284,8 @@ int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded
 
 #define FILE_LENGTH 250
 #define HOST_LENGTH  50
-int DbMySql::upgrade_to_schema(int version) {
-	csync_debug(2, "Upgrading database schema to version %d.\n", version);
+int DbMySql::upgrade_to_schema(int new_version) {
+	csync_debug(2, "Upgrading database schema to version %d.\n", new_version);
 
 	/* We want proper logging, so use the csync sql function instead
 	 * of that from the database layer.

@@ -107,8 +107,10 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 	if (redis_reply) {
 		if (redis_reply->str) {
 			int unix_time = atoi(redis_reply->str);
+			freeReplyObject(redis_reply);
 			return unix_time;
 		}
+		freeReplyObject(redis_reply);
 	} else {
 		csync_error(1, "No redis response: %s", redis_context->err);
 		if (!csync_redis_check_connection()) {

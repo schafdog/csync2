@@ -421,7 +421,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 	}
 }
 
-static int csync_bind(char *service_port, int ip_version)
+static int csync_bind(const char *service_port, int ip_version)
 {
 	struct linger sl = {1, 5};
 	struct addrinfo hints;
@@ -486,7 +486,7 @@ static void csync_openlog(int facility)
 	openlog(program_pid, LOG_ODELAY, facility);
 }
 
-static int csync_server_bind(char *service_port, int ip_version)
+static int csync_server_bind(const char *service_port, int ip_version)
 {
 	csync_debug(2, "Binding to %s IPv%d \n", service_port, ip_version);
 	int listenfd = csync_bind(service_port, ip_version);
@@ -694,6 +694,7 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 
 	for (int i = 0; i < file_count; i++)
 	{
+		//char *real_name = realpath(files[i], NULL);
 		char *real_name = getrealfn(files[i]);
 		if (real_name == NULL)
 		{
@@ -1101,7 +1102,7 @@ int main(int argc, char **argv)
 
 	int listenfd = 0;
 	long server_standalone = mode & MODE_STANDALONE;
-	char *myport = strdup(csync_port);
+	std::string myport(csync_port);
 	csync_debug(3, "csync_hostinfo %p\n", csync_hostinfo);
 	csync_debug(3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 	if (server_standalone > 0)
@@ -1120,7 +1121,7 @@ int main(int argc, char **argv)
 				{
 					csync_debug(1, "Found my alias %s %s %s \n", myhostinfo->name, myhostinfo->host,
 								myhostinfo->port);
-					myport = strdup(myhostinfo->port);
+					myport = myhostinfo->port;
 					break;
 				}
 				myhostinfo = myhostinfo->next;
@@ -1129,15 +1130,11 @@ int main(int argc, char **argv)
 			csync_config_destroy();
 		}
 
-		listenfd = csync_server_bind(myport, g_ip_version);
+		listenfd = csync_server_bind(myport.c_str(), g_ip_version);
 		if (listenfd == -1)
 		{
 			exit(1);
 		};
-		if (myport != NULL)
-		{
-			free(myport);
-		}
 	};
 	return csync_start(mode, flags, argc, argv, update_function, listenfd, cmd_db_version, cmd_ip_version);
 };
@@ -1447,6 +1444,7 @@ nofork:
 	{
 		for (int i = optind; i < argc; i++)
 		{
+			//char *realname = realpath(argv[i], NULL);
 			char *realname = getrealfn(argv[i]);
 			db->mark(g_active_peers, realname, flags & FLAG_RECURSIVE);
 			free_realname(realname);
@@ -1462,12 +1460,16 @@ nofork:
 	if (mode == MODE_LIST_FILE)
 	{
 		retval = 2;
-		const char *realname = "";
+		char *realname = "";
 		if (optind < argc)
 		{
 			realname = getrealfn(argv[optind]);
 		}
 		db->list_files(realname);
+		if (optind < argc) {
+			free(realname);
+		}
+
 	};
 
 	if (mode == MODE_TAIL)
@@ -1529,6 +1531,7 @@ nofork:
 				if (csync_insynctest_all(db, realname, g_ip_version, g_active_peers, flags))
 					retval = 2;
 			}
+			free(realname);
 			break;
 		case 0:
 			if (csync_insynctest_all(db, 0, g_ip_version, g_active_peers, flags))

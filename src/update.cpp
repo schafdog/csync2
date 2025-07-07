@@ -149,7 +149,7 @@ static int read_conn_status_raw(int fd, filename_p filename, peername_p peername
 		return ERROR_CREATE;
 	if (!strncmp(line, PATH_NOT_FOUND, PATH_NOT_FOUND_LEN)) {
 		// Return the missing path
-		for (int index = 0 ; index < (int) strlen(line+PATH_NOT_FOUND_LEN)+1 ; index++)
+		for (int index = 0 ; index < static_cast<int>(strlen(line+PATH_NOT_FOUND_LEN)+1) ; index++)
 			line[index] = line[index + PATH_NOT_FOUND_LEN];
 		return ERROR_PATH_MISSING;
 	}
@@ -1219,9 +1219,8 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 	int not_done = 1;
 	const char *key_enc = url_encode(key);
 	const char *enc_tmp = url_encode(prefixencode(filename));
-	/* Need to live while doing a lot of url_encode. Dont want to delete on every return */
-	char *filename_enc = static_cast<char*>(malloc(strlen(enc_tmp) + 1));
-	strcpy(filename_enc, enc_tmp);
+	std::string filename_enc_str(enc_tmp);
+	const char *filename_enc = filename_enc_str.c_str();
 	int rc;
 	while (not_done) {
 		csync_info(1, "Updating (%s) '%s:%s' '%s'\n", operation_str, peername.c_str(), filename.c_str(), (other ? other : ""));
@@ -1229,17 +1228,14 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 		if (lstat_strict(filename, &st) != 0 || (faccessat(0, filename.c_str(), R_OK,AT_SYMLINK_NOFOLLOW) != 0)) {
 			csync_error(0, "ERROR: Cant stat or read %s.\n", filename.c_str());
 			csync_error_count++;
-			free(filename_enc);
 			return ERROR;
 		}
 		if (force || auto_resolve_run) {
 			if (dry_run) {
 				csync_info(1, "!F: %-15s %s\n", peername.c_str(), filename.c_str());
-				free(filename_enc);
 				return OK_DRY;
 			}
 			if ((rc = csync_flush(conn, key_enc, peername, filename_enc)) < 0) {
-				free(filename_enc);
 				return rc;
 			}
 		}
@@ -1254,12 +1250,12 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 				}
 				if (rc == CONN_CLOSE) {
 					csync_error(0, "Connection closed while moving  %s:%s", peername.c_str(), filename.c_str());
-					free(filename_enc);
 					return rc;
 				}
 			}
 		}
-		int sig_rc = csync_update_file_sig_rs_diff(conn, myname, peername, key_enc, filename, filename_enc, &st, uid,
+		int sig_rc = csync_update_file_sig_rs_diff(conn, myname, peername, key_enc,
+												   filename, filename_enc, &st, uid,
 												   gid, NULL, digest, &last_conn_status, 2);
 		rc = sig_rc;
 		if (rc >= 0) {
@@ -1289,7 +1285,8 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 					csync_calc_digest(filename.c_str(), buffer, &calc_digest);
 					digest = calc_digest;
 				};
-				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername, filename, filename_enc,
+				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername,
+												filename, filename_enc,
 												checktxt, digest, &st, uid, gid, auto_resolve_run);
 				if (rc == OK || rc == CONN_CLOSE) {
 					csync_info(2, "Returning after hard link check %s:%s %d\n", peername.c_str(), filename.c_str(), rc);
@@ -1302,8 +1299,9 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 				operation = OP_MOD;
 				csync_debug(1, "clear HARDLINK. No longer one\n", filename.c_str(), other);
 			} else {
-				rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc, other,
-						&st, uid, gid, digest, &last_conn_status, auto_resolve_run);
+				rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc,
+												 filename, filename_enc, other,
+												 &st, uid, gid, digest, &last_conn_status, auto_resolve_run);
 				if (rc != OK) {
 					csync_error(0, "Failed to hardlink %s:%s with %s. Retry...", peername.c_str(), filename.c_str(), other);
 					other = NULL;
@@ -1493,7 +1491,6 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 		case OK:
 		case IDENTICAL:
 			csync_clear_dirty(db, peername, filename, auto_resolve_run);
-			free(filename_enc);
 			return rc;
 		case ERROR_DIRTY:
 			if (auto_resolve_run) {
@@ -1517,7 +1514,6 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 		}
 	}
 	csync_fatal("Failed through loop. Should have returned. rc: %d \n", rc);
-	free(filename_enc);
 	return rc;
 }
 
@@ -1710,6 +1706,9 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 				}
 			}
 		}
+	}
+	if (last_dir_deleted) {
+		free(last_dir_deleted);
 	}
 	textlist_free(tl);
 

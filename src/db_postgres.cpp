@@ -58,7 +58,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p)
 #else
 
 static struct db_postgres_fns {
-	PGconn* (*PQconnectdb_fn)(char*);
+	PGconn* (*PQconnectdb_fn)(const char*);
 	ConnStatusType (*PQstatus_fn)(const PGconn*);
 	char* (*PQerrorMessage_fn)(const PGconn*);
 	void (*PQfinish_fn)(PGconn*);
@@ -185,7 +185,7 @@ int DbPostgres::exec(const char *sql) {
 
 class DbPostgresStmt : public DbStmt {
 public:
-    DbPostgresStmt(PGresult *res, DbApi *db) : private_data(res), db(db) {
+    DbPostgresStmt(PGresult *res, DbApi *db) : DbStmt(db), private_data(res) {
         row_p = new int;
         *row_p = -1;
     }
@@ -201,7 +201,7 @@ public:
 private:
     PGresult *private_data;
     int *row_p;
-    DbApi *db;
+	DbApi *db_;
 };
 
 const char* DbPostgresStmt::get_column_blob(int column) {
@@ -253,10 +253,10 @@ int DbPostgresStmt::next() {
 }
 
 int DbPostgresStmt::close() {
-    if (!private_data)
-        return DB_OK;
-	f.PQclear_fn(private_data);
-    private_data = NULL;
+    if (private_data) {
+		f.PQclear_fn(private_data);
+		private_data = NULL;
+	}
     if (row_p) {
         delete row_p;
         row_p = NULL;
@@ -410,6 +410,7 @@ int DbPostgres::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
 DbPostgres::DbPostgres() {}
 
 DbPostgres::~DbPostgres() {
+	close();
     if (dl_handle) {
         dlclose(dl_handle);
         dl_handle = NULL;
@@ -420,90 +421,29 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	PGconn *pg_conn;
 	char *host = NULL, *user = NULL, *pass = NULL, *database = NULL;
 	unsigned int port = 5432; /* default postgres port */
-	char *db_url = static_cast<char*>(malloc(strlen(file) + 1));
-	char *pg_conn_info;
-
+	std::string db_url(file);
 	db_postgres_dlopen();
 
-	if (db_url == NULL) {
-		csync_fatal("No memory for db_url\n");
-	}
-
-	strcpy(db_url, file);
-	int rc = db_pgsql_parse_url(db_url, &host, &user, &pass, &database, &port);
-	if (rc != DB_OK)
+	int rc = db_pgsql_parse_url(const_cast<char *>(db_url.c_str()), &host, &user, &pass, &database, &port);
+	if (rc != DB_OK) {
 		return rc;
-
-	ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='%s' port=%d", host, user, pass, database, port);
-
-	pg_conn = f.PQconnectdb_fn(pg_conn_info);
+	}
+	std::string	pg_conn_info = std::format("host='{}' user='{}' password='{}' dbname='{}' port={}",
+										   host, user, pass, database, port);
+	pg_conn = f.PQconnectdb_fn(pg_conn_info.c_str());
 	if (pg_conn == NULL) {
 		csync_fatal("No memory for postgress connection handle\n");
 	}
 	if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
 		f.PQfinish_fn(pg_conn);
-		free(pg_conn_info);
-
-		ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='postgres' port=%d", host, user, pass, port);
-
-		pg_conn = f.PQconnectdb_fn(pg_conn_info);
-		if (pg_conn == NULL)
-			csync_fatal("No memory for postgress connection handle\n");
-
-		if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-			csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
-			f.PQfinish_fn(pg_conn);
-			free(pg_conn_info);
 			return DB_ERROR;
-		} else {
-			char *create_database_statement;
-			PGresult *res;
-
-			csync_warn(1, "Database %s not found, trying to create it ...", database);
-			ASPRINTF(&create_database_statement, "create database %s", database);
-			res = f.PQexec_fn(pg_conn, create_database_statement);
-
-			free(create_database_statement);
-
-			switch (f.PQresultStatus_fn(res)) {
-			case PGRES_COMMAND_OK:
-			case PGRES_TUPLES_OK:
-				break;
-
-			case PGRES_EMPTY_QUERY:
-			case PGRES_COPY_OUT:
-			case PGRES_COPY_IN:
-			default:
-				csync_error(0, "Could not create database %s: %s", database, f.PQerrorMessage_fn(pg_conn));
-				return DB_ERROR;
-			}
-
-			f.PQfinish_fn(pg_conn);
-			free(pg_conn_info);
-
-			ASPRINTF(&pg_conn_info, "host='%s' user='%s' password='%s' dbname='%s' port=%d", host, user, pass, database,
-					port);
-
-			pg_conn = f.PQconnectdb_fn(pg_conn_info);
-			if (pg_conn == NULL) {
-				csync_fatal("No memory for postgress connection handle\n");
-			}
-			if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
-				csync_error(0, "Connection failed: %s", f.PQerrorMessage_fn(pg_conn));
-				f.PQfinish_fn(pg_conn);
-				free(pg_conn_info);
-				return DB_ERROR;
-			}
-		}
 	}
-
     DbPostgres *conn = new DbPostgres();
 	if (conn == NULL) {
 		csync_fatal("No memory for conn\n");
 	}
 	*conn_p = conn;
 	conn->private_data = pg_conn;
-	free(pg_conn_info);
 
 	return DB_OK;
 }

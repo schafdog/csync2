@@ -90,27 +90,28 @@ static void add_host(char *hostname, char *peername, int slave)
 		csync_group->local_slave = slave;
 		if (!csync_group->myname)
 			csync_group->myname = peername;
-		else
+		else {
 			free(peername);
-    } else {
-	struct csync_group_host *t =
-	    calloc(1, sizeof(struct csync_group_host));
-	t->hostname = peername;
-	t->on_left_side = !csync_group->myname;
-	t->slave = slave;
-	t->next = csync_group->host;
-	csync_group->host = t;
-	csync_log_c(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
+		}
+    }
+	else {
+		struct csync_group_host *t =
+			calloc(1, sizeof(struct csync_group_host));
+		t->hostname = peername;
+		t->on_left_side = !csync_group->myname;
+		t->slave = slave;
+		t->next = csync_group->host;
+		csync_group->host = t;
+		csync_log_c(LOG_DEBUG, 3, "New group:host: %s %s\n",csync_group->gname, peername);
     }
     free(hostname);
 }
 
-static void add_patt(int patterntype, const char *p_pattern)
+static void add_patt(int patterntype, char *pattern)
 {
 	struct csync_group_pattern *t =
 		calloc(1, sizeof(struct csync_group_pattern));
 	int i;
-	char *pattern = strdup(p_pattern);
 
 #ifdef __CYGWIN__
 	if (isalpha(pattern[0]) && pattern[1] == ':' &&

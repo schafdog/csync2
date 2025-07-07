@@ -554,7 +554,7 @@ textlist_p DbSql::list_file(filename_p str_filename, const char *myhostname, pee
 		}
 	}
 	SQL_END;
-
+	free(where_sql);
 	return tl;
 }
 
@@ -752,8 +752,8 @@ void DbSql::clear_operation(const char *myhostname, peername_p peername,
 }
 
 textlist_p DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
-												 const std::set<std::string> &patlist,
-												 int (*get_dirty_by_peer)(filename_p str_filename, filename_p pattern, int recursive))
+										  const std::set<std::string> &patlist,
+										  int (*get_dirty_by_peer)(filename_p fn, filename_p pattern, int recursive))
 {
 	const char *peername = str_peername.c_str();
 
