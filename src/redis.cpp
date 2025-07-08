@@ -19,6 +19,7 @@ extern "C" {
 redisContext *redis_context = NULL;
 redisReply *redis_reply = NULL;
 int isunix = 0;
+char *csync_redis = 0;
 
 int csync_redis_connect(char *redis) {
 	if (redis == NULL)
@@ -118,7 +119,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 			csync_redis_reconnect();
 			return -2;
 		}
-			
+
 	}
 	return -1;
 }
@@ -148,7 +149,7 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 
 	}
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, argc, argv, NULL);
-	
+
 	csync_debug(3, "Redis reply: SET '%s' '%s' %s %s %s -> %s\n", domain_key, value, nx ? "NX" : "",
 			expire > 0 ? "EX" : "", expire > 0 ? time : "", redis_str(redis_reply));
 
@@ -218,7 +219,7 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 		}
 		return -2;
 	}
-	
+
 	csync_debug(3, "Redis Reply: DEL '%s' -> %d\n", domain_key, redis_reply->integer);
 	if (redis_reply->integer != 1) {
 		csync_error(1, "csync_redis_del failed to delete key: %s %d\n", domain_key, redis_reply->integer);
@@ -237,7 +238,7 @@ int csync_redis_del(const char *key) {
 }
 int csync_redis_del(filename_p key) {
 	return csync_redis_del_custom(key.c_str(), NULL);
-}	
+}
 
 void csync_redis_unlock(filename_p lock, time_t unix_time) {
 	if (redis_context == NULL)
