@@ -105,7 +105,7 @@ enum {
 	MODE_SINGLE = 32,
 	MODE_NOFORK = 64,
 	MODE_STANDALONE = MODE_SERVER|MODE_SINGLE|MODE_NOFORK,
-	MODE_DAEMON  = MODE_INETD|MODE_SERVER|MODE_SINGLE|MODE_NOFORK, 
+	MODE_DAEMON  = MODE_INETD|MODE_SERVER|MODE_SINGLE|MODE_NOFORK,
 	MODE_FORCE = 256,
 	MODE_LIST_HINT = 512,
 	MODE_LIST_FILE = 1024,
@@ -122,7 +122,7 @@ enum {
 	MODE_PING = 2*MODE_TAIL
 };
 
-#define DEFAULT_PORT "30865" 
+#define DEFAULT_PORT "30865"
 #define ERROR_DIRTY_STR "File is also marked dirty here!"
 #define ERROR_DIRTY_LEN (static_cast<int>(sizeof ERROR_DIRTY_STR) - 1)
 
@@ -146,11 +146,11 @@ enum {
 } while (0)
 
 /* check.c */
-#define DEV_INO_SAME 0
-#define DEV_CHANGED 1
-#define INO_CHANGED 2
-#define DEV_MISSING 4
-#define INO_MISSING 8
+//#define DEV_INO_SAME 0
+//#define DEV_CHANGED 1
+//#define INO_CHANGED 2
+//#define DEV_MISSING 4
+//#define INO_MISSING 8
 /* check.c */
 #define OP_UNDEF      0
 #define OP_MARK       0
@@ -164,7 +164,7 @@ enum {
 #define OP_MOD      128
 #define OP_MOD2     256
 #define OP_SYNC     (OP_MOD|OP_MOD2)
-#define OP_FILTER   (~(OP_SYNC) & 1023) 
+#define OP_FILTER   (~(OP_SYNC) & 1023)
 
 #define IS_UPGRADE  1
 #define IS_DIRTY    2
@@ -177,6 +177,8 @@ std::string  check_string(const char *str);
 #include "textlist.hpp"
 
 #include "groups.hpp"
+
+int csync2_main(int argc, char **argv);
 
 /* cfgfile_parser_processed.y - additional missing prototypes */
 #ifdef __cplusplus
@@ -224,7 +226,7 @@ extern const char *csync_port;
 extern const char *csync_confdir;
 extern char *g_active_grouplist;
 extern char *g_active_peerlist;
-    
+
 extern const char *g_cfgname;
 
 extern int csync_ignore_uid;
@@ -278,4 +280,3 @@ static inline int lstat_strict(filename_p filename, struct stat *buf) {
 }
 
 #endif /* CSYNC2_HPP */
-

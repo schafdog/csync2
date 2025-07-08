@@ -46,7 +46,7 @@
 
 #define DB_SCHEMA_VERSION 2
 
-#define DEFAULT_PORT "30865" 
+#define DEFAULT_PORT "30865"
 #define ERROR_DIRTY_STR "File is also marked dirty here!"
 #define ERROR_DIRTY_LEN (static_cast<int>(sizeof ERROR_DIRTY_STR) - 1)
 
@@ -72,11 +72,11 @@ struct csync_nossl;
 struct csync_group;
 struct csync_group_host;
 struct csync_group_pattern;
-struct csync_hostinfo; 
+struct csync_hostinfo;
 
 struct csync_hostinfo {
     char *name; // Alias
-    char *host; 
+    char *host;
     char *port; // service or port number
     struct csync_hostinfo *next;
 };
@@ -189,7 +189,7 @@ extern const char *csync_port;
 extern const char *csync_confdir;
 extern char *g_active_grouplist;
 extern char *g_active_peerlist;
-    
+
 extern const char *g_cfgname;
 
 extern int csync_ignore_uid;
@@ -224,4 +224,3 @@ static inline char *on_cygwin_lowercase(char *cchar) {
 }
 
 #endif /* CSYNC2_H */
-
