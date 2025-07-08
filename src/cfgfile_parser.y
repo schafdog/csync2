@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "csync2.h"
 #include <fnmatch.h>
 #include <ctype.h>
 #include "utils.h"
@@ -35,8 +36,8 @@ struct csync_hostinfo *csync_hostinfo = 0;
 int csync_ignore_uid = 0;
 int csync_ignore_gid = 0;
 int csync_ignore_mod = 0;
-unsigned csync_lock_timeout = 12;
-unsigned csync_lock_time = 60;
+extern unsigned csync_lock_timeout;
+extern unsigned csync_lock_time;
 char *csync_tempdir = NULL;
 
 int cfg_db_version = -1;
@@ -67,7 +68,7 @@ static void create_group(char *name)
 	if (name == 0)
 	    // missing check on result
 	    asprintf(&name, "group_%d", autonum++);
-	
+
 	t->next = csync_group;
 	t->auto_method = -1;
 	t->gname = name;
@@ -154,12 +155,12 @@ static void set_key(char *keyfilename)
     if ( csync_group->key ) {
 		csync_fatal_c("Config error: a group might only have one key.\n");
 	}
-    
+
     if ((keyfile = fopen(keyfilename, "r")) == 0 ||
 	 fgets(line, 1024, keyfile) == 0 ) {
 		csync_fatal_c("Config error: Can't read keyfile %s.\n", keyfilename);
 	 }
-	
+
     for (i=0; line[i]; i++) {
 	if (line[i] == '\n') { line[i]=0; break; }
 	if ( !(line[i] >= 'A' && line[i] <= 'Z') &&
@@ -181,10 +182,10 @@ static void set_key(char *keyfilename)
 static void set_auto(char *auto_method)
 {
     int method_id = -1;
-    
+
     if (csync_group->auto_method >= 0)
 	csync_fatal_c("Config error: a group might only have one auto-setting.\n");
-    
+
     if (!strcmp(auto_method, "none"))
 	method_id = CSYNC_AUTO_METHOD_NONE;
 
@@ -193,13 +194,13 @@ static void set_auto(char *auto_method)
 
     if (!strcmp(auto_method, "younger"))
 	method_id = CSYNC_AUTO_METHOD_YOUNGER;
-    
+
     if (!strcmp(auto_method, "older"))
 	method_id = CSYNC_AUTO_METHOD_OLDER;
-    
+
     if (!strcmp(auto_method, "bigger"))
 	method_id = CSYNC_AUTO_METHOD_BIGGER;
-    
+
     if (!strcmp(auto_method, "smaller"))
 	method_id = CSYNC_AUTO_METHOD_SMALLER;
 
@@ -242,7 +243,7 @@ static void check_group(void)
 
     if ( csync_group->auto_method < 0 )
 	csync_group->auto_method = CSYNC_AUTO_METHOD_NONE;
-    
+
     /* re-order hosts and pattern */
     {
 	struct csync_group_host *t = csync_group->host;
@@ -339,7 +340,7 @@ static void action_destroy(struct csync_group_action *action) {
 
 static void host_destroy(struct csync_group_host *host) {
     if (!host)
-	return ; 
+	return ;
     host_destroy(host->next);
     free(host->hostname);
     free(host);
@@ -347,7 +348,7 @@ static void host_destroy(struct csync_group_host *host) {
 
 static void csync_hostinfo_destroy(struct csync_hostinfo *hostinfo) {
     if (!hostinfo)
-	return ; 
+	return ;
     csync_hostinfo_destroy(hostinfo->next);
     free(hostinfo->name);
     free(hostinfo->host);
@@ -357,15 +358,15 @@ static void csync_hostinfo_destroy(struct csync_hostinfo *hostinfo) {
 
 static void pattern_destroy(struct csync_group_pattern *pattern) {
   if (!pattern)
-    return ; 
+    return ;
   pattern_destroy(pattern->next);
   free(pattern->pattern);
   free(pattern);
 }
 
 void csync_config_destroy_group(struct csync_group *group) {
-    if (!group) 
-	return ; 
+    if (!group)
+	return ;
     csync_config_destroy_group(group->next);
     host_destroy(group->host);
     pattern_destroy(group->pattern);
@@ -381,7 +382,7 @@ void csync_config_destroy_group(struct csync_group *group) {
     free(group);
 }
 
-static void add_action_pattern(const char *pattern)
+static void add_action_pattern(char *pattern)
 {
     struct csync_group_action_pattern *t =
 		calloc(1, sizeof(struct csync_group_action_pattern));
@@ -576,7 +577,7 @@ void csync_config_destroy(void) {
     prefix_destroy(csync_prefix);
     csync_prefix = NULL;
     nossl_destroy(csync_nossl);
-    if (csync_database) 
+    if (csync_database)
 		free(csync_database);
     if (csync_redis)
 		free(csync_redis);
@@ -632,7 +633,7 @@ block:
 		{ create_prefix($2); }
 		TK_BLOCK_BEGIN prefix_list TK_BLOCK_END
 		{ }
-|	TK_HOSTS 
+|	TK_HOSTS
 		TK_BLOCK_BEGIN alias_list TK_BLOCK_END
 		{ }
 |	TK_NOSSL TK_STRING TK_STRING TK_STEND
@@ -784,4 +785,3 @@ action_exec_list:
 |	action_exec_list TK_STRING
 		{ add_action_exec($2); }
 ;
-
