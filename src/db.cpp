@@ -33,8 +33,7 @@
 
 int db_blocking_mode = 1;
 int db_sync_mode = 1;
-
-extern int db_type;
+int db_type = DB_SQLITE3; //default type
 static db_conn_p global_db = 0;
 // TODO make configurable
 static int wait_length = 2;
@@ -48,6 +47,7 @@ static time_t transaction_begin = 0;
 static time_t last_wait_cycle = 0;
 static int begin_commit_recursion = 0;
 static int in_sql_query = 0;
+const char *(*db_decode)(const char *value);
 
 static void csync_db_alarmhandler(int signum) {
 	// unused parameter
