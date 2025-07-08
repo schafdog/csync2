@@ -22,8 +22,23 @@ sbin_SCRIPTS = csync2-compare
 bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
+database_SOURCES = database_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \
+                db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp
 
-csync2_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l check.cpp file_record.cpp file_record.hpp \                 checktxt.cpp csync2.cpp global.cpp daemon.cpp db.cpp sql_query.cpp \         error.cpp error.hpp getrealfn.cpp modern_logging.cpp \                 groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \         db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \         ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \         csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp db_sqlite2.hpp dl.hpp \         redis.hpp redis.cpp modern_logging.hpp \         database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \         csync2-compare \         digest.cpp digest.hpp version.hpp \         csync2.1
+common_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l \
+	check.cpp file_record.cpp file_record.hpp \
+	checktxt.cpp global.cpp daemon.cpp db.cpp sql_query.cpp \
+	error.cpp error.hpp getrealfn.cpp modern_logging.cpp \
+	groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
+	db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \
+	ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \
+	csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp db_sqlite2.hpp dl.hpp \
+	redis.hpp redis.cpp modern_logging.hpp \
+	database_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \
+	digest.cpp digest.hpp version.hpp \
+	csync2-compare csync2.1
+
+csync2_SOURCES = main.cpp $(common_SOURCES) csync2.cpp
 
 EXTRA_DIST = cfgfile_parser.y
 
@@ -42,16 +57,10 @@ csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_L
                -ldl -lsqlite3
 
 # --- Tests for the new DB layer ---
-check_PROGRAMS = db_test_sqlite db_test_mysql db_test_database
+check_PROGRAMS = test_database
 
-db_test_sqlite_SOURCES = db_test_sqlite.cpp database_sqlite_v2.cpp database_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp 
-db_test_sqlite_LDADD = 
-
-db_test_mysql_SOURCES = db_test_mysql.cpp database_mysql_v2.cpp database_sqlite_v2.cpp database_v2.cpp database_postgres_v2.cpp
-db_test_mysql_LDADD = 
-
-db_test_database_SOURCES = db_test_database.cpp database_postgres_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_v2.cpp
-db_test_postgres_LDADD = 
+test_database_SOURCES = $(database_SOURCES) test_database.cpp global.cpp utils.hpp error.cpp sql_query.cpp ringbuffer.cpp db.cpp check.cpp modern_logging.cpp prefixsubst.cpp checktxt.cpp groups.cpp digest.cpp action.cpp buffer.cpp redis.cpp urlencode.cpp uidgid.cpp
+test_database_LDADD = $(csync2_LDADD)
 
 
 
@@ -148,7 +157,7 @@ debug-clean: clean
 	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
 
 # Debug build with extra debugging features
-debug: 
+debug:
 	@echo "Building with debug symbols and AddressSanitizer..."
 	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
 	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
