@@ -39,14 +39,14 @@ extern long  csync_db_long(void *stmtx,int col, long *result);
 extern char *db_default_database(const char *dbdir, const char *myhostname, const char *cfg_name);
 const char *csync_db_escape(const char *);
 const char *csync_db_escape(filename_p filename);
-extern const char *csync_db_quote(filename_p filename); 
-extern const char *csync_db_escape_quote(filename_p filename); 
+extern const char *csync_db_quote(filename_p filename);
+extern const char *csync_db_escape_quote(filename_p filename);
 dev_t fstat_dev(struct stat *file_stat);
 
 #define SQL(db, e, s, ...) csync_db_sql(db, e, s __VA_OPT__(, ) __VA_ARGS__)
 
-extern const char* (*db_decode) (const char *value); 
-//extern const char* (*db_encode) (const char *value); 
+extern const char* (*db_decode) (const char *value);
+//extern const char* (*db_encode) (const char *value);
 
 #define SQL_BEGIN(db, e, s, ...) \
 { \
