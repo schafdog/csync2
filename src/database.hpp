@@ -65,31 +65,6 @@ enum class DatabaseResult {
     DONE = -101
 };
 
-// File operation types
-enum class FileOperation {
-    UNDEF = 0,
-    MARK = 0,
-    MKDIR = 1,
-    NEW = 2,
-    MKFIFO = 4,
-    MKCHR = 8,
-    MOVE = 16,
-    HARDLINK = 32,
-    RM = 64,
-    MOD = 128,
-    MOD2 = 256,
-    SYNC = (MOD | MOD2)
-};
-
-// Check result flags
-enum class CheckResult {
-    DEV_INO_SAME = 0,
-    DEV_CHANGED = 1,
-    INO_CHANGED = 2,
-    DEV_MISSING = 4,
-    INO_MISSING = 8
-};
-
 // Abstract base class for database connections
 class DatabaseConnection {
 public:
