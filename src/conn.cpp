@@ -120,7 +120,7 @@ static const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_
 static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_version) {
 	int sfd;
 	struct csync_hostinfo *p = csync_hostinfo;
-	const char *peername = str_peername.c_str(); 
+	const char *peername = str_peername.c_str();
 	const  char *port = csync_port;
 	csync_debug(2, "Looking for alternative host:port for %s\n", peername);
 	while (p) {
@@ -139,11 +139,11 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		csync_error(0, "Failed to create socket: %d, %s %d %d\n", errno, strerror(errno), AF_INET, AF_INET6);
 		return -1;
 	}
-			
+
 	struct sockaddr *localaddr = csync_lookup_addr(myhostname.c_str(), NULL, ip_version);
 	if (localaddr == NULL) {
 		csync_error(0, "Failed to look up locala address address from %s\n", peername);
-	}	
+	}
 	struct sockaddr *peeraddr = csync_lookup_addr(peername, port, ip_version);
 
 	if (peeraddr == NULL) {
@@ -151,7 +151,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		return -1;
 	}
 	size_t sockaddr_size = get_sockaddr_len(peeraddr);
-	
+
 	if (localaddr != NULL) {
 		char ipstr[INET6_ADDRSTRLEN];
 		csync_info(2, "Using specific address %s\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
@@ -160,7 +160,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		}
 		free(localaddr);
 	}
-		
+
 	if (connect(sfd, peeraddr, sockaddr_size) == -1) {
 		csync_error(0, "Failed to connect to peer %s:%s: %d, %s\n", peername, port, errno, strerror(errno));
 		free(peeraddr);
@@ -707,41 +707,6 @@ static void conn_remove_key(char *buf) {
 		*ptr = 0;
 	}
 }
-extern int csync_zero_mtime_debug;
-
-char* filter_mtime_copy(const char *buffer) {
-	char *copy = strdup(buffer);
-	return filter_mtime(copy);
-}
-
-char* filter_mtime(char *buffer) {
-	char *str = buffer;
-	if (csync_zero_mtime_debug) {
-		char *pos = strstr(str, "mtime=");
-		if (pos != NULL) {
-			pos += 6;
-			while (*pos != '\0' && *pos != '%' && *pos != ':') {
-				*pos = 'x';
-				pos++;
-			}
-		}
-		// remove mtime at end of end of line
-		int len = strlen(str);
-		if (len > 0) {
-			if (!strncmp(str, "PATCH", 5) || !strncmp(str, "SET", 3) || !strncmp(str, "MKDIR", 5)
-					|| !strncmp(str, "SIG", 3) || !strncmp(str, "MOD", 3)|| !strncmp(str, "CREATE", 6)) {
-				char *ptr = str + strlen(str) - 1;
-				// csync_debug(0, "Remove time: %s\n", str);
-				while (*ptr >= '0' && *ptr <= '9' && ptr >= str) { //  || (*ptr >= '0' && *ptr <= '9')) {
-					*ptr = 'x';
-					--ptr;
-				}
-				// csync_debug(0, "Removed time: %s\n", str);
-			}
-		}
-	}
-	return str;
-}
 
 void conn_printf(int fd, const char *fmt, ...) {
 	char dummy = 0, *buffer = 0;
@@ -817,4 +782,3 @@ ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline
 size_t conn_gets(int conn_in, char *s, size_t size) {
 	return conn_gets_newline(conn_in, s, size, 1);
 }
-
