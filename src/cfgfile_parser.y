@@ -28,14 +28,15 @@
 #include <ctype.h>
 #include "utils.h"
 
-struct csync_group    *csync_group  = 0;
-struct csync_prefix   *csync_prefix = 0;
-struct csync_nossl    *csync_nossl  = 0;
-struct csync_hostinfo *csync_hostinfo = 0;
+extern struct csync_group    *csync_group;
+extern struct csync_prefix   *csync_prefix;
+extern struct csync_nossl    *csync_nossl;
+extern struct csync_hostinfo *csync_hostinfo;
 
-int csync_ignore_uid = 0;
-int csync_ignore_gid = 0;
-int csync_ignore_mod = 0;
+extern int csync_ignore_uid;
+extern int csync_ignore_gid;
+extern int csync_ignore_mod;
+
 extern unsigned csync_lock_timeout;
 extern unsigned csync_lock_time;
 char *csync_tempdir = NULL;
