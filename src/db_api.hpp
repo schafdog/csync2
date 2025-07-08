@@ -8,7 +8,10 @@
 
 #include "csync2.hpp"
 #include "buffer.hpp"
+#include "database.hpp"
+#include "database_v2.hpp"
 #include "error.hpp"
+#include "database_api.hpp"
 
 #define DB_SQLITE2 1
 #define DB_SQLITE3 2
@@ -22,6 +25,9 @@
 #define DB_NO_CONNECTION_REAL  -4
 #define DB_ROW  -100
 #define DB_DONE -101
+
+#define FILE_LENGTH 500
+#define HOST_LENGTH  50
 
 #ifdef __DARWIN_C_LEVEL
 #define SO_FILE_EXT ".dylib"
@@ -51,6 +57,8 @@ protected:
 
 class DbApi {
 public:
+    DbApi() = default;
+    DbApi(DatabaseConnection* conn) : db_(conn) {}
     virtual ~DbApi() = default;
 
     virtual int exec(const char *exec) = 0;
@@ -81,8 +89,8 @@ public:
     virtual int update_format_v1_v2(filename_p filename, int recursive, int do_it) = 0;
     virtual void add_hint(filename_p filename, int recursive) = 0;
     virtual void remove_hint(filename_p filename, int recursive) = 0;
-    virtual void remove_file(filename_p filename, int recursive) = 0;
-    virtual void delete_file(filename_p filename, int recursive) = 0;
+    virtual int remove_file(filename_p filename, int recursive) = 0;
+    virtual int delete_file(filename_p filename, int recursive) = 0;
     virtual textlist_p find_dirty(
         int (*filter_dirty)(filename_p filename, const char *localname, peername_p peername)) = 0;
     virtual textlist_p find_file(filename_p pattern, int (*filter_file)(filename_p filename)) = 0;
@@ -90,7 +98,7 @@ public:
                           const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
                           int op, int mode, int mtime) = 0;
 
-    virtual void remove_dirty(peername_p peername, filename_p filename, int recursive) = 0;
+    virtual int remove_dirty(peername_p peername, filename_p filename, int recursive) = 0;
 
     virtual textlist_p get_dirty_by_peer_match(const char *myname, peername_p peername, int recursive,
                                                const std::set<std::string>& patlist,
@@ -137,6 +145,7 @@ public:
     int version;
     long affected_rows;
     void *private_data;
+    DatabaseConnection *db_;
 };
 
 // For compatibility
