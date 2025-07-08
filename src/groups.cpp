@@ -22,6 +22,7 @@
 #include <fnmatch.h>
 
 int csync_compare_mode = 0;
+struct csync_group *csync_group = 0;
 
 static int match_pattern_list(filename_p filename, const char *basename, const struct csync_group_pattern *p, int compare_mode) {
 	// unused
@@ -218,4 +219,3 @@ int csync_perm(filename_p filename, const char *key, const char *hostname, int c
 	}
 	return false_retcode;
 }
-
