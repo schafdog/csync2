@@ -95,3 +95,157 @@ const char* prefixencode(const char *filename) {
 const char* prefixencode(filename_p filename) {
 	return prefixencode(filename.c_str());
 }
+
+operation_t csync_operation(const char *operation) {
+	if (!operation) {
+		csync_warn(0, "Called with null operation");
+		return OP_UNDEF;
+	}
+	if (!strcmp(operation, "NEW"))
+		return OP_NEW;
+	if (!strcmp(operation, "MKDIR"))
+		return OP_MKDIR;
+	if (!strcmp(operation, "MKINFO"))
+		return OP_NEW;
+	if (!strcmp(operation, "MKCHR"))
+		return OP_NEW;
+	if (!strcmp(operation, "MOVE"))
+		return OP_MOVE;
+	if (!strcmp(operation, "MV"))
+		return OP_MOVE;
+	if (!strcmp(operation, "HARDLINK"))
+		return OP_HARDLINK;
+	if (!strcmp(operation, "RM"))
+		return OP_RM;
+	if (!strncmp(operation, "MOD", 3))
+		return OP_MOD;
+	if (!strncmp(operation, "MARK", 4))
+		return OP_MARK;
+	csync_warn(0, "Called with unknown operation: %s", operation);
+	return OP_UNDEF;
+}
+
+const char* csync_operation_str(operation_t op) {
+	switch (op & OP_FILTER) {
+	case OP_NEW:
+		return "NEW";
+	case OP_MKDIR:
+		return "MKDIR";
+	case OP_MOD:
+		return "MOD";
+	case OP_RM:
+		return "RM";
+	case OP_HARDLINK:
+		return "HARDLINK";
+	case OP_MARK:
+		return "MARK";
+	case OP_MOVE:
+		return "MV";
+	}
+	csync_error(1, "No mapping for operation: %u %u\n", op, OP_FILTER);
+	return "?";
+}
+
+extern int csync_zero_mtime_debug;
+
+char* filter_mtime_copy(const char *buffer) {
+	char *copy = strdup(buffer);
+	return filter_mtime(copy);
+}
+
+char* filter_mtime(char *buffer) {
+	char *str = buffer;
+	if (csync_zero_mtime_debug) {
+		char *pos = strstr(str, "mtime=");
+		if (pos != NULL) {
+			pos += 6;
+			while (*pos != '\0' && *pos != '%' && *pos != ':') {
+				*pos = 'x';
+				pos++;
+			}
+		}
+		// remove mtime at end of end of line
+		int len = strlen(str);
+		if (len > 0) {
+			if (!strncmp(str, "PATCH", 5) || !strncmp(str, "SET", 3) || !strncmp(str, "MKDIR", 5)
+					|| !strncmp(str, "SIG", 3) || !strncmp(str, "MOD", 3)|| !strncmp(str, "CREATE", 6)) {
+				char *ptr = str + strlen(str) - 1;
+				// csync_debug(0, "Remove time: %s\n", str);
+				while (*ptr >= '0' && *ptr <= '9' && ptr >= str) { //  || (*ptr >= '0' && *ptr <= '9')) {
+					*ptr = 'x';
+					--ptr;
+				}
+				// csync_debug(0, "Removed time: %s\n", str);
+			}
+		}
+	}
+	return str;
+}
+
+int get_file_type(int st_mode) {
+
+	if (S_ISREG(st_mode))
+		return REG_TYPE;
+	if (S_ISDIR(st_mode))
+		return DIR_TYPE;
+	if (S_ISCHR(st_mode))
+		return CHR_TYPE;
+	if (S_ISBLK(st_mode))
+		return BLK_TYPE;
+	if (S_ISFIFO(st_mode))
+		return FIFO_TYPE;
+	if (S_ISLNK(st_mode))
+		return LINK_TYPE;
+	if (S_ISSOCK(st_mode))
+		return SOCK_TYPE;
+	return -1;
+}
+
+int match_peer(const std::set<std::string> &active_peers, const char *peer)
+{
+	if (active_peers.empty())
+	{
+		return 1; // If no peers specified, match all
+	}
+
+	for (const auto &active_peer : active_peers)
+	{
+		if (active_peer == peer)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+extern int g_db_version;
+extern
+int csync_get_checktxt_version(const char *value)
+{
+	if (value && strlen(value) > 2)
+	{
+		if (value[1] == '1')
+			return 1;
+		if (value[1] == '2')
+			return 2;
+	}
+	// Weird
+	return g_db_version;
+}
+
+int compare_files(filename_p str_filename, filename_p str_pattern, int recursive) {
+	const char *filename = str_filename.c_str();
+	const char *pattern = str_pattern.c_str();
+
+	int i;
+	const char *slash = "/";
+	if (!strcmp(pattern, slash))
+		return 1;
+	for (i = 0; filename[i] && pattern[i]; i++)
+		if (filename[i] != pattern[i])
+			return 0;
+	if (filename[i] == '/' && !pattern[i] && recursive)
+		return 1;
+	if (!filename[i] && !pattern[i])
+		return 1;
+	return 0;
+}
