@@ -9,6 +9,33 @@
 extern char g_myhostname[]; // Assuming this is defined elsewhere
 int get_file_type(int st_mode);
 
+static int db_parse_url(char *url, char **host, char **user, char **pass, char **database, unsigned int *port) {
+	char *pos = strchr(url, '@');
+	if (pos) {
+		*(pos) = 0;
+		*(user) = url;
+		url = pos + 1;
+
+		pos = strchr(*user, ':');
+		if (pos) {
+			*(pos) = 0;
+			*(pass) = (pos + 1);
+		}
+	}
+	*host = url;
+	pos = strchr(*host, '/');
+	if (pos) {
+		// Database
+		(*pos) = 0;
+		*database = pos + 1;
+	}
+	pos = strchr(*host, ':');
+	if (pos) {
+		(*pos) = 0;
+		*port = atoi(pos + 1);
+	}
+	return DB_OK;
+}
 
 DatabaseStatement::DatabaseStatement(std::unique_ptr<PreparedStatement> stmt)
     : stmt_(std::move(stmt)), is_update_(false) {
