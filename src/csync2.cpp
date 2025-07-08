@@ -65,25 +65,29 @@
 #define DBDIR REAL_DBDIR
 #endif
 
-char *csync_database = 0;
-char *csync_redis = 0;
+extern char *csync_database;
 
-int db_type = DB_SQLITE3;
+extern int db_type;
 
 static char *file_config = 0;
 static char *cfgfile = 0;
 static const char *dbdir = DBDIR;
-const char *g_cfgname = "";
-char *g_active_grouplist = 0;
-char *g_active_peerlist = NULL;
-std::set<std::string> g_active_peers;
-
-const char *g_update_format = 0;
-char *g_allow_peer = 0;
-int g_db_version = 1;
-int g_ip_version = AF_INET;
-
+extern const char *g_cfgname;
+extern char *g_active_grouplist;
+extern char *g_active_peerlist;
+extern std::set<std::string> g_active_peers;
+extern const char *g_update_format;
+extern char *g_allow_peer;
+extern int g_db_version;
+extern int g_ip_version;
+extern int cfg_db_version;
+extern int cfg_protocol_version;
 extern FILE *yyin;
+extern int cfg_ip_version;
+extern int csync_zero_mtime_debug;
+int protocol_version;
+
+
 
 char *log_file = 0;
 
@@ -572,18 +576,6 @@ error:
 	return 1;
 }
 
-int csync_get_checktxt_version(const char *value)
-{
-	if (value && strlen(value) > 2)
-	{
-		if (value[1] == '1')
-			return 1;
-		if (value[1] == '2')
-			return 2;
-	}
-	// Weird
-	return g_db_version;
-}
 
 static const char *csync_nop(const char *value)
 {
@@ -592,23 +584,11 @@ static const char *csync_nop(const char *value)
 
 static const char *csync_decode_v2(const char *value)
 {
-	/*
-	 int version = csync_get_checktxt_version(value);
-	 if (version == 1)
-	 return url_decode(value);
-	 else
-	 */
 	return value;
 }
 
-extern int cfg_ip_version;
-extern int cfg_db_version;
-extern int cfg_protocol_version;
-int csync_zero_mtime_debug = 0;
-int protocol_version;
-
-const char *(*db_decode)(const char *value);
-const char *(*db_encode)(const char *value);
+extern const char *(*db_decode)(const char *value);
+extern const char *(*db_encode)(const char *value);
 
 void parse_peerlist(const char *peerlist)
 {
@@ -631,23 +611,6 @@ void parse_peerlist(const char *peerlist)
 	}
 	if (peerlist_copy)
 		free(peerlist_copy);
-}
-
-int match_peer(const std::set<std::string> &active_peers, const char *peer)
-{
-	if (active_peers.empty())
-	{
-		return 1; // If no peers specified, match all
-	}
-
-	for (const auto &active_peer : active_peers)
-	{
-		if (active_peer == peer)
-		{
-			return 1;
-		}
-	}
-	return 0;
 }
 
 // Legacy C-style interface for backward compatibility
@@ -807,7 +770,7 @@ static int facility_from_string(const char *facility)
 	return LOG_LOCAL5; // unknown
 }
 
-int main(int argc, char **argv)
+int csync2_main(int argc, char **argv)
 {
 	long mode = MODE_NONE;
 	int flags = 0;
