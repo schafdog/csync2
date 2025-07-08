@@ -124,6 +124,10 @@ public:
         }
     }
 
+    int rows() const override {
+        return api_->sqlite3_changes(api_->sqlite3_db_handle(stmt_));
+    }
+
     bool next() override {
         int rc = api_->sqlite3_step(stmt_);
         if (rc == SQLITE_ROW) {

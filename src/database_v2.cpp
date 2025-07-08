@@ -1,3 +1,4 @@
+/*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
 #include "database_v2.hpp"
 #include "database_sqlite_v2.hpp"
 #include "database_mysql_v2.hpp"

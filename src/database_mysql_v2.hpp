@@ -23,6 +23,7 @@ public:
     void rollback() override;
 
     DBType getType() override { return DBType::MySQL; };
+    void *get_private_data() override { return mysql_; };
 private:
     friend class MySQLPreparedStatement;
     MYSQL* mysql_ = nullptr;
@@ -59,6 +60,8 @@ class MySQLResultSet : public ResultSet {
 public:
   MySQLResultSet(MYSQL_STMT* stmt, std::shared_ptr<MySQLAPI> api);
   ~MySQLResultSet() override;
+
+    int rows() const override;
 
     bool next() override;
 

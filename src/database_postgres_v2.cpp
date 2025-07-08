@@ -103,6 +103,11 @@ PostgresConnection::PostgresConnection(const std::string& conn_string) {
     }
 }
 
+PostgresConnection::PostgresConnection(PGconn* conn) {
+    pg_api_ = std::make_shared<PostgresAPI>();
+    conn_ = conn;
+}
+
 PostgresConnection::~PostgresConnection() {
     if (conn_) {
         pg_api_->PQfinish(conn_);
@@ -210,7 +215,6 @@ std::unique_ptr<ResultSet> PostgresPreparedStatement::execute_query() {
         api_->PQclear(res);
         throw DatabaseError("PQexecPrepared query failed: " + error);
     }
-
     return std::make_unique<PostgresResultSet>(res, api_);
 }
 
@@ -256,6 +260,10 @@ PostgresResultSet::~PostgresResultSet() {
         api_->PQclear(res_);
     }
 }
+
+int PostgresResultSet::rows() const {
+    return  api_->PQntuples(res_);
+};
 
 bool PostgresResultSet::next() {
     if (!res_ || current_row_ + 1 >= num_rows_) {

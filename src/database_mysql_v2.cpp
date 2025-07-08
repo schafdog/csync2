@@ -272,6 +272,10 @@ MySQLResultSet::~MySQLResultSet() {
     }
 }
 
+int MySQLResultSet::rows() const {
+    return 0;
+}
+
 void MySQLResultSet::bind_results() {
     meta_result_ = api_->mysql_stmt_result_metadata(stmt_);
     if (!meta_result_) {

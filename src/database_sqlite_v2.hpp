@@ -38,6 +38,7 @@ public:
 
   DBType getType() override { return DBType::SQLite; };
 
+  void *get_private_data() override { return db_; };
 private:
   sqlite3* db_;
   std::shared_ptr<SQLiteAPI> sqlite_api_; // Holds the loaded library and function pointers.

@@ -61,6 +61,8 @@ class ResultSet {
 public:
     virtual ~ResultSet() = default;
 
+    virtual int rows() const = 0;
+
     /**
      * @brief Moves the cursor to the next row in the result set.
      * @return true if there is another row to process, false otherwise.
@@ -97,6 +99,8 @@ class DatabaseConnection {
 public:
     virtual ~DatabaseConnection() = default;
 
+    virtual void *get_private_data() = 0;
+
     /**
      * @brief Creates a new prepared statement.
      * @param sql The SQL query to prepare.
@@ -129,7 +133,7 @@ public:
 
     virtual void query(const std::string& sql) = 0;
 
-  virtual DBType getType() = 0; 
+  virtual DBType getType() = 0;
 };
 
 /**

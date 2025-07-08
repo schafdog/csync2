@@ -19,6 +19,7 @@ struct PostgresAPI;
 class PostgresConnection : public DatabaseConnection {
 public:
     explicit PostgresConnection(const std::string& conn_string);
+    explicit PostgresConnection(PGconn* conn);
     ~PostgresConnection() override;
     void query(const std::string& sql) override;
     std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
@@ -29,6 +30,7 @@ public:
     void rollback() override;
 
     DBType getType() override { return DBType::PostgreSQL; };
+    void *get_private_data() override { return conn_; };
 private:
     friend class PostgresPreparedStatement;
     PGconn* conn_ = nullptr;
@@ -66,6 +68,7 @@ public:
     explicit PostgresResultSet(PGresult* res, std::shared_ptr<PostgresAPI> api);
     ~PostgresResultSet() override;
 
+    int rows() const override;
     bool next() override;
 
     // Helper to check for NULLs
