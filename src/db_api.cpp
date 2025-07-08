@@ -34,15 +34,14 @@ static int db_detect_type(const char **db_str, int type) {
 	}
 	return type;
 }
-
-int db_open(const char *file, int type, db_conn_p *db) {
+int db_open(const char *file, int default_type, db_conn_p *db) {
 	int rc = DB_ERROR;
 	const char *db_str;
 	db_str = file;
 
-	type = db_detect_type(&db_str, type);
+	default_type = db_detect_type(&db_str, default_type);
 	/* Switch between implementation */
-	switch (type) {
+	switch (default_type) {
 	case DB_SQLITE3:
 		rc = db_sqlite_open(db_str, db);
 
