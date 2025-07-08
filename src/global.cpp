@@ -36,3 +36,11 @@ const char *g_update_format = 0;
 char *g_allow_peer = 0;
 int g_db_version = 1;
 int g_ip_version = AF_INET;
+
+struct csync_prefix   *csync_prefix = 0;
+struct csync_nossl    *csync_nossl  = 0;
+struct csync_hostinfo *csync_hostinfo = 0;
+
+int csync_ignore_uid = 0;
+int csync_ignore_gid = 0;
+int csync_ignore_mod = 0;
