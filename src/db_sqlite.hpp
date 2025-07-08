@@ -2,11 +2,13 @@
 #ifndef DB_SQLITE_H
 #define DB_SQLITE_H
 
+#include "database_v2.hpp"
 #include "db_sql.hpp"
 
 class DbSqlite : public DbSql {
 public:
     DbSqlite();
+    DbSqlite(DatabaseConnection* conn) : DbSql(conn) {};
     ~DbSqlite() override;
 
     int exec(const char *sql) override;

@@ -282,8 +282,6 @@ int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded
 	return count;
 }
 
-#define FILE_LENGTH 250
-#define HOST_LENGTH  50
 int DbMySql::upgrade_to_schema(int new_version) {
 	csync_debug(2, "Upgrading database schema to version %d.\n", new_version);
 

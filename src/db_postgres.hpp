@@ -7,6 +7,7 @@
 class DbPostgres : public DbSql {
 public:
     DbPostgres();
+    DbPostgres(DatabaseConnection* conn) : DbSql(conn) {};
     ~DbPostgres() override;
 
     int exec(const char *sql) override;
