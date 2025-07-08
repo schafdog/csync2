@@ -33,4 +33,13 @@ extern "C" {
 
 char *filter_mtime(char *chktxt);
 char *filter_mtime_copy(const char *chktxt);
+
+#define DIR_TYPE 1
+#define REG_TYPE 2
+#define CHR_TYPE 3
+#define BLK_TYPE 4
+#define FIFO_TYPE 5
+#define LINK_TYPE 6
+#define SOCK_TYPE 7
+int get_file_type(int st_mode);
 #endif /* CSYNC2_UTILS_HPP */
