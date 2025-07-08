@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
+#include "database_postgres_v2.hpp"
+#include "database_v2.hpp"
 #include "db_api.hpp"
 #include "db.hpp"
 #include "db_postgres.hpp"
@@ -197,6 +199,7 @@ public:
     int next() override;
     int close() override;
     long get_affected_rows() override { return 0; };
+    DbApi *get_db_api() { return db_; }
 
 private:
     PGresult *private_data;
@@ -264,8 +267,6 @@ int DbPostgresStmt::close() {
 	return DB_OK;
 }
 
-#define FILE_LENGTH 275
-#define HOST_LENGTH  50
 int DbPostgres::upgrade_to_schema(int new_version) {
 	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
 
@@ -438,12 +439,14 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 		f.PQfinish_fn(pg_conn);
 			return DB_ERROR;
 	}
-    DbPostgres *conn = new DbPostgres();
-	if (conn == NULL) {
+	DatabaseConnection *conn = new PostgresConnection(pg_conn);
+    DbPostgres *api = new DbPostgres(conn);
+	if (api == NULL) {
 		csync_fatal("No memory for conn\n");
 	}
-	*conn_p = conn;
-	conn->private_data = pg_conn;
+	*conn_p = api;
+
+	api->private_data = pg_conn;
 
 	return DB_OK;
 }
