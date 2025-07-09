@@ -18,6 +18,9 @@
  */
 
 #include "csync2.hpp"
+#include "database.hpp"
+#include "database_v2.hpp"
+#include <memory>
 #if defined(HAVE_SQLITE3)
 #include <sqlite3.h>
 #endif
@@ -251,6 +254,7 @@ DbSqlite::~DbSqlite() {
     }
 }
 
+
 int db_sqlite_open(const char *file, db_conn_p *conn_p) {
 	sqlite3 *db;
 
@@ -270,6 +274,16 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p) {
     *conn_p = conn;
 
 	return db_sqlite_error_map(rc);
+}
+
+int db_sqlite_open_new(const char *file, db_conn_p *conn_p) {
+    std::unique_ptr<DatabaseConnection> conn = create_connection(file);
+	if (conn == NULL) {
+		return DB_ERROR;
+	}
+	DbSqlite *dbApi = new DbSqlite(conn.release());
+	*conn_p = dbApi;
+	return db_sqlite_error_map(0);
 }
 
 #endif
