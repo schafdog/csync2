@@ -56,18 +56,18 @@ static inline void textlist_add_var(struct textlist **listhandle, int intitem, i
     (*listhandle)->num = num;
     (*listhandle)->data = NULL;
     (*listhandle)->destroy = NULL;
-    va_start ( arguments, num );           
+    va_start ( arguments, num );
     /* Sum all the inputs; we still rely on the function caller to tell us how
      * many there are */
     for ( int x = 0; x < num; x++ ) {
-	const char *item = va_arg ( arguments, char * ); 
+	const char *item = va_arg ( arguments, char * );
 	(*listhandle)->values[x] = (item  ? strdup(item)  : NULL);
     }
     va_end ( arguments );                  // Cleans up the list
     (*listhandle)->next = tmp;
 }
 
-static inline void textlist_add5(struct textlist **listhandle, const char *item, const char *item2, 
+static inline void textlist_add5(struct textlist **listhandle, const char *item, const char *item2,
 				 const char *item3, const char *item4, const char *item5,
 				 int intitem, int operation)
 {
@@ -87,21 +87,21 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 	(*listhandle)->next = tmp;
 }
 
-static inline void textlist_add5(struct textlist **listhandle, const std::string& item, const std::string& item2, 
+static inline void textlist_add5(struct textlist **listhandle, const std::string& item, const std::string& item2,
 				 const std::string& item3, const std::string& item4, const std::string& item5,
 				 int intitem, int operation)
 {
     textlist_add5(listhandle, item.c_str(), item2.c_str(), item3.c_str(), item4.c_str(), item5.c_str(), intitem, operation);
 }
 
-static inline void textlist_add4(struct textlist **listhandle, const std::string& item, const std::string& item2, const std::string& item3, 
-                				 const std::string& item4, int intitem) 
+static inline void textlist_add4(struct textlist **listhandle, const std::string& item, const std::string& item2, const std::string& item3,
+                				 const std::string& item4, int intitem)
 {
     textlist_add5(listhandle, item.c_str(), item2.c_str(), item3.c_str(), item4.c_str(), 0, intitem, 0);
 }
 
-static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3, 
-				 const char *item4, int intitem) 
+static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3,
+				 const char *item4, int intitem)
 {
     textlist_add5(listhandle, item, item2, item3, item4, 0, intitem, 0);
 }
@@ -135,11 +135,18 @@ static inline void textlist_add_new2(struct textlist **listhandle,
 		(*listhandle)->value2 = (item2 ? strdup(item2) : 0);
 		csync_debug(3, "Adding textlist_add_new: %s\n", item);
     }
-    
+
     else {
 		csync_debug(3, "Skipping textlist_add_new: %s\n", item);
 	}
 }
+
+static inline void textlist_add_new2(struct textlist **listhandle,
+				     const std::string& item, const std::string& item2, int intitem)
+{
+    textlist_add_new2(listhandle, item.c_str(), item2.c_str(), intitem);
+}
+
 
 static inline void textlist_add_new(struct textlist **listhandle, const char *item, int intitem)
 {
@@ -202,7 +209,7 @@ static inline void textlist_free_struct(struct textlist *listhandle)
     struct textlist *next;
     while (listhandle != 0) {
 	next = listhandle->next;
-	if (listhandle->data) 
+	if (listhandle->data)
 	    listhandle->destroy(listhandle->data);
 	free(listhandle);
 	listhandle = next;
