@@ -25,6 +25,8 @@
 #include <signal.h>
 #include <time.h>
 #include <string.h>
+#include "database_mysql_v2.hpp"
+#include "database_v2.hpp"
 #include "db_api.hpp"
 #include "db.hpp"
 #include "db_mysql.hpp"
@@ -288,20 +290,20 @@ int DbMySql::upgrade_to_schema(int new_version) {
 	/* We want proper logging, so use the csync sql function instead
 	 * of that from the database layer.
 	 */
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), "Creating host table", "CREATE TABLE `host` ("
+	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating host table", "CREATE TABLE `host` ("
 			"  `host` varchar(%u) DEFAULT NULL,"
 			"  `status`  int,"
 			"  KEY `host` (`host`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", HOST_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /*"Creating action table" */
+	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /*"Creating action table" */
 	"CREATE TABLE `action` ("
 			"  `filename` varchar(%u) DEFAULT NULL,"
 			"  `command`  text,"
 			"  `logfile` text,"
 			"  KEY `filename` (`filename`(%u),`command`(%u)) "
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), "Creating dirty table", "CREATE TABLE `dirty` ("
+	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating dirty table", "CREATE TABLE `dirty` ("
 //		 "  id        bigint       AUTO_INCREMENT,"
 					"  filename  varchar(%u)  DEFAULT NULL,"
 					"  forced    int \t      DEFAULT NULL,"
@@ -324,7 +326,7 @@ int DbMySql::upgrade_to_schema(int new_version) {
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), "Creating file table", "CREATE TABLE `file` ("
+	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating file table", "CREATE TABLE `file` ("
 //		 "  `id`       bigint AUTO_INCREMENT,"
 			//		"  `parent`   bigint DEFAULT NULL,"
 					"  filename varchar(%u)  DEFAULT NULL,"
@@ -343,14 +345,14 @@ int DbMySql::upgrade_to_schema(int new_version) {
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating hint table", */
+	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /* "Creating hint table", */
 	"  CREATE TABLE `hint` ("
 			"  `filename` varchar(%u) DEFAULT NULL,"
 			"  `recursive` int(11)    DEFAULT NULL"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating x509_cert table", */
+	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /* "Creating x509_cert table", */
 	"CREATE TABLE `x509_cert` ("
 			"  `peername` varchar(50)  DEFAULT NULL,"
 			"  `certdata` text DEFAULT NULL,"
@@ -428,7 +430,7 @@ void DbMySql::shutdown() {
     f.mysql_library_end_fn();
 }
 
-int db_mysql_open(const char *file, db_conn_p *conn_p) {
+int db_mysql_open(const char *file, db_conn_p *api_p) {
 #ifdef HAVE_MYSQL
 	db_mysql_dlopen();
 
@@ -471,14 +473,14 @@ int db_mysql_open(const char *file, db_conn_p *conn_p) {
 	if (mysql_set_character_set(db, "utf8")) {
 		csync_fatal("Cannot set character set to utf8\n");
 	}
-
-    DbMySql *conn = new DbMySql();
+	DatabaseConnection *conn = new MySQLConnection(db);
+    DbMySql *api = new DbMySql(conn);
 	if (conn == NULL) {
 		return DB_ERROR;
 	}
-	*conn_p = conn;
+	*api_p = api;
 
-	conn->private_data = db;
+	api->private_data = db;
 
 	free(db_url);
 	return rc;
