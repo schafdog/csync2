@@ -4,10 +4,16 @@
 #define DB_SQL_HPP
 
 #include "csync2.hpp"
+#include "database_v2.hpp"
 #include "db_api.hpp"
+#include <memory>
 
 class DbSql : public DbApi {
 public:
+    DbSql() {};
+    DbSql(DatabaseConnection* conn) : DbApi(conn) {};
+    ~DbSql() override {};
+
     const char* escape(const std::string& string) override;
     const char* escape(const char *string) override;
 
@@ -34,12 +40,13 @@ public:
     textlist_p get_command_filename(filename_p command, const char *logfile) override;
     int dir_count(const char *dirname) override;
     void add_hint(filename_p filename, int recursive) override;
-    void remove_dirty(peername_p peername, filename_p filename, int recursive) override;
+    int remove_dirty(peername_p peername, filename_p filename, int recursive) override;
+    int remove_dirty_new(peername_p peername, filename_p filename, int recursive);
     textlist_p find_dirty(
         int (*filter)(filename_p str_filename, const char *localname, peername_p str_peername)) override;
     textlist_p find_file(filename_p str_pattern, int (*filter_file)(filename_p filename)) override;
-    void remove_file(filename_p str_filename, int recursive) override;
-    void delete_file(filename_p str_filename, int recursive) override;
+    int remove_file(filename_p str_filename, int recursive) override;
+    int delete_file(filename_p str_filename, int recursive) override;
     void clear_operation(const char *myhostname, peername_p peername,
                            filename_p filename /* , int recursive */) override;
     textlist_p get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
@@ -62,10 +69,12 @@ public:
     int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
                              const char *digest) override;
     int check_delete(filename_p str_filename, int recursive, int init_run) override;
-    int add_action(filename_p filename, const char *prefix_cmd, const char *logfile) override;
-    int del_action(filename_p filename, const char *prefix_cmd) override;
-    int remove_action_entry(filename_p filename, const char *command, const char *logfile) override;
-    void update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st) override;
+
+    int add_action(filename_p filename, const std::string& prefix_cmd, const std::string& logfile) override;
+    int del_action(filename_p filename, const std::string& prefix_cmd) override;
+    int remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile) override;
+
+    int update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st) override;
     textlist_p check_file_same_dev_inode(filename_p str_filename, const char *checktxt, const char *digest,
                                            struct stat *st, peername_p str_peername) override;
     textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,

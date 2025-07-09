@@ -2,11 +2,13 @@
 #ifndef DB_MYSQL_H
 #define DB_MYSQL_H
 
+#include "database_v2.hpp"
 #include "db_sql.hpp"
 
 class DbMySql : public DbSql {
 public:
     DbMySql();
+    DbMySql(DatabaseConnection *conn) : DbSql(conn) {};
     ~DbMySql() override;
 
     int exec(const char *sql) override;
