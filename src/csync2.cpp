@@ -1423,14 +1423,14 @@ nofork:
 	if (mode == MODE_LIST_FILE)
 	{
 		retval = 2;
-		char *realname = "";
+		const char *realname = "";
 		if (optind < argc)
 		{
 			realname = getrealfn(argv[optind]);
 		}
 		db->list_files(realname);
 		if (optind < argc) {
-			free(realname);
+			free(const_cast<char*>(realname));
 		}
 
 	};
