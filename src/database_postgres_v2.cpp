@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <algorithm> // For std::to_string
 #include <libpq-fe.h>
+#include <format>
 
 // Define function pointer types for the PostgreSQL C API.
 using PQconnectdb_t = decltype(&PQconnectdb);
