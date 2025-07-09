@@ -13,6 +13,7 @@ struct MySQLAPI;
 class MySQLConnection : public DatabaseConnection {
 public:
     MySQLConnection(const std::string& host, const std::string& user, const std::string& passwd, const std::string& db, unsigned int port);
+    MySQLConnection(MYSQL *conn);
     ~MySQLConnection() override;
     void query(const std::string& sql) override;
     std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
@@ -69,6 +70,7 @@ public:
     long long get_long(int index) const override;
     double get_double(int index) const override;
     std::string get_string(int index) const override;
+    std::optional<std::string> get_string_optional(int index) const override;
 
     int get_int(const std::string& name) const override {
         return get_int(get_column_index(name));
@@ -80,9 +82,13 @@ public:
         return get_double(get_column_index(name));
     }
 
-  std::string get_string(const std::string& name) const override {
+    std::string get_string(const std::string& name) const override {
         return get_string(get_column_index(name));
     }
+
+    std::optional<std::string> get_string_optional(const std::string& name) const override {
+          return get_string_optional(get_column_index(name));
+      }
 
 private:
     int get_column_index(const std::string& name) const {

@@ -319,13 +319,15 @@ int DbPostgres::upgrade_to_schema(int new_version) {
         "  digest varchar(130)  ,"
         "  timestamp timestamp   DEFAULT current_timestamp,"
         // "  UNIQUE (id),"
-   	    "  UNIQUE (filename,hostname)"				 "); "				 "CREATE INDEX idx_file_device_inode ON file (device, inode); ",
+   	    "  UNIQUE (filename,hostname)"				 "); "
+        "CREATE INDEX idx_file_device_inode ON file (device, inode); ",
 	FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50);
 
 	csync_db_sql(this, NULL, /* "Creating hint table", */
 	    "CREATE TABLE hint ("
 	        "  filename varchar(%u)   ,"
 	        "  recursive int          ,"
+			"  UNIQUE (filename)       "
 		");",
 			  FILE_LENGTH);
 
@@ -418,7 +420,7 @@ DbPostgres::~DbPostgres() {
     }
 }
 
-int db_postgres_open(const char *file, db_conn_p *conn_p) {
+int db_postgres_open(const char *file, db_conn_p *api_p) {
 	PGconn *pg_conn;
 	char *host = NULL, *user = NULL, *pass = NULL, *database = NULL;
 	unsigned int port = 5432; /* default postgres port */
@@ -444,7 +446,7 @@ int db_postgres_open(const char *file, db_conn_p *conn_p) {
 	if (api == NULL) {
 		csync_fatal("No memory for conn\n");
 	}
-	*conn_p = api;
+	*api_p = api;
 
 	api->private_data = pg_conn;
 

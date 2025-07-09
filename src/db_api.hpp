@@ -58,7 +58,7 @@ protected:
 class DbApi {
 public:
     DbApi() = default;
-    DbApi(DatabaseConnection* conn) : db_(conn) {}
+    DbApi(DatabaseConnection* conn) : private_data(conn->get_private_data()), conn_(conn) {}
     virtual ~DbApi() = default;
 
     virtual int exec(const char *exec) = 0;
@@ -124,9 +124,9 @@ public:
     virtual int update_dev_no(filename_p encoded, int recursive, dev_t old_no, dev_t new_no) = 0;
     virtual int check_delete(filename_p filename, int recursive, int init_run) = 0;
 
-    virtual int del_action(filename_p filename, const char *prefix_command) = 0;
-    virtual int add_action(filename_p filename, const char *prefix_command, const char *logfile) = 0;
-    virtual int remove_action_entry(filename_p filename, const char *command, const char *logfile) = 0;
+    virtual int del_action(filename_p filename, const std::string& prefix_command) = 0;
+    virtual int add_action(filename_p filename, const std::string& prefix_command, const std::string &logfile) = 0;
+    virtual int remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile) = 0;
 
     virtual int check_file(const char *file, const char *enc, char **other, char *checktxt,
                            struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int flags, dev_t *old_no) = 0;
@@ -139,13 +139,13 @@ public:
     virtual textlist_p get_dirty_hosts() = 0;
     virtual int dir_count(const char *dirname) = 0;
     virtual int move_file(filename_p oldfile, filename_p newfile) = 0;
-    virtual void update_dirty_hardlinks(peername_p peername, filename_p newfile, struct stat *st) = 0;
+    virtual int update_dirty_hardlinks(peername_p peername, filename_p newfile, struct stat *st) = 0;
     // virtual long get_affected_rows() = 0;
 
     int version;
     long affected_rows;
     void *private_data;
-    DatabaseConnection *db_;
+    DatabaseConnection *conn_;
 };
 
 // For compatibility

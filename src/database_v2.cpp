@@ -19,12 +19,12 @@ std::unique_ptr<DatabaseConnection> create_connection(const std::string& conn_st
     std::string segment;
 
     // Parse the entire connection string into a map
-    while(std::getline(ss, segment, ';')) {
-        size_t eq_pos = segment.find('=');
+    if (std::getline(ss, segment, '@')) {
+        size_t eq_pos = segment.find(':');
         if (eq_pos != std::string::npos) {
             std::string key = segment.substr(0, eq_pos);
             std::string value = segment.substr(eq_pos + 1);
-            params[key] = value;
+            params["user"] = value;
         }
     }
 

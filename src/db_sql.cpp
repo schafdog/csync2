@@ -15,6 +15,12 @@
 
 using namespace std;
 
+struct FreeDeleter {
+    void operator()(void* ptr) const noexcept {
+        std::free(ptr);
+    }
+};
+
 static char* db_my_escape(const char *string) {
 	if (string == NULL)
 		return NULL;
@@ -643,15 +649,14 @@ void DbSql::add_hint(filename_p filename, int recursive)
 		escape(filename), recursive);
 }
 
-void DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
+int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
 {
 	const char *file_enc = escape(filename);
-	char *sql = csync_generate_recursive_sql(file_enc, recursive, 0, 1);
-
-	SQL(this, "Deleting old dirty file entries", "DELETE FROM dirty WHERE %s myname = '%s' AND peername like '%s'", sql,
-		g_myhostname, escape(peername));
-
-	free(sql);
+	std::unique_ptr<char, FreeDeleter> sql(csync_generate_recursive_sql(file_enc, recursive, 0, 1));
+	
+	return SQL(this, "Deleting old dirty file entries",
+			   "DELETE FROM dirty WHERE %s myname = '%s' AND peername like '%s'",
+			   sql.get(), g_myhostname, escape(peername));
 }
 
 textlist_p DbSql::find_dirty(
@@ -719,18 +724,20 @@ textlist_p DbSql::find_file(filename_p str_pattern, int (*filter_file)(filename_
  return p_tl;
  }
  */
- void DbSql::delete_file(filename_p str_filename, int recursive) {
-     remove_file(str_filename, recursive);
+
+
+int DbSql::delete_file(filename_p str_filename, int recursive) {
+	return remove_file(str_filename, recursive);
  }
 
-void DbSql::remove_file(filename_p str_filename, int recursive)
+int DbSql::remove_file(filename_p str_filename, int recursive)
 {
 	const char *filename = str_filename.c_str();
 	const char *file_enc = escape(filename);
-	char *sql = csync_generate_recursive_sql(file_enc, recursive, 0, 1);
+	std::unique_ptr<char, FreeDeleter>  sql(csync_generate_recursive_sql(file_enc, recursive, 0, 1));
 
-	SQL(this, "Remove old file from file db", "DELETE FROM file WHERE %s hostname = '%s'", sql, g_myhostname);
-	free(sql);
+	return SQL(this, "Remove old file from file db", "DELETE FROM file WHERE %s hostname = '%s'",
+			   sql.get(), g_myhostname);
 }
 
 static void db_sql_add_dirty_simple(DbApi *db, const char *myhostname, peername_p str_peername, filename_p str_filename)
@@ -1040,7 +1047,7 @@ static int db_sql_move_file_to_dirty(DbApi *db, const char *file, int recursive,
 	return 0;
 }
 
-int DbSql::add_action(filename_p filename, const char *prefix_cmd, const char *logfile)
+int DbSql::add_action(filename_p filename, const std::string& prefix_cmd, const std::string& logfile)
 {
 	SQL(this, "Add action to database", "INSERT INTO action (filename, command, logfile) "
 								  "VALUES ('%s', '%s', '%s')",
@@ -1049,22 +1056,22 @@ int DbSql::add_action(filename_p filename, const char *prefix_cmd, const char *l
 	return 0;
 }
 
-int DbSql::del_action(filename_p filename, const char *prefix_cmd)
+int DbSql::del_action(filename_p filename, const std::string& prefix_cmd)
 {
 	SQL(this, "Del action before insert", "DELETE FROM action WHERE filename='%s' AND command='%s' ",
-		escape(filename), escape(prefix_cmd));
+		escape(filename.c_str()), escape(prefix_cmd.c_str()));
 	return 0;
 }
 
-int DbSql::remove_action_entry(filename_p filename, const char *command, const char *logfile)
+int DbSql::remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile)
 {
 	SQL(this, "Remove action entry", "DELETE FROM action WHERE command = '%s' "
 								   "and logfile = '%s' and filename = '%s'",
-		command, logfile, escape(filename));
+		command.c_str(), logfile.c_str(), escape(filename));
 	return 0;
 }
 
-void DbSql::update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st)
+int DbSql::update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st)
 {
 
 	const char *sql = " UPDATE dirty set other = '%s' WHERE "
@@ -1073,7 +1080,8 @@ void DbSql::update_dirty_hardlinks(peername_p peername, filename_p filename, str
 					  " AND inode = %llu "
 					  " AND filename != '%s' ";
 	const char *filename_esc = escape(filename);
-	SQL(this, "Updating dirty hardlinks", sql, filename_esc, peername.c_str(), st->st_dev, st->st_ino, filename_esc);
+	return SQL(this, "Updating dirty hardlinks", sql,
+			   filename_esc, peername.c_str(), st->st_dev, st->st_ino, filename_esc);
 }
 
 textlist_p DbSql::check_file_same_dev_inode(filename_p str_filename, const char *checktxt, const char *digest,

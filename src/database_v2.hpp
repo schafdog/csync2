@@ -5,6 +5,7 @@
 #include <memory>
 #include <stdexcept>
 #include <variant>
+#include <optional>
 
 // A type-safe way to represent different data types from the database.
 using DbValue = std::variant<std::monostate, int, long long, double, std::string>;
@@ -74,12 +75,14 @@ public:
     virtual long long get_long(int index) const = 0;
     virtual double get_double(int index) const = 0;
     virtual std::string get_string(int index) const = 0;
-
+    virtual std::optional<std::string> get_string_optional(int index) const = 0;
     // Get methods for different data types by column name
     virtual int get_int(const std::string& name) const = 0;
     virtual long long get_long(const std::string& name) const = 0;
     virtual double get_double(const std::string& name) const = 0;
     virtual std::string get_string(const std::string& name) const = 0;
+    virtual std::optional<std::string> get_string_optional(const std::string& name) const = 0;
+
 };
 
 /**

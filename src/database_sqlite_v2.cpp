@@ -4,6 +4,7 @@
 #include <map>
 #include <stdexcept>
 #include <sqlite3.h>
+#include <optional>
 
 // Define function pointer types for the SQLite C API.
 using sqlite3_open_t = decltype(&sqlite3_open);
@@ -156,6 +157,10 @@ public:
         return text ? reinterpret_cast<const char*>(text) : "";
     }
 
+    std::optional<std::string> get_string_optional(int index) const override {
+        return get_string(index);
+    }
+
     int get_int(const std::string& name) const override {
         return get_int(get_column_index(name));
     }
@@ -168,6 +173,10 @@ public:
     std::string get_string(const std::string& name) const override {
         return get_string(get_column_index(name));
     }
+
+     std::optional<std::string> get_string_optional(const std::string& name) const override {
+         return get_string(name);
+     }
 
 private:
     int get_column_index(const std::string& name) const {
