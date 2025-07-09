@@ -1,4 +1,5 @@
 #include "database_mysql_v2.hpp"
+#include <cstddef>
 #include <dlfcn.h>
 #include <iostream>
 #include <map>
@@ -118,6 +119,12 @@ MySQLConnection::MySQLConnection(const std::string& host, const std::string& use
         throw DatabaseError("mysql_real_connect failed: " + std::string(mysql_api_->mysql_error(mysql_)));
     }
 }
+
+MySQLConnection::MySQLConnection(MYSQL* conn) {
+    mysql_api_ = std::make_shared<MySQLAPI>();
+    mysql_ = conn;
+}
+
 
 MySQLConnection::~MySQLConnection() {
     if (mysql_) {
@@ -335,5 +342,13 @@ double MySQLResultSet::get_double(int index) const {
 
 std::string MySQLResultSet::get_string(int index) const {
     if (is_null_[index - 1]) return "";
+    return std::string(static_cast<char*>(results_[index - 1].buffer), length_[index - 1]);
+}
+
+
+std::optional<std::string> MySQLResultSet::get_string_optional(int index) const {
+    if (is_null_[index - 1]) {
+        return std::nullopt;
+    }
     return std::string(static_cast<char*>(results_[index - 1].buffer), length_[index - 1]);
 }

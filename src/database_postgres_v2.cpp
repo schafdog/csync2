@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <algorithm> // For std::to_string
 #include <libpq-fe.h>
+#include <unistd.h>
 
 // Define function pointer types for the PostgreSQL C API.
 using PQconnectdb_t = decltype(&PQconnectdb);
@@ -82,7 +83,7 @@ struct PostgresAPI {
         }
     }
 };
-
+using namespace std;
 static void pg_exec(PGconn* conn, const char* sql, std::shared_ptr<PostgresAPI> api) {
     PGresult* res = api->PQexec(conn, sql);
     if (api->PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -121,6 +122,7 @@ std::unique_ptr<PreparedStatement> PostgresConnection::prepare(const std::string
 
 std::shared_ptr<PreparedStatement> PostgresConnection::prepare(const std::string& name, const std::string& sql) {
     if (named_statements_.find(name) == named_statements_.end()) {
+        // cout << "Creating preparing statement: " << name << " with SQL: " << sql << std::endl;
         named_statements_[name] = std::make_shared<PostgresPreparedStatement>(conn_, name, sql, pg_api_);
     }
     return named_statements_[name];
@@ -161,7 +163,7 @@ PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::st
     }
     param_values_.resize(param_count);
     param_pointers_.resize(param_count);
-	std::cout << "SQL: " << converted_sql << " PARAMS: " << param_count << std::endl;
+	// std::cout << "SQL: " << converted_sql << " PARAMS: " << param_count << std::endl;
 }
 
 std::string PostgresPreparedStatement::convert_sql_placeholders(const std::string& sql) {
@@ -192,6 +194,7 @@ void PostgresPreparedStatement::bind(int index, double value) {
 }
 
 void PostgresPreparedStatement::bind(int index, const std::string& value) {
+    // cout << "Binding string value: " << value << " at index: " << index << std::endl;
     param_values_[index - 1] = value;
 }
 
@@ -226,7 +229,11 @@ long long PostgresPreparedStatement::execute_update() {
             param_pointers_[i] = param_values_[i].c_str();
         }
     }
-
+    // cout << "Executing update with parameters: ";
+    for (const auto& param : param_values_) {
+        // cout << param << " ";
+    }
+    // cout << endl;
     PGresult* res = api_->PQexecPrepared(conn_, name_.c_str(), param_pointers_.size(), param_pointers_.data(), nullptr, nullptr, 0);
 
     if (api_->PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -239,6 +246,8 @@ long long PostgresPreparedStatement::execute_update() {
     char* tuples = api_->PQcmdTuples(res);
     if (tuples && *tuples) {
         affected_rows = std::stoll(tuples);
+    } else {
+        affected_rows = api_->PQntuples(res);
     }
 
     api_->PQclear(res);
@@ -297,6 +306,14 @@ std::string PostgresResultSet::get_string(int index) const {
     return api_->PQgetvalue(res_, current_row_, index - 1);
 }
 
+std::optional<std::string> PostgresResultSet::get_string_optional(int index) const {
+    if (is_null(index)) return "";
+    if (api_->PQgetisnull(res_, current_row_, index - 1)) {
+        return nullptr;
+    }
+    return api_->PQgetvalue(res_, current_row_, index - 1);
+}
+
 int PostgresResultSet::get_int(const std::string& name) const {
     return get_int(get_column_index(name));
 }
@@ -306,8 +323,13 @@ long long PostgresResultSet::get_long(const std::string& name) const {
 double PostgresResultSet::get_double(const std::string& name) const {
     return get_double(get_column_index(name));
 }
+
 std::string PostgresResultSet::get_string(const std::string& name) const {
     return get_string(get_column_index(name));
+}
+
+std::optional<std::string> PostgresResultSet::get_string_optional(const std::string& name) const {
+    return get_string_optional(get_column_index(name));
 }
 
 int PostgresResultSet::get_column_index(const std::string& name) const {
