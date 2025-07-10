@@ -73,7 +73,6 @@ typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st
 /* Device/Inode and file type functions */
 int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
 int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
-int get_file_type(int st_mode);
 
 /* Peer list functions */
 void parse_peerlist(const char *peerlist);

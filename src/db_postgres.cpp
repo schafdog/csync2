@@ -32,7 +32,7 @@
 #include "dl.hpp"
 #include "db_sql.hpp"
 #include "ringbuffer.hpp"
-#include "check.hpp"
+#include "utils.hpp"
 
 #ifdef HAVE_POSTGRESQL_LIBPQ_FE_H
 #include <postgresql/libpq-fe.h>
@@ -145,11 +145,18 @@ static int db_pgsql_parse_url(char *url, char **host, char **user, char **pass, 
 }
 
 void DbPostgres::close() {
+	if (conn_) {
+		delete conn_;
+		// Shuld be deleted
+		private_data = NULL;
+		conn_ = NULL;
+	}
 	if (!private_data)
 		return;
 	f.PQfinish_fn(static_cast<PGconn*>(private_data));
-	private_data = 0;
+	private_data = NULL;
 }
+
 
 const char* DbPostgres::errmsg() {
 	if (!private_data)

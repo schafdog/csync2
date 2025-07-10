@@ -1172,7 +1172,7 @@ int DbSql::update_dirty_hardlinks(peername_p peername, filename_p filename, stru
    	auto stmt = conn_->prepare(name_sql, sql);
     stmt->bind(1, filename);
 	stmt->bind(2, peername);
-	stmt->bind(3, st->st_dev);
+	stmt->bind(3, static_cast<long long>(st->st_dev));
 	stmt->bind(4, static_cast<long long>(st->st_ino));
 	stmt->bind(5, filename);
 	return stmt->execute_update();
@@ -1210,7 +1210,7 @@ textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const char *che
    	auto stmt = conn_->prepare(name_sql, sql);
     // g_myhostname, st->st_dev, st->st_ino, escaped, peername, peername
     stmt->bind(1, g_myhostname);
-    stmt->bind(2, st->st_dev);
+    stmt->bind(2, static_cast<long long>(st->st_dev));
     stmt->bind(3, static_cast<long long>(st->st_ino));
     stmt->bind(4, filename);
     stmt->bind(5, peername);

@@ -32,7 +32,7 @@
 #include "db_mysql.hpp"
 #include "dl.hpp"
 #include "ringbuffer.hpp"
-#include "check.hpp"
+#include "utils.hpp"
 
 #ifdef HAVE_MYSQL
 #ifdef HAVE_MYSQL
@@ -134,7 +134,6 @@ static int db_mysql_parse_url(char *url, char **host, char **user, char **pass, 
 	*unix_socket = 0;
 	return DB_OK;
 }
-
 #endif
 
 #ifdef HAVE_MYSQL
