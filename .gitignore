@@ -1,8 +1,11 @@
+
 build-stamp
 configure-stamp
 *.o
 *~
 *.db
+*.a
+.dirstamp
 .DS_Store
 .deps/
 .autotools
