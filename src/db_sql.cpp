@@ -2,6 +2,7 @@
 
 #include "csync2.hpp"
 #include "check.hpp"
+#include "groups.hpp"
 #include "urlencode.hpp"
 #include "utils.hpp"
 #include "checktxt.hpp"
@@ -341,6 +342,19 @@ textlist_p DbSql::get_hints()
 	return tl;
 };
 
+static std::string csync_generate_recursive_sql_placeholder(int recursive, int prepend_and, int append_and) {
+    std::string sql_recursive = "";
+    if (prepend_and) {
+        sql_recursive += " AND ";
+    }
+    if (recursive) {
+        sql_recursive += " (filename = ? OR filename LIKE ?) ";
+    } else {
+       sql_recursive += " filename = ? ";
+    };
+    return sql_recursive;
+}
+
 static char *csync_generate_recursive_sql(const char *file_encoded, int recursive, int prepend_where, int append_and)
 {
 	char *where_rec;
@@ -600,63 +614,96 @@ void DbSql::list_sync(peername_p myhostname, peername_p peername)
 
 textlist_p DbSql::get_commands()
 {
-	textlist_p tl = 0;
-	SQL_BEGIN(this, "Checking for scheduled commands",
-			  "SELECT command, logfile FROM action")
-	{
-		textlist_add2(&tl, SQL_V(0), SQL_V(1), 0);
-	}
-	SQL_END;
+    std::string name_sql = "get_commands";
+    std::string sql = "SELECT command, logfile FROM action";
+    auto stmt = conn_->prepare(name_sql, sql);
+
+    auto resultset = stmt->execute_query();
+    textlist_p tl = 0;
+    while (resultset->next()) {
+        textlist_add2(&tl, resultset->get_string(1).c_str(), resultset->get_string(1).c_str(), 0);
+    }
 	return tl;
 }
 
 textlist_p DbSql::get_command_filename(filename_p command, const char *logfile)
 {
-	textlist_p tl = 0;
-	SQL_BEGIN(this,
-			  "Checking for removed files in action",
-			  "SELECT filename from action WHERE command = '%s' "
-			  "and logfile = '%s'",
-			  command.c_str(), logfile)
-	{
-		textlist_add(&tl, SQL_V(0), 0);
+	std::string name_sql = "get_command_filename";
+    std::string sql = "SELECT filename from action WHERE command = ? and logfile = ?";
+  	auto stmt = conn_->prepare(name_sql, sql);
+    stmt->bind(1, command);
+    stmt->bind(2, logfile);
+
+    auto resultset = stmt->execute_query();
+    textlist_p tl = 0;
+    while (resultset->next())
+    {
+		textlist_add(&tl, resultset->get_string(1).c_str(), 0);
 	}
-	SQL_END;
 	return tl;
 }
 
 int DbSql::dir_count(const char *dirname)
 {
 	int count = 0;
-	SQL_BEGIN(this, "Check if directory count",
-			  "SELECT count(*) FROM file WHERE filename like '%s/%%'",
-			  escape(dirname))
+	std::string name_sql = "dir_count";
+    std::string sql = "SELECT count(*) FROM file WHERE filename like ?";
+   	auto stmt = conn_->prepare(name_sql, sql);
+    std::string dirname_recursive(dirname);
+    dirname_recursive += "/%";
+    stmt->bind(1, dirname_recursive);
+    auto resultset = stmt->execute_query();
+    if (resultset->next())
 	{
-		count = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
+		count = resultset->get_int(1);
 	}
-	SQL_FIN
-	{
-		csync_info(2, "%d files within directory '%s': \n", count, dirname);
-	}
-	SQL_END;
+	csync_info(2, "%d files within directory '%s': \n", count, dirname);
 	return count;
 }
 
 void DbSql::add_hint(filename_p filename, int recursive)
 {
-	SQL(this, "Adding Hint", "INSERT INTO hint (filename, recursive) "
-						   "VALUES ('%s', %d)",
-		escape(filename), recursive);
+    std::string name_sql = "add_hint";
+    std::string sql = "INSERT INTO hint (filename, recursive) VALUES (?,?) ON CONFLICT DO NOTHING";
+   	auto stmt = conn_->prepare(name_sql, sql);
+	stmt->bind(1, filename);
+	stmt->bind(2, recursive);
+	stmt->execute_update();
 }
 
-int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
-{
-	const char *file_enc = escape(filename);
+int remove_dirty(DbSql *self, peername_p peername, filename_p filename, int recursive) {
+	const char *file_enc = self->escape(filename);
 	std::unique_ptr<char, FreeDeleter> sql(csync_generate_recursive_sql(file_enc, recursive, 0, 1));
 	
-	return SQL(this, "Deleting old dirty file entries",
+	return SQL(self, "Deleting old dirty file entries",
 			   "DELETE FROM dirty WHERE %s myname = '%s' AND peername like '%s'",
-			   sql.get(), g_myhostname, escape(peername));
+			   sql.get(), g_myhostname, self->escape(peername));
+}
+	
+int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
+{
+	std::string name_sql = "remove_dirty";
+	if (recursive) {
+		name_sql += "_recursive";
+	}
+	std::string where_part = csync_generate_recursive_sql_placeholder(recursive, 1, 0);
+	std::string remove_dirty_sql("DELETE FROM dirty WHERE myname = ? AND peername like ? ");
+	remove_dirty_sql += where_part;
+
+	std::string	recursive_str(filename);
+	recursive_str += "/%";
+	std::string output = std::format("remove_dirty_sql {} {} {} {} ",
+									 static_cast<char *>(g_myhostname), peername, filename, recursive_str);
+	//cout << output << endl;
+	auto stmt = conn_->prepare(name_sql, remove_dirty_sql);
+	stmt->bind(1, g_myhostname);
+	stmt->bind(2, peername);
+	stmt->bind(3, filename);
+	if (recursive) {
+		stmt->bind(4, recursive_str.c_str());
+	}
+	// std::cout << std::format("{} {} {} {} {}", remove_dirty_sql, file_enc,  g_myhostname, peername, recursive_str);
+	return stmt->execute_update();
 }
 
 textlist_p DbSql::find_dirty(
@@ -725,9 +772,8 @@ textlist_p DbSql::find_file(filename_p str_pattern, int (*filter_file)(filename_
  }
  */
 
-
-int DbSql::delete_file(filename_p str_filename, int recursive) {
-	return remove_file(str_filename, recursive);
+ int DbSql::delete_file(filename_p str_filename, int recursive) {
+     return remove_file(str_filename, recursive);
  }
 
 int DbSql::remove_file(filename_p str_filename, int recursive)
@@ -740,7 +786,8 @@ int DbSql::remove_file(filename_p str_filename, int recursive)
 			   sql.get(), g_myhostname);
 }
 
-static void db_sql_add_dirty_simple(DbApi *db, const char *myhostname, peername_p str_peername, filename_p str_filename)
+static void db_sql_add_dirty_simple(DbApi *db, const char *myhostname, peername_p str_peername,
+									filename_p str_filename)
 {
 	const char *peername = str_peername.c_str();
 	const char *filename = str_filename.c_str();
@@ -1036,114 +1083,176 @@ int DbSql::check_delete(filename_p str_filename, int recursive, int init_run)
 
 static int db_sql_move_file_to_dirty(DbApi *db, const char *file, int recursive, const char *peername)
 {
-	const char *file_encoded = db->escape(file);
-	char *where_rec = csync_generate_recursive_sql(file_encoded, recursive, 0, 1);
+	char *where_rec = csync_generate_recursive_sql(file, recursive, 0, 1);
 	SQL(db, "Move to dirty for removed files - move_file_to_dirty",
 		"INSERT INTO dirty (filename, myname, peername, operation, op, device, inode) "
 		"select filename, hostname, %s, 'RM', %d, device, inode where filename like '%s'",
-		peername, OP_RM,
-		where_rec);
+		peername, OP_RM, where_rec);
 	free(where_rec);
 	return 0;
 }
 
 int DbSql::add_action(filename_p filename, const std::string& prefix_cmd, const std::string& logfile)
 {
-	SQL(this, "Add action to database", "INSERT INTO action (filename, command, logfile) "
-								  "VALUES ('%s', '%s', '%s')",
-		escape(filename.c_str()), escape(prefix_cmd),
-		escape(prefixsubst(logfile)));
-	return 0;
+    std::string name_sql = "add_action";
+    std::string sql = R"(INSERT INTO action (filename, command, logfile)
+                         VALUES (?, ?, ?)
+                         ON CONFLICT (filename,command)
+                         DO UPDATE SET command=?, logfile=?)";
+   	auto stmt = conn_->prepare(name_sql, sql);
+	stmt->bind(1, filename);
+	stmt->bind(2, prefix_cmd);
+	stmt->bind(3, logfile);
+	stmt->bind(4, prefix_cmd);
+	stmt->bind(5, logfile);
+	return stmt->execute_update();
 }
 
+int del_action(DbSql *self, filename_p filename, const std::string& prefix_cmd)
+{
+	return SQL(self, "Del action before insert", "DELETE FROM action WHERE filename='%s' AND command='%s' ",
+		self->escape(filename.c_str()), self->escape(prefix_cmd.c_str()));
+	return 0;
+
+}
 int DbSql::del_action(filename_p filename, const std::string& prefix_cmd)
 {
-	SQL(this, "Del action before insert", "DELETE FROM action WHERE filename='%s' AND command='%s' ",
-		escape(filename.c_str()), escape(prefix_cmd.c_str()));
+    std::string name_sql = "del_action";
+    std::string sql = "DELETE FROM action WHERE filename=? AND command=? ";
+   	auto stmt = conn_->prepare(name_sql, sql);
+	stmt->bind(1, filename);
+	stmt->bind(2, prefix_cmd);
+	return stmt->execute_update();
+}
+
+int remove_action_entry(DbSql *self, filename_p filename, const std::string& command, const std::string& logfile)
+{
+
+	SQL(self, "Remove action entry", "DELETE FROM action WHERE command = '%s' "
+								   "and logfile = '%s' and filename = '%s'",
+		command.c_str(), logfile.c_str(), self->escape(filename));
 	return 0;
 }
 
 int DbSql::remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile)
 {
-	SQL(this, "Remove action entry", "DELETE FROM action WHERE command = '%s' "
-								   "and logfile = '%s' and filename = '%s'",
-		command.c_str(), logfile.c_str(), escape(filename));
-	return 0;
+    std::string name_sql = "remove_action_entry";
+    std::string sql = R"(DELETE FROM action
+                        WHERE command = ? and logfile = ? and filename = ?)";
+   	auto stmt = conn_->prepare(name_sql, sql);
+	stmt->bind(1, filename);
+	stmt->bind(2, command);
+	stmt->bind(3, logfile);
+	return stmt->execute_update();
+}
+
+int update_dirty_hardlinks(DbSql *self, peername_p peername, filename_p filename, struct stat *st)
+{
+    std::string name_sql = "update_dirty_hardlinks";
+    std::string sql = " UPDATE dirty set other = ? WHERE "
+					  " peername  = ? "
+					  " AND device = ? "
+					  " AND inode = ? "
+					  " AND filename != ? ";
+
+	const char *filename_esc = self->escape(filename);
+	return SQL(self, name_sql.c_str(), sql.c_str(),
+			   filename_esc, peername.c_str(), st->st_dev, st->st_ino, filename_esc);
 }
 
 int DbSql::update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st)
 {
+    std::string name_sql = "update_dirty_hardlinks";
+    std::string sql = " UPDATE dirty set other = ? WHERE "
+					  " peername  = ? "
+					  " AND device = ? "
+					  " AND inode = ? "
+					  " AND filename != ? ";
 
-	const char *sql = " UPDATE dirty set other = '%s' WHERE "
-					  " peername  = '%s' "
-					  " AND device = %lu "
-					  " AND inode = %llu "
-					  " AND filename != '%s' ";
-	const char *filename_esc = escape(filename);
-	return SQL(this, "Updating dirty hardlinks", sql,
-			   filename_esc, peername.c_str(), st->st_dev, st->st_ino, filename_esc);
+   	auto stmt = conn_->prepare(name_sql, sql);
+    stmt->bind(1, filename);
+	stmt->bind(2, peername);
+	stmt->bind(3, st->st_dev);
+	stmt->bind(4, static_cast<long long>(st->st_ino));
+	stmt->bind(5, filename);
+	return stmt->execute_update();
 }
 
-textlist_p DbSql::check_file_same_dev_inode(filename_p str_filename, const char *checktxt, const char *digest,
-										   struct stat *st, peername_p str_peername)
+std::optional<std::string> create_optional(const char *filename)
+{
+    if (filename == nullptr) {
+        return std::nullopt;
+    }
+    return std::string(filename);
+}
+
+
+textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const char *checktxt, const char *digest,
+										   struct stat *st, peername_p peername)
 {
 	(void)checktxt;
-
-	const char *filename = str_filename.c_str();
-	const char *peername = str_peername.c_str();
-
 	textlist_p tl = 0;
+	std::string name_sql = "check_file_same_dev_inode";
 	const char *sql =
 		" SELECT filename, checktxt, digest FROM file f "
 		" WHERE "
-		" hostname = '%s' "
-		" AND device = %lu "
-		" AND inode = %llu "
-		" AND filename != '%s'"
-		" AND ('' = '%s' OR "
-		"     filename NOT IN (SELECT filename FROM dirty WHERE peername = '%s' AND device = f.device AND inode = f.inode))"
+		" hostname = ? "
+		" AND device = ? "
+		" AND inode = ? "
+		" AND filename != ? "
+		" AND ('' = ? OR "
+		"     filename NOT IN (SELECT filename FROM dirty "
+		                       "WHERE peername = ? AND device = f.device AND inode = f.inode))"
 		" ORDER BY filename;";
 	//	" AND checktxt  = '%s' "
 	//	" AND digest    = '%s' ";
 
-	const char *escaped = escape(filename);
-	SQL_BEGIN(this, "check_file_same_dev_inode, optional not dirty for peer",
-			  sql, g_myhostname,
-			  st->st_dev, st->st_ino, escaped, peername, peername)
+   	auto stmt = conn_->prepare(name_sql, sql);
+    // g_myhostname, st->st_dev, st->st_ino, escaped, peername, peername
+    stmt->bind(1, g_myhostname);
+    stmt->bind(2, st->st_dev);
+    stmt->bind(3, static_cast<long long>(st->st_ino));
+    stmt->bind(4, filename);
+    stmt->bind(5, peername);
+    stmt->bind(6, peername);
+
+    auto rs = stmt->execute_query();
+    int SQL_COUNT = 0;
+    while (rs->next())
 	{
-		const char *db_filename = db_decode(SQL_V(0));
-		const char *db_checktxt = db_decode(SQL_V(1));
-		const char *db_digest = db_decode(SQL_V(2));
+		const std::string db_filename = rs->get_string(1);
+		const std::string db_checktxt = rs->get_string(2);
+		const std::optional<std::string> db_digest = rs->get_string_optional(3);
 		operation_t operation = OP_HARDLINK;
 		struct stat st_db;
 		if (lstat_strict(db_filename, &st_db) != 0)
 		{
 			operation = OP_RM;
 		}
-		if (!digest || !db_digest || !strcmp(digest, db_digest))
+		const std::optional<std::string> opt_digest = create_optional(digest);
+
+		if (opt_digest->empty() || db_digest->empty() || *opt_digest == *db_digest)
 		{
 			textlist_add_new2(&tl, db_filename, db_checktxt, operation);
 		}
 		else
 		{
-			csync_info(0, "Different digest\n%s: %s \n%s: %s\n", filename, digest, db_filename, db_digest);
+			csync_info(0, "Different digest\n%s: %s \n%s: %s\n", filename.c_str(), digest, db_filename.c_str(), db_digest->c_str());
 		}
+		SQL_COUNT++;
 	}
-	SQL_FIN
-	{
-		if (SQL_COUNT > 0)
-		{
-			csync_info(2, "%d files with same dev:inode (%llu:%llu) as file: %s\n",
-					   SQL_COUNT,
-					   static_cast<unsigned long long>(st->st_dev),
-					   static_cast<unsigned long long>(csync_level_debug == 3 ? st->st_ino : 0l),
-					   filename);
-		}
+	if (SQL_COUNT > 0)
+    {
+		csync_info(2, "%d files with same dev:inode (%llu:%llu) as file: %s\n",
+				   SQL_COUNT,
+				   static_cast<unsigned long long>(st->st_dev),
+				   static_cast<unsigned long long>(csync_level_debug == 3 ? st->st_ino : 0l),
+				   filename.c_str());
 	}
-	SQL_END;
 	return tl;
 };
 
+// Use by csync_check_move, which isn't called. Error in seconds SQL fixed
 textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
 												 const char *checktxt, const char *digest, struct stat *st)
 {
@@ -1153,8 +1262,8 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
 	char *peername_enc = strdup(escape(peername));
 	char *filename_enc = strdup(escape(filename));
 	const char *sqls[] = {" SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = '%s'"
-						  " AND device = %lu and inode = %llu and filename != '%s' and peername = '%s' ",
-						  " SELECT filename, checktxt, digest, NULL FROM file WHERE hostname = '%s"
+						  " AND device = %lu and inode = %llu and filename != '%s' and peername = '%s'",
+						  " SELECT filename, checktxt, digest, NULL FROM file WHERE hostname = '%s'  "
 						  " AND device = %lu AND inode = %llu AND filename != '%s' "};
 	textlist_p tl = 0;
 
