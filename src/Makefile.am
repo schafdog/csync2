@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-sbin_PROGRAMS = csync2
+sbin_PROGRAMS = csync2 test_database
 sbin_SCRIPTS = csync2-compare
 bin_SCRIPTS = ../directory_size.sh
 
