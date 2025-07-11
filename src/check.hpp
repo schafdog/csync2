@@ -49,7 +49,7 @@
 #define OP_MOD      128
 #define OP_MOD2     256
 #define OP_SYNC     (OP_MOD|OP_MOD2)
-#define OP_FILTER   (~(OP_SYNC) & 1023) 
+#define OP_FILTER   (~(OP_SYNC) & 1023)
 
 /* Check flags */
 #define IS_UPGRADE  1
@@ -72,6 +72,8 @@ typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st
 
 /* Device/Inode and file type functions */
 int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
+int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std::string& ino, struct stat *old_stat);
+
 int csync_calc_digest(const char *file, BUF_P buffer, char **digest);
 
 /* Peer list functions */
@@ -89,7 +91,7 @@ extern const char *csync_operation_str(operation_t op);
 /* Main check functions */
 extern void csync_hint(db_conn_p db, const char *file, int recursive);
 extern void csync_check(db_conn_p db, filename_p filename, int flags);
-extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g); 
+extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g);
 extern int csync_check_del(db_conn_p db, filename_p filename, int flags);
 extern int csync_check_mod(db_conn_p db, peername_p file, int flags, int *count_dirty, const struct csync_group **);
 extern int csync_check_dir(db_conn_p db, peername_p file, int flags);
@@ -99,7 +101,7 @@ extern void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 					   const std::set<std::string>& peerfilter, operation_t op,
 					   const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
-extern char *csync_check_path(filename_p filename); 
+extern char *csync_check_path(filename_p filename);
 extern int   csync_check_pure(filename_p filename);
 
 /* Move detection functions */

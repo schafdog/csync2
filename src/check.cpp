@@ -637,6 +637,9 @@ int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino,
 	}
 	return rc;
 }
+int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std::string& ino, struct stat *old_stat) {
+    return compare_dev_inode(file_stat, dev.c_str(), ino.c_str(), old_stat);
+}
 
 int csync_calc_digest(const char *file, BUF_P buffer, char **digest) {
 	int size = 2 * DIGEST_MAX_SIZE + 1;
