@@ -194,8 +194,8 @@ void test_db_api(const std::string &conn_str) {
 
         api->update_dirty_hardlinks(filename, peername, &filestat);
 
-        char *checktxt = "checktxt";
-        char *digest = "digest";
+        const char *checktxt = "checktxt";
+        const char *digest = "digest";
         tl = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
         cout << "check_file_same_dev_inode count " << print_textlist(tl) << std::endl;
         tl = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
@@ -208,6 +208,10 @@ void test_db_api(const std::string &conn_str) {
         api->force(filename, 1);
         api->update_format_v1_v2(filename, 1, 1);
         api->move_file(filename, "/some/other/path");
+        int operation, mode;
+        api->is_dirty(peername, filename, &operation, &mode);
+        api->get_dirty_hosts();
+        api->get_hints();
         //api->upgrade_db();
         // clean up
         api->remove_dirty(peername, "/", 1);

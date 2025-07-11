@@ -73,94 +73,93 @@ int DbSql::schema_version()
 	return version;
 }
 
-int DbSql::check_file(const char *file, const char *encoded, char **other, char *checktxt,
+int DbSql::check_file(const char *file, const char *encoded, char **other, char **checktxt,
 							 struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no)
 {
 	int db_flags = 0;
 	int db_version = this->version;
-	SQL_BEGIN(this, "Checking File",
-			  "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = '%s' "
-			  "AND filename = '%s' ",
-			  g_myhostname, encoded)
-	{
-		db_version = csync_get_checktxt_version(SQL_V(0));
-		if (db_version < 1 || db_version > 2)
-		{
-			csync_error(0, "Error extracting version from checktxt: %s", SQL_V(0));
-		}
-		const char *checktxt_db = db_decode(SQL_V(0));
-		const char *checktxt_same_version = checktxt;
-		const char *inode = SQL_V(1);
-		const char *device = SQL_V(2);
-		const char *digest_p = SQL_V(3);
-		*digest = digest_p ? buffer_strdup(buffer, digest_p) : NULL;
-		long mode;
-		long size;
-		long mtime;
-		// Missing any value then upgrade
-		db_flags |= (SQL_V_long(4, &mode) || SQL_V_long(5, &size) || SQL_V_long(6, &mtime) ? IS_UPGRADE : 0);
+    try {
+        auto rs = conn_->execute_query("check_file",
+                                     "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = ? "
+                                     "AND filename = ?",
+                                     g_myhostname, encoded);
 
-		int ug_flag = 0;
-		if (strstr(checktxt_db, ":user=") != NULL)
-			ug_flag |= SET_USER;
-		if (strstr(checktxt_db, ":group=") != NULL)
-			ug_flag |= SET_GROUP;
-		struct stat old_stat;
-		int dev_inode;
-		if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
-		{
-			csync_info(2, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
-					   file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
+        if (rs->next()) {
+            db_version = csync_get_checktxt_version(rs->get_string(1).c_str());
+            if (db_version < 1 || db_version > 2)
+            {
+                csync_error(0, "Error extracting version from checktxt: %s", rs->get_string(1).c_str());
+            }
+            const char *checktxt_db = db_decode(rs->get_string(1).c_str());
+            const char *checktxt_same_version = *checktxt;
+            const char *inode = rs->get_string(2).c_str();
+            const char *device = rs->get_string(3).c_str();
+            auto digest_p = rs->get_string_optional(4);
+            *digest = digest_p.has_value() ? buffer_strdup(buffer, digest_p->c_str()) : NULL;
+            long mode = rs->get_long(5);
+            long size = rs->get_long(6);
+            long mtime = rs->get_long(7);
 
-			if (dev_inode == DEV_CHANGED)
-			{
-				db_flags |= DEV_CHANGE;
-				csync_info(2, "File %s has only changed device %s -> %llu\n", file, device, file_stat->st_dev);
-				*old_no = old_stat.st_dev;
-			}
-			else
-				db_flags |= IS_UPGRADE;
-		}
-		if (!*digest && strstr(checktxt, "type=reg"))
-		{
-			db_flags |= CALC_DIGEST;
-			db_flags |= IS_UPGRADE;
-		}
-		if (db_version != this->version || ug_flag != (SET_USER | SET_GROUP))
-		{
-			checktxt_same_version = csync_genchecktxt_version(file_stat, file, ug_flag, db_version);
-			if (csync_cmpchecktxt(checktxt, checktxt_same_version))
-				db_flags |= IS_UPGRADE;
-		}
-		if (csync_cmpchecktxt(checktxt_same_version, checktxt_db))
-		{
-			int file_mode = file_stat->st_mode & S_IFMT;
-			int flag = OP_MOD;
-			if (file_mode != (mode & S_IFMT))
-			{
-				csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
-				flag = OP_MOD2;
-				//*operation |= OP_SYNC;
-				db_flags |= IS_UPGRADE;
-			}
-			if (S_ISDIR(file_mode))
-				*operation = OP_MKDIR | flag;
-			else
-				*operation = OP_NEW | flag;
+            // Missing any value then upgrade
+            db_flags |= (mode == 0 || size == 0 || mtime == 0 ? IS_UPGRADE : 0);
 
-			csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
-					   file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
-			csync_info(3, "ignore flags: %d\n", ignore_flags);
-			if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
-				db_flags |= IS_UPGRADE;
-			else
-				db_flags |= IS_DIRTY;
-		}
-	}
-	SQL_FIN
-	{
-		if (SQL_COUNT == 0)
-		{
+            int ug_flag = 0;
+            if (strstr(checktxt_db, ":user=") != NULL)
+                ug_flag |= SET_USER;
+            if (strstr(checktxt_db, ":group=") != NULL)
+                ug_flag |= SET_GROUP;
+            struct stat old_stat;
+            int dev_inode;
+            if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
+            {
+                csync_info(2, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
+                           file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
+
+                if (dev_inode == DEV_CHANGED)
+                {
+                    db_flags |= DEV_CHANGE;
+                    csync_info(2, "File %s has only changed device %s -> %llu\n", file, device, file_stat->st_dev);
+                    *old_no = old_stat.st_dev;
+                }
+                else
+                    db_flags |= IS_UPGRADE;
+            }
+            if (!*digest && strstr(*checktxt, "type=reg"))
+            {
+                db_flags |= CALC_DIGEST;
+                db_flags |= IS_UPGRADE;
+            }
+            if (db_version != this->version || ug_flag != (SET_USER | SET_GROUP))
+            {
+                checktxt_same_version = csync_genchecktxt_version(file_stat, file, ug_flag, db_version);
+                if (csync_cmpchecktxt(*checktxt, checktxt_same_version))
+                    db_flags |= IS_UPGRADE;
+            }
+            if (csync_cmpchecktxt(checktxt_same_version, checktxt_db))
+            {
+                int file_mode = file_stat->st_mode & S_IFMT;
+                int flag = OP_MOD;
+                if (file_mode != (mode & S_IFMT))
+                {
+                    csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
+                    flag = OP_MOD2;
+                    //*operation |= OP_SYNC;
+                    db_flags |= IS_UPGRADE;
+                }
+                if (S_ISDIR(file_mode))
+                    *operation = OP_MKDIR | flag;
+                else
+                    *operation = OP_NEW | flag;
+
+                csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
+                           file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
+                csync_info(3, "ignore flags: %d\n", ignore_flags);
+                if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
+                    db_flags |= IS_UPGRADE;
+                else
+                    db_flags |= IS_DIRTY;
+            }
+        } else {
 			csync_info(2, "New file: %s\n", file);
 			*operation = OP_NEW;
 			if (S_ISREG(file_stat->st_mode))
@@ -187,29 +186,42 @@ int DbSql::check_file(const char *file, const char *encoded, char **other, char 
 				free(target);
 			}
 			db_flags |= IS_DIRTY;
-		}
-	}
-	SQL_END;
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to check file: %s", e.what());
+    }
 	return db_flags;
 }
 
 int DbSql::is_dirty(peername_p str_peername, filename_p str_filename, int *operation, int *mode)
 {
 	int rc = 0;
-	const char *peername = str_peername.c_str();
-	const char *filename = str_filename.c_str();
+    try {
+        auto rs = conn_->execute_query("is_dirty",
+                                     "SELECT op, mode FROM dirty "
+                                     "WHERE filename = ? and peername = ? and myname = ? LIMIT 1",
+                                     str_filename, str_peername, g_myhostname);
 
-	SQL_BEGIN(this, "Check if file is dirty",
-			  "SELECT op, mode FROM dirty "
-			  "WHERE filename = '%s' and peername = '%s' and myname = '%s' LIMIT 1",
-			  escape(filename), escape(peername), escape(g_myhostname))
-	{
-		rc = 1;
-		*operation = (SQL_V(0) ? atoi(SQL_V(0)) : 0);
-		*mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
-		csync_info(3, "DbSql::is_dirty %s:%s %d %d\n", filename, peername, *operation, *mode);
-	}
-	SQL_END;
+        if (rs->next()) {
+            rc = 1;
+            auto op_str = rs->get_string_optional(1);
+            if (op_str.has_value() && !op_str->empty()) {
+                *operation = atoi(op_str->c_str());
+            } else {
+                *operation = 0;
+            }
+
+            auto mode_str = rs->get_string_optional(2);
+            if (mode_str.has_value() && !mode_str->empty()) {
+                *mode = atoi(mode_str->c_str());
+            } else {
+                *mode = 0;
+            }
+            csync_info(3, "DbSql::is_dirty %s:%s %d %d\n", str_filename.c_str(), str_peername.c_str(), *operation, *mode);
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to check if file is dirty: %s", e.what());
+    }
 	return rc;
 }
 
@@ -287,15 +299,19 @@ textlist_p DbSql::get_dirty_hosts()
 {
 	textlist_p tl = 0;
 	csync_debug(3, "get dirty host\n");
-	SQL_BEGIN(this, "Get hosts from dirty table",
-			  "SELECT peername FROM dirty WHERE myname = '%s' "
-			  "AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername",
-			  g_myhostname)
-	{
-		textlist_add(&tl, db_decode(SQL_V(0)), 0);
-		csync_debug(3, "dirty host %s \n", tl->value);
-	}
-	SQL_END;
+    try {
+        auto rs = conn_->execute_query("get_dirty_hosts",
+                                     "SELECT peername FROM dirty WHERE myname = ? "
+                                     "AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername",
+                                     g_myhostname);
+
+        while (rs->next()) {
+            textlist_add(&tl, db_decode(rs->get_string(1).c_str()), 0);
+            csync_debug(3, "dirty host %s \n", tl->value);
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to get dirty hosts: %s", e.what());
+    }
 
 	return tl;
 }
@@ -332,13 +348,17 @@ int DbSql::upgrade_db()
 textlist_p DbSql::get_hints()
 {
 	textlist_p tl = NULL;
-	SQL_BEGIN(this, "Check all hints",
-			  "SELECT filename, recursive FROM hint")
-	{
-		textlist_add(&tl, db_decode(SQL_V(0)),
-					 atoi(SQL_V(1)));
-	}
-	SQL_END;
+    try {
+        auto rs = conn_->execute_query("get_hints",
+                                     "SELECT filename, recursive FROM hint");
+
+        while (rs->next()) {
+            textlist_add(&tl, db_decode(rs->get_string(1).c_str()),
+                         atoi(rs->get_string(2).c_str()));
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to get hints: %s", e.what());
+    }
 	return tl;
 };
 
