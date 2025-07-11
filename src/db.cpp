@@ -62,7 +62,7 @@ static void csync_db_alarmhandler(int signum) {
 	begin_commit_recursion++;
 
 	// csync_info(3, "Database idle in transaction. Forcing COMMIT.\n");
-	SQL(global_db, "COMMIT (alarmhandler)", "COMMIT ");
+	global_db->exec("COMMIT ");
 	tqueries_counter = -10;
 
 	begin_commit_recursion--;
@@ -86,7 +86,7 @@ static void csync_db_maybegin(db_conn_p db) {
 		transaction_begin = time(0);
 		if (!last_wait_cycle)
 			last_wait_cycle = transaction_begin;
-		SQL(db, "BEGIN ", "BEGIN ");
+		db->exec("BEGIN ");
 	}
 
 	begin_commit_recursion--;
@@ -107,7 +107,7 @@ static void csync_db_maycommit(db_conn_p db) {
 	now = time(0);
 
 	if (wait_length && (now - last_wait_cycle) > 10) {
-		SQL(db, "COMMIT", "COMMIT ");
+		db->exec("COMMIT");
 		if (wait_length) {
 			csync_info(2, "Waiting %d secs so others can lock the database (%d - %d)...\n", wait_length, static_cast<int>(now),
 					static_cast<int>(last_wait_cycle));
@@ -120,7 +120,7 @@ static void csync_db_maycommit(db_conn_p db) {
 	}
 
 	if ((tqueries_counter > 1000) || ((now - transaction_begin) > 3)) {
-		SQL(db, "COMMIT (1000) ", "COMMIT ");
+		db->exec("COMMIT ");
 		tqueries_counter = 0;
 		begin_commit_recursion--;
 		return;
@@ -162,7 +162,7 @@ void csync_db_close(db_conn_p db) {
 
 	begin_commit_recursion++;
 	if (tqueries_counter > 0) {
-		SQL(db, "COMMIT (close)", "COMMIT ");
+		db->exec("COMMIT");
 		tqueries_counter = -10;
 	}
 	csync_info(4, "Closing db: %p\n", db);
