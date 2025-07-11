@@ -1584,7 +1584,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 					csync_debug(0, "make other dirty %s\n", other);
 				}
 			} else {
-				if (last_dir_deleted != NULL && strstr(filename.c_str(), last_dir_deleted) == filename) {
+				if (last_dir_deleted != NULL && filename == strstr(filename.c_str(), last_dir_deleted)) {
 					// this is a file belonging to the deleted directory, so it should be skipped
 					csync_info(2, "Skipping matched file (%s) from deleted directory (%s)\n", filename.c_str(),
 							last_dir_deleted);
