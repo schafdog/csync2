@@ -432,12 +432,12 @@ int DatabaseApi::update_format_v1_v2(const filename_p& filename, int recursive, 
     return 0;
 }
 
-void DatabaseApi::add_hint(const filename_p& filename, int recursive) {
+long long DatabaseApi::add_hint(const filename_p& filename, int recursive) {
     const std::string sql = "INSERT OR REPLACE INTO hint (filename, recursive) VALUES (?, ?)";
     auto stmt = conn_->prepare(sql);
     stmt->bind(1, filename.c_str());
     stmt->bind(2, recursive);
-    stmt->execute_update();
+    return stmt->execute_update();
 }
 
 std::unique_ptr<DatabaseStatement> DatabaseApi::get_hints() {
@@ -446,12 +446,12 @@ std::unique_ptr<DatabaseStatement> DatabaseApi::get_hints() {
     return std::make_unique<DatabaseStatement>(std::move(stmt));
 }
 
-void DatabaseApi::remove_hint(const filename_p& filename, int recursive) {
+long long DatabaseApi::remove_hint(const filename_p& filename, int recursive) {
     const std::string sql = "DELETE FROM hint WHERE filename = ? AND recursive = ?";
     auto stmt = conn_->prepare(sql);
     stmt->bind(1, filename.c_str());
     stmt->bind(2, recursive);
-    stmt->execute_update();
+    return stmt->execute_update();
 }
 
 void DatabaseApi::force(const std::string& realname, int recursive) {

@@ -163,13 +163,13 @@ public:
     int update_format_v1_v2(const filename_p& filename, int recursive, int do_it);
 
     // Corresponds to db_conn_t::add_hint
-    void add_hint(const filename_p& filename, int recursive);
+    long long add_hint(const filename_p& filename, int recursive);
 
     // Corresponds to db_conn_t::get_hints
     std::unique_ptr<DatabaseStatement> get_hints();
 
     // Corresponds to db_conn_t::remove_hint
-    void remove_hint(const filename_p& filename, int recursive);
+    long long remove_hint(const filename_p& filename, int recursive);
 
     // Corresponds to db_conn_t::force
     void force(const std::string& realname, int recursive);

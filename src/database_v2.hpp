@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <variant>
 #include <optional>
+#include <iostream>
 
 // A type-safe way to represent different data types from the database.
 using DbValue = std::variant<std::monostate, int, long long, double, std::string>;
@@ -35,6 +36,7 @@ public:
     virtual void bind(int index, int value) = 0;
     virtual void bind(int index, long long value) = 0;
     virtual void bind(int index, double value) = 0;
+    virtual void bind(int index, const char *value) = 0;
     virtual void bind(int index, const std::string& value) = 0;
     virtual void bind_null(int index) = 0;
 
@@ -98,6 +100,33 @@ enum class DBType {
     PostgreSQL
 };
 
+// Helper to bind a single parameter
+template<typename T>
+inline void bind_param(PreparedStatement* stmt, int& index, T value) {
+    stmt->bind(index++, value);
+}
+
+// Specialization for const char*
+inline void bind_param(PreparedStatement* stmt, int& index, const char* value) {
+    if (value) {
+        stmt->bind(index++, std::string(value));
+    } else {
+        stmt->bind_null(index++);
+    }
+}
+
+// Base case for the variadic template recursion
+inline void bind_params(PreparedStatement* stmt, int& index) {
+    // No more parameters to bind
+}
+
+// Variadic template to bind multiple parameters
+template<typename T, typename... Args>
+inline void bind_params(PreparedStatement* stmt, int& index, T first, Args... rest) {
+    bind_param(stmt, index, first);
+    bind_params(stmt, index, rest...);
+}
+
 class DatabaseConnection {
 public:
     virtual ~DatabaseConnection() = default;
@@ -118,6 +147,22 @@ public:
      * @return A shared_ptr to a PreparedStatement.
      */
     virtual std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) = 0;
+
+    template<typename... Args>
+    std::unique_ptr<ResultSet> execute_query(const std::string& name, const std::string& sql, Args... args) {
+        std::shared_ptr<PreparedStatement> stmt = prepare(name, sql);
+        int index = 1;
+        bind_params(stmt.get(), index, args...);
+        return stmt->execute_query();
+    }
+
+    template<typename... Args>
+    long long execute_update(const std::string& name, const std::string& sql, Args... args) {
+        std::shared_ptr<PreparedStatement> stmt = prepare(name, sql);
+        int index = 1;
+        bind_params(stmt.get(), index, args...);
+        return stmt->execute_update();
+    }
 
     /**
      * @brief Begins a transaction.

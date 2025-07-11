@@ -224,6 +224,14 @@ public:
         api_->sqlite3_bind_text(stmt_, index, value.c_str(), -1, SQLITE_TRANSIENT);
     }
 
+    void bind(int index, const char* value) override {
+        if (value) {
+            api_->sqlite3_bind_text(stmt_, index, value, -1, SQLITE_TRANSIENT);
+        } else {
+            bind_null(index);
+        }
+    }
+
     void bind_null(int index) override {
         api_->sqlite3_bind_null(stmt_, index);
     }
@@ -283,4 +291,14 @@ std::shared_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& 
         named_statements_[name] = std::make_shared<SQLitePreparedStatement>(db_, sql, sqlite_api_);
     }
     return named_statements_[name];
+}
+
+template<typename... Args>
+std::unique_ptr<ResultSet> SQLiteConnection::execute_query(const std::string& name, const std::string& sql, Args... args) {
+    return DatabaseConnection::execute_query(name, sql, args...);
+}
+
+template<typename... Args>
+long long SQLiteConnection::execute_update(const std::string& name, const std::string& sql, Args... args) {
+    return DatabaseConnection::execute_update(name, sql, args...);
 }

@@ -145,6 +145,16 @@ void PostgresConnection::rollback() {
     pg_exec(conn_, "ROLLBACK", pg_api_);
 }
 
+template<typename... Args>
+std::unique_ptr<ResultSet> PostgresConnection::execute_query(const std::string& name, const std::string& sql, Args... args) {
+    return DatabaseConnection::execute_query(name, sql, args...);
+}
+
+template<typename... Args>
+long long PostgresConnection::execute_update(const std::string& name, const std::string& sql, Args... args) {
+    return DatabaseConnection::execute_update(name, sql, args...);
+}
+
 PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::string& name, const std::string& sql, std::shared_ptr<PostgresAPI> api)
     : conn_(conn), name_(name), api_(api) {
     std::string converted_sql = convert_sql_placeholders(sql);
@@ -197,6 +207,14 @@ void PostgresPreparedStatement::bind(int index, double value) {
 void PostgresPreparedStatement::bind(int index, const std::string& value) {
     // cout << "Binding string value: " << value << " at index: " << index << std::endl;
     param_values_[index - 1] = value;
+}
+
+void PostgresPreparedStatement::bind(int index, const char* value) {
+    if (value) {
+        param_values_[index - 1] = value;
+    } else {
+        bind_null(index);
+    }
 }
 
 void PostgresPreparedStatement::bind_null(int index) {

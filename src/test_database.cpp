@@ -98,6 +98,18 @@ void test_db_api(const std::string &conn_str) {
     try {
         DbApi *api = csync_db_open(conn_str.c_str());
         api->upgrade_to_schema(2);
+
+        // Initial cleanup for all tables
+        api->conn_->query("DROP TABLE IF EXISTS file;");
+        api->conn_->query("DROP TABLE IF EXISTS hint;");
+        api->conn_->query("DROP TABLE IF EXISTS dirty;");
+        api->conn_->query("DROP TABLE IF EXISTS action;");
+        api->conn_->query("DROP TABLE IF EXISTS host;");
+
+        // Recreate tables (assuming upgrade_to_schema handles this, or add explicit CREATE TABLE statements if needed)
+        // For now, relying on upgrade_to_schema to recreate them if they don't exist.
+        api->upgrade_to_schema(2);
+
         std::string filename_str = "/some/valid/path/to/file";
         char *filename = const_cast<char *>(filename_str.c_str());
         std::string hostname_str = "hostname";
@@ -116,14 +128,26 @@ void test_db_api(const std::string &conn_str) {
         std::cout << "remove_dirty count (recursive): " << count << std::endl;
         count = api->remove_dirty(peername, filename, 1);
         std::cout << "remove_dirty count: " << count << std::endl;
-        //assert(count == 1);
+        assert(count == 0);
         count = api->remove_file(filename, 1);
         std::cout << "remove_file count: " << count << std::endl;
         count = api->remove_file(filename, 0);
         std::cout << "remove_file count (not recursive): " << count << std::endl;
-        count = api->insert_file(filename, "checktxt_encoded", &filestat,
+        long long insert_file_count = api->insert_file(filename, "checktxt_encoded", &filestat,
                         "digest");
-        std::cout << "insert file count: " << count << std::endl;
+        std::cout << "insert file count: " << insert_file_count << std::endl;
+        assert(insert_file_count == 1);
+
+        long long remove_file_count = api->remove_file(filename, 1);
+        std::cout << "remove_file count: " << remove_file_count << std::endl;
+        assert(remove_file_count == 1);
+
+        // Re-insert for subsequent tests
+        insert_file_count = api->insert_file(filename, "checktxt_encoded", &filestat,
+                        "digest");
+        std::cout << "re-insert file count: " << insert_file_count << std::endl;
+        assert(insert_file_count == 1);
+
         count = api->add_dirty(filename, 0, hostname, peername, "NEW",
                     "checktxt", "1234", "5678", NULL, csync_operation("NEW"), 666,
                     1234567890);
@@ -133,13 +157,34 @@ void test_db_api(const std::string &conn_str) {
         textlist_p tl = api->get_dirty_by_peer_match(hostname, peername, 1, patlist, NULL);
         count = print_textlist(tl);
         std::cout << "Dirty count: " << count << std::endl;
+        assert(count == 1);
 
-        api->add_hint(filename, 1);
-        count = print_textlist(api->get_hints());
-        std::cout << "Hint count: " << count << std::endl;
         count = api->dir_count("/");
 
         std::cout << "Directory count: " << count << std::endl;
+
+        // Clean up hint table before test
+        api->remove_hint("/", 1);
+
+        long long add_hint_count = api->add_hint(filename, 1);
+        std::cout << "add_hint count: " << add_hint_count << std::endl;
+        assert(add_hint_count == 1);
+
+        textlist_p hints = api->get_hints();
+        int hint_count = print_textlist(hints);
+        std::cout << "Hint count: " << hint_count << std::endl;
+        assert(hint_count == 1);
+
+        long long remove_hint_count = api->remove_hint(filename, 1);
+        std::cout << "remove_hint count: " << remove_hint_count << std::endl;
+        assert(remove_hint_count == 1);
+
+        // Verify hint is removed
+        hints = api->get_hints();
+        hint_count = print_textlist(hints);
+        std::cout << "Hint count after removal: " << hint_count << std::endl;
+        assert(hint_count == 0);
+
         std::string command = "command";
         std::string logfile = "logfile";
         int insert_count = api->add_action( filename, command, logfile);
@@ -157,6 +202,13 @@ void test_db_api(const std::string &conn_str) {
         cout << "check_file_same_dev_inode count " << print_textlist(tl) << std::endl;
 
         api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
+        api->clear_operation(hostname, peername, filename);
+        api->check_delete(filename, 1, 0);
+        api->update_dev_no(filename, 1, 123, 456);
+        api->force(filename, 1);
+        api->update_format_v1_v2(filename, 1, 1);
+        api->move_file(filename, "/some/other/path");
+        //api->upgrade_db();
         // clean up
         api->remove_dirty(peername, "/", 1);
         api->remove_file("/", 1);

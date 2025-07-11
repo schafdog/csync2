@@ -87,10 +87,10 @@ public:
     virtual void force(const char *realname, int recursive) = 0;
     virtual int upgrade_db() = 0;
     virtual int update_format_v1_v2(filename_p filename, int recursive, int do_it) = 0;
-    virtual void add_hint(filename_p filename, int recursive) = 0;
-    virtual void remove_hint(filename_p filename, int recursive) = 0;
-    virtual int remove_file(filename_p filename, int recursive) = 0;
-    virtual int delete_file(filename_p filename, int recursive) = 0;
+    virtual long long add_hint(filename_p filename, int recursive) = 0;
+    virtual long long remove_hint(filename_p filename, int recursive) = 0;
+    virtual long long remove_file(filename_p filename, int recursive) = 0;
+    virtual long long delete_file(filename_p filename, int recursive) = 0;
     virtual textlist_p find_dirty(
         int (*filter_dirty)(filename_p filename, const char *localname, peername_p peername)) = 0;
     virtual textlist_p find_file(filename_p pattern, int (*filter_file)(filename_p filename)) = 0;
@@ -115,9 +115,9 @@ public:
     // virtual textlist_p get_hosts() = 0;
     virtual textlist_p get_hints() = 0;
 
-    virtual int update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    virtual long long update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
                             const char *digest) = 0;
-    virtual int insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    virtual long long insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
                             const char *digest) = 0;
     virtual int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
                                    const char *digest) = 0;

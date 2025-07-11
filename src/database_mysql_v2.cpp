@@ -167,6 +167,16 @@ void MySQLConnection::rollback() {
     }
 }
 
+template<typename... Args>
+std::unique_ptr<ResultSet> MySQLConnection::execute_query(const std::string& name, const std::string& sql, Args... args) {
+    return DatabaseConnection::execute_query(name, sql, args...);
+}
+
+template<typename... Args>
+long long MySQLConnection::execute_update(const std::string& name, const std::string& sql, Args... args) {
+    return DatabaseConnection::execute_update(name, sql, args...);
+}
+
 MySQLPreparedStatement::MySQLPreparedStatement(MYSQL* mysql, const std::string& sql, std::shared_ptr<MySQLAPI> api)
     : mysql_(mysql), api_(api) {
     stmt_ = api_->mysql_stmt_init(mysql_);
@@ -206,6 +216,14 @@ void MySQLPreparedStatement::bind_null(int index) {
 
 void MySQLPreparedStatement::bind(int index, const std::string& value) {
     param_values_[index - 1] = value;
+}
+
+void MySQLPreparedStatement::bind(int index, const char* value) {
+    if (value) {
+        param_values_[index - 1] = std::string(value);
+    } else {
+        param_values_[index - 1] = std::monostate{};
+    }
 }
 
 void MySQLPreparedStatement::bind_param() {

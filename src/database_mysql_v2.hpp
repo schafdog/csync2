@@ -25,6 +25,12 @@ public:
 
     DBType getType() override { return DBType::MySQL; };
     void *get_private_data() override { return mysql_; };
+
+    template<typename... Args>
+    std::unique_ptr<ResultSet> execute_query(const std::string& name, const std::string& sql, Args... args);
+
+    template<typename... Args>
+    long long execute_update(const std::string& name, const std::string& sql, Args... args);
 private:
     friend class MySQLPreparedStatement;
     MYSQL* mysql_ = nullptr;
@@ -40,6 +46,7 @@ public:
     void bind(int index, int value) override;
     void bind(int index, long long value) override;
     void bind(int index, double value) override;
+    void bind(int index, const char* value) override;
     void bind(int index, const std::string& value) override;
     void bind_null(int index) override;
 

@@ -27,7 +27,7 @@ public:
     int upgrade_db() override;
     textlist_p get_hints() override;
     int update_format_v1_v2(filename_p filename, int recursive, int do_it) override;
-    void remove_hint(filename_p filename, int recursive) override;
+    long long remove_hint(filename_p filename, int recursive) override;
     void force(const char *realname, int recursive) override;
     void mark(const std::set<std::string>& active_peerlist, const char *realname, int recursive) override;
     void list_hint() override;
@@ -39,14 +39,14 @@ public:
     textlist_p get_commands() override;
     textlist_p get_command_filename(filename_p command, const char *logfile) override;
     int dir_count(const char *dirname) override;
-    void add_hint(filename_p filename, int recursive) override;
+    long long add_hint(filename_p filename, int recursive) override;
     int remove_dirty(peername_p peername, filename_p filename, int recursive) override;
     int remove_dirty_new(peername_p peername, filename_p filename, int recursive);
     textlist_p find_dirty(
         int (*filter)(filename_p str_filename, const char *localname, peername_p str_peername)) override;
     textlist_p find_file(filename_p str_pattern, int (*filter_file)(filename_p filename)) override;
-    int remove_file(filename_p str_filename, int recursive) override;
-    int delete_file(filename_p str_filename, int recursive) override;
+    long long remove_file(filename_p str_filename, int recursive) override;
+    long long delete_file(filename_p str_filename, int recursive) override;
     void clear_operation(const char *myhostname, peername_p peername,
                            filename_p filename /* , int recursive */) override;
     textlist_p get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
@@ -62,9 +62,9 @@ public:
                   const char *result_other,
                   operation_t op, int mode, int mtime) override;
     int update_dev_no(filename_p encoded, int recursive, dev_t old_no, dev_t new_no) override;
-    int update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    long long update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
                       const char *digest) override;
-    int insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    long long insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
                       const char *digest) override;
     int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
                              const char *digest) override;
@@ -79,5 +79,7 @@ public:
                                            struct stat *st, peername_p str_peername) override;
     textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
                                                  const char *checktxt, const char *digest, struct stat *st) override;
+    // unused:
+    long long db_sql_move_file_to_dirty(const char *file, int recursive, const char *peername);
 };
 #endif

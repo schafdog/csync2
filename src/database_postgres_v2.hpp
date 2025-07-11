@@ -32,6 +32,12 @@ public:
 
     DBType getType() override { return DBType::PostgreSQL; };
     void *get_private_data() override { return conn_; };
+
+    template<typename... Args>
+    std::unique_ptr<ResultSet> execute_query(const std::string& name, const std::string& sql, Args... args);
+
+    template<typename... Args>
+    long long execute_update(const std::string& name, const std::string& sql, Args... args);
 private:
     friend class PostgresPreparedStatement;
     PGconn* conn_ = nullptr;
@@ -48,6 +54,7 @@ public:
     void bind(int index, int value) override;
     void bind(int index, long long value) override;
     void bind(int index, double value) override;
+    void bind(int index, const char* value) override;
     void bind(int index, const std::string& value) override;
     void bind_null(int index) override;
 

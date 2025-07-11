@@ -39,6 +39,12 @@ public:
   DBType getType() override { return DBType::SQLite; };
 
   void *get_private_data() override { return db_; };
+
+  template<typename... Args>
+  std::unique_ptr<ResultSet> execute_query(const std::string& name, const std::string& sql, Args... args);
+
+  template<typename... Args>
+  long long execute_update(const std::string& name, const std::string& sql, Args... args);
 private:
   sqlite3* db_;
   std::shared_ptr<SQLiteAPI> sqlite_api_; // Holds the loaded library and function pointers.
