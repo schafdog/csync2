@@ -267,19 +267,18 @@ int DbMySqlStmt::close() {
 
 int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 		const char *digest) {
-	BUF_P buf = buffer_init();
-	char *digest_quote = buffer_quote(buf, digest);
-	int count = SQL(this, "Add or update file entry",
-			"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
-					"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON DUPLICATE KEY UPDATE "
-					"checktxt = '%s', device = %lu, inode = %llu, "
-					"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded.c_str(), checktxt_encoded,
-			fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode, file_stat->st_size,
-			file_stat->st_mtime, get_file_type(file_stat->st_mode),
-			// SET
-			checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
-			file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
-	buffer_destroy(buf);
+	int count = conn_->("insert_update_file",
+			        "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
+					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+					"ON DUPLICATE KEY UPDATE "
+					"checktxt = ?, device = ?, inode = ?, "
+					"digest = ?, mode = ?, size = ?, mtime = ?, type = ?",
+					g_myhostname, encoded.c_str(), checktxt_encoded,
+					fstat_dev(file_stat), file_stat->st_ino, digest, file_stat->st_mode, file_stat->st_size,
+					file_stat->st_mtime, get_file_type(file_stat->st_mode),
+					// SET
+					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
+					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
 	return count;
 }
 
