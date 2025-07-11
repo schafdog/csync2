@@ -196,6 +196,10 @@ void PostgresPreparedStatement::bind(int index, int value) {
     param_values_[index - 1] = std::to_string(value);
 }
 
+void PostgresPreparedStatement::bind(int index, long value) {
+    param_values_[index - 1] = std::to_string(value);
+}
+
 void PostgresPreparedStatement::bind(int index, long long value) {
     param_values_[index - 1] = std::to_string(value);
 }

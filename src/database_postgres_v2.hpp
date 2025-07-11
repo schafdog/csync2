@@ -53,6 +53,7 @@ public:
 
     void bind(int index, int value) override;
     void bind(int index, long long value) override;
+    void bind(int index, long value) override;
     void bind(int index, double value) override;
     void bind(int index, const char* value) override;
     void bind(int index, const std::string& value) override;

@@ -204,6 +204,11 @@ MySQLPreparedStatement::~MySQLPreparedStatement() {
 void MySQLPreparedStatement::bind(int index, int value) {
     param_values_[index - 1] = value;
 }
+
+void MySQLPreparedStatement::bind(int index, long value) {
+    param_values_[index - 1] = static_cast<long long>(value);
+}
+
 void MySQLPreparedStatement::bind(int index, long long value) {
     param_values_[index - 1] = value;
 }

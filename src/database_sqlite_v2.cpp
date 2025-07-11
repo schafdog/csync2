@@ -212,6 +212,10 @@ public:
         api_->sqlite3_bind_int(stmt_, index, value);
     }
 
+    void bind(int index, long value) override {
+        api_->sqlite3_bind_int64(stmt_, index, value);
+    }
+
     void bind(int index, long long value) override {
         api_->sqlite3_bind_int64(stmt_, index, value);
     }
