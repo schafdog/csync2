@@ -267,17 +267,17 @@ int DbMySqlStmt::close() {
 
 int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
 		const char *digest) {
-	int count = conn_->("insert_update_file",
+	int count = conn_->execute_update("insert_update_file",
 			        "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
 					"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
 					"ON DUPLICATE KEY UPDATE "
 					"checktxt = ?, device = ?, inode = ?, "
 					"digest = ?, mode = ?, size = ?, mtime = ?, type = ?",
 					g_myhostname, encoded.c_str(), checktxt_encoded,
-					fstat_dev(file_stat), file_stat->st_ino, digest, file_stat->st_mode, file_stat->st_size,
+					fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, file_stat->st_mode, file_stat->st_size,
 					file_stat->st_mtime, get_file_type(file_stat->st_mode),
 					// SET
-					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
+					checktxt_encoded, fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
 					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
 	return count;
 }
