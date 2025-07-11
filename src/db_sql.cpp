@@ -73,7 +73,7 @@ int DbSql::schema_version()
 	return version;
 }
 
-int DbSql::check_file(const char *file, const char *encoded, char **other, char **checktxt,
+int DbSql::check_file(const char *file, const char *encoded, char **other, char *checktxt,
 							 struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no)
 {
 	int db_flags = 0;
@@ -90,10 +90,10 @@ int DbSql::check_file(const char *file, const char *encoded, char **other, char 
             {
                 csync_error(0, "Error extracting version from checktxt: %s", rs->get_string(1).c_str());
             }
-            const char *checktxt_db = db_decode(rs->get_string(1).c_str());
-            const char *checktxt_same_version = *checktxt;
-            const char *inode = rs->get_string(2).c_str();
-            const char *device = rs->get_string(3).c_str();
+            const std::string checktxt_db = rs->get_string(1);
+            std::string checktxt_same_version = checktxt;
+            const std::string inode = rs->get_string(2);
+            const std::string device = rs->get_string(3);
             auto digest_p = rs->get_string_optional(4);
             *digest = digest_p.has_value() ? buffer_strdup(buffer, digest_p->c_str()) : NULL;
             long mode = rs->get_long(5);
@@ -104,27 +104,27 @@ int DbSql::check_file(const char *file, const char *encoded, char **other, char 
             db_flags |= (mode == 0 || size == 0 || mtime == 0 ? IS_UPGRADE : 0);
 
             int ug_flag = 0;
-            if (strstr(checktxt_db, ":user=") != NULL)
+            if (strstr(checktxt_db.c_str(), ":user=") != NULL)
                 ug_flag |= SET_USER;
-            if (strstr(checktxt_db, ":group=") != NULL)
+            if (strstr(checktxt_db.c_str(), ":group=") != NULL)
                 ug_flag |= SET_GROUP;
             struct stat old_stat;
             int dev_inode;
             if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
             {
                 csync_info(2, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
-                           file, device, inode, file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
+                           file, device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
 
                 if (dev_inode == DEV_CHANGED)
                 {
                     db_flags |= DEV_CHANGE;
-                    csync_info(2, "File %s has only changed device %s -> %llu\n", file, device, file_stat->st_dev);
+                    csync_info(2, "File %s has only changed device %s -> %llu\n", file, device.c_str(), file_stat->st_dev);
                     *old_no = old_stat.st_dev;
                 }
                 else
                     db_flags |= IS_UPGRADE;
             }
-            if (!*digest && strstr(*checktxt, "type=reg"))
+            if (!*digest && strstr(checktxt, "type=reg"))
             {
                 db_flags |= CALC_DIGEST;
                 db_flags |= IS_UPGRADE;
@@ -132,10 +132,10 @@ int DbSql::check_file(const char *file, const char *encoded, char **other, char 
             if (db_version != this->version || ug_flag != (SET_USER | SET_GROUP))
             {
                 checktxt_same_version = csync_genchecktxt_version(file_stat, file, ug_flag, db_version);
-                if (csync_cmpchecktxt(*checktxt, checktxt_same_version))
+                if (csync_cmpchecktxt(checktxt, checktxt_same_version.c_str()))
                     db_flags |= IS_UPGRADE;
             }
-            if (csync_cmpchecktxt(checktxt_same_version, checktxt_db))
+            if (csync_cmpchecktxt(checktxt_same_version.c_str(), checktxt_db.c_str()))
             {
                 int file_mode = file_stat->st_mode & S_IFMT;
                 int flag = OP_MOD;
@@ -152,7 +152,7 @@ int DbSql::check_file(const char *file, const char *encoded, char **other, char 
                     *operation = OP_NEW | flag;
 
                 csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
-                           file, checktxt_same_version, checktxt_db, csync_operation_str(*operation));
+                           file, checktxt_same_version.c_str(), checktxt_db.c_str(), csync_operation_str(*operation));
                 csync_info(3, "ignore flags: %d\n", ignore_flags);
                 if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
                     db_flags |= IS_UPGRADE;
