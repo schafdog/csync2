@@ -162,7 +162,7 @@ PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::st
     if (api_->PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::string error = api_->PQerrorMessage(conn_);
         api_->PQclear(res);
-        throw DatabaseError("PQprepare failed: " + error + " " + converted_sql);
+        throw DatabaseError("PQprepare failed in " + name + ": " + error + " " + converted_sql);
     }
     api_->PQclear(res);
 
