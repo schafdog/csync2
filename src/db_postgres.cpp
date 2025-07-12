@@ -277,23 +277,23 @@ int DbPostgresStmt::close() {
 int DbPostgres::upgrade_to_schema(int new_version) {
 	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
 
-	csync_db_sql(this, NULL, /* "Creating action table", */
-	    "CREATE TABLE action ("
+	conn_->execute_update("Creating action table",
+	                "CREATE TABLE action ("
 					"  filename varchar(%u),"
 					"  command varchar(1000),"
 					"  logfile varchar(1000),"
 					"  UNIQUE (filename,command));",
 				 FILE_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating host table", */
-	    "CREATE TABLE host ("
+	conn_->execute_update("Creating host table",
+	                "CREATE TABLE host ("
 					"  host varchar(%u),"
 					"  status integer, "
 					"  UNIQUE (host));",
 					HOST_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating dirty table", */
-	    "CREATE TABLE dirty ("
+	conn_->execute_update("Creating dirty table",
+	                "CREATE TABLE dirty ("
 					"  filename  varchar(%u) ,"
 					"  forced    int         ,"
 					"  myname    varchar(%u) ,"
@@ -309,11 +309,14 @@ int DbPostgres::upgrade_to_schema(int new_version) {
     				"  mtime     int         ,"
     				"  type      int         ,"
     				"  file_id   bigint      ,"
-    				"  timestamp timestamp   DEFAULT current_timestamp,"			"  UNIQUE (filename,peername,myname)"			");"			"CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
+    				"  timestamp timestamp   DEFAULT current_timestamp,"
+                    "  UNIQUE (filename,peername,myname)"			");"
+                    "CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
 	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating file table", */
-	"CREATE TABLE file ("//		     "  id     serial        ,"				 "  parent bigint        ,"
+	conn_->execute_update("Creating file table",
+	    "CREATE TABLE file ("
+		//		     "  id     serial        ,"				 "  parent bigint        ,"
         "  filename varchar(%u) ,"				 //"  basename varchar(%u) ,"
         "  hostname varchar(%u) ,"
         "  checktxt varchar(%u) ,"
@@ -330,15 +333,15 @@ int DbPostgres::upgrade_to_schema(int new_version) {
         "CREATE INDEX idx_file_device_inode ON file (device, inode); ",
 	FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50);
 
-	csync_db_sql(this, NULL, /* "Creating hint table", */
+	conn_->execute_update("Creating hint table",
 	    "CREATE TABLE hint ("
 	        "  filename varchar(%u)   ,"
 	        "  recursive int          ,"
 			"  UNIQUE (filename)       "
-		");",
+			");",
 			  FILE_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating x509_cert table", */
+	conn_->execute_update("Creating x509_cert table",
 	    "CREATE TABLE x509_cert ("
 					"  peername varchar(50) ,"
 					"  certdata text ,"

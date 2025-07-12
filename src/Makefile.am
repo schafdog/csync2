@@ -27,7 +27,7 @@ database_SOURCES = database_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp 
 
 common_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l \
 	check.cpp file_record.cpp file_record.hpp \
-	checktxt.cpp global.cpp daemon.cpp db.cpp sql_query.cpp \
+	checktxt.cpp global.cpp daemon.cpp db.cpp \
 	error.cpp error.hpp getrealfn.cpp modern_logging.cpp \
 	groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
 	db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \
@@ -59,7 +59,7 @@ csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_L
 # --- Tests for the new DB layer ---
 check_PROGRAMS = test_database
 
-test_database_SOURCES = $(database_SOURCES) test_database.cpp global.cpp utils.hpp error.cpp sql_query.cpp ringbuffer.cpp db.cpp check.cpp modern_logging.cpp prefixsubst.cpp checktxt.cpp groups.cpp digest.cpp action.cpp buffer.cpp redis.cpp urlencode.cpp uidgid.cpp
+test_database_SOURCES = $(database_SOURCES) test_database.cpp global.cpp utils.hpp error.cpp ringbuffer.cpp db.cpp check.cpp modern_logging.cpp prefixsubst.cpp checktxt.cpp groups.cpp digest.cpp action.cpp buffer.cpp redis.cpp urlencode.cpp uidgid.cpp
 test_database_LDADD = $(csync2_LDADD)
 
 

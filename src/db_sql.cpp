@@ -11,7 +11,6 @@
 #include <time.h>
 #include "db_sql.hpp"
 #include "db.hpp"
-#include "sql_query.hpp"
 #include "ringbuffer.hpp"
 
 using namespace std;
@@ -58,14 +57,13 @@ const char* DbSql::escape(const std::string& string) {
 int DbSql::schema_version()
 {
 	int version = -1;
-	int rows = 0;
-	if ((rows = csync_db_sql(this, NULL, // "Failed to update table file",
-						 "update file set filename = NULL where filename = NULL ")) >= 0)
+	if (conn_->execute_update("schema_check_file",
+						 "update file set filename = NULL where filename = NULL ") >= 0)
 	{
 		version = 1;
 	}
 
-	if (csync_db_sql(this, NULL, // "Failed to show table host",
+	if (conn_->execute_update("schema_host",
 					 "update host set host = NULL where host = NULL") >= 0)
 	{
 		version = 2;
@@ -73,10 +71,9 @@ int DbSql::schema_version()
 	return version;
 }
 
-int DbSql::check_file(filename_p str_filename, char **other, char *checktxt,
+int DbSql::check_file(filename_p    filename, char **other, char *checktxt,
 							 struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no)
 {
-	const char *filename = str_filename.c_str();
     int db_flags = 0;
 	auto rs = conn_->execute_query("check_file",
 			  "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = ? "
@@ -112,12 +109,12 @@ int DbSql::check_file(filename_p str_filename, char **other, char *checktxt,
 		if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
 		{
 			csync_info(2, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
-					   filename, device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
+					   filename.c_str(), device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
 
 			if (dev_inode == DEV_CHANGED)
 			{
 				db_flags |= DEV_CHANGE;
-				csync_info(2, "File %s has only changed device %s -> %llu\n", filename, device.c_str(), file_stat->st_dev);
+				csync_info(2, "File %s has only changed device %s -> %llu\n", filename.c_str(), device.c_str(), file_stat->st_dev);
 				*old_no = old_stat.st_dev;
 			}
 			else
@@ -140,7 +137,7 @@ int DbSql::check_file(filename_p str_filename, char **other, char *checktxt,
 			int flag = OP_MOD;
 			if (file_mode != (mode & S_IFMT))
 			{
-				csync_info(1, "File %s has changed mode %d => %d \n", filename, (mode & S_IFMT), file_mode);
+				csync_info(1, "File %s has changed mode %d => %d \n", filename.c_str(), (mode & S_IFMT), file_mode);
 				flag = OP_MOD2;
 				//*operation |= OP_SYNC;
 				db_flags |= IS_UPGRADE;
@@ -151,7 +148,7 @@ int DbSql::check_file(filename_p str_filename, char **other, char *checktxt,
 				*operation = OP_NEW | flag;
 
 			csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
-					   filename, checktxt_same_version, checktxt_db.c_str(), csync_operation_str(*operation));
+					   filename.c_str(), checktxt_same_version, checktxt_db.c_str(), csync_operation_str(*operation));
 			csync_info(3, "ignore flags: %d\n", ignore_flags);
 			if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
 				db_flags |= IS_UPGRADE;
@@ -162,7 +159,7 @@ int DbSql::check_file(filename_p str_filename, char **other, char *checktxt,
 	}
 	if (SQL_COUNT == 0)
 	{
-		csync_info(2, "New file: %s\n", filename);
+		csync_info(2, "New file: %s\n", filename.c_str());
 		*operation = OP_NEW;
 		if (S_ISREG(file_stat->st_mode))
 		{
@@ -177,14 +174,14 @@ int DbSql::check_file(filename_p str_filename, char **other, char *checktxt,
 			// TODO get max path
 			int max = 1024;
 			char *target = static_cast<char *>(malloc(max));
-			int len = readlink(filename, target, max - 1);
+			int len = readlink(filename.c_str(), target, max - 1);
 			if (len > 0)
 			{
 				target[len] = 0;
 				*other = buffer_strdup(buffer, target);
 			}
 			else
-				csync_error(0, "Failed to read link on %s\n", filename);
+				csync_error(0, "Failed to read link on %s\n", filename.c_str());
 			free(target);
 		}
 		db_flags |= IS_DIRTY;
@@ -474,10 +471,10 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 void DbSql::list_hint()
 {
 	try {
-		SqlQuery query(this, "DB Dump - Hint",
+		auto rs = conn_->execute_query("DB Dump - Hint",
 					   "SELECT recursive, filename FROM hint ORDER BY filename");
-		while (query.next()) {
-			printf("%s\t%s\n", query.getColumnText(0), query.getColumnText(1));
+		while (rs->next()) {
+			printf("%s\t%s\n", rs->get_string(1).c_str(), rs->get_string(2).c_str());
 		}
 	} catch (const std::runtime_error& e) {
 		csync_fatal("Failed to list hints: %s\n", e.what());

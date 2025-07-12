@@ -186,42 +186,42 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 
 	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating file table", */
-	"CREATE TABLE file ("
-			"\tfilename, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
+	conn_->execute_update("Creating file table",
+	        "CREATE TABLE file ("
+			"  filename TEXT NOT NULL, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
 			"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 			"\tUNIQUE (hostname, filename), "
 			"       ON CONFLICT REPLACE); "
 			"       CREATE INDEX idx_file_device_inode on file (device, inode);");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating dirty table", */
+	conn_->execute_update("Creating dirty table",
 			"CREATE TABLE dirty ("
-					"\tfilename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
+					"filename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
 					"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-					"\tUNIQUE (filename, peername), "
-					"\tKEY (device, inode), "
+					"UNIQUE (filename, peername), "
+					"KEY (device, inode), "
 					"       ON CONFLICT IGNORE); "
-					"       CREATE INDEX idx_dirty_device_inode on file (device, inode);");
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating hint table", */
-	"CREATE TABLE hint ("
-			"\tfilename, recursive,"
-			"\tUNIQUE ( filename, recursive ) ON CONFLICT IGNORE)");
+					"CREATE INDEX idx_dirty_device_inode on file (device, inode);");
+	conn_->execute_update("Creating hint table",
+	        "CREATE TABLE hint ("
+			" filename, recursive,"
+			" UNIQUE ( filename, recursive ) ON CONFLICT IGNORE)");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating action table", */
-	"CREATE TABLE action ("
-			"\tfilename, command, logfile, "
-			"\tUNIQUE ( filename, command ) ON CONFLICT IGNORE"
+	conn_->execute_update("Creating action table",
+	        "CREATE TABLE action ("
+			" filename, command, logfile, "
+			" UNIQUE ( filename, command ) ON CONFLICT IGNORE"
 			")");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating host table", */
-	"CREATE TABLE host ("
-			"\thostname, status, "
-			"\tUNIQUE ( hostname ) ON CONFLICT IGNORE)");
+	conn_->execute_update("Creating host table",
+	        "CREATE TABLE host ("
+			" hostname, status, "
+			" UNIQUE ( hostname ) ON CONFLICT IGNORE)");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating x509_cert table", */
-	"CREATE TABLE x509_cert ("
-			"\tpeername, certdata, "
-			"\tUNIQUE ( peername ) ON CONFLICT IGNORE)");
+	conn_->execute_update("Creating x509_cert table",
+	        "CREATE TABLE x509_cert ("
+			" peername, certdata, "
+			" UNIQUE ( peername ) ON CONFLICT IGNORE)");
 
 	return DB_OK;
 }

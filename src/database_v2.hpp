@@ -103,12 +103,6 @@ enum class DBType {
     PostgreSQL
 };
 
-// Helper to bind a single parameter
-template<typename T>
-inline void bind_param(PreparedStatement* stmt, int& index, T value) {
-    stmt->bind(index++, value);
-}
-
 // Specialization for const char*
 inline void bind_param(PreparedStatement* stmt, int& index, const char* value) {
     if (value) {
@@ -116,6 +110,12 @@ inline void bind_param(PreparedStatement* stmt, int& index, const char* value) {
     } else {
         stmt->bind_null(index++);
     }
+}
+
+// Helper to bind a single parameter
+template<typename T>
+inline void bind_param(PreparedStatement* stmt, int& index, T value) {
+    stmt->bind(index++, value);
 }
 
 // Base case for the variadic template recursion

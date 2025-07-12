@@ -288,43 +288,45 @@ int DbMySql::upgrade_to_schema(int new_version) {
 	/* We want proper logging, so use the csync sql function instead
 	 * of that from the database layer.
 	 */
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating host table", "CREATE TABLE `host` ("
+	conn_->execute_update("Creating host table",
+	        "CREATE TABLE `host` ("
 			"  `host` varchar(%u) DEFAULT NULL,"
 			"  `status`  int,"
 			"  KEY `host` (`host`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", HOST_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /*"Creating action table" */
-	"CREATE TABLE `action` ("
+	conn_->execute_query("Creating action table",
+	        "CREATE TABLE `action` ("
 			"  `filename` varchar(%u) DEFAULT NULL,"
 			"  `command`  text,"
 			"  `logfile` text,"
 			"  KEY `filename` (`filename`(%u),`command`(%u)) "
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating dirty table", "CREATE TABLE `dirty` ("
-//		 "  id        bigint       AUTO_INCREMENT,"
+	conn_->execute_update("Creating dirty table",
+	                "CREATE TABLE `dirty` ("
+             		//"  id        bigint       AUTO_INCREMENT,"
 					"  filename  varchar(%u)  DEFAULT NULL,"
-					"  forced    int \t      DEFAULT NULL,"
+					"  forced    int \t       DEFAULT NULL,"
 					"  myname    varchar(%u)  DEFAULT NULL,"
 					"  peername  varchar(%u)  DEFAULT NULL,"
 					"  operation varchar(20)  DEFAULT NULL,"
-					"  op \t      int\t      DEFAULT NULL,"
+					"  op        int          DEFAULT NULL,"
 					"  checktxt  varchar(%u)  DEFAULT NULL,"
 					"  device    bigint       DEFAULT NULL,"
 					"  inode     bigint       DEFAULT NULL,"
 					"  other     varchar(%u)  DEFAULT NULL,"
 					"  file_id   bigint       DEFAULT NULL,"
 					"  digest    varchar(70)  DEFAULT NULL,"
-					"  mode      int\t      DEFAULT NULL,"
-					"  mtime     int    \t  DEFAULT NULL,"
-					"  type      int    \t  DEFAULT NULL,"
-					"  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+					"  mode      int\t        DEFAULT NULL,"
+					"  mtime     int          DEFAULT NULL,"
+					"  type      int          DEFAULT NULL,"
+					"  `timestamp` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
 					"  UNIQUE KEY `filename_peername_myname` (`filename`(%u),`peername`,`myname`), "
 					"  KEY `idx_file_dev_inode` (`device`,`inode`) "
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating file table", "CREATE TABLE `file` ("
+	conn_->execute_update("Creating file table", "CREATE TABLE `file` ("
 //		 "  `id`       bigint AUTO_INCREMENT,"
 			//		"  `parent`   bigint DEFAULT NULL,"
 					"  filename varchar(%u)  DEFAULT NULL,"
@@ -343,21 +345,20 @@ int DbMySql::upgrade_to_schema(int new_version) {
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /* "Creating hint table", */
-	"  CREATE TABLE `hint` ("
+	conn_->execute_update("Creating hint table",
+	        "  CREATE TABLE `hint` ("
 			"  `filename` varchar(%u) DEFAULT NULL,"
 			"  `recursive` int(11)    DEFAULT NULL"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /* "Creating x509_cert table", */
-	"CREATE TABLE `x509_cert` ("
+conn_->execute_query("Creating x509_cert table",
+           	"CREATE TABLE `x509_cert` ("
 			"  `peername` varchar(50)  DEFAULT NULL,"
 			"  `certdata` text DEFAULT NULL,"
 			"  UNIQUE KEY `peername` (`peername`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
 
-	/* csync_db_sql does a csync_fatal on error, so we always return DB_OK here. */
 	return DB_OK;
 }
 
