@@ -18,6 +18,7 @@ struct SQLiteAPI;
 class SQLiteConnection : public DatabaseConnection {
 public:
   SQLiteConnection(const std::string& db_path);
+  SQLiteConnection(sqlite3* db)  : db_(db) {};
   ~SQLiteConnection() override;
   std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
   std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) override;

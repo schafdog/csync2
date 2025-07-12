@@ -462,7 +462,7 @@ int csync_check_del(db_conn_p db, filename_p file, int flags) {
 static textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename,
 										   const char *checktxt, const char *digest, struct stat *st, peername_p peername) {
 	textlist_p tl = 0;
-	csync_info(2, "csync_check_file_same_dev_inode %s %s\n", filename.c_str(), db_escape(db, filename.c_str()));
+	csync_info(2, "csync_check_file_same_dev_inode %s %s\n", filename.c_str(), filename.c_str());
 	tl = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
 	return tl;
 }

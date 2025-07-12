@@ -14,8 +14,8 @@ public:
     DbSql(DatabaseConnection* conn) : DbApi(conn) {};
     ~DbSql() override {};
 
-    const char* escape(const std::string& string) override;
-    const char* escape(const char *string) override;
+    const char* escape(const std::string& string);
+    const char* escape(const char *string);
 
     int schema_version() override;
     int check_file(filename_p str_filename, char **other, char *checktxt,

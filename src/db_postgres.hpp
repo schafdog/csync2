@@ -11,10 +11,7 @@ public:
     ~DbPostgres() override;
 
     int exec(const char *sql) override;
-    int prepare(const char *sql, DbStmt **stmt, const char **pptail) override;
-    void close() override;
     const char* errmsg() override;
-    const char* escape(const char *string) override;
     int upgrade_to_schema(int version) override;
     int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                              const char *digest) override;

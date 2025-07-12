@@ -36,6 +36,7 @@
 #include "dl.hpp"
 #include "db_sql.hpp"
 #include "ringbuffer.hpp"
+#include "database_sqlite_v2.hpp"
 
 #ifndef HAVE_SQLITE3
 int db_sqlite_open(const char *file, db_conn_p *conn_p) {
@@ -106,74 +107,21 @@ static int db_sqlite_error_map(int sqlite_err) {
 	return DB_OK;
 }
 
-void DbSqlite::close() {
-	if (!private_data)
-		return;
-	f.sqlite3_close_fn(static_cast<sqlite3*>(private_data));
-	private_data = 0;
-}
-
 const char* DbSqlite::errmsg() {
-	if (!private_data)
+    void *private_data = conn_->get_private_data();
+    if (!private_data)
 		return "(no private data in conn)";
 	return f.sqlite3_errmsg_fn(static_cast<sqlite3*>(private_data));
 }
 
 int DbSqlite::exec(const char *sql) {
 	int rc;
+	void *private_data = conn_->get_private_data();
 	if (!private_data) {
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
 	rc = f.sqlite3_exec_fn(static_cast<sqlite3*>(private_data), sql, 0, 0, 0);
-	return db_sqlite_error_map(rc);
-}
-
-class DbSqliteStmt : public DbStmt {
-public:
-    DbSqliteStmt(sqlite3_stmt *stmt, DbApi *db) : DbStmt(db), private_data(stmt) {}
-    ~DbSqliteStmt() override { close(); };
-
-    const char* get_column_text(int column) override;
-    const char* get_column_blob(int column) override;
-    int get_column_int(int column) override;
-    int next() override;
-    int close() override;
-    long get_affected_rows() override { return 0; };
-
-private:
-    sqlite3_stmt *private_data;
-};
-
-const char* DbSqliteStmt::get_column_text(int column) {
-	if (!private_data) {
-		return 0;
-	}
-	const unsigned char *result = f.sqlite3_column_text_fn(private_data, column);
-	/* error handling */
-	return reinterpret_cast<const char*>(result);
-}
-
-const char *DbSqliteStmt::get_column_blob(int col) {
-	return static_cast<const char*>(f.sqlite3_column_blob_fn(private_data, col));
-}
-
-int DbSqliteStmt::get_column_int(int column) {
-	int rc = f.sqlite3_column_int_fn(private_data, column);
-	return db_sqlite_error_map(rc);
-}
-
-int DbSqliteStmt::next() {
-	int rc = f.sqlite3_step_fn(private_data);
-	return db_sqlite_error_map(rc);
-}
-
-int DbSqliteStmt::close() {
-    if (!private_data) {
-        return DB_OK;
-	}
-	int rc = f.sqlite3_finalize_fn(private_data);
-    private_data = NULL;
 	return db_sqlite_error_map(rc);
 }
 
@@ -226,25 +174,6 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 	return DB_OK;
 }
 
-int DbSqlite::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
-	int rc;
-
-	*stmt_p = NULL;
-
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	sqlite3_stmt *sqlite_stmt = 0;
-	/* TODO avoid strlen, use configurable limit? */
-	rc = f.sqlite3_prepare_v2_fn(static_cast<sqlite3*>(private_data), sql, strlen(sql), &sqlite_stmt, pptail);
-	if (rc != SQLITE_OK)
-		return db_sqlite_error_map(rc);
-
-    *stmt_p = new DbSqliteStmt(sqlite_stmt, this);
-	return db_sqlite_error_map(rc);
-}
-
 DbSqlite::DbSqlite() {}
 
 DbSqlite::~DbSqlite() {
@@ -264,14 +193,12 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p) {
 	if (rc != SQLITE_OK) {
 		return db_sqlite_error_map(rc);
 	};
-
-    DbSqlite *conn = new DbSqlite();
+	DatabaseConnection *conn = new SQLiteConnection(db);
+    DbSqlite *dbApi = new DbSqlite(conn);
 	if (conn == NULL) {
 		return DB_ERROR;
 	}
-
-	conn->private_data = db;
-    *conn_p = conn;
+	*conn_p = dbApi;
 
 	return db_sqlite_error_map(rc);
 }

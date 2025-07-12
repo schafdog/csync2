@@ -12,8 +12,6 @@ public:
     ~DbSqlite() override;
 
     int exec(const char *sql) override;
-    int prepare(const char *sql, DbStmt **stmt, const char **pptail) override;
-    void close() override;
     const char* errmsg() override;
     int upgrade_to_schema(int version) override;
 };

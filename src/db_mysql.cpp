@@ -138,15 +138,9 @@ static int db_mysql_parse_url(char *url, char **host, char **user, char **pass, 
 
 #ifdef HAVE_MYSQL
 
-void DbMySql::close() {
-	if (!private_data)
-		return;
-	f.mysql_close_fn(static_cast<MYSQL*>(private_data));
-	private_data = 0;
-}
-
 const char* DbMySql::errmsg() {
-	if (!private_data)
+    void *private_data = conn_->get_private_data();
+    if (!private_data)
 		return "(no private data in conn)";
 	return f.mysql_error_fn(static_cast<MYSQL*>(private_data));
 }
@@ -183,86 +177,8 @@ static void print_warnings(int level, MYSQL *m) {
 }
 
 int DbMySql::exec(const char *sql) {
-	int rc = DB_ERROR;
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	rc = f.mysql_query_fn(static_cast<MYSQL*>(private_data), sql);
-	/* Treat warnings as errors. For example when a column is too short this should
-	 be an error. */
-
-	affected_rows = f.mysql_affected_rows_fn(static_cast<MYSQL*>(private_data));
-
-	if (rc == 0) {
-		return DB_OK;
-	}
-	if (rc == ER_LOCK_DEADLOCK) {
-		return DB_BUSY;
-	}
-	if (f.mysql_warning_count_fn(static_cast<MYSQL*>(private_data)) > 0) {
-		print_warnings(1, static_cast<MYSQL*>(private_data));
-		return DB_ERROR;
-	}
-	/* On error parse, create DB ERROR element */
-	csync_warn(0, "Unmapped MYSQL error: %d \n", rc);
-	return rc > 0 ? -rc : rc;
-}
-
-class DbMySqlStmt : public DbStmt {
-public:
-    DbMySqlStmt(MYSQL_RES *res, DbApi *db) : DbStmt(db), private_data(res) {}
-    ~DbMySqlStmt() override { close(); };
-
-    const char* get_column_text(int column) override;
-    const char* get_column_blob(int column) override;
-    int get_column_int(int column) override;
-    int next() override;
-    int close() override;
-    long get_affected_rows() override { return 0; };
-
-private:
-    MYSQL_RES *private_data;
-    MYSQL_ROW private_data2;
-};
-
-const char* DbMySqlStmt::get_column_blob(int column) {
-	if (!private_data2) {
-		return 0;
-	}
-	return private_data2[column];
-}
-
-const char* DbMySqlStmt::get_column_text(int column) {
-	if (!private_data2) {
-		return 0;
-	}
-	return private_data2[column];
-}
-
-int DbMySqlStmt::get_column_int(int column) {
-	const char *value = get_column_text(column);
-	if (value)
-		return atoi(value);
-	/* error mapping */
-	return 0;
-}
-
-int DbMySqlStmt::next() {
-	private_data2 = f.mysql_fetch_row_fn(private_data);
-	/* error mapping */
-	if (private_data2)
-		return DB_ROW;
-	return DB_DONE;
-}
-
-int DbMySqlStmt::close() {
-    if (!private_data) {
-        return DB_OK;
-	}
-	f.mysql_free_result_fn(private_data);
-    private_data = NULL;
-	return DB_OK;
+    conn_->query(sql);
+    return 0;
 }
 
 int DbMySql::insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
@@ -362,60 +278,6 @@ conn_->execute_query("Creating x509_cert table",
 	return DB_OK;
 }
 
-const char* DbMySql::escape(const char *string) {
-	if (!private_data)
-		return 0;
-	if (string == 0)
-		return 0;
-
-	size_t length = strlen(string);
-	char *escaped_buffer = ringbuffer_malloc(2 * length + 1);
-	f.mysql_real_escape_string_fn(static_cast<MYSQL*>(private_data), escaped_buffer, string, length);
-	return escaped_buffer;
-}
-
-int DbMySql::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
-	// unused
-	(void) pptail;
-
-	int rc = DB_ERROR;
-
-	*stmt_p = NULL;
-
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-
-	/* TODO avoid strlen, use configurable limit? */
-	rc = f.mysql_query_fn(static_cast<MYSQL*>(private_data), sql);
-	(void) rc;
-	/* Treat warnings as errors. For example when a column is too short this should
-	 be an error. */
-
-	if (f.mysql_warning_count_fn(static_cast<MYSQL*>(private_data)) > 0) {
-		print_warnings(1, static_cast<MYSQL*>(private_data));
-		return DB_ERROR;
-	}
-
-	MYSQL_RES *mysql_res = f.mysql_store_result_fn(static_cast<MYSQL*>(private_data));
-	if (mysql_res == NULL) {
-		csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(static_cast<MYSQL*>(private_data)));
-		return DB_ERROR;
-	}
-
-	/* Treat warnings as errors. For example when a column is too short this should
-	 be an error. */
-
-	if (f.mysql_warning_count_fn(static_cast<MYSQL*>(private_data)) > 0) {
-		print_warnings(1, static_cast<MYSQL*>(private_data));
-		return DB_ERROR;
-	}
-
-    *stmt_p = new DbMySqlStmt(mysql_res, this);
-	return DB_OK;
-}
-
 DbMySql::DbMySql() {}
 
 DbMySql::~DbMySql() {
@@ -478,8 +340,6 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 		return DB_ERROR;
 	}
 	*api_p = api;
-
-	api->private_data = db;
 
 	free(db_url);
 	return rc;

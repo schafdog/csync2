@@ -17,15 +17,36 @@ std::unique_ptr<DatabaseConnection> create_connection(const std::string& conn_st
     std::map<std::string, std::string> params;
     std::stringstream ss(conn_string);
     std::string segment;
-
+    std::string type_str;
+    if (std::getline(ss, segment, ':')) {
+        params["type"] = segment;
+    } else {
+        throw std::invalid_argument("Invalid connection string: " + conn_string);
+    }
+    ss.seekp(2);
     // Parse the entire connection string into a map
     if (std::getline(ss, segment, '@')) {
         size_t eq_pos = segment.find(':');
         if (eq_pos != std::string::npos) {
-            std::string key = segment.substr(0, eq_pos);
-            std::string value = segment.substr(eq_pos + 1);
-            params["user"] = value;
+            std::string user = segment.substr(0, eq_pos);
+            std::string password = segment.substr(eq_pos + 1);
+            params["user"] = user;
+            params["password"] = password;
         }
+    }
+    // now host[:port]
+    if (std::getline(ss, segment, '/')) {
+        size_t eq_pos = segment.find(':');
+        if (eq_pos != std::string::npos) {
+            std::string host = segment.substr(0, eq_pos);
+            std::string port = segment.substr(eq_pos + 1);
+            params["host"] = host;
+            params["port"] = port;
+        }
+    }
+    // now database
+    if (std::getline(ss, segment)) {
+        params["database"] = segment;
     }
 
     // Extract the 'type' parameter
@@ -33,7 +54,7 @@ std::unique_ptr<DatabaseConnection> create_connection(const std::string& conn_st
     if (it_type == params.end()) {
         throw DatabaseError("Connection string must specify 'type' (e.g., type=SQLite;...)");
     }
-    std::string type_str = it_type->second;
+    type_str = it_type->second;
     params.erase(it_type); // Remove 'type' from params
 
     // Reconstruct remaining connection string for SQLite and PostgreSQL

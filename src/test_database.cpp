@@ -2,6 +2,7 @@
  * t -*- */
 #include "check.hpp"
 #include "database_api.hpp"
+#include "database_v2.hpp"
 #include "db.hpp"
 #include "db_api.hpp"
 #include <cassert>
@@ -18,13 +19,7 @@ void test_database(const std::string &conn_str) {
   try {
     // 1. Connect
     DbApi *api;
-    auto rc = db_open(conn_str.c_str(), 0, &api);
-    if (rc) {
-      std::cout << "Failed to open db: " << conn_str << std::endl;
-      exit(1);
-    }
-    auto conn = api->conn_;
-    std::cout << "Connected to TEST database: " << conn_str << " " << std::endl;
+    auto conn = create_connection(conn_str);
 
     // 2. Create a table
     conn->prepare("DROP TABLE IF EXISTS users;")->execute_update();
@@ -222,7 +217,7 @@ void test_db_api(const std::string &conn_str) {
         api->list_sync(hostname, peername);
         api->mark(std::set<std::string>{peername}, filename, 1);
         api->non_dirty_files_match(filename);
-        api->escape(filename);
+
         //api->upgrade_db();
         // clean up
         api->remove_dirty(peername, "/", 1);

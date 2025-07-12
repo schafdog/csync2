@@ -80,32 +80,19 @@ db_conn_p csync_db_open(const char *file) {
 	/* ignore errors on table creation */
 	in_sql_query++;
 
-	if (db_schema_version(global_db) < DB_SCHEMA_VERSION)
-		if (db_upgrade_to_schema(db, DB_SCHEMA_VERSION) == DB_SCHEMA_VERSION)
+	if (db->schema_version() < DB_SCHEMA_VERSION)
+	    if (db->upgrade_to_schema(DB_SCHEMA_VERSION) == DB_SCHEMA_VERSION)
 			csync_fatal("Cannot create database tables (version requested = %d): %s\n", DB_SCHEMA_VERSION,
-					db_errmsg(global_db));
+					db->errmsg());
 
 	if (!db_sync_mode)
-		db_exec(db, "PRAGMA synchronous = OFF");
+		db->exec("PRAGMA synchronous = OFF");
 	in_sql_query--;
 	return db;
 }
 
 void csync_db_close(db_conn_p db) {
-	if (!db || begin_commit_recursion)
-		return;
-
-	begin_commit_recursion++;
-	if (tqueries_counter > 0) {
-		db->exec("COMMIT");
-		tqueries_counter = -10;
-	}
-	csync_info(4, "Closing db: %p\n", db);
-	db_conn_close(db);
-	csync_info(4, "Closed db: %p\n", db);
-	begin_commit_recursion--;
-	global_db = 0;
-	delete db;
+    //delete db;
 }
 
 #if defined(HAVE_SQLITE)

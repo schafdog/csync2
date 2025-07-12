@@ -58,18 +58,13 @@ protected:
 class DbApi {
 public:
     DbApi() = default;
-    DbApi(DatabaseConnection* conn) : private_data(conn->get_private_data()), conn_(conn) {}
+        DbApi(DatabaseConnection* conn) : private_data_deprecated(conn->get_private_data()), conn_(conn) {}
     virtual ~DbApi() = default;
 
     virtual int exec(const char *exec) = 0;
-    virtual int prepare(const char *statement, DbStmt **stmt, const char **value) = 0;
-    virtual void close() = 0;
     // virtual void logger(int priority, int lv, const char *fmt, ...) = 0;
     virtual const char* errmsg() = 0;
-    virtual const char* escape(const char *string) = 0;
-    virtual const char* escape(const std::string& string) = 0;
-    // virtual void free(const char *escaped) = 0;
-    // virtual void shutdown() = 0;
+
     virtual void mark(const std::set<std::string>& active_peers, const filename_p realname, int recursive) = 0;
 
     // Update functions (deprecated)
@@ -144,7 +139,7 @@ public:
 
     int version;
     long affected_rows;
-    void *private_data;
+    void *private_data_deprecated;
     DatabaseConnection *conn_;
 };
 
@@ -156,7 +151,6 @@ int db_open(const char *file, int type, db_conn_p *db);
 void db_close(void);
 void db_conn_close(db_conn_p conn);
 
-int db_exec(db_conn_p conn, const char *exec);
 int db_exec2(db_conn_p conn, const char *exec, void (*callback)(void*, int, int), void *data, const char **err);
 
 int db_prepare_stmt(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
