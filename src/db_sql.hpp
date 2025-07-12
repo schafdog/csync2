@@ -60,12 +60,12 @@ public:
                   const char *op_str, const char *checktxt, const char *dev, const char *ino,
                   const char *result_other,
                   operation_t op, int mode, int mtime) override;
-    int update_dev_no(filename_p encoded, int recursive, dev_t old_no, dev_t new_no) override;
-    long long update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    int update_dev_no(filename_p filename, int recursive, dev_t old_no, dev_t new_no) override;
+    long long update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                       const char *digest) override;
-    long long insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    long long insert_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                       const char *digest) override;
-    int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                              const char *digest) override;
     int check_delete(filename_p str_filename, int recursive, int init_run) override;
 

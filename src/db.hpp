@@ -43,40 +43,6 @@ extern const char *csync_db_quote(filename_p filename);
 extern const char *csync_db_escape_quote(filename_p filename);
 dev_t fstat_dev(struct stat *file_stat);
 
-#define SQL(db, e, s, ...) csync_db_sql(db, e, s __VA_OPT__(, ) __VA_ARGS__)
-
-extern const char* (*db_decode) (const char *value);
-//extern const char* (*db_encode) (const char *value);
-
-#define SQL_BEGIN(db, e, s, ...) \
-{ \
-    const char *SQL_ERR = e; \
-	void *SQL_VM = csync_db_begin(db, SQL_ERR, s __VA_OPT__(, ) __VA_ARGS__); \
-	int SQL_COUNT = 0; \
-	(void) SQL_COUNT; \
-\
-	if (SQL_VM) { \
-		while (1) { \
-			const char **dataSQL_V, **dataSQL_N; \
-			int SQL_C; \
-			if ( !csync_db_next(SQL_VM, SQL_ERR,		\
-						&SQL_C, &dataSQL_V, &dataSQL_N) ) break; \
-			SQL_COUNT++;
-
-#define SQL_V(col)				\
-    (static_cast<const char *>(csync_db_colblob(SQL_VM,(col))))
-
-#define SQL_V_long(col, result)			\
-    (csync_db_long(SQL_VM,(col), (result)))
-
-#define SQL_FIN }{
-
-#define SQL_END \
-		} \
-		    csync_db_fin(SQL_VM, SQL_ERR);	\
-	} \
-}
-
 extern int db_blocking_mode;
 extern int db_sync_mode;
 

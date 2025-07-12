@@ -363,22 +363,22 @@ const char* DbPostgres::escape(const char *string) {
 	return escaped_buffer;
 }
 
-int DbPostgres::insert_update_file(filename_p encoded, const char *checktxt_encoded,
+int DbPostgres::insert_update_file(filename_p filename, const char *checktxt,
 		struct stat *file_stat, const char *digest) {
-	BUF_P buf = buffer_init();
-	char *digest_quote = buffer_quote(buf, digest);
 	int count =
-			SQL(this, "Add or update file entry",
+			conn_->execute_update("insert_update_file",
 					"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
-							"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON CONFLICT (filename, hostname) DO UPDATE SET "
-							"checktxt = '%s', device = %lu, inode = %llu, "
-							"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded.c_str(),
-					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
-					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode),
+							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (filename, hostname) DO UPDATE SET "
+							"checktxt = ?, device = ?, inode = ?, "
+							"digest = ?, mode = ?, size = ?, mtime = ?, type = ?",
+							g_myhostname, filename, checktxt,
+							fstat_dev(file_stat), file_stat->st_ino,
+							digest,
+							file_stat->st_mode, file_stat->st_size, file_stat->st_mtime,
+							get_file_type(file_stat->st_mode),
 					// SET
-					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
+					checktxt, fstat_dev(file_stat), file_stat->st_ino, digest, file_stat->st_mode,
 					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
-	buffer_destroy(buf);
 	return count;
 }
 

@@ -246,7 +246,6 @@ int main(int argc, char *argv[]) {
   std::string conn_string = "pgsql://testuser:testpass@localhost:5432/testdb";
   csync_out_debug = stderr;
   csync_level_debug = 2;
-  db_decode = csync_decode_v2;
 
   if (argc < 2) {
     std::cout << "Using hard coded connection string: " << conn_string << "\n";

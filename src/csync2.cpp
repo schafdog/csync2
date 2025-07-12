@@ -586,9 +586,6 @@ static const char *csync_decode_v2(const char *value)
 	return value;
 }
 
-extern const char *(*db_decode)(const char *value);
-extern const char *(*db_encode)(const char *value);
-
 void parse_peerlist(const char *peerlist)
 {
 	g_active_peers.clear();
@@ -679,13 +676,6 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 	return realnames;
 }
 
-static void select_recursive(char *db_encoded, char **where_rec)
-{
-	ASPRINTF(where_rec, " filename > '%s/' "
-						" and filename < '%s0'",
-			 db_encoded, db_encoded);
-}
-
 static int csync_read_config(const char *cfgname, int conn, int mode)
 {
 	if (cfgfile)
@@ -774,9 +764,6 @@ int csync2_main(int argc, char **argv)
 	long mode = MODE_NONE;
 	int flags = 0;
 	int opt, i;
-
-	// Default db_decodes (version 1 scheme)
-	db_decode = url_decode;
 
 	ringbuffer_init();
 
@@ -1197,11 +1184,6 @@ nofork:
 					   cmd_db_version);
 		else
 			g_db_version = cfg_db_version;
-	}
-	if (g_db_version == 2)
-	{
-		//	db_encode = csync_db_escape;
-		db_decode = csync_decode_v2;
 	}
 
 	if (cfg_protocol_version != -1)

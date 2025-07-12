@@ -115,13 +115,13 @@ public:
     // virtual textlist_p get_hosts() = 0;
     virtual textlist_p get_hints() = 0;
 
-    virtual long long update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
-                            const char *digest) = 0;
-    virtual long long insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
-                            const char *digest) = 0;
-    virtual int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    virtual long long update_file(filename_p filename, const char *checktxt,
+                                  struct stat *file_stat, const char *digest) = 0;
+    virtual long long insert_file(filename_p filename, const char *checktxt,
+                                  struct stat *file_stat, const char *digest) = 0;
+    virtual int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                                    const char *digest) = 0;
-    virtual int update_dev_no(filename_p encoded, int recursive, dev_t old_no, dev_t new_no) = 0;
+    virtual int update_dev_no(filename_p filename, int recursive, dev_t old_no, dev_t new_no) = 0;
     virtual int check_delete(filename_p filename, int recursive, int init_run) = 0;
 
     virtual int del_action(filename_p filename, const std::string& prefix_command) = 0;

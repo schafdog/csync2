@@ -265,7 +265,7 @@ int DbMySqlStmt::close() {
 	return DB_OK;
 }
 
-int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+int DbMySql::insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
 		const char *digest) {
 	int count = conn_->execute_update("insert_update_file",
 			        "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
@@ -273,11 +273,11 @@ int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded
 					"ON DUPLICATE KEY UPDATE "
 					"checktxt = ?, device = ?, inode = ?, "
 					"digest = ?, mode = ?, size = ?, mtime = ?, type = ?",
-					g_myhostname, encoded.c_str(), checktxt_encoded,
+					g_myhostname, filename, checktxt,
 					fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, file_stat->st_mode, file_stat->st_size,
 					file_stat->st_mtime, get_file_type(file_stat->st_mode),
 					// SET
-					checktxt_encoded, fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
+					checktxt, fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
 					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
 	return count;
 }
