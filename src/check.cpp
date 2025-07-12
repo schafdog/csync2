@@ -663,7 +663,6 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 			csync_genchecktxt_version(file_stat, filename.c_str(), SET_USER | SET_GROUP,
 					db->version));
 	// Assume that this isn't a upgrade and thus same version
-	const char *encoded = db_escape(db, filename.c_str());
 	operation_t operation = 0;
 	char *other = 0;
 	char *digest = NULL;
@@ -690,8 +689,8 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 		printf("%40s %s\n", digest ? digest : checktxt, filename.c_str());
 	}
 	if (!(is_upgrade || is_dirty) && dev_change) {
-		csync_info(2, "Fixing dev no for %s\n", encoded);
-		db->update_dev_no(encoded, S_ISDIR(file_stat->st_mode), old_no, file_stat->st_dev);
+		csync_info(2, "Fixing dev no for %s\n", filename.c_str());
+		db->update_dev_no(filename, S_ISDIR(file_stat->st_mode), old_no, file_stat->st_dev);
 	}
 	if ((is_upgrade || is_dirty) && !csync_compare_mode) {
 		if ((operation == OP_NEW && digest) || operation == OP_MKDIR) {
@@ -722,7 +721,6 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 		} else {
 		}
 
-		const char *checktxt_encoded = db_escape(db, checktxt);
 		// Insert into dirty first due to new clean up method. With this there could be a race condition
 		if (!init_run && is_dirty) {
 			//      csync_debug(0, "check_dirty (mod): before mark (all) \n");
@@ -730,20 +728,19 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 			char ino_str[100];
 			sprintf(dev_str, DEV_FORMAT, file_stat->st_dev);
 			sprintf(ino_str, INO_FORMAT, file_stat->st_ino);
-			csync_mark_other(db, filename, "", std::set<std::string>(), operation, checktxt_encoded,
+			csync_mark_other(db, filename, "", std::set<std::string>(), operation, checktxt,
 					dev_str, ino_str, other, file_stat->st_mode,
 					file_stat->st_mtime);
 		}
 		// operation does not reflect result/change in mark_other (which marks dirty)
 		// But only whether it was found in File. This is a race-condition
 		// TODO clean no need for if else when using insert_update...
-		csync_debug(3, "INSERT/UPDATE: %s %s\n", encoded, digest);
+		csync_debug(3, "INSERT/UPDATE: %s %s\n", filename.c_str(), digest);
 		if (is_upgrade || operation & OP_MOD || operation & OP_MOD2) {
-			count = db->update_file(encoded, checktxt_encoded, file_stat,
+			count = db->update_file(filename, checktxt, file_stat,
 					digest);
 		} else {
-			count = db->insert_update_file(encoded, checktxt_encoded,
-					file_stat, digest);
+			count = db->insert_update_file(filename, checktxt, file_stat, digest);
 		}
 		csync_info(2, "Inserted/updated %s rows matched: %ld\n", filename.c_str(),
 				count);
