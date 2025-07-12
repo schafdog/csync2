@@ -34,8 +34,10 @@ public:
 
     // Bind methods for different data types
     virtual void bind(int index, int value) = 0;
-    virtual void bind(int index, long value) = 0;
+    virtual void bind(int index, unsigned short value) { bind(index, static_cast<int>(value)); };
     virtual void bind(int index, long long value) = 0;
+    virtual void bind(int index, long value) { bind(index, static_cast<long long>(value)); };
+    virtual void bind(int index, unsigned long long value) { bind(index, static_cast<long long>(value)); };
     virtual void bind(int index, double value) = 0;
     virtual void bind(int index, const char *value) = 0;
     virtual void bind(int index, const std::string& value) = 0;
