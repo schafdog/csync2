@@ -155,7 +155,7 @@ static int connect_to_host(db_conn_p db, peername_p myhostname, peername_p std_p
 			return rc;
 		}
 		conn_activate_ssl(0, conn, conn);
-		conn_check_peer_cert(db, peername, 1);
+		conn_check_peer_cert(db->conn_, peername, 1);
 #else
       csync_error(0, "ERROR: Config request SSL but this csync2 is built without SSL support.\n");
       csync_error_count++;
@@ -762,7 +762,7 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 
 			const char *path = filename_enc.c_str(), *other_enc = url_encode(prefixencode(other));
 			int rc;
-			rc = csync_update_file_sig_rs_diff(conn, myname, peername, db_escape(db, key), other, other_enc,
+			rc = csync_update_file_sig_rs_diff(conn, myname, peername, key, other, other_enc,
 											   st, uid, gid,
 											   NULL, digest, last_conn_status, 2);
 			if (!is_identical) {
