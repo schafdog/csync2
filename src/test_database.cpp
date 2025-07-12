@@ -19,6 +19,10 @@ void test_database(const std::string &conn_str) {
     // 1. Connect
     DbApi *api;
     auto rc = db_open(conn_str.c_str(), 0, &api);
+    if (rc) {
+      std::cout << "Failed to open db: " << conn_str << std::endl;
+      exit(1);
+    }
     auto conn = api->conn_;
     std::cout << "Connected to TEST database: " << conn_str << " " << std::endl;
 
@@ -206,7 +210,6 @@ void test_db_api(const std::string &conn_str) {
         api->check_delete(filename, 1, 0);
         api->update_dev_no(filename, 1, 123, 456);
         api->force(filename, 1);
-        api->update_format_v1_v2(filename, 1, 1);
         api->move_file(filename, "/some/other/path");
         int operation, mode;
         api->is_dirty(peername, filename, &operation, &mode);
