@@ -230,7 +230,7 @@ static int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, i
 			rc = csync_rmdir_recursive(db, filename, peername, &tl, 0);
 
 			if (rc == -1) {
-				csync_error(1, "Error on recursive delete: %d %s", errno, strerror(errno));
+				csync_error(1, "Error on recursive delete: %d %s\n", errno, strerror(errno));
 				if (errno == EAGAIN) {
 					rc = OK;
 				} else {
@@ -697,7 +697,7 @@ static int verify_peername(db_conn_p db, const char *name, address_t *peeraddr) 
 
 	freeaddrinfo(result);
 	if (rp != NULL) /* memcmp found a match */
-		return conn_check_peer_cert(db, name, 0);
+		return conn_check_peer_cert(db->conn_, name, 0);
 	return 0;
 }
 

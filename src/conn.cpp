@@ -303,7 +303,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 	return 0;
 }
 
-int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
+int conn_check_peer_cert(DatabaseConnection *conn, peername_p peername, int callfatal) {
 	const gnutls_datum_t *peercerts;
 	unsigned npeercerts;
 	int cert_is_ok = -1;
@@ -318,43 +318,39 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 		csync_error(1, "Peer did not provide an SSL X509 cetrificate.\n");
 		return 0;
 	}
+	char *certdata = static_cast<char*>(malloc(2 * peercerts[0].size + 1));
+	size_t size;
+	for (size = 0; size < peercerts[0].size; size++)
+		sprintf(&certdata[2 * size], "%02X", peercerts[0].data[size]);
+	certdata[2 * size] = 0;
+	auto rs = conn->execute_query("Checking peer x509 certificate",
+			"SELECT certdata FROM x509_cert WHERE peername = ? ", peername);
 
-	{
-		char *certdata = static_cast<char*>(malloc(2 * peercerts[0].size + 1));
-		size_t size;
-		for (size = 0; size < peercerts[0].size; size++)
-			sprintf(&certdata[2 * size], "%02X", peercerts[0].data[size]);
-		certdata[2 * size] = 0;
+	while (rs->next()) {
+		if (!strcmp(static_cast<const char*>(rs->get_string(1).c_str()), certdata))
+			cert_is_ok = 1;
+			else
+			cert_is_ok = 0;
+    };
 
-		SQL_BEGIN(db, "Checking peer x509 certificate.",
-				"SELECT certdata FROM x509_cert WHERE peername = '%s'",
-				url_encode(peername))
-{				if (!strcmp(static_cast<const char*>(SQL_V(0)), certdata))
-				cert_is_ok = 1;
-				else
-				cert_is_ok = 0;
-			}SQL_END;
-
-		if (cert_is_ok < 0) {
-			csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
-			SQL(db, "Adding peer x509 sha1 hash to database.",
-					"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')", url_encode(peername),
-					url_encode(certdata));
-			return 1;
-		}
-
-		csync_info(2, "Peer x509 certificate is: %s\n", certdata);
-
-		if (!cert_is_ok) {
-			if (callfatal)
-				csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
-			csync_error(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
-			free(certdata);
-			return 0;
-		}
-		free(certdata);
+	if (cert_is_ok < 0) {
+		csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
+		conn->execute_update("add_certificate",
+				"INSERT INTO x509_cert (peername, certdata) VALUES (?, ?)",
+				peername, certdata);
+		return 1;
 	}
 
+	csync_info(2, "Peer x509 certificate is: %s\n", certdata);
+
+	if (!cert_is_ok) {
+		if (callfatal)
+			csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
+		csync_error(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
+		free(certdata);
+		return 0;
+	}
+	free(certdata);
 	return 1;
 }
 
