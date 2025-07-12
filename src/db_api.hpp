@@ -70,7 +70,7 @@ public:
     virtual const char* escape(const std::string& string) = 0;
     // virtual void free(const char *escaped) = 0;
     // virtual void shutdown() = 0;
-    virtual void mark(const std::set<std::string>& active_peers, const char *realname, int recursive) = 0;
+    virtual void mark(const std::set<std::string>& active_peers, const filename_p realname, int recursive) = 0;
 
     // Update functions (deprecated)
     virtual int upgrade_to_schema(int version) = 0;
@@ -86,7 +86,7 @@ public:
     virtual int is_dirty(filename_p filename, peername_p peername, int *operation, int *mode) = 0;
     virtual void force(const char *realname, int recursive) = 0;
     virtual int upgrade_db() = 0;
-    virtual int update_format_v1_v2(filename_p filename, int recursive, int do_it) = 0;
+    //virtual int update_format_v1_v2(filename_p filename, int recursive, int do_it) = 0;
     virtual long long add_hint(filename_p filename, int recursive) = 0;
     virtual long long remove_hint(filename_p filename, int recursive) = 0;
     virtual long long remove_file(filename_p filename, int recursive) = 0;
@@ -128,7 +128,7 @@ public:
     virtual int add_action(filename_p filename, const std::string& prefix_command, const std::string &logfile) = 0;
     virtual int remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile) = 0;
 
-    virtual int check_file(const char *file, const char *enc, char **other, char *checktxt,
+    virtual int check_file(filename_p filename, char **other, char *checktxt,
                            struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int flags, dev_t *old_no) = 0;
 
     virtual textlist_p check_file_same_dev_inode(filename_p filename, const char *checktxt, const char *digest,

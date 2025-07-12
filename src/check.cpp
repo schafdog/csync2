@@ -674,8 +674,8 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 		// Dirty rows
 		return 0;
 	}
-	int db_flags = db->check_file(filename.c_str(), encoded, &other, checktxt,
-			file_stat, buffer, &operation, &digest, flags, &old_no);
+	int db_flags = db->check_file(filename, &other, checktxt,
+		    file_stat, buffer, &operation, &digest, flags, &old_no);
 	int calc_digest = db_flags & CALC_DIGEST;
 	int is_dirty = db_flags & IS_DIRTY;
 	int is_upgrade = db_flags & IS_UPGRADE;
