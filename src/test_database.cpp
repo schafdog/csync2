@@ -212,6 +212,14 @@ void test_db_api(const std::string &conn_str) {
         api->is_dirty(peername, filename, &operation, &mode);
         api->get_dirty_hosts();
         api->get_hints();
+        api->list_dirty(std::set<std::string>{hostname}, filename, 1);
+        api->list_file(filename, hostname, peername, 1);
+        api->list_files(filename);
+        api->list_hint();
+        api->list_sync(hostname, peername);
+        api->mark(std::set<std::string>{peername}, filename, 1);
+        api->non_dirty_files_match(filename);
+        api->escape(filename);
         //api->upgrade_db();
         // clean up
         api->remove_dirty(peername, "/", 1);
