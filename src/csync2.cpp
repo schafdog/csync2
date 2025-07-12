@@ -76,7 +76,6 @@ extern const char *g_cfgname;
 extern char *g_active_grouplist;
 extern char *g_active_peerlist;
 extern std::set<std::string> g_active_peers;
-extern const char *g_update_format;
 extern char *g_allow_peer;
 extern int g_db_version;
 extern int g_ip_version;
@@ -311,7 +310,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 			time_t now = time(NULL);
 			if (now - last_sql > 300)
 			{
-				SQL(db, "monitor: ping server",
+				db->conn_->execute_update("ping_db_server",
 					"UPDATE dirty set myname = NULL where myname IS NULL and peername is NULL;");
 				last_sql = now;
 				csync_debug(2, "monitor: Pinged DB sever\n");
@@ -812,10 +811,6 @@ int csync2_main(int argc, char **argv)
 			g_db_version = 1;
 			cmd_db_version = 1;
 			break;
-		case '0':
-			g_update_format = "v1-v2";
-			cmd_db_version = 1;
-			break;
 		case '2':
 			g_db_version = 2;
 			break;
@@ -1035,16 +1030,13 @@ int csync2_main(int argc, char **argv)
 		}
 	}
 
-	if (optind < argc && mode != MODE_HINT && mode != MODE_MARK && !(mode & MODE_FORCE) && mode != MODE_SIMPLE && !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE && mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE && mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL && g_update_format == 0)
+	if (optind < argc && mode != MODE_HINT && mode != MODE_MARK && !(mode & MODE_FORCE) && mode != MODE_SIMPLE && !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE && mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE && mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL)
 		help(argv[0]);
 
 	if (mode == MODE_TEST_SYNC && optind != argc && optind + 1 != argc && optind + 2 != argc && optind + 3 != argc)
 		help(argv[0]);
 
 	if (mode == MODE_LIST_SYNC && optind + 2 != argc)
-		help(argv[0]);
-
-	if (mode == MODE_NONE && g_update_format == 0)
 		help(argv[0]);
 
 	/* Some inetd connect stderr to stdout.  The debug level messages on
@@ -1266,22 +1258,6 @@ nofork:
 		exit(rc);
 	}
 
-	if (g_update_format)
-	{
-		if (!strcmp(g_update_format, "v1-v2"))
-		{
-			int rc = db->update_format_v1_v2("/", 1, 1);
-			csync_db_close(db);
-			exit(rc);
-		}
-		else
-		{
-			printf("Update format %s unknown\n", g_update_format);
-			db->upgrade_db();
-			csync_db_close(db);
-			exit(1);
-		}
-	}
 	for (int i = optind; i < argc; i++)
 		on_cygwin_lowercase(argv[i]);
 
