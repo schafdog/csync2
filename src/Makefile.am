@@ -56,6 +56,9 @@ csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_L
                $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) $(LIBBSD_LIBS) $(LIBRSYNC_LIBS) \
                -ldl -lsqlite3
 
+# Link flags for build configuration
+AM_LDFLAGS = $(BUILD_LDFLAGS)
+
 # --- Tests for the new DB layer ---
 check_PROGRAMS = test_database
 
@@ -99,7 +102,7 @@ AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	$(CXX_STD_FLAG) -g -O0 -Wno-deprecated-declarations \
+	$(CXX_STD_FLAG) $(BUILD_CXXFLAGS) -Wno-deprecated-declarations \
 	$(WARNING_CXXFLAGS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
@@ -110,7 +113,7 @@ AM_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	-g -O0 -Wno-deprecated-declarations \
+	$(BUILD_CXXFLAGS) -Wno-deprecated-declarations \
 	$(WARNING_CFLAGS)
 
 # Explicit rules to compile scanner and parser as C
@@ -150,21 +153,84 @@ warnings-count:
 	@echo "Counting warnings..."
 	@$(MAKE) -s 2>&1 | grep -c "warning:" || echo "0"
 
-# Debug build with extra debugging features
-debug-clean: clean
-	@echo "Building with debug symbols and AddressSanitizer..."
-	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
-	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
+# Enhanced build targets
+# Note: These targets override the configure-time settings
 
-# Debug build with extra debugging features
-debug:
+# Optimized release build
+release: clean
+	@echo "Building optimized release..."
+	@$(MAKE) BUILD_CXXFLAGS="-O2 -DNDEBUG -g1" BUILD_LDFLAGS=""
+
+# Release build with debug symbols
+release-debug: clean
+	@echo "Building release with debug symbols..."
+	@$(MAKE) BUILD_CXXFLAGS="-O2 -DNDEBUG -g" BUILD_LDFLAGS=""
+
+# Debug build with AddressSanitizer
+debug: clean
 	@echo "Building with debug symbols and AddressSanitizer..."
-	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
-	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
+	         BUILD_LDFLAGS="-fsanitize=address"
 
 # Debug build without AddressSanitizer (for use with other tools like Valgrind)
 debug-simple: clean
 	@echo "Building with debug symbols only..."
-	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG" CFLAGS="-g -O0 -DDEBUG"
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG" BUILD_LDFLAGS=""
+
+# Profile-guided optimization build
+profile: clean
+	@echo "Building for profiling..."
+	@$(MAKE) BUILD_CXXFLAGS="-O2 -pg -fprofile-arcs -ftest-coverage" \
+	         BUILD_LDFLAGS="-pg -fprofile-arcs -ftest-coverage"
+
+# Memory debugging build optimized for Valgrind
+valgrind: clean
+	@echo "Building for Valgrind..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG" BUILD_LDFLAGS=""
+
+# Thread sanitizer build
+thread-sanitizer: clean
+	@echo "Building with ThreadSanitizer..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=thread" \
+	         BUILD_LDFLAGS="-fsanitize=thread"
+
+# Memory sanitizer build (Clang only)
+memory-sanitizer: clean
+	@echo "Building with MemorySanitizer (Clang only)..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=memory -fno-omit-frame-pointer" \
+	         BUILD_LDFLAGS="-fsanitize=memory"
+
+# Undefined behavior sanitizer build
+ubsan: clean
+	@echo "Building with UndefinedBehaviorSanitizer..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=undefined" \
+	         BUILD_LDFLAGS="-fsanitize=undefined"
+
+# Performance optimized build (maximum optimization)
+performance: clean
+	@echo "Building for maximum performance..."
+	@$(MAKE) BUILD_CXXFLAGS="-O3 -DNDEBUG -march=native -flto" \
+	         BUILD_LDFLAGS="-flto"
+
+# Test targets with different build configurations
+test-debug: debug
+	@echo "Running tests in debug mode..."
+	@$(MAKE) check
+
+test-release: release
+	@echo "Running tests in release mode..."
+	@$(MAKE) check
+
+test-sanitizer: debug
+	@echo "Running tests with AddressSanitizer..."
+	@$(MAKE) check
+
+# Show current build configuration
+show-config:
+	@echo "Current build configuration:"
+	@echo "  Build type: $(BUILD_TYPE)"
+	@echo "  CXXFLAGS: $(BUILD_CXXFLAGS)"
+	@echo "  LDFLAGS: $(BUILD_LDFLAGS)"
+	@echo "  AddressSanitizer: $(enable_asan)"
 
 FORCE:

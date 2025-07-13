@@ -43,6 +43,7 @@ public:
     MySQLPreparedStatement(MYSQL* mysql, const std::string& sql, std::shared_ptr<MySQLAPI> api);
     ~MySQLPreparedStatement() override;
 
+    using PreparedStatement::bind; // Bring all base class bind methods into scope
     void bind(int index, int value) override;
     void bind(int index, long value) override;
     void bind(int index, long long value) override;
