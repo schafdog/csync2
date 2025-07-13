@@ -64,9 +64,9 @@ static void *dl_handle = NULL;
 #define SO_FILE "libsqlite3" SO_FILE_EXT
 
 static void db_sqlite3_dlopen(void) {
-    if (dl_handle)
+    if (dl_handle) {
         return;
-
+	}
 	csync_debug(3, "Opening shared library %s\n", SO_FILE);
 
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
