@@ -92,7 +92,7 @@ db_conn_p csync_db_open(const char *file) {
 }
 
 void csync_db_close(db_conn_p db) {
-    //delete db;
+    delete db;
 }
 
 #if defined(HAVE_SQLITE)
