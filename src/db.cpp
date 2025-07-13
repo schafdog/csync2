@@ -36,15 +36,12 @@ int db_sync_mode = 1;
 int db_type = DB_SQLITE3; //default type
 static db_conn_p global_db = 0;
 // TODO make configurable
-static int wait_length = 2;
 
 static int get_dblock_timeout(void) {
 	return getpid() % 7 + csync_lock_timeout;
 }
 
 static int tqueries_counter = -50;
-static time_t transaction_begin = 0;
-static time_t last_wait_cycle = 0;
 static int begin_commit_recursion = 0;
 static int in_sql_query = 0;
 const char *(*db_decode)(const char *value);

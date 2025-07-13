@@ -11,7 +11,10 @@
 #include "buffer.hpp"
 
 extern "C" {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc99-extensions"
 #include <hiredis/hiredis.h>
+#pragma GCC diagnostic pop
 #include <time.h>
 #include <poll.h>
 }
