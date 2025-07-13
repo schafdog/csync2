@@ -647,7 +647,7 @@ int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
 	std::string	recursive_str(filename);
 	recursive_str += "/%";
 	std::string output = std::format("remove_dirty_sql {} {} {} {} ",
-							 static_cast<char *>(g_myhostname), peername, filename, recursive_str);
+							 g_myhostname.c_str(), peername, filename, recursive_str);
 	//cout << output << endl;
 	auto stmt = conn_->prepare(name_sql, remove_dirty_sql);
 	stmt->bind(1, g_myhostname);
@@ -724,12 +724,12 @@ long long DbSql::remove_file(filename_p str_filename, int recursive)
 
 	if (recursive) {
 		std::string recursive_filename = std::string(filename) + "/%";
-		csync_info(2, "remove_file SQL: %s, param1: %s, param2: %s, param3: %s", sql_query.c_str(), filename, recursive_filename.c_str(), g_myhostname);
+		csync_info(2, "remove_file SQL: %s, param1: %s, param2: %s, param3: %s", sql_query.c_str(), filename, recursive_filename.c_str(), g_myhostname.c_str());
 		return conn_->execute_update("remove_file_recursive",
 									  sql_query,
 									  g_myhostname, filename, recursive_filename);
 	} else {
-		csync_info(2, "remove_file SQL: %s, param1: %s, param2: %s\n", sql_query.c_str(), filename, g_myhostname);
+		csync_info(2, "remove_file SQL: %s, param1: %s, param2: %s\n", sql_query.c_str(), filename, g_myhostname.c_str());
 		return conn_->execute_update("remove_file",
 									  sql_query,
 									  g_myhostname, filename);
@@ -969,7 +969,7 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
     struct stat st;
         csync_info(1, "Checking for deleted files %s%s\n", filename.c_str(), (recursive ? " recursive." : "."));
 	std::string where_rec = csync_generate_recursive_sql_placeholder(recursive, 1);
-	csync_debug(3, "File %s. Hostname: %s \n", filename.c_str(), g_myhostname);
+	csync_debug(3, "File %s. Hostname: %s \n", filename.c_str(), g_myhostname.c_str());
 	std::string SQL_SELECT = "SELECT filename, checktxt, device, inode, mode FROM file WHERE hostname = ? ";
 	SQL_SELECT += where_rec + " ORDER BY filename";
 	//csync_debug(1, "check_delete SQL: %s \n", SQL_SELECT.c_str());

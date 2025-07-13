@@ -328,7 +328,7 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 		// Already checked in single_file
 		// NOTE: disabled!
 		if (0 && !rc && operation && peername != "") {
-			csync_debug(0, "check dirty: peername %s from %s\n", peername.c_str(), g_myhostname);
+			csync_debug(0, "check dirty: peername %s from %s\n", peername.c_str(), g_myhostname.c_str());
 			std::set<std::string> peerset;
 			peerset.insert(peername);
 			csync_mark(db, filename, g_myhostname, peerset, operation,
@@ -1121,7 +1121,7 @@ static const char* check_ssl(char *peername) {
 	if (!csync_conn_usessl) {
 		struct csync_nossl *t;
 		for (t = csync_nossl; t; t = t->next) {
-			if (!fnmatch(t->pattern_from, g_myhostname, 0) && !fnmatch(t->pattern_to, peername, 0)) {
+			if (!fnmatch(t->pattern_from, g_myhostname.c_str(), 0) && !fnmatch(t->pattern_to, peername, 0)) {
 				// conn_without_ssl_ok;
 				return 0;
 			}
@@ -1564,7 +1564,7 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 		// LIST <host> <filename> <key> <recursive>
 		csync_debug(1, "peername: %s file: %s key: %s recursive %s\n", *peername, filename, params->value,
 				params->uid);
-		csync_daemon_list(conn_out, db, filename, g_myhostname, *peername, (params->uid ? atoi(params->uid) : 0));
+		csync_daemon_list(conn_out, db, filename, g_myhostname.c_str(), *peername, (params->uid ? atoi(params->uid) : 0));
 		break;
 	case A_DEBUG:
 		{

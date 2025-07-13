@@ -20,6 +20,7 @@
 #include "csync2.hpp"
 #include "database.hpp"
 #include "database_v2.hpp"
+#include "modern_logging.hpp"
 #include <memory>
 #if defined(HAVE_SQLITE3)
 #include <sqlite3.h>
@@ -67,15 +68,15 @@ static void db_sqlite3_dlopen(void) {
     if (dl_handle) {
         return;
 	}
-	csync_debug(3, "Opening shared library %s\n", SO_FILE);
+	csync_debug_cpp(3, "Opening shared library {}", SO_FILE);
 
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL) {
-		csync_fatal(
-				"Could not open %s: %s\nPlease install sqlite3 client library (libsqlite3) or use other database (postgres, mysql)\n",
+		csync_fatal_cpp(
+				"Could not open {}: {}\nPlease install sqlite3 client library (libsqlite3) or use other database (postgres, mysql)",
 				SO_FILE, dlerror());
 	}
-	csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+	csync_debug_cpp(3, "Reading symbols from shared library {}", SO_FILE);
 
 
 	LOOKUP_SYMBOL(dl_handle, sqlite3_open);
@@ -132,7 +133,7 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 	if (version > 0)
 		return DB_ERROR;
 
-	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
+	csync_info_cpp(2, "Upgrading database schema to version {}.", new_version);
 
 	conn_->execute_update("Creating file table",
 	        "CREATE TABLE file ("

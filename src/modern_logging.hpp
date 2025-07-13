@@ -71,7 +71,9 @@ private:
 public:
     /// Constructor
     Logger() = default;
-
+    void setDebugLevel(int level) {
+        debug_level_ = level;
+    };
     /// Configure logger
     void configure(LogLevel min_level, int debug_level, Output output = Output::Console) {
         min_level_ = min_level;
@@ -181,7 +183,7 @@ private:
                 return std::vformat(format, std::make_format_args(args...));
             } catch (const std::format_error&) {
                 // Fallback to printf-style if format string is not compatible
-                return ""; // format_printf_style(format, std::forward<Args>(args)...);
+                return format_printf_style(format, std::forward<Args>(args)...);
             }
 #elif CSYNC_HAS_FMT_FORMAT
             // Use fmt library if available
@@ -296,21 +298,29 @@ public:
 
 #define CSYNC_LOG_SCOPE(name) csync2::LogGuard _log_guard(name)
 
+// Forward declaration of global debug level
+extern "C" int csync_level_debug;
+
 /// Convenience macros for backward compatibility (printf-style)
 #define csync_log_cpp(level, debug_level, ...) \
-    csync2::g_logger.log(csync2::LogLevel::level, debug_level, __VA_ARGS__)
+    do { if (debug_level <= csync_level_debug) \
+        csync2::g_logger.log(csync2::LogLevel::level, debug_level, __VA_ARGS__); } while(0)
 
 #define csync_debug_cpp(level, ...) \
-    csync2::g_logger.log(csync2::LogLevel::Debug, level, __VA_ARGS__)
+    do { if (level <= csync_level_debug) \
+        csync2::g_logger.log(csync2::LogLevel::Debug, level, __VA_ARGS__); } while(0)
 
 #define csync_info_cpp(level, ...) \
-    csync2::g_logger.log(csync2::LogLevel::Info, level, __VA_ARGS__)
+    do { if (level <= csync_level_debug) \
+        csync2::g_logger.log(csync2::LogLevel::Info, level, __VA_ARGS__); } while(0)
 
 #define csync_warn_cpp(level, ...) \
-    csync2::g_logger.log(csync2::LogLevel::Warning, level, __VA_ARGS__)
+    do { if (level <= csync_level_debug) \
+        csync2::g_logger.log(csync2::LogLevel::Warning, level, __VA_ARGS__); } while(0)
 
 #define csync_error_cpp(level, ...) \
-    csync2::g_logger.log(csync2::LogLevel::Error, level, __VA_ARGS__)
+    do { if (level <= csync_level_debug) \
+        csync2::g_logger.log(csync2::LogLevel::Error, level, __VA_ARGS__); } while(0)
 
 #define csync_fatal_cpp(...) do { \
     csync2::g_logger.log(csync2::LogLevel::Critical, 0, __VA_ARGS__); \

@@ -6,7 +6,7 @@
 
 // Placeholder for csync2 global variables and helper functions
 // In a real refactoring, these would be properly integrated or passed as parameters.
-extern char g_myhostname[]; // Assuming this is defined elsewhere
+// g_myhostname is declared in csync2.hpp
 int get_file_type(int st_mode);
 
 static int db_parse_url(char *url, char **host, char **user, char **pass, char **database, unsigned int *port) {

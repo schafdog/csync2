@@ -26,6 +26,7 @@
 #include <string.h>
 #include "database_postgres_v2.hpp"
 #include "database_v2.hpp"
+#include "modern_logging.hpp"
 #include "db_api.hpp"
 #include "db.hpp"
 #include "db_postgres.hpp"
@@ -85,14 +86,14 @@ static void *dl_handle;
 #define SO_FILE "libpq" SO_FILE_EXT
 
 static void db_postgres_dlopen(void) {
-	csync_debug(3, "Opening shared library %s\n", SO_FILE);
+	csync_debug_cpp(3, "Opening shared library {}", SO_FILE);
 
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL) {
-		csync_fatal("Could not open libpq.so: %s\n"
-				"Please install postgres client library (libpg) or use other database (sqlite, mysql)\n", dlerror());
+		csync_fatal_cpp("Could not open libpq.so: {}\n"
+				"Please install postgres client library (libpg) or use other database (sqlite, mysql)", dlerror());
 	}
-	csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+	csync_debug_cpp(3, "Reading symbols from shared library {}", SO_FILE);
 
 	LOOKUP_SYMBOL(dl_handle, PQconnectdb);
 	LOOKUP_SYMBOL(dl_handle, PQstatus);
@@ -158,7 +159,7 @@ int DbPostgres::exec(const char *sql) {
 }
 
 int DbPostgres::upgrade_to_schema(int new_version) {
-	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
+	csync_info_cpp(2, "Upgrading database schema to version {}.", new_version);
 
 	conn_->execute_update("Creating action table",
 	                "CREATE TABLE action ("
@@ -278,7 +279,7 @@ int db_postgres_open(const char *file, db_conn_p *api_p) {
 										   host, user, pass, database, port);
 	pg_conn = f.PQconnectdb_fn(pg_conn_info.c_str());
 	if (pg_conn == NULL) {
-		csync_fatal("No memory for postgress connection handle\n");
+		csync_fatal_cpp("No memory for postgress connection handle");
 	}
 	if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
 		f.PQfinish_fn(pg_conn);
@@ -287,7 +288,7 @@ int db_postgres_open(const char *file, db_conn_p *api_p) {
 	DatabaseConnection *conn = new PostgresConnection(pg_conn);
     DbPostgres *api = new DbPostgres(conn);
 	if (api == NULL) {
-		csync_fatal("No memory for conn\n");
+		csync_fatal_cpp("No memory for conn");
 	}
 	*api_p = api;
 

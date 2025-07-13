@@ -52,7 +52,7 @@ const char* prefixsubst(const char *in) {
 		}
 	}
 
-	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname);
+	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname.c_str());
 	return 0;
 }
 
