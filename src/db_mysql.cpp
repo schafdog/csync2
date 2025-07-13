@@ -71,15 +71,15 @@ static void *dl_handle;
 #define SO_FILE_ALT "libmariadbclient" SO_FILE_EXT
 
 static void db_mysql_dlopen(void) {
-	csync_debug_cpp(3, "Opening shared library {}", SO_FILE);
+	csync_debug(3, "Opening shared library {}", SO_FILE);
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL && (dl_handle = dlopen(SO_FILE_ALT, RTLD_LAZY)) == NULL) {
-		csync_fatal_cpp(
+		csync_fatal(
 				"Could not open " SO_FILE ": {}\nPlease install Mysql/Mariadb client library or use other database (sqlite, postgresql)",
 				dlerror());
 	}
 
-	csync_debug_cpp(3, "Reading symbols from shared library {}", SO_FILE);
+	csync_debug(3, "Reading symbols from shared library {}", SO_FILE);
 
 	LOOKUP_SYMBOL(dl_handle, mysql_init);
 	LOOKUP_SYMBOL(dl_handle, mysql_real_connect);
@@ -153,19 +153,19 @@ static void print_warnings(int level, MYSQL *m) {
 	MYSQL_ROW row;
 
 	if (m == NULL)
-		csync_fatal_cpp("print_warnings: m is NULL");
+		csync_fatal("print_warnings: m is NULL");
 
 	rc = f.mysql_query_fn(m, "SHOW WARNINGS");
 	if (rc != 0)
-		csync_fatal_cpp("print_warnings: Failed to get warning messages");
+		csync_fatal("print_warnings: Failed to get warning messages");
 
 	res = f.mysql_store_result_fn(m);
 	if (res == NULL)
-		csync_fatal_cpp("print_warnings: Failed to get result set for warning messages");
+		csync_fatal("print_warnings: Failed to get result set for warning messages");
 
 	fields = f.mysql_num_fields_fn(res);
 	if (fields < 2)
-		csync_fatal_cpp("print_warnings: Strange: show warnings result set has less than 2 rows");
+		csync_fatal("print_warnings: Strange: show warnings result set has less than 2 rows");
 
 	row = f.mysql_fetch_row_fn(res);
 
@@ -200,7 +200,7 @@ int DbMySql::insert_update_file(filename_p filename, const char *checktxt, struc
 }
 
 int DbMySql::upgrade_to_schema(int new_version) {
-	csync_debug_cpp(2, "Upgrading database schema to version {}.", new_version);
+	csync_debug(2, "Upgrading database schema to version {}.", new_version);
 
 	/* We want proper logging, so use the csync sql function instead
 	 * of that from the database layer.
@@ -314,9 +314,9 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 			if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
 				ASPRINTF(&create_database_statement, "create database %s", database);
 
-				csync_debug_cpp(2, "creating database {}", database);
+				csync_debug(2, "creating database {}", database);
 				if (f.mysql_query_fn(db, create_database_statement) != 0)
-					csync_fatal_cpp("Cannot create database {}: Error: {}", database, f.mysql_error_fn(db));
+					csync_fatal("Cannot create database {}: Error: {}", database, f.mysql_error_fn(db));
 				free(create_database_statement);
 
 				f.mysql_close_fn(db);
@@ -327,13 +327,13 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 			}
 		} else {
 			fatal:
-			csync_fatal_cpp("Failed to connect to database: Error: {}", f.mysql_error_fn(db));
+			csync_fatal("Failed to connect to database: Error: {}", f.mysql_error_fn(db));
 		}
 	}
 	const char *encoding = mysql_character_set_name(db);
-	csync_debug_cpp(2, "Default encoding {}", encoding);
+	csync_debug(2, "Default encoding {}", encoding);
 	if (mysql_set_character_set(db, "utf8")) {
-		csync_fatal_cpp("Cannot set character set to utf8");
+		csync_fatal("Cannot set character set to utf8");
 	}
 	DatabaseConnection *conn = new MySQLConnection(db);
     DbMySql *api = new DbMySql(conn);

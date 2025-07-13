@@ -10,6 +10,11 @@
 #include "redis.hpp"
 #include "buffer.hpp"
 
+// C++20 std::format support
+#if __cplusplus >= 202002L && __has_include(<format>)
+    #include <format>
+#endif
+
 extern "C" {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc99-extensions"
@@ -35,7 +40,7 @@ int csync_redis_connect(char *redis) {
 		if (tmp_port > 0)
 			port = tmp_port;
 	};
-	csync_debug(3, "Connecting to redis %s:%d\n", redis, port);
+	csync_debug(3, "Connecting to redis {}:{}\n", redis, port);
 	struct timeval timeout = { 5, 0 }; // 5 seconds
 	if (isunix) {
 		redis_context = redisConnectUnixWithTimeout(redis, timeout);
@@ -44,7 +49,7 @@ int csync_redis_connect(char *redis) {
 	}
 	if (redis_context == NULL || redis_context->err) {
 		if (redis_context) {
-			csync_debug(0, "Redis Connection error: %s\n",  redis_context->errstr);
+			csync_debug(0, "Redis Connection error: {}\n", redis_context->errstr);
 			redisFree(redis_context);
 			redis_context = NULL;
 		} else {
@@ -105,7 +110,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 	const char *domain_key = build_key(key, domain, buffer);
 	const char *argv[] = { "GET", domain_key };
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, 2, argv, NULL);
-	csync_debug(3, "Redis reply: GET '%s' -> %s\n", domain_key, redis_str(redis_reply));
+	csync_debug(3, "Redis reply: GET '{}' -> {}\n", domain_key, redis_str(redis_reply));
 	buffer_destroy(buffer);
 
 	if (redis_reply) {
@@ -116,7 +121,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 		}
 		freeReplyObject(redis_reply);
 	} else {
-		csync_error(1, "No redis response: %s", redis_context->err);
+		csync_error(1, "No redis response: {}", redis_context->err);
 		if (!csync_redis_check_connection()) {
 			//Dirty hack
 			csync_redis_reconnect();
@@ -153,13 +158,13 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 	}
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, argc, argv, NULL);
 
-	csync_debug(3, "Redis reply: SET '%s' '%s' %s %s %s -> %s\n", domain_key, value, nx ? "NX" : "",
+	csync_debug(3, "Redis reply: SET '{}' '{}' {} {} {} -> {}\n", domain_key, value, nx ? "NX" : "",
 			expire > 0 ? "EX" : "", expire > 0 ? time : "", redis_str(redis_reply));
 
 	buffer_destroy(buffer);
 
 	if (redis_reply == NULL) {
-		csync_error(1, "No redis response: %s", redis_context->err);
+		csync_error(1, "No redis response: {}", redis_context->err);
 		if (!csync_redis_check_connection()) {
 			csync_redis_reconnect();
 		}
@@ -185,17 +190,17 @@ time_t csync_redis_lock_custom(filename_p filename, int custom_lock_time, const 
 		return 0;
 	time_t unix_time = time(NULL);
 	if (domain)
-		csync_debug(2, "Locking '%s:%s'\n", domain, filename.c_str());
+		csync_debug(2, "Locking '{}:{}'\n", domain, filename);
 	else
-		csync_debug(2, "Locking '%s'\n", filename.c_str());
+		csync_debug(2, "Locking '{}'\n", filename);
 	int rc = csync_redis_set_int(filename, domain, unix_time, 1, custom_lock_time);
 	if (rc < 0) {
 		// Failed to get OK reply
 		unix_time = -1;
 	}
 	if (!csync_zero_mtime_debug || unix_time == -1)
-		csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: %s %s:%s %d %d\n",
-				   rc == 1 ? "OK" : "ERR", domain, filename.c_str(), unix_time, custom_lock_time);
+		csync_info(unix_time == -1 ? 1 : 2, "csync_redis_lock: {} {}:{} {} {}\n",
+				   rc == 1 ? "OK" : "ERR", domain, filename, unix_time, custom_lock_time);
 	return unix_time;
 }
 
@@ -211,21 +216,21 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 	int rc = 0;
 
 	const char *domain_key = build_key(key, domain, buffer);
-	csync_debug(3, "Deleting key '%s'\n", domain_key);
+	csync_debug(3, "Deleting key '{}'\n", domain_key);
 	const char *argv[] = { "DEL", domain_key };
 
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, 2, argv, NULL);
 	if (redis_reply == NULL) {
-		csync_error(1, "No redis response: %s\n", redis_context->err);
+		csync_error(1, "No redis response: {}\n", redis_context->err);
 		if (!csync_redis_check_connection()) {
 			csync_redis_reconnect();
 		}
 		return -2;
 	}
 
-	csync_debug(3, "Redis Reply: DEL '%s' -> %d\n", domain_key, redis_reply->integer);
+	csync_debug(3, "Redis Reply: DEL '{}' -> {}\n", domain_key, redis_reply->integer);
 	if (redis_reply->integer != 1) {
-		csync_error(1, "csync_redis_del failed to delete key: %s %d\n", domain_key, redis_reply->integer);
+		csync_error(1, "csync_redis_del failed to delete key: {} {}\n", domain_key, redis_reply->integer);
 	} else
 		rc = redis_reply->integer;
 	buffer_destroy(buffer);
@@ -249,7 +254,7 @@ void csync_redis_unlock(filename_p lock, time_t unix_time) {
 	time_t now = time(NULL);
 	// Not working if custom lock time
 	if (unix_time > 0 && now > unix_time + csync_lock_time) {
-		csync_debug(1, "operation %s took longer than lock time: %d (%d)\n", lock.c_str(), now - unix_time, csync_lock_time);
+		csync_debug(1, "operation {} took longer than lock time: {} ({})\n", lock, now - unix_time, csync_lock_time);
 	} else {
 		csync_redis_del(lock);
 	}
@@ -261,7 +266,7 @@ int csync_redis_unlock_status(filename_p filename, time_t lock_time, int status)
 }
 
 void csync_redis_close(void) {
-	csync_debug(4, "Redis closing: %p\n", redis_context);
+	csync_debug(4, "Redis closing: {}\n", static_cast<void*>(redis_context));
 	if (redis_context)
 		redisFree(redis_context);
 	redis_context = NULL;

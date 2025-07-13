@@ -49,7 +49,7 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 				goto found_matching_pattern;
 			for (p = a->pattern; p; p = p->next) {
 				const char *prefix = prefixsubst(p->pattern);
-				csync_debug_cpp(1, "File pattern: {} => {} ", p->pattern,
+				csync_debug(1, "File pattern: {} => {} ", p->pattern,
 						prefix);
 				int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
 				if (!fnmatch(prefix, filename.c_str(),
@@ -102,7 +102,7 @@ static void csync_run_single_command(db_conn_p db, const char *command,
 		assert(strlen(real_command) + 1 < len);
 	}
 
-	csync_info_cpp(1, "Running '{}' ...", real_command);
+	csync_info(1, "Running '{}' ...", real_command);
 
 	pid = fork();
 	if (!pid) {
@@ -118,7 +118,7 @@ static void csync_run_single_command(db_conn_p db, const char *command,
 	}
 
 	if (waitpid(pid, 0, 0) < 0)
-		csync_fatal_cpp("ERROR: Waitpid returned error {}.", strerror(errno));
+		csync_fatal("ERROR: Waitpid returned error {}.", strerror(errno));
 
 	for (t = tl; t != 0; t = t->next)
 		db->remove_action_entry(t->value, command, logfile);

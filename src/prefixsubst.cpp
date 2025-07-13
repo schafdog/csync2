@@ -170,12 +170,12 @@ char* filter_mtime(char *buffer) {
 			if (!strncmp(str, "PATCH", 5) || !strncmp(str, "SET", 3) || !strncmp(str, "MKDIR", 5)
 					|| !strncmp(str, "SIG", 3) || !strncmp(str, "MOD", 3)|| !strncmp(str, "CREATE", 6)) {
 				char *ptr = str + strlen(str) - 1;
-				// csync_debug(0, "Remove time: %s\n", str);
+				// csync_debug(0, "Remove time: {}\n", str);
 				while (*ptr >= '0' && *ptr <= '9' && ptr >= str) { //  || (*ptr >= '0' && *ptr <= '9')) {
 					*ptr = 'x';
 					--ptr;
 				}
-				// csync_debug(0, "Removed time: %s\n", str);
+				// csync_debug(0, "Removed time: {}\n", str);
 			}
 		}
 	}

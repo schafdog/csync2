@@ -28,6 +28,11 @@
 #include "uidgid.hpp"
 #include "urlencode.hpp"
 
+// C++20 std::format support
+#if __cplusplus >= 202002L && __has_include(<format>)
+    #include <format>
+#endif
+
 /*
  * this csync_genchecktxt() function might not be nice or
  * optimal - but it is hackish and easy to read at the same
@@ -142,8 +147,8 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 int csync_cmpchecktxt(const char *a, const char *b) {
 	int rc = strcmp(a, b);
 	if (rc != 0) {
-		csync_debug(3, "csync_cmpchecktxt A: %s \n", a);
-		csync_debug(3, "csync_cmpchecktxt B: %s \n", b);
+		csync_debug(3, "csync_cmpchecktxt A: {} \n", a);
+		csync_debug(3, "csync_cmpchecktxt B: {} \n", b);
 	}
 	if (rc < 0) {
 		return -1;
@@ -155,7 +160,7 @@ int csync_cmpchecktxt(const char *a, const char *b) {
 	int i;
 	for (i = 0; a[i] && a[i] != '\n' && b[i] && b[i] != '\n'; i++) {
 		if (a[i] != b[i]) {
-			csync_debug(2, "csync_cmpchecktxt differ at %d: \n\t%s \n\t%s \n", i, a, b);
+			csync_debug(2, "csync_cmpchecktxt differ at {}: \n\t{} \n\t{} \n", i, a, b);
 			return i;
 		}
 	}
@@ -165,8 +170,8 @@ int csync_cmpchecktxt(const char *a, const char *b) {
 int csync_cmpchecktxt_component(const char *a, const char *b, int flags) {
 	char *a_new = strdup(a);
 	char *b_new = strdup(b);
-	csync_debug(2, "csync_cmpchecktxt (components) A: %s \n", a);
-	csync_debug(2, "csync_cmpchecktxt (components) B: %s \n", b);
+	csync_debug(2, "csync_cmpchecktxt (components) A: {} \n", a);
+	csync_debug(2, "csync_cmpchecktxt (components) B: {} \n", b);
 	int differs = 0;
 	char *a_save = NULL;
 	char *b_save = NULL;
@@ -178,11 +183,11 @@ int csync_cmpchecktxt_component(const char *a, const char *b, int flags) {
 		// Not ignore mtime or not mtime
 		if (!(flags & FLAG_IGN_MTIME) || strncmp("mtime=", a_ptr, 6)) {
 			if (strcmp(a_ptr, b_ptr)) {
-				csync_debug(3, "%s!=%s:", a_ptr, b_ptr);
+				csync_debug(3, "{}!={}:", a_ptr ? a_ptr : "", b_ptr ? b_ptr : "");
 				differs = 1;
 			}
 		}
-		csync_debug(1, "components: %s %s", a_ptr, b_ptr);
+		csync_debug(1, "components: {} {}", a_ptr ? a_ptr : "", b_ptr ? b_ptr : "");
 		a_ptr = strtok_r(NULL, ":", &a_save);
 		b_ptr = strtok_r(NULL, ":", &b_save);
 	}

@@ -15,7 +15,6 @@
 #include "db_mysql.hpp"
 #include "db_postgres.hpp"
 #include "db_sqlite.hpp"
-#include "db_sqlite2.hpp"
 
 #define DEADLOCK_MESSAGE \
 	"Database backend is exceedingly busy => Terminating (requesting retry).\n"
