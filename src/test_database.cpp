@@ -18,7 +18,6 @@ void test_database(const std::string &conn_str) {
 
   try {
     // 1. Connect
-    DbApi *api;
     auto conn = create_connection(conn_str);
 
     // 2. Create a table

@@ -253,9 +253,9 @@ long long PostgresPreparedStatement::execute_update() {
         }
     }
     // cout << "Executing update with parameters: ";
-    for (const auto& param : param_values_) {
-        // cout << param << " ";
-    }
+    // for (const auto& param : param_values_) {
+    //     cout << param << " ";
+    // }
     // cout << endl;
     PGresult* res = api_->PQexecPrepared(conn_, name_.c_str(), param_pointers_.size(), param_pointers_.data(), nullptr, nullptr, 0);
 
