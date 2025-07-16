@@ -143,6 +143,8 @@ public:
     DatabaseConnection *conn_;
 };
 
+DbApi *db_create_api(const char *conn_str);
+
 // For compatibility
 typedef DbApi* db_conn_p;
 typedef DbStmt* db_stmt_p;
