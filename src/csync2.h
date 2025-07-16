@@ -36,6 +36,10 @@
 #include <string.h>
 #include <syslog.h>
 
+#ifdef __cplusplus
+#include <string>
+#endif
+
 #ifdef __DARWIN_C_LEVEL
 #define DEV_FORMAT "%u"
 #define INO_FORMAT "%" PRIu64
@@ -184,7 +188,15 @@ extern int csync_server_child_pid;
 extern int csync_timestamps;
 extern int csync_new_force;
 
-extern char g_myhostname[];
+#ifdef __cplusplus
+extern std::string g_myhostname;
+// C-compatible accessor function
+extern "C" const char* get_g_myhostname(void);
+#else
+extern char g_myhostname[256];
+// C-compatible accessor function
+const char* get_g_myhostname(void);
+#endif
 extern const char *csync_port;
 extern const char *csync_confdir;
 extern char *g_active_grouplist;

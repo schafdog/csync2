@@ -162,7 +162,7 @@ PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::st
     if (api_->PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::string error = api_->PQerrorMessage(conn_);
         api_->PQclear(res);
-        throw DatabaseError("PQprepare failed: " + error + " " + converted_sql);
+        throw DatabaseError("PQprepare failed in " + name + ": " + error + " " + converted_sql);
     }
     api_->PQclear(res);
 
@@ -253,9 +253,9 @@ long long PostgresPreparedStatement::execute_update() {
         }
     }
     // cout << "Executing update with parameters: ";
-    for (const auto& param : param_values_) {
-        // cout << param << " ";
-    }
+    // for (const auto& param : param_values_) {
+    //     cout << param << " ";
+    // }
     // cout << endl;
     PGresult* res = api_->PQexecPrepared(conn_, name_.c_str(), param_pointers_.size(), param_pointers_.data(), nullptr, nullptr, 0);
 

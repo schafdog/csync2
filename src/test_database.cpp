@@ -2,6 +2,7 @@
  * t -*- */
 #include "check.hpp"
 #include "database_api.hpp"
+#include "database_v2.hpp"
 #include "db.hpp"
 #include "db_api.hpp"
 #include <cassert>
@@ -17,10 +18,7 @@ void test_database(const std::string &conn_str) {
 
   try {
     // 1. Connect
-    DbApi *api;
-    auto rc = db_open(conn_str.c_str(), 0, &api);
-    auto conn = api->conn_;
-    std::cout << "Connected to TEST database: " << conn_str << " " << std::endl;
+    auto conn = create_connection(conn_str);
 
     // 2. Create a table
     conn->prepare("DROP TABLE IF EXISTS users;")->execute_update();
@@ -123,7 +121,7 @@ void test_db_api(const std::string &conn_str) {
         filestat.st_ino = 12345;
         filestat.st_dev = 67890;
         // BUG 1
-        strcpy(g_myhostname, hostname);
+        g_myhostname = hostname;
         int count = api->remove_dirty(peername, filename, 0);
         std::cout << "remove_dirty count (recursive): " << count << std::endl;
         count = api->remove_dirty(peername, filename, 1);
@@ -206,12 +204,19 @@ void test_db_api(const std::string &conn_str) {
         api->check_delete(filename, 1, 0);
         api->update_dev_no(filename, 1, 123, 456);
         api->force(filename, 1);
-        api->update_format_v1_v2(filename, 1, 1);
         api->move_file(filename, "/some/other/path");
         int operation, mode;
         api->is_dirty(peername, filename, &operation, &mode);
         api->get_dirty_hosts();
         api->get_hints();
+        api->list_dirty(std::set<std::string>{hostname}, filename, 1);
+        api->list_file(filename, hostname, peername, 1);
+        api->list_files(filename);
+        api->list_hint();
+        api->list_sync(hostname, peername);
+        api->mark(std::set<std::string>{peername}, filename, 1);
+        api->non_dirty_files_match(filename);
+
         //api->upgrade_db();
         // clean up
         api->remove_dirty(peername, "/", 1);
@@ -235,7 +240,6 @@ int main(int argc, char *argv[]) {
   std::string conn_string = "pgsql://testuser:testpass@localhost:5432/testdb";
   csync_out_debug = stderr;
   csync_level_debug = 2;
-  db_decode = csync_decode_v2;
 
   if (argc < 2) {
     std::cout << "Using hard coded connection string: " << conn_string << "\n";

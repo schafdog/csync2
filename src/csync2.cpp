@@ -20,6 +20,8 @@
  */
 
 #include "csync2.hpp"
+#include "modern_logging.hpp"
+#include <algorithm>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -76,7 +78,6 @@ extern const char *g_cfgname;
 extern char *g_active_grouplist;
 extern char *g_active_peerlist;
 extern std::set<std::string> g_active_peers;
-extern const char *g_update_format;
 extern char *g_allow_peer;
 extern int g_db_version;
 extern int g_ip_version;
@@ -281,7 +282,7 @@ static int csync_read_buffer(char *buffer, char *value)
 		value[match] = 0;
 		if (buffer[match] == 0)
 		{
-			csync_error(0, "Line too short %s", buffer);
+			csync_error(0, "Line too short {}", buffer);
 			return ERROR;
 		}
 	}
@@ -311,10 +312,10 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 			time_t now = time(NULL);
 			if (now - last_sql > 300)
 			{
-				SQL(db, "monitor: ping server",
+				db->conn_->execute_update("ping_db_server",
 					"UPDATE dirty set myname = NULL where myname IS NULL and peername is NULL;");
 				last_sql = now;
-				csync_debug(2, "monitor: Pinged DB sever\n");
+				csync_debug(2, "monitor: Pinged DB sever");
 			}
 			continue;
 		}
@@ -330,7 +331,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 		}
 		if (duplicated)
 		{
-			csync_debug(1, "monitor: Last operation was repeated %d times", duplicated);
+			csync_debug(1, "monitor: Last operation was repeated {} times", duplicated);
 			duplicated = 0;
 		}
 		int match = csync_read_buffer(buffer, time_str);
@@ -342,11 +343,11 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 		if (rest)
 		{
 			log_time = timelocal(&tm);
-			csync_debug(2, "monitor: Parsed %s to %d. %s", time_str, log_time, rest);
+			csync_debug(2, "monitor: Parsed {} to {}. {}", time_str, log_time, rest);
 		}
 		else
 		{
-			csync_debug(0, "monitor: Failed to parse %s as %F_%T", time_str);
+			csync_debug(0, "monitor: Failed to parse {} as %F_%T", time_str);
 		}
 		buffer += match + 1;
 		match = csync_read_buffer(buffer, operation);
@@ -359,7 +360,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 		strcpy(file, buffer);
 		if (csync_check_usefullness(file, flags))
 		{
-			csync_debug(1, "monitor: Skip %s not matched at %d\n", file, log_time);
+			csync_debug(1, "monitor: Skip {} not matched at {}", file, log_time);
 			continue;
 		}
 		// Check if file is "just" made by daemon
@@ -367,18 +368,18 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 		if (lock_time != -1)
 		{
 			csync_redis_del_custom(file, operation);
-			csync_info(1, "monitor: remove daemon lock %s:%s at %d %d %d\n",
+			csync_info(1, "monitor: remove daemon lock {}:{} at {} {} {}",
 					   operation, file, lock_time, log_time, log_time - lock_time);
 		}
 
 		if (lock_time != -1)
 		{ //  && log_time <= lock_time) Perhaps made sense if lock_time = time when locked + expire
 			// Now if the monitor is behind it will make more files unmatched
-			csync_debug(1, "monitor: Skip daemon %s %s at %d %d\n", operation, file, lock_time, log_time);
+			csync_debug(1, "monitor: Skip daemon {} {} at {} {}", operation, file, lock_time, log_time);
 		}
 		else
 		{
-			csync_info(1, "monitor: unmatched '%s' '%s' at '%s' \n", operation, file, time_str);
+			csync_info(1, "monitor: unmatched '{}' '{}' at '{}'", operation, file, time_str);
 			if (strcmp(operation, "CREATE") == 0)
 			{
 				struct stat st;
@@ -386,19 +387,19 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 				{
 					if (st.st_nlink > 1 && S_ISREG(st.st_mode))
 					{
-						csync_info(2, "monitor: hardlink '%s' '%s' at '%s' \n", operation, file, time_str);
+						csync_info(2, "monitor: hardlink '{}' '{}' at '{}'", operation, file, time_str);
 						const struct csync_group *g = NULL;
 						int count_dirty;
 						csync_check_mod(db, file, flags, &count_dirty, &g);
 					}
 					else
 					{
-						csync_info(2, "monitor: skipping '%s' '%s' at '%s' \n", operation, file, time_str);
+						csync_info(2, "monitor: skipping '{}' '{}' at '{}'", operation, file, time_str);
 					}
 				}
 				else
 				{
-					csync_error(1, "monitor: failed stat '%s' '%s' at '%s' \n", operation, file, time_str);
+					csync_error(1, "monitor: failed stat '{}' '{}' at '{}' \n", operation, file, time_str);
 				}
 			}
 			else if (strcmp(operation, "DELETE") == 0)
@@ -416,7 +417,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 				csync_check(db, file, flags);
 			}
 			std::set<std::string> patlist = {file};
-			csync_update(db, std::string(g_myhostname), g_active_peers, patlist, g_ip_version, csync_update_host, flags);
+			csync_update(db, g_myhostname, g_active_peers, patlist, g_ip_version, csync_update_host, flags);
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
@@ -440,7 +441,7 @@ static int csync_bind(const char *service_port, int ip_version)
 	s = getaddrinfo(NULL, service_port, &hints, &result);
 	if (s != 0)
 	{
-		csync_error(0, "Cannot prepare local socket, getaddrinfo: %s\n", gai_strerror(s));
+		csync_error(0, "Cannot prepare local socket, getaddrinfo: {}\n", gai_strerror(s));
 		return ERROR;
 	}
 
@@ -492,20 +493,19 @@ static void csync_openlog(int facility)
 
 static int csync_server_bind(const char *service_port, int ip_version)
 {
-	csync_debug(2, "Binding to %s IPv%d \n", service_port, ip_version);
+	csync_debug(2, "Binding to {} IPv{}", service_port, ip_version);
 	int listenfd = csync_bind(service_port, ip_version);
-	if (listenfd < 0)
-		goto error;
-	if (listen(listenfd, 5) < 0)
-		goto error;
-	/* we want to "cleanly" shutdown if the connection is lost unexpectedly */
-	signal(SIGPIPE, SIG_IGN);
-	/* server is not interested in its childs, prevent zombies */
-	signal(SIGCHLD, SIG_IGN);
-	return listenfd;
-error:
+	if (listenfd >= 0) {
+		if (listen(listenfd, 5) >= 0) {
+		    /* we want to "cleanly" shutdown if the connection is lost unexpectedly */
+			signal(SIGPIPE, SIG_IGN);
+			/* server is not interested in its childs, prevent zombies */
+			signal(SIGCHLD, SIG_IGN);
+			return listenfd;
+		}
+	}
 	fprintf(stderr, "Server error: %s\n", strerror(errno));
-	csync_fatal("Server error: %s\n", strerror(errno));
+	csync_fatal("Server error: %s", strerror(errno));
 	return -1;
 }
 /* On fork the child process will return but the parent will continue
@@ -521,61 +521,59 @@ static int csync_server_accept_loop(int nonfork, int listenfd, int *conn)
 		struct sockaddr_storage ss;
 	} addr;
 	printf("Csync2 daemon running. Waiting for connections.\n");
-	csync2::g_logger.configure(csync2::LogLevel::Debug, 5, csync2::Logger::Output::Console);
+	csync2::g_logger.configure(csync2::LogLevel::Debug, csync_level_debug, csync2::Logger::Output::Console);
+	csync2::g_logger.set_timestamps(false);
 	while (1)
 	{
 		unsigned addrlen = sizeof(addr);
 		*conn = accept(listenfd, &addr.sa, &addrlen);
-		if (*conn < 0)
-			goto error;
-
-		struct timeval tv;
-
-		tv.tv_sec = 60;
-		tv.tv_usec = 0;
-		/* Not working for inet, but conn now uses select to detect data */
-		if (setsockopt(*conn, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char *>(&tv), sizeof tv))
-			csync_error(0, "Failed to set socket rcv timeout");
-
-		fflush(stdout);
-		fflush(stderr);
-
-		if (nonfork || !fork())
+		if (*conn > 0)
 		{
-			char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-			/* need to restore default SIGCHLD handler in the session,
-			 * as we may need to wait on them in action.c */
-			signal(SIGCHLD, SIG_DFL);
-			csync_server_child_pid = getpid();
-			if (getnameinfo(&addr.sa, addrlen, hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
-							NI_NUMERICHOST | NI_NUMERICSERV) != 0)
-				goto error;
+			struct timeval tv;
 
-			if (csync_syslog)
+			tv.tv_sec = 60;
+			tv.tv_usec = 0;
+			/* Not working for inet, but conn now uses select to detect data */
+			if (setsockopt(*conn, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char *>(&tv), sizeof tv))
+				csync_error(0, "Failed to set socket rcv timeout");
+
+			fflush(stdout);
+			fflush(stderr);
+
+			if (nonfork || !fork())
 			{
-				csync2::g_logger.configure(csync2::LogLevel::Debug, 5, csync2::Logger::Output::Syslog);
-				csync_openlog(csync_facility);
-				csync_info(1, "New connection from %s:%s.\n", hbuf, sbuf);
-			}
-			else
-			{
-				// Stupid this is not using csync_log(..)
-				fprintf(stdout, "<%d> New connection from %s:%s.\n", csync_server_child_pid, hbuf, sbuf);
-				fflush(stdout);
-			}
-			// dup2(conn, 0);
-			// dup2(conn, 1);
-			// close(conn);
-			return 0;
+				char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+				/* need to restore default SIGCHLD handler in the session,
+				 * as we may need to wait on them in action.c */
+				signal(SIGCHLD, SIG_DFL);
+				csync_server_child_pid = getpid();
+				if (getnameinfo(&addr.sa, addrlen, hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
+							NI_NUMERICHOST | NI_NUMERICSERV) != 0) {
+							csync_error(0, "Failed to get name info");
+							close(*conn);
+							fprintf(stderr, "Server error: %s\n", strerror(errno));
+							return 1;
+				}
+    			if (csync_syslog)
+    			{
+    				csync2::g_logger.configure(csync2::LogLevel::Debug, csync_level_debug, csync2::Logger::Output::Syslog);
+    				csync2::g_logger.set_timestamps(false);
+    				csync_openlog(csync_facility);
+    				csync_info(1, "New connection from {}:{}.\n", hbuf, sbuf);
+    			}
+    			else
+    			{
+    				csync_info(1, "<{}> New connection from {}:{}.\n", csync_server_child_pid, hbuf, sbuf);
+    			}
+    			// dup2(conn, 0);
+    			// dup2(conn, 1);
+    			// close(conn);
+    			return 0;
+    		}
+    		close(*conn);
 		}
-		close(*conn);
 	}
-
-error:
-	fprintf(stderr, "Server error: %s\n", strerror(errno));
-	return 1;
 }
-
 
 static const char *csync_nop(const char *value)
 {
@@ -587,9 +585,6 @@ static const char *csync_decode_v2(const char *value)
 	return value;
 }
 
-extern const char *(*db_decode)(const char *value);
-extern const char *(*db_encode)(const char *value);
-
 void parse_peerlist(const char *peerlist)
 {
 	g_active_peers.clear();
@@ -598,13 +593,13 @@ void parse_peerlist(const char *peerlist)
 	{
 		return;
 	}
-	csync_debug(1, "parse_peerlist %s\n", peerlist);
+	csync_debug(1, "parse_peerlist {}", peerlist);
 	char *saveptr = NULL;
 	char *token;
 	char *peerlist_copy = strdup(peerlist);
 	while ((token = strtok_r(peerlist_copy, ",", &saveptr)))
 	{
-		csync_debug(1, "New peer: %s\n", token);
+		csync_debug(1, "New peer: {}", token);
 		g_active_peers.insert(token);
 		free(peerlist_copy);
 		peerlist_copy = NULL;
@@ -661,7 +656,7 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 		char *real_name = getrealfn(files[i]);
 		if (real_name == NULL)
 		{
-			csync_warn(0, "%s did not match a real path. Skipping.\n", files[i]);
+			csync_warn(0, "{} did not match a real path. Skipping.\n", files[i]);
 		}
 		else
 		{
@@ -670,7 +665,7 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 				realnames.insert(real_name);
 				if (flags & FLAG_DO_CHECK)
 				{
-					csync_debug(2, "csync_file_args: chec'%s' flags %d \n", real_name, flags);
+					csync_debug(2, "csync_file_args: chec'{}' flags {}", real_name, flags);
 					csync_check(db, real_name, flags);
 				}
 			}
@@ -678,13 +673,6 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 		}
 	}
 	return realnames;
-}
-
-static void select_recursive(char *db_encoded, char **where_rec)
-{
-	ASPRINTF(where_rec, " filename > '%s/' "
-						" and filename < '%s0'",
-			 db_encoded, db_encoded);
 }
 
 static int csync_read_config(const char *cfgname, int conn, int mode)
@@ -708,17 +696,17 @@ static int csync_read_config(const char *cfgname, int conn, int mode)
 				if (mode & MODE_INETD)
 					conn_printf(conn, error);
 				else
-					csync_fatal(error);
+					csync_fatal("{}", error);
 				return -1;
 			}
 
 		ASPRINTF(&file_config, ETCDIR "/csync2_%s.cfg", cfgname);
 	}
 
-	csync_info(2, "Config-File:   %s\n", file_config);
+	csync_info(2, "Config-File:   {}", file_config);
 	yyin = fopen(file_config, "r");
 	if (!yyin)
-		csync_fatal("Can not open config file `%s': %s\n", file_config, strerror(errno));
+		csync_fatal("Can not open config file `{}': {}", file_config, strerror(errno));
 	yyparse();
 	fclose(yyin);
 	yylex_destroy();
@@ -774,12 +762,13 @@ int csync2_main(int argc, char **argv)
 {
 	long mode = MODE_NONE;
 	int flags = 0;
-	int opt, i;
-
-	// Default db_decodes (version 1 scheme)
-	db_decode = url_decode;
+	int opt;
 
 	ringbuffer_init();
+
+	// Configure modern logger to match old behavior
+	csync2::g_logger.configure(csync2::LogLevel::Debug, csync_level_debug, csync2::Logger::Output::Console);
+	csync2::g_logger.set_timestamps(false);
 
 	csync_out_debug = stderr;
 
@@ -812,10 +801,6 @@ int csync2_main(int argc, char **argv)
 			g_db_version = 1;
 			cmd_db_version = 1;
 			break;
-		case '0':
-			g_update_format = "v1-v2";
-			cmd_db_version = 1;
-			break;
 		case '2':
 			g_db_version = 2;
 			break;
@@ -838,14 +823,14 @@ int csync2_main(int argc, char **argv)
 			csync_dump_dir_fd = atoi(optarg);
 			if (write(csync_dump_dir_fd, 0, 0) < 0)
 			{
-				csync_fatal("Invalid dump_dir_fd %d: %s\n", csync_dump_dir_fd, strerror(errno));
+				csync_fatal("Invalid dump_dir_fd {}: {}", csync_dump_dir_fd, strerror(errno));
 			}
 			break;
 		case 's':
 			csync_timestamp_out = fopen(optarg, "a");
 			if (!csync_timestamp_out)
 			{
-				csync_fatal("Can't open timestanp file `%s': %s\n", optarg, strerror(errno));
+				csync_fatal("Can't open timestanp file `{}': {}", optarg, strerror(errno));
 			}
 			break;
 		case 'F':
@@ -891,10 +876,11 @@ int csync2_main(int argc, char **argv)
 			dbdir = optarg;
 			break;
 		case 'N':
-			snprintf(g_myhostname, 256, "%s", optarg);
+			g_myhostname = optarg;
 			break;
 		case 'v':
 			csync_level_debug++;
+			csync2::g_logger.setDebugLevel(csync_level_debug);
 			break;
 		case 'l':
 			csync_syslog = 1;
@@ -1019,10 +1005,10 @@ int csync2_main(int argc, char **argv)
 			break;
 		case 'Y':
 			flags |= FLAG_IGN_MTIME;
-			csync_debug(1, "Ignoring MTIME: %d\n", flags);
+			csync_debug(1, "Ignoring MTIME: {}", flags);
 			break;
 		case 'y':
-			csync_debug(1, "Zero MTIME for tests.\n");
+			csync_debug(1, "Zero MTIME for tests.");
 			csync_zero_mtime_debug = 1;
 			break;
 		case 'E':
@@ -1035,16 +1021,13 @@ int csync2_main(int argc, char **argv)
 		}
 	}
 
-	if (optind < argc && mode != MODE_HINT && mode != MODE_MARK && !(mode & MODE_FORCE) && mode != MODE_SIMPLE && !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE && mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE && mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL && g_update_format == 0)
+	if (optind < argc && mode != MODE_HINT && mode != MODE_MARK && !(mode & MODE_FORCE) && mode != MODE_SIMPLE && !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE && mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE && mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL)
 		help(argv[0]);
 
 	if (mode == MODE_TEST_SYNC && optind != argc && optind + 1 != argc && optind + 2 != argc && optind + 3 != argc)
 		help(argv[0]);
 
 	if (mode == MODE_LIST_SYNC && optind + 2 != argc)
-		help(argv[0]);
-
-	if (mode == MODE_NONE && g_update_format == 0)
 		help(argv[0]);
 
 	/* Some inetd connect stderr to stdout.  The debug level messages on
@@ -1054,35 +1037,36 @@ int csync2_main(int argc, char **argv)
 		csync_syslog = 1;
 	}
 
-	if (*g_myhostname == 0)
+	if (g_myhostname.empty())
 	{
-		gethostname(g_myhostname, 256);
-		g_myhostname[255] = 0;
+		char hostname_buf[256];
+		gethostname(hostname_buf, 256);
+		hostname_buf[255] = 0;
+		g_myhostname = hostname_buf;
 	}
 
-	for (i = 0; g_myhostname[i]; i++)
-		g_myhostname[i] = tolower(g_myhostname[i]);
+	std::transform(g_myhostname.begin(), g_myhostname.end(), g_myhostname.begin(), ::tolower);
 
 	int listenfd = 0;
 	long server_standalone = mode & MODE_STANDALONE;
 	std::string myport(csync_port);
-	csync_debug(3, "csync_hostinfo %p\n", csync_hostinfo);
-	csync_debug(3, "standalone: %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
+	csync_debug(3, "csync_hostinfo {}", static_cast<void*>(csync_hostinfo));
+	csync_debug(3, "standalone: {} server_standalone > 0: {}", server_standalone, server_standalone > 0);
 	if (server_standalone > 0)
 	{
-		csync_info(3, "server standalone %ld server_standalone > 0: %d\n", server_standalone, server_standalone > 0);
 		if (!csync_port_cmdline)
 		{
 			// We need to read the config file to determine a eventual port override
 			// port override needs to be consistent over all configurations
-			csync_debug(3, "No command line port. Reading config\n");
+			csync_debug(3, "No command line port. Reading config");
 			csync_read_config(g_cfgname, 0, MODE_NONE);
+			csync_debug(3, "After config read, csync_hostinfo = {}", static_cast<void*>(csync_hostinfo));
 			struct csync_hostinfo *myhostinfo = csync_hostinfo;
 			while (myhostinfo != NULL)
 			{
-				if (!strcmp(myhostinfo->name, g_myhostname))
+			    if (myhostinfo->name && g_myhostname == myhostinfo->name)
 				{
-					csync_debug(1, "Found my alias %s %s %s \n", myhostinfo->name, myhostinfo->host,
+					csync_debug(1, "Found my alias {} {} {}", myhostinfo->name, myhostinfo->host,
 								myhostinfo->port);
 					myport = myhostinfo->port;
 					break;
@@ -1117,7 +1101,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	db_conn_p db = NULL;
 	int first = 1;
 nofork:
-	csync_debug(4, "Mode: %d Flags: %d PID: %d\n", mode, flags, getpid());
+	csync_debug(4, "Mode: {} Flags: {} PID: {}", mode, flags, getpid());
 	// init syslog if needed.
 	if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */)
 	{
@@ -1132,7 +1116,7 @@ nofork:
 		sd_pid_notify(getpid(), 0, "READY=1");
 #endif
 		if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK), listenfd, &conn))
-			return 1; // Parent returns
+			return 1; // server failure returns
 	}
 
 	// print time (if -t is set)
@@ -1142,7 +1126,7 @@ nofork:
 	/* In inetd (actually any server) mode we need to read the module name from the peer
 	 * before we open the config file and database
 	 */
-	std::string hostname = check_string(g_myhostname);
+	std::string hostname = check_string(g_myhostname.c_str());
 	if (server)
 	{
 		// Connected with client (after accept)
@@ -1201,15 +1185,10 @@ nofork:
 	if (cfg_db_version != -1)
 	{
 		if (cmd_db_version)
-			csync_info(0, "Command line overrides configuration DB protocol version: %d -> %d\n", cfg_db_version,
+			csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}", cfg_db_version,
 					   cmd_db_version);
 		else
 			g_db_version = cfg_db_version;
-	}
-	if (g_db_version == 2)
-	{
-		//	db_encode = csync_db_escape;
-		db_decode = csync_decode_v2;
 	}
 
 	if (cfg_protocol_version != -1)
@@ -1218,7 +1197,7 @@ nofork:
 	if (cfg_ip_version != -1)
 	{
 		if (cmd_ip_version)
-			csync_info(0, "Command line overrides configuration ip protocol version: %d -> %d\n", cfg_ip_version,
+			csync_info(0, "Command line overrides configuration ip protocol version: {} -> {}", cfg_ip_version,
 					   g_ip_version);
 		else if (cfg_ip_version == 4)
 			g_ip_version = AF_INET;
@@ -1233,25 +1212,25 @@ nofork:
 
 	/* Read database name from config unless it's overridden from command line */
 	if (!csync_database)
-		csync_database = db_default_database(dbdir, g_myhostname, g_cfgname);
+		csync_database = db_default_database(dbdir, g_myhostname.c_str(), g_cfgname);
 
-	csync_info(2, "My hostname is %s.\n", g_myhostname);
-	csync_info(2, "Database File: %s\n", csync_database);
-	csync_info(2, "DB Version:    %d\n", g_db_version);
-	csync_info(2, "IP Version:    %s\n", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
-	csync_info(3, "GIT:           %s\n", CSYNC_GIT_VERSION);
-
+	csync_info(2, "My hostname is {}.", g_myhostname.c_str());
+	csync_info(2, "Database File: {}", csync_database);
+	csync_info(2, "DB Version:    {}", g_db_version);
+	csync_info(2, "IP Version:    {}", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
+	csync_info(3, "GIT:           {}", CSYNC_GIT_VERSION);
 	{
 		int found = 0;
 		const struct csync_group *g;
-		for (g = csync_group; g; g = g->next)
+		for (g = csync_group; g; g = g->next) {
 			if (g->myname)
 			{
 				found = 1;
 				break;
 			}
+		}
 		if (!found)
-			csync_fatal("This host (%s) is not a member of any configured group.\n", g_myhostname);
+			csync_fatal("This host ({}) is not a member of any configured group.", g_myhostname.c_str());
 	}
 
 	db = csync_db_open(csync_database);
@@ -1259,31 +1238,21 @@ nofork:
 	// Handles NULL
 	csync_redis_connect(csync_redis);
 
+	for (int i = optind; i < argc; i++)
+		on_cygwin_lowercase(argv[i]);
+
+   	if (server)
+	{
+		conn_printf(conn, "OK (cmd_finished).\n");
+		csync_daemon_session(conn, conn_out, db, protocol_version, mode);
+	};
+
 	if (mode == MODE_UPGRADE_DB)
 	{
 		int rc = db->upgrade_db();
 		csync_db_close(db);
 		exit(rc);
 	}
-
-	if (g_update_format)
-	{
-		if (!strcmp(g_update_format, "v1-v2"))
-		{
-			int rc = db->update_format_v1_v2("/", 1, 1);
-			csync_db_close(db);
-			exit(rc);
-		}
-		else
-		{
-			printf("Update format %s unknown\n", g_update_format);
-			db->upgrade_db();
-			csync_db_close(db);
-			exit(1);
-		}
-	}
-	for (int i = optind; i < argc; i++)
-		on_cygwin_lowercase(argv[i]);
 
 	if (mode == MODE_SIMPLE)
 	{
@@ -1314,7 +1283,7 @@ nofork:
 			}
 			else
 			{
-				csync_warn(0, "%s did not match a real path. Skipping.\n", argv[i]);
+				csync_warn(0, "{} did not match a real path. Skipping.\n", argv[i]);
 			};
 			free_realname(realname);
 		};
@@ -1337,7 +1306,7 @@ nofork:
 			std::set<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
 			if (realnames.empty())
 			{
-				csync_debug(0, "No argument was matched in configuration\n");
+				csync_debug(0, "No argument was matched in configuration");
 				exit(2);
 			}
 			// No manual cleanup needed - strings automatically freed when vector goes out of scope
@@ -1370,7 +1339,7 @@ nofork:
 			}
 			else
 			{
-				csync_debug(0, "No argument was matched in configuration\n");
+				csync_debug(0, "No argument was matched in configuration");
 			}
 			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
@@ -1392,15 +1361,9 @@ nofork:
 			}
 			else
 			{
-				csync_warn(0, "%s is not a real path\n", argv[i]);
+				csync_warn(0, "{} is not a real path\n", argv[i]);
 			}
 		}
-	};
-
-	if (server)
-	{
-		conn_printf(conn, "OK (cmd_finished).\n");
-		csync_daemon_session(conn, conn_out, db, protocol_version, mode);
 	};
 
 	if (mode == MODE_MARK)
@@ -1442,13 +1405,13 @@ nofork:
 		if (optind < argc)
 		{
 			fileno = open(argv[optind], O_RDONLY);
-			csync_debug(1, "monitor: Opening %s %d \n", argv[optind], fileno);
+			csync_debug(1, "monitor: Opening {} {}", argv[optind], fileno);
 			// TODO load "saved position" in cases of restart
 			lseek(fileno, 0, SEEK_END);
 		}
 		else
 		{
-			csync_debug(1, "tailing stdin \n");
+			csync_debug(1, "tailing stdin");
 		}
 		csync_tail(db, fileno, flags);
 	};
@@ -1463,12 +1426,6 @@ nofork:
 	if (mode == MODE_TEST_SYNC)
 	{
 		char *realname;
-		/*
-		 if (init_run && init_run_with_removals)
-		 init_run |= 2;
-		 if (init_run && init_run_straight)
-		 init_run |= 4;
-		 */
 		switch (argc - optind)
 		{
 		case 3:
@@ -1502,7 +1459,7 @@ nofork:
 			break;
 		}
 	};
-	csync_debug(3, "MODE %ld\n", mode);
+	csync_debug(3, "MODE {}", mode);
 	if (mode == MODE_LIST_DIRTY)
 	{
 		retval = 0;
@@ -1522,7 +1479,7 @@ nofork:
 			realname = getrealfn(argv[optind]);
 		}
 		if (g_active_grouplist)
-			csync_fatal("Never run -R with -G!\n");
+			csync_fatal("Never run -R with -G!");
 		// TODO add "path" to limit clean up
 		csync_remove_old(db, realname != NULL ? realname : "");
 		free_realname(realname);
@@ -1535,11 +1492,11 @@ nofork:
 	// g_active_peers is now managed by std::set, no need to free
 	if (mode & MODE_DAEMON)
 	{
-		csync_info(4, "Connection closed. Pid %d mode %d \n", csync_server_child_pid, mode);
+		csync_info(4, "Connection closed. Pid {} mode {}", csync_server_child_pid, mode);
 
 		if (mode & MODE_NOFORK)
 		{
-			csync_debug(1, "goto nofork.\n");
+			csync_debug(1, "goto nofork.");
 			goto nofork;
 		}
 	}
@@ -1550,7 +1507,7 @@ nofork:
 		if (csync_error_count > 0)
 			csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
 		else
-			csync_info(1, "Finished succesfully in %d seconds.\n", run_time);
+			csync_info(1, "Finished succesfully in {} seconds.", run_time);
 	}
 	csync_printtotaltime();
 
@@ -1569,7 +1526,7 @@ std::string check_string(const char *str)
 {
 	if (!str)
 	{
-		csync_fatal("String is NULL\n");
+		csync_fatal("String is NULL");
 	}
 	if (str[0] == '\0')
 	{

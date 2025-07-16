@@ -66,7 +66,10 @@ FileType FileRecord::map_file_type(std::filesystem::file_type  type) {
     case std::filesystem::file_type::unknown:
         return FileType::Unknown;
     }
+    return FileType::Unknown;
 }
+
+
 // Create a FileRecord from filesystem metadata
 FileRecord FileRecord::from_filesystem(const std::filesystem::path& path) {
     FileRecord record;
@@ -82,7 +85,7 @@ FileRecord FileRecord::from_filesystem(const std::filesystem::path& path) {
         record.file_size(std::filesystem::file_size(path));
 
         // Get modification time
-        auto file_time = std::filesystem::last_write_time(path);
+        // auto file_time = std::filesystem::last_write_time(path);
         // record.modification_time(file_time);
 
         // Get inode and device info
@@ -148,7 +151,7 @@ FileRecord FileRecord::from_database(const SqlRow& row) {
 bool FileRecord::is_valid() const {
     // Basic validation checks
     if (filename().empty()) return false;
-    if (metadata_.file_size < 0) return false;
+    //if (metadata_.file_size < 0) return false;
 
     // Check for required metadata
     //if (!checksum()) return false;

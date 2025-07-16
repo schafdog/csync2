@@ -29,7 +29,7 @@
 extern int conn_open(peername_p myhostname, peername_p peername, int ip_version);
 extern int conn_set(int infd, int outfd);
 extern int conn_activate_ssl(int server_role, int in, int out);
-extern int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal);
+extern int conn_check_peer_cert(DatabaseConnection* conn, peername_p peername, int callfatal);
 extern int conn_close(int conn);
 
 extern ssize_t conn_read(int fd, char *buf, size_t count);

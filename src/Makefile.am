@@ -23,16 +23,16 @@ bin_SCRIPTS = ../directory_size.sh
 
 man_MANS = csync2.1
 database_SOURCES = database_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \
-                db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp
+                db_api.cpp db_sql.cpp db_sqlite.cpp db_mysql.cpp db_postgres.cpp
 
 common_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l \
 	check.cpp file_record.cpp file_record.hpp \
-	checktxt.cpp global.cpp daemon.cpp db.cpp sql_query.cpp \
+	checktxt.cpp global.cpp daemon.cpp db.cpp \
 	error.cpp error.hpp getrealfn.cpp modern_logging.cpp \
 	groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
-	db_api.cpp db_sql.cpp db_sqlite.cpp db_sqlite2.cpp db_mysql.cpp db_postgres.cpp \
+	db_api.cpp db_sql.cpp db_sqlite.cpp db_mysql.cpp db_postgres.cpp \
 	ringbuffer.cpp buffer.cpp uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \
-	csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp db_sqlite2.hpp dl.hpp \
+	csync2.hpp db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp dl.hpp \
 	redis.hpp redis.cpp modern_logging.hpp \
 	database_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \
 	digest.cpp digest.hpp version.hpp \
@@ -56,10 +56,13 @@ csync2_LDADD = $(LIBGNUTLS_LIBS) $(LIBSYSTEMD_LIBS) $(MYSQL_LIBS) $(LIBHIREDIS_L
                $(LIBOPENSSL_LIBS) $(LIBPQ_LIBS) $(LIBBSD_LIBS) $(LIBRSYNC_LIBS) \
                -ldl -lsqlite3
 
+# Link flags for build configuration
+AM_LDFLAGS = $(BUILD_LDFLAGS)
+
 # --- Tests for the new DB layer ---
 check_PROGRAMS = test_database
 
-test_database_SOURCES = $(database_SOURCES) test_database.cpp global.cpp utils.hpp error.cpp sql_query.cpp ringbuffer.cpp db.cpp check.cpp modern_logging.cpp prefixsubst.cpp checktxt.cpp groups.cpp digest.cpp action.cpp buffer.cpp redis.cpp urlencode.cpp uidgid.cpp
+test_database_SOURCES = $(database_SOURCES) test_database.cpp global.cpp utils.hpp error.cpp ringbuffer.cpp db.cpp check.cpp modern_logging.cpp prefixsubst.cpp checktxt.cpp groups.cpp digest.cpp action.cpp buffer.cpp redis.cpp urlencode.cpp uidgid.cpp
 test_database_LDADD = $(csync2_LDADD)
 
 
@@ -99,7 +102,7 @@ AM_CXXFLAGS=-DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	$(CXX_STD_FLAG) -g -O0 -Wno-deprecated-declarations \
+	$(CXX_STD_FLAG) $(BUILD_CXXFLAGS) -Wno-deprecated-declarations \
 	$(WARNING_CXXFLAGS)
 
 AM_CPPFLAGS  = -D'DBDIR="$(localstatedir)/lib/csync2"'
@@ -110,7 +113,7 @@ AM_CFLAGS = -DGIT_VERSION=\"$(GIT_VERSION)\" \
 	$(LIBGNUTLS_CFLAGS) $(LIBSYSTEMD_CFLAGS) \
 	$(MYSQL_CFLAGS) $(LIBPQ_CFLAGS) \
 	$(LIBHIREDIS_CFLAGS) $(LIBOPENSSL_CFLAGS) $(LIBRSYNC_CFLAGS) \
-	-g -O0 -Wno-deprecated-declarations \
+	$(BUILD_CXXFLAGS) -Wno-deprecated-declarations \
 	$(WARNING_CFLAGS)
 
 # Explicit rules to compile scanner and parser as C
@@ -150,21 +153,84 @@ warnings-count:
 	@echo "Counting warnings..."
 	@$(MAKE) -s 2>&1 | grep -c "warning:" || echo "0"
 
-# Debug build with extra debugging features
-debug-clean: clean
-	@echo "Building with debug symbols and AddressSanitizer..."
-	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
-	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
+# Enhanced build targets
+# Note: These targets override the configure-time settings
 
-# Debug build with extra debugging features
-debug:
+# Optimized release build
+release: clean
+	@echo "Building optimized release..."
+	@$(MAKE) BUILD_CXXFLAGS="-O2 -DNDEBUG -g1" BUILD_LDFLAGS=""
+
+# Release build with debug symbols
+release-debug: clean
+	@echo "Building release with debug symbols..."
+	@$(MAKE) BUILD_CXXFLAGS="-O2 -DNDEBUG -g" BUILD_LDFLAGS=""
+
+# Debug build with AddressSanitizer
+debug: clean
 	@echo "Building with debug symbols and AddressSanitizer..."
-	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
-	         CFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer"
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=address -fno-omit-frame-pointer" \
+	         BUILD_LDFLAGS="-fsanitize=address"
 
 # Debug build without AddressSanitizer (for use with other tools like Valgrind)
 debug-simple: clean
 	@echo "Building with debug symbols only..."
-	@$(MAKE) CXXFLAGS="-g -O0 -DDEBUG" CFLAGS="-g -O0 -DDEBUG"
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG" BUILD_LDFLAGS=""
+
+# Profile-guided optimization build
+profile: clean
+	@echo "Building for profiling..."
+	@$(MAKE) BUILD_CXXFLAGS="-O2 -pg -fprofile-arcs -ftest-coverage" \
+	         BUILD_LDFLAGS="-pg -fprofile-arcs -ftest-coverage"
+
+# Memory debugging build optimized for Valgrind
+valgrind: clean
+	@echo "Building for Valgrind..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG" BUILD_LDFLAGS=""
+
+# Thread sanitizer build
+thread-sanitizer: clean
+	@echo "Building with ThreadSanitizer..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=thread" \
+	         BUILD_LDFLAGS="-fsanitize=thread"
+
+# Memory sanitizer build (Clang only)
+memory-sanitizer: clean
+	@echo "Building with MemorySanitizer (Clang only)..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=memory -fno-omit-frame-pointer" \
+	         BUILD_LDFLAGS="-fsanitize=memory"
+
+# Undefined behavior sanitizer build
+ubsan: clean
+	@echo "Building with UndefinedBehaviorSanitizer..."
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fsanitize=undefined" \
+	         BUILD_LDFLAGS="-fsanitize=undefined"
+
+# Performance optimized build (maximum optimization)
+performance: clean
+	@echo "Building for maximum performance..."
+	@$(MAKE) BUILD_CXXFLAGS="-O3 -DNDEBUG -march=native -flto" \
+	         BUILD_LDFLAGS="-flto"
+
+# Test targets with different build configurations
+test-debug: debug
+	@echo "Running tests in debug mode..."
+	@$(MAKE) check
+
+test-release: release
+	@echo "Running tests in release mode..."
+	@$(MAKE) check
+
+test-sanitizer: debug
+	@echo "Running tests with AddressSanitizer..."
+	@$(MAKE) check
+
+# Show current build configuration
+show-config:
+	@echo "Current build configuration:"
+	@echo "  Build type: $(BUILD_TYPE)"
+	@echo "  CXXFLAGS: $(BUILD_CXXFLAGS)"
+	@echo "  LDFLAGS: $(BUILD_LDFLAGS)"
+	@echo "  AddressSanitizer: $(enable_asan)"
 
 FORCE:

@@ -1,5 +1,4 @@
 /* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
-
 #include "csync2.hpp"
 #include "check.hpp"
 #include "groups.hpp"
@@ -7,12 +6,17 @@
 #include "utils.hpp"
 #include "checktxt.hpp"
 #include "update.hpp"
+#include <string>
 #include <unistd.h>
 #include <time.h>
 #include "db_sql.hpp"
 #include "db.hpp"
-#include "sql_query.hpp"
 #include "ringbuffer.hpp"
+
+// C++20 std::format support
+#if __cplusplus >= 202002L && __has_include(<format>)
+    #include <format>
+#endif
 
 using namespace std;
 
@@ -58,14 +62,13 @@ const char* DbSql::escape(const std::string& string) {
 int DbSql::schema_version()
 {
 	int version = -1;
-	int rows = 0;
-	if ((rows = csync_db_sql(this, NULL, // "Failed to update table file",
-						 "update file set filename = NULL where filename = NULL ")) >= 0)
+	if (conn_->execute_update("schema_check_file",
+						 "update file set filename = NULL where filename = NULL ") >= 0)
 	{
 		version = 1;
 	}
 
-	if (csync_db_sql(this, NULL, // "Failed to show table host",
+	if (conn_->execute_update("schema_host",
 					 "update host set host = NULL where host = NULL") >= 0)
 	{
 		version = 2;
@@ -73,123 +76,122 @@ int DbSql::schema_version()
 	return version;
 }
 
-int DbSql::check_file(const char *file, const char *encoded, char **other, char *checktxt,
-							 struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no)
+int DbSql::check_file(filename_p    filename, char **other, char *checktxt,
+					  struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no)
 {
-	int db_flags = 0;
-	int db_version = this->version;
-    try {
-        auto rs = conn_->execute_query("check_file",
-                                     "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = ? "
-                                     "AND filename = ?",
-                                     g_myhostname, encoded);
+    int db_flags = 0;
+	auto rs = conn_->execute_query("check_file",
+			  "SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = ? "
+			  "AND filename = ? ",
+			  g_myhostname, filename);
+	int SQL_COUNT = 0;
+	while (rs->next())
+	{
+	    const std::string checktxt_db = rs->get_string(1);
+	    int db_version = csync_get_checktxt_version(checktxt_db.c_str());
+		if (db_version < 1 || db_version > 2)
+		{
+			csync_error(0, "Error extracting version from checktxt: {}", checktxt_db.c_str());
+		}
+		const char *checktxt_same_version = checktxt;
+		const std::string inode = rs->get_string(2);
+		const std::string device = rs->get_string(3);
+		const auto opt_digest = rs->get_string_optional(4);
+		*digest = opt_digest.has_value() ? buffer_strdup(buffer, opt_digest->c_str()) : NULL;
+		long mode = rs->get_long(5);
+		long size = rs->get_long(6);
+		long mtime = rs->get_long(7);
+		// Missing any value then upgrade
+		db_flags |= mode == 0 || size == 0 || mtime == 0 ? IS_UPGRADE : 0;
 
-        if (rs->next()) {
-            db_version = csync_get_checktxt_version(rs->get_string(1).c_str());
-            if (db_version < 1 || db_version > 2)
-            {
-                csync_error(0, "Error extracting version from checktxt: %s", rs->get_string(1).c_str());
-            }
-            const std::string checktxt_db = rs->get_string(1);
-            std::string checktxt_same_version = checktxt;
-            const std::string inode = rs->get_string(2);
-            const std::string device = rs->get_string(3);
-            auto digest_p = rs->get_string_optional(4);
-            *digest = digest_p.has_value() ? buffer_strdup(buffer, digest_p->c_str()) : NULL;
-            long mode = rs->get_long(5);
-            long size = rs->get_long(6);
-            long mtime = rs->get_long(7);
+		int ug_flag = 0;
+		if (strstr(checktxt_db.c_str(), ":user=") != NULL)
+			ug_flag |= SET_USER;
+		if (strstr(checktxt_db.c_str(), ":group=") != NULL)
+			ug_flag |= SET_GROUP;
+		struct stat old_stat;
+		int dev_inode;
+		if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
+		{
+			csync_info(2, "File {} has changed device:inode {}:{} -> {}:{}} {:o} \n",
+					   filename.c_str(), device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
 
-            // Missing any value then upgrade
-            db_flags |= (mode == 0 || size == 0 || mtime == 0 ? IS_UPGRADE : 0);
-
-            int ug_flag = 0;
-            if (strstr(checktxt_db.c_str(), ":user=") != NULL)
-                ug_flag |= SET_USER;
-            if (strstr(checktxt_db.c_str(), ":group=") != NULL)
-                ug_flag |= SET_GROUP;
-            struct stat old_stat;
-            int dev_inode;
-            if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
-            {
-                csync_info(2, "File %s has changed device:inode %s:%s -> %llu:%llu %o \n",
-                           file, device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
-
-                if (dev_inode == DEV_CHANGED)
-                {
-                    db_flags |= DEV_CHANGE;
-                    csync_info(2, "File %s has only changed device %s -> %llu\n", file, device.c_str(), file_stat->st_dev);
-                    *old_no = old_stat.st_dev;
-                }
-                else
-                    db_flags |= IS_UPGRADE;
-            }
-            if (!*digest && strstr(checktxt, "type=reg"))
-            {
-                db_flags |= CALC_DIGEST;
-                db_flags |= IS_UPGRADE;
-            }
-            if (db_version != this->version || ug_flag != (SET_USER | SET_GROUP))
-            {
-                checktxt_same_version = csync_genchecktxt_version(file_stat, file, ug_flag, db_version);
-                if (csync_cmpchecktxt(checktxt, checktxt_same_version.c_str()))
-                    db_flags |= IS_UPGRADE;
-            }
-            if (csync_cmpchecktxt(checktxt_same_version.c_str(), checktxt_db.c_str()))
-            {
-                int file_mode = file_stat->st_mode & S_IFMT;
-                int flag = OP_MOD;
-                if (file_mode != (mode & S_IFMT))
-                {
-                    csync_info(1, "File %s has changed mode %d => %d \n", file, (mode & S_IFMT), file_mode);
-                    flag = OP_MOD2;
-                    //*operation |= OP_SYNC;
-                    db_flags |= IS_UPGRADE;
-                }
-                if (S_ISDIR(file_mode))
-                    *operation = OP_MKDIR | flag;
-                else
-                    *operation = OP_NEW | flag;
-
-                csync_info(3, "%s has changed: \n    %s \nDB: %s %s\n",
-                           file, checktxt_same_version.c_str(), checktxt_db.c_str(), csync_operation_str(*operation));
-                csync_info(3, "ignore flags: %d\n", ignore_flags);
-                if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
-                    db_flags |= IS_UPGRADE;
-                else
-                    db_flags |= IS_DIRTY;
-            }
-        } else {
-			csync_info(2, "New file: %s\n", file);
-			*operation = OP_NEW;
-			if (S_ISREG(file_stat->st_mode))
+			if (dev_inode == DEV_CHANGED)
 			{
-				db_flags |= CALC_DIGEST;
+				db_flags |= DEV_CHANGE;
+				csync_info(2, "File {} has only changed device {} -> {}}\n", filename.c_str(), device.c_str(), file_stat->st_dev);
+				*old_no = old_stat.st_dev;
 			}
-			else if (S_ISDIR(file_stat->st_mode))
+			else
+				db_flags |= IS_UPGRADE;
+		}
+		if (!*digest && strstr(checktxt, "type=reg"))
+		{
+			db_flags |= CALC_DIGEST;
+			db_flags |= IS_UPGRADE;
+		}
+		if (db_version != this->version || ug_flag != (SET_USER | SET_GROUP))
+		{
+			checktxt_same_version = csync_genchecktxt_version(file_stat, filename, ug_flag, db_version);
+			if (csync_cmpchecktxt(checktxt, checktxt_same_version))
+				db_flags |= IS_UPGRADE;
+		}
+		if (csync_cmpchecktxt(checktxt_same_version, checktxt_db.c_str()))
+		{
+			int file_mode = file_stat->st_mode & S_IFMT;
+			int flag = OP_MOD;
+			if (file_mode != (mode & S_IFMT))
 			{
-				*operation = OP_MKDIR;
+				csync_info(1, "File {} has changed mode {} => {} \n", filename.c_str(), (mode & S_IFMT), file_mode);
+				flag = OP_MOD2;
+				//*operation |= OP_SYNC;
+				db_flags |= IS_UPGRADE;
 			}
-			else if (S_ISLNK(file_stat->st_mode))
+			if (S_ISDIR(file_mode))
+				*operation = OP_MKDIR | flag;
+			else
+				*operation = OP_NEW | flag;
+
+			csync_info(3, "{} has changed: \n    {} \nDB: {} {}\n",
+					   filename.c_str(), checktxt_same_version, checktxt_db.c_str(), csync_operation_str(*operation));
+			csync_info(3, "ignore flags: {}\n", ignore_flags);
+			if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
+				db_flags |= IS_UPGRADE;
+			else
+				db_flags |= IS_DIRTY;
+		}
+		SQL_COUNT++;
+	}
+	if (SQL_COUNT == 0)
+	{
+		csync_info(2, "New file: {}\n", filename.c_str());
+		*operation = OP_NEW;
+		if (S_ISREG(file_stat->st_mode))
+		{
+			db_flags |= CALC_DIGEST;
+		}
+		else if (S_ISDIR(file_stat->st_mode))
+		{
+			*operation = OP_MKDIR;
+		}
+		else if (S_ISLNK(file_stat->st_mode))
+		{
+			// TODO get max path
+			int max = 1024;
+			char *target = static_cast<char *>(malloc(max));
+			int len = readlink(filename.c_str(), target, max - 1);
+			if (len > 0)
 			{
-				// TODO get max path
-				int max = 1024;
-				char *target = static_cast<char *>(malloc(max));
-				int len = readlink(file, target, max - 1);
-				if (len > 0)
-				{
-					target[len] = 0;
-					*other = buffer_strdup(buffer, target);
-				}
-				else
-					csync_error(0, "Failed to read link on %s\n", file);
-				free(target);
+				target[len] = 0;
+				*other = buffer_strdup(buffer, target);
 			}
-			db_flags |= IS_DIRTY;
-        }
-    } catch (const DatabaseError& e) {
-        csync_error(0, "Failed to check file: %s", e.what());
-    }
+			else
+				csync_error(0, "Failed to read link on {}\n", filename.c_str());
+			free(target);
+		}
+		db_flags |= IS_DIRTY;
+	}
+
 	return db_flags;
 }
 
@@ -217,10 +219,10 @@ int DbSql::is_dirty(peername_p str_peername, filename_p str_filename, int *opera
             } else {
                 *mode = 0;
             }
-            csync_info(3, "DbSql::is_dirty %s:%s %d %d\n", str_filename.c_str(), str_peername.c_str(), *operation, *mode);
+            csync_info(3, "DbSql::is_dirty {}:{} {} {}\n", str_filename.c_str(), str_peername.c_str(), *operation, *mode);
         }
     } catch (const DatabaseError& e) {
-        csync_error(0, "Failed to check if file is dirty: %s", e.what());
+        csync_error(0, "Failed to check if file is dirty: {}", e.what());
     }
 	return rc;
 }
@@ -231,44 +233,49 @@ int DbSql::list_dirty(const std::set<std::string> &active_peers, const char *rea
 	(void)recursive;
 
 	int retval = 0;
-	char *where = strdup("");
-	if (realname[0] != 0)
-	{
-		const char *db_encoded = escape(realname);
-		ASPRINTF(&where, " (filename = '%s' OR "
-						 "  filename LIKE '%s/%%') AND ",
-				 db_encoded, db_encoded);
-	}
-	SQL_BEGIN(this, "DB Dump - Dirty",
-			  "SELECT forced, myname, peername, filename, operation, op, (op & %u) AS type FROM dirty "
-			  "WHERE %s peername not in (SELECT host FROM host WHERE status = 1) AND myname = '%s' "
-			  "ORDER BY type, filename",
-			  OP_FILTER, where, g_myhostname)
-	{
-		const char *force_str = SQL_V(0);
-		const char *myname = db_decode(SQL_V(1));
-		const char *peername = db_decode(SQL_V(2));
-		const char *filename = db_decode(SQL_V(3));
-		const char *op_str = db_decode(SQL_V(4));
-		const char *op = db_decode(SQL_V(5));
-		const char *type = db_decode(SQL_V(6));
+    try {
+        std::string sql = "SELECT forced, myname, peername, filename, operation, op, (op & ?) AS type FROM dirty ";
+        if (realname[0] != 0) {
+            sql += "WHERE (filename = ? OR filename LIKE ?) AND ";
+        }
+        sql += " peername not in (SELECT host FROM host WHERE status = 1) AND myname = ? ORDER BY type, filename";
 
-		if (csync_find_next(0, filename, 0))
-		{
-			if (match_peer(active_peers, peername))
-			{
-				int force = 0;
-				if (force_str)
-					force = atoi(force_str);
-				printf("%s%s\t%s\t%s\t%s\t%s\t%s\n",
-					   (force ? "F " : "  "), op_str,
-					   myname, peername, filename, (op ? op : "NULL"), type);
-				retval++;
-			}
-		}
-	}
-	SQL_END;
-	free(where);
+        auto stmt = conn_->prepare("list_dirty", sql);
+        int param_index = 1;
+        stmt->bind(param_index++, OP_FILTER);
+        if (realname[0] != 0) {
+            stmt->bind(param_index++, realname);
+            stmt->bind(param_index++, std::string(realname) + "/%");
+        }
+        stmt->bind(param_index++, g_myhostname);
+
+        auto rs = stmt->execute_query();
+        while (rs->next()) {
+            auto force_str = rs->get_string_optional(1);
+            std::string myname = rs->get_string(2);
+            std::string peername = rs->get_string(3);
+            std::string filename = rs->get_string(4);
+            std::string op_str = rs->get_string(5);
+            auto op = rs->get_string_optional(6);
+            auto type = rs->get_string_optional(7);
+
+            if (csync_find_next(0, filename.c_str(), 0))
+            {
+                if (match_peer(active_peers, peername.c_str()))
+                {
+                    int force = 0;
+                    if (force_str.has_value() && !force_str->empty())
+                        force = atoi(force_str->c_str());
+                    printf("%s%s\t%s\t%s\t%s\t%s\t%s\n",
+                           (force ? "F " : "  "), op_str.c_str(),
+                           myname.c_str(), peername.c_str(), filename.c_str(), (op.has_value() ? op->c_str() : "NULL"), (type.has_value() ? type->c_str() : "NULL"));
+                    retval++;
+                }
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to list dirty files: {}", e.what());
+    }
 
 	return retval;
 }
@@ -276,21 +283,29 @@ int DbSql::list_dirty(const std::set<std::string> &active_peers, const char *rea
 textlist_p DbSql::non_dirty_files_match(filename_p pattern)
 {
 	textlist_p tl = 0;
-	SQL_BEGIN(this, "Get non-dirty files from file table",
-			  "SELECT filename, checktxt, digest FROM file WHERE hostname = '%s' AND filename like '%s%%' "
-			  " AND filename not in (select filename from dirty where myname = '%s' AND filename like '%s%%')"
-			  " ORDER by filename ASC",
-			  g_myhostname, pattern.c_str(), g_myhostname, pattern.c_str())
-	{
-		filename_p filename = db_decode(SQL_V(0));
-		const char *checktxt = db_decode(SQL_V(1));
-		const char *digest = db_decode(SQL_V(2));
-		if (compare_files(filename, pattern, 0 /*recursive*/))
-		{
-			textlist_add3(&tl, filename, checktxt, digest, 0);
-		}
-	}
-	SQL_END;
+    try {
+        std::string sql = "SELECT filename, checktxt, digest FROM file WHERE hostname = ? AND filename like ? "
+                          " AND filename not in (select filename from dirty where myname = ? AND filename like ?)"
+                          " ORDER by filename ASC";
+        auto stmt = conn_->prepare("non_dirty_files_match", sql);
+        stmt->bind(1, g_myhostname);
+        stmt->bind(2, std::string(pattern) + "%");
+        stmt->bind(3, g_myhostname);
+        stmt->bind(4, std::string(pattern) + "%");
+
+        auto rs = stmt->execute_query();
+        while (rs->next()) {
+            std::string filename = rs->get_string(1);
+            std::string checktxt = rs->get_string(2);
+            auto digest = rs->get_string_optional(3);
+            if (compare_files(filename.c_str(), pattern, 0 /*recursive*/))
+            {
+                textlist_add3(&tl, filename.c_str(), checktxt.c_str(), digest.has_value() ? digest->c_str() : NULL, 0);
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to get non-dirty files: {}", e.what());
+    }
 
 	return tl;
 }
@@ -306,11 +321,12 @@ textlist_p DbSql::get_dirty_hosts()
                                      g_myhostname);
 
         while (rs->next()) {
-            textlist_add(&tl, db_decode(rs->get_string(1).c_str()), 0);
-            csync_debug(3, "dirty host %s \n", tl->value);
+            std::string peername = rs->get_string(1);
+            textlist_add(&tl, peername.c_str(), 0);
+            csync_debug(3, "dirty host {} \n", tl->value);
         }
     } catch (const DatabaseError& e) {
-        csync_error(0, "Failed to get dirty hosts: %s", e.what());
+        csync_error(0, "Failed to get dirty hosts: {}", e.what());
     }
 
 	return tl;
@@ -333,7 +349,7 @@ int DbSql::upgrade_db()
 			char *prefix_encoded = strdup(url_encode(prefix));
 			const char *path_encoded = url_encode(p->path);
 
-			csync_info(1, "Replace prefix %s with path %s (%s)", prefix_encoded, p->path, path_encoded);
+			csync_info(1, "Replace prefix {} with path {} ({})", prefix_encoded, p->path, path_encoded);
             conn_->execute_update("upgrade_db",
                                 "UPDATE file set filename=replace(filename,?, ?) WHERE filename like ?", prefix_encoded,
 				path_encoded, prefix_encoded);
@@ -353,11 +369,12 @@ textlist_p DbSql::get_hints()
                                      "SELECT filename, recursive FROM hint");
 
         while (rs->next()) {
-            textlist_add(&tl, db_decode(rs->get_string(1).c_str()),
+            std::string filename = rs->get_string(1);
+            textlist_add(&tl, filename.c_str(),
                          atoi(rs->get_string(2).c_str()));
         }
     } catch (const DatabaseError& e) {
-        csync_error(0, "Failed to get hints: %s", e.what());
+        csync_error(0, "Failed to get hints: {}", e.what());
     }
 	return tl;
 };
@@ -375,85 +392,6 @@ static std::string csync_generate_recursive_sql_placeholder(int recursive, int p
     return sql_recursive;
 }
 
-static char *csync_generate_recursive_sql(const char *file_encoded, int recursive, int prepend_where, int append_and)
-{
-	char *where_rec;
-	const char *where = "WHERE";
-	const char *and_str = " AND ";
-	if (prepend_where == 0)
-		where = "";
-	if (append_and == 0)
-		and_str = "";
-
-	if (recursive)
-	{
-		if (file_encoded == NULL || !strcmp(file_encoded, "/"))
-			ASPRINTF(&where_rec, "%s", "");
-		else
-		{
-			ASPRINTF(&where_rec, "%s (filename = '%s' OR filename LIKE '%s/%%') %s", where, file_encoded, file_encoded,
-					 and_str);
-		}
-	}
-	else
-	{
-		if (file_encoded != NULL)
-			ASPRINTF(&where_rec, "%s filename = '%s' %s", where, file_encoded, and_str);
-		else
-			// Also recursive
-			ASPRINTF(&where_rec, "%s", "");
-	}
-	return where_rec;
-}
-
-// No longer in use
-int DbSql::update_format_v1_v2(filename_p file, int recursive, int do_it)
-{
-	textlist_p tl = 0, t;
-
-	int total = 0, found = 0;
-	const char *file_enc = url_encode(file);
-	char *where_rec = csync_generate_recursive_sql(file_enc, recursive, 0, 1);
-	SQL_BEGIN(this, "Upgrade to v1-v2",
-			  "SELECT filename, checktxt FROM file WHERE "
-			  "%s"
-			  "hostname = '%s' "
-			  "ORDER BY filename",
-			  where_rec, g_myhostname)
-	{
-		filename_p filename = url_decode(SQL_V(0));
-		const char *checktxt = url_decode(SQL_V(1));
-		const char *db_filename = escape(filename);
-		// Differ then add
-		if (strcmp(db_filename, SQL_V(0)))
-		{
-			csync_info(1, "URL encode %s => DB encode %s ", SQL_V(0), db_filename);
-			textlist_add2(&tl, filename, checktxt, 0);
-			found++;
-		}
-		// this->free(this, db_filename);
-		total++;
-	}
-	SQL_END;
-	printf("Found %d files out of %d to upgrade.\n", found, total);
-	if (do_it)
-		for (t = tl; t != 0; t = t->next)
-		{
-			const char *encoded = escape(t->value);
-            conn_->execute_update("update_format_v1_v2_file",
-                                "UPDATE file set filename=? WHERE filename = ?", encoded, url_encode(t->value));
-
-            conn_->execute_update("update_format_v1_v2_dirty",
-                                "UPDATE dirty set filename=? WHERE filename = ?", encoded, url_encode(t->value));
-			// this->free(this, encoded);
-			total--;
-		}
-
-	textlist_free(tl);
-	free(where_rec);
-	return 0;
-};
-
 void DbSql::force(const char *realname, int recursive)
 {
     if (recursive) {
@@ -466,14 +404,13 @@ void DbSql::force(const char *realname, int recursive)
     }
 }
 
-void DbSql::mark(const std::set<std::string>& active_peerlist, const char *realname, int recursive)
+void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p filename, int recursive)
 {
-	if (csync_check_usefullness(realname, recursive) == -1)
+	if (csync_check_usefullness(filename, recursive) == -1)
 		return; // Skipping
 
 	struct stat file_st;
-	const char *db_encoded = escape(realname);
-	int rc = stat(realname, &file_st);
+	int rc = stat(filename.c_str(), &file_st);
 	time_t mtime = time(NULL);
 	char *checktxt = NULL;
 	char *device = NULL;
@@ -485,31 +422,32 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const char *realn
 		mode = file_st.st_mode;
 		// calc checktxt, device, inode
 	}
-	csync_mark(this, realname, "", active_peerlist, OP_MARK, checktxt, device, inode, mode, mtime);
+	// Duplicate mark
+	csync_mark(this, filename, "", active_peerlist, OP_MARK, checktxt, device, inode, mode, mtime);
 
 	if (recursive)
 	{
 		textlist_p tl = 0;
 		// Missing marking files only in FS
-		char *where_rec = csync_generate_recursive_sql(db_encoded, recursive, 0, 1);
+		std::string where_rec = csync_generate_recursive_sql_placeholder(recursive, 1);
+		std::string sql = "SELECT filename, mode, checktxt, digest, device, inode, mtime FROM file "
+                          "WHERE hostname = ? ";
+        sql += where_rec + "ORDER BY filename DESC";
 
-		SQL_BEGIN(this, "Adding dirty entries recursively",
-				  "SELECT filename, mode, checktxt, digest, device, inode, mtime FROM file "
-				  "WHERE %s hostname = '%s' ORDER BY filename DESC",
-				  where_rec, g_myhostname)
+		auto rs  = conn_->execute_query("mark_recursive", sql, g_myhostname, filename, filename + "/%");
+
+		while (rs->next())
 		{
-			const char *filename = SQL_V(0);
-			int db_mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
-			const char *db_checktxt = SQL_V(2);
-			// const char *digest   = SQL_V(3);
-			const char *db_device = SQL_V(4);
-			const char *db_inode = SQL_V(5);
-			const char *db_mtime_str = SQL_V(6);
-			int db_mtime = atoi(db_mtime_str);
-			textlist_add5(&tl, filename, db_checktxt, db_device, db_inode, db_mtime_str, db_mode, db_mtime);
+			const std::string db_filename = rs->get_string(1);
+			int db_mode = rs->get_string_optional(2).has_value() ? atoi(rs->get_string_optional(2)->c_str()) : 0;
+			const std::string db_checktxt = rs->get_string(3);
+			// const char *digest   = rs->get_string(4);
+			const std::string db_device = rs->get_string(5);
+			const std::string db_inode = rs->get_string(6);
+			const std::string db_mtime_str = rs->get_string(7);
+			int db_mtime = atoi(db_mtime_str.c_str());
+			textlist_add5(&tl, db_filename, db_checktxt, db_device, db_inode, db_mtime_str, db_mode, db_mtime);
 		}
-		SQL_END;
-		free(where_rec);
 		textlist_p ptr = tl;
 		while (tl != 0)
 		{
@@ -538,35 +476,44 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const char *realn
 void DbSql::list_hint()
 {
 	try {
-		SqlQuery query(this, "DB Dump - Hint",
+		auto rs = conn_->execute_query("DB Dump - Hint",
 					   "SELECT recursive, filename FROM hint ORDER BY filename");
-		while (query.next()) {
-			printf("%s\t%s\n", query.getColumnText(0), db_decode(query.getColumnText(1)));
+		while (rs->next()) {
+			printf("%s\t%s\n", rs->get_string(1).c_str(), rs->get_string(2).c_str());
 		}
 	} catch (const std::runtime_error& e) {
-		csync_fatal("Failed to list hints: %s\n", e.what());
+		csync_fatal("Failed to list hints: {}\n", e.what());
 	}
 }
 
 void DbSql::list_files(filename_p realname)
 {
-	const char *db_encoded = escape(realname);
-	char *where = csync_generate_recursive_sql(db_encoded, 1, 0, 1);
+    try {
+        std::string sql = "SELECT checktxt, filename FROM file WHERE ";
+        if (realname[0] != 0) {
+            sql += "(filename = ? OR filename LIKE ?) AND ";
+        }
+        sql += " hostname = ? ORDER BY filename";
 
-	SQL_BEGIN(this, "DB Dump - File",
-			  "SELECT checktxt, filename FROM file WHERE %s hostname = '%s'"
-			  " ORDER BY filename",
-			  where, g_myhostname)
-	{
-		if (csync_find_next(0, db_decode(SQL_V(1)), 0))
-		{
-			printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
-		}
-	}
-	SQL_END;
+        auto stmt = conn_->prepare("list_files", sql);
+        int param_index = 1;
+        if (realname[0] != 0) {
+            stmt->bind(param_index++, realname);
+            stmt->bind(param_index++, std::string(realname) + "/%");
+        }
+        stmt->bind(param_index++, g_myhostname);
 
-	if (where)
-		free(where);
+        auto rs = stmt->execute_query();
+        while (rs->next()) {
+            std::string filename = rs->get_string(2);
+            if (csync_find_next(0, filename.c_str(), 0))
+            {
+                printf("%s\t%s\n", rs->get_string(1).c_str(), filename.c_str());
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to list files: {}", e.what());
+    }
 }
 
 // Used by insynctest
@@ -575,33 +522,45 @@ textlist_p DbSql::list_file(filename_p str_filename, const char *myhostname, pee
 {
 	const char *peername = str_peername.c_str();
 	const char *filename = str_filename.c_str();
-	csync_info(2, "DbSql::list_file %s <-> %s %s\n", myhostname, peername, filename);
+	csync_info(2, "DbSql::list_file {} <-> {} {}\n", myhostname, peername, filename);
 	textlist_p tl = 0;
-	const char *file_enc = escape(filename);
-	char *where_sql = csync_generate_recursive_sql(file_enc, recursive, 0, 1);
-	SQL_BEGIN(this, "DB Dump - Files for sync pair",
-			  "SELECT checktxt, filename FROM file WHERE %s hostname = '%s' ORDER BY filename",
-			  where_sql, myhostname)
-	{
-		if (csync_match_file_host(db_decode(SQL_V(1)),
-						  myhostname, peername, 0))
-		{
-			textlist_add2(&tl, SQL_V(0), SQL_V(1), 0);
-			csync_debug(2, "DbSql::list_file  %s:%s\n", peername, filename);
-		}
-	}
-	SQL_END;
-	free(where_sql);
+    try {
+        std::string sql = "SELECT checktxt, filename FROM file WHERE ";
+        if (filename[0] != 0) {
+            sql += "(filename = ? OR filename LIKE ?) AND ";
+        }
+        sql += " hostname = ? ORDER BY filename";
+
+        auto stmt = conn_->prepare("list_file", sql);
+        int param_index = 1;
+        if (filename[0] != 0) {
+            stmt->bind(param_index++, filename);
+            stmt->bind(param_index++, std::string(filename) + "/%");
+        }
+        stmt->bind(param_index++, myhostname);
+
+        auto rs = stmt->execute_query();
+        while (rs->next()) {
+            std::string filename_str = rs->get_string(2);
+            if (csync_match_file_host(filename_str.c_str(),
+                                      myhostname, peername, 0))
+            {
+                textlist_add2(&tl, rs->get_string(1).c_str(), filename_str.c_str(), 0);
+                csync_debug(2, "DbSql::list_file  {}:{}\n", peername, filename);
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to list file: {}", e.what());
+    }
 	return tl;
 }
 
 int DbSql::move_file(filename_p filename, filename_p newname)
 {
-	// int newname_length  = strlen(filename_encoded);
 	const std::string update_sql_format =
 		"UPDATE file set filename = concat(?::text,substring(filename,?)) "
 		"WHERE (filename = ? or filename like ?) ";
-	csync_debug(1, "SQL MOVE: %s\n", update_sql_format.c_str());
+	csync_debug(1, "SQL MOVE: {}\n", update_sql_format.c_str());
 	std::string recursive = filename + "/%";
 	conn_->execute_update("move_file", update_sql_format, newname, static_cast<long long>(filename.size() + 1), filename, recursive);
 	return 0;
@@ -609,15 +568,20 @@ int DbSql::move_file(filename_p filename, filename_p newname)
 
 void DbSql::list_sync(peername_p myhostname, peername_p peername)
 {
-	SQL_BEGIN(this, "DB Dump - File",
-			  "SELECT checktxt, filename FROM file ORDER BY filename")
-	{
-		if (csync_match_file_host(db_decode(SQL_V(1)), myhostname, peername.c_str(), 0))
-		{
-			printf("%s\t%s\n", db_decode(SQL_V(0)), db_decode(SQL_V(1)));
-		}
-	}
-	SQL_END;
+    try {
+        auto rs = conn_->execute_query("list_sync",
+                                     "SELECT checktxt, filename FROM file ORDER BY filename");
+
+        while (rs->next()) {
+            std::string filename = rs->get_string(2);
+            if (csync_match_file_host(filename.c_str(), myhostname, peername.c_str(), 0))
+            {
+                printf("%s\t%s\n", rs->get_string(1).c_str(), filename.c_str());
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to list sync: {}", e.what());
+    }
 }
 
 textlist_p DbSql::get_commands()
@@ -666,7 +630,7 @@ int DbSql::dir_count(const char *dirname)
 	{
 		count = resultset->get_int(1);
 	}
-	csync_info(2, "%d files within directory '%s': \n", count, dirname);
+	csync_info(2, "{} files within directory '{}': \n", count, dirname);
 	return count;
 }
 
@@ -695,7 +659,7 @@ int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
 	std::string	recursive_str(filename);
 	recursive_str += "/%";
 	std::string output = std::format("remove_dirty_sql {} {} {} {} ",
-							 static_cast<char *>(g_myhostname), peername, filename, recursive_str);
+							 g_myhostname.c_str(), peername, filename, recursive_str);
 	//cout << output << endl;
 	auto stmt = conn_->prepare(name_sql, remove_dirty_sql);
 	stmt->bind(1, g_myhostname);
@@ -713,22 +677,26 @@ textlist_p DbSql::find_dirty(
 {
 	textlist_p tl = 0;
 
-	SQL_BEGIN(this, "Query dirty DB",
-			  "SELECT filename, myname, peername FROM dirty where myname = '%s' "
-			  "AND peername not in (select host from host where status = 1) ",
-			  g_myhostname)
-	{
-		const char *filename = db_decode(SQL_V(0));
-		const char *localname = db_decode(SQL_V(1));
-		const char *peername = db_decode(SQL_V(2));
-		csync_info(2, "Check '%s' with '%s:%s' from dirty.\n", localname, peername, filename);
-		if (!filter(filename, localname, peername))
-		{
-			csync_info(1, "Remove '%s:%s' from dirty. No longer in configuration\n", peername, filename);
-			textlist_add2(&tl, filename, peername, 0);
-		}
-	}
-	SQL_END;
+    try {
+        auto rs = conn_->execute_query("find_dirty",
+                                     "SELECT filename, myname, peername FROM dirty where myname = ? "
+                                     "AND peername not in (select host from host where status = 1) ",
+                                     g_myhostname);
+
+        while (rs->next()) {
+            std::string filename_str = rs->get_string(1);
+            std::string localname_str = rs->get_string(2);
+            std::string peername_str = rs->get_string(3);
+            csync_info(2, "Check '{}' with '{}:{}' from dirty.\n", localname_str.c_str(), peername_str.c_str(), filename_str.c_str());
+            if (!filter(filename_str.c_str(), localname_str.c_str(), peername_str.c_str()))
+            {
+                csync_info(1, "Remove '{}:{}' from dirty. No longer in configuration\n", peername_str.c_str(), filename_str.c_str());
+                textlist_add2(&tl, filename_str.c_str(), peername_str.c_str(), 0);
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to find dirty files: {}", e.what());
+    }
 
 	return tl;
 }
@@ -736,43 +704,25 @@ textlist_p DbSql::find_dirty(
 textlist_p DbSql::find_file(filename_p str_pattern, int (*filter_file)(filename_p filename))
 {
 	const char *pattern = str_pattern.c_str();
-	filename_p enc_pattern = escape(pattern);
 	textlist_p tl = 0;
-	SQL_BEGIN(this, "Query file DB",
-			  "SELECT filename, mode FROM file where hostname = '%s' AND filename = '%s' or filename like '%s/%%' ",
-			  g_myhostname, pattern, pattern)
-	{
-		const char *filename = db_decode(SQL_V(0));
-		int mode = (SQL_V(1) ? atoi(SQL_V(1)) : 0);
-		if (!filter_file || !filter_file(filename))
-		{
-			textlist_add(&tl, filename, mode);
-		}
-	}
-	SQL_END;
+    try {
+        auto rs = conn_->execute_query("find_file",
+                                     "SELECT filename, mode FROM file where hostname = ? AND (filename = ? or filename like ?)",
+                                     g_myhostname, pattern, std::string(pattern) + "/%");
+
+        while (rs->next()) {
+            std::string filename = rs->get_string(1);
+            int mode = (rs->get_string(2).empty() ? 0 : atoi(rs->get_string(2).c_str()));
+            if (!filter_file || !filter_file(filename.c_str()))
+            {
+                textlist_add(&tl, filename.c_str(), mode);
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to find files: {}", e.what());
+    }
 	return tl;
 }
-
-/*
- textlist_p DbSql::get_file_info_by_name(filename_p filename, const char *checktxt, const char *digest,
- int (*check_file_info) (textlist_p *p_tl, const char *checktxt, filename_p filename, const char *digest))
- {
- textlist_p p_tl = 0;
- SQL_BEGIN(this, "DB Dump - File",
- "SELECT checktxt, filename, digest FROM file %s%s%s ORDER BY filename",
- filename ? "WHERE filename = '" : "",
- filename ? escape(filename) : "",
- filename ? "'" : "")
- {
- const char *l_file     = db_decode(SQL_V(1)),
- *l_checktxt = db_decode(SQL_V(0)),
- *l_digest   = db_decode(SQL_V(2));
- check_file_info(&p_tl, checktxt, filename, digest);
- } SQL_END;
-
- return p_tl;
- }
- */
 
  long long DbSql::delete_file(filename_p str_filename, int recursive) {
      return remove_file(str_filename, recursive);
@@ -786,12 +736,12 @@ long long DbSql::remove_file(filename_p str_filename, int recursive)
 
 	if (recursive) {
 		std::string recursive_filename = std::string(filename) + "/%";
-		csync_info(2, "remove_file SQL: %s, param1: %s, param2: %s, param3: %s", sql_query.c_str(), filename, recursive_filename.c_str(), g_myhostname);
+		csync_info(2, "remove_file SQL: {}, param1: {}, param2: {}, param3: {}", sql_query.c_str(), filename, recursive_filename.c_str(), g_myhostname.c_str());
 		return conn_->execute_update("remove_file_recursive",
 									  sql_query,
 									  g_myhostname, filename, recursive_filename);
 	} else {
-		csync_info(2, "remove_file SQL: %s, param1: %s, param2: %s\n", sql_query.c_str(), filename, g_myhostname);
+		csync_info(2, "remove_file SQL: {}, param1: {}, param2: {}\n", sql_query.c_str(), filename, g_myhostname.c_str());
 		return conn_->execute_update("remove_file",
 									  sql_query,
 									  g_myhostname, filename);
@@ -807,64 +757,53 @@ void DbSql::clear_operation(const char *myhostname, peername_p peername,
 }
 
 textlist_p DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
-										  const std::set<std::string> &patlist,
-										  int (*get_dirty_by_peer)(filename_p fn, filename_p pattern, int recursive))
+								  const std::set<std::string> &patlist,
+								  int (*get_dirty_by_peer)(filename_p fn, filename_p pattern, int recursive))
 {
 	const char *peername = str_peername.c_str();
 
 	textlist_p tl = NULL;
-	const char *filter_sql = "";
-	char *where_rec = NULL;
-	if (patlist.size() == 1)
+	std::string named_statement = "get_dirty_by_peer_match";
+	std::string SQL_SELECT =
+	        "SELECT filename, operation, op, other, checktxt, digest, forced, (op & ?::int) as type "
+			"FROM dirty WHERE "
+			"peername = ? AND myname = ? "
+			"AND peername NOT IN (SELECT host FROM host WHERE status = 1) "
+			"ORDER by type DESC, filename DESC";
+	auto rs = conn_->execute_query(named_statement, SQL_SELECT, OP_FILTER, peername, myhostname);
+	while (rs->next())
 	{
-		const std::string first = *(patlist.begin());
-		where_rec = csync_generate_recursive_sql(first.c_str(), recursive, 0, 1);
-		filter_sql = where_rec;
-	}
-	SQL_BEGIN(this, "Get files for host from dirty table",
-			  "SELECT filename, operation, op, other, checktxt, digest, forced, (op & %d) as type FROM dirty WHERE "
-			  " %s "
-			  "peername = '%s' AND myname = '%s' "
-			  "AND peername NOT IN (SELECT host FROM host WHERE status = 1) "
-			  "ORDER by type DESC, filename DESC",
-			  OP_FILTER,
-			  filter_sql,
-			  escape(peername),
-			  escape(myhostname));
-	{
-		const char *filename = db_decode(SQL_V(0));
-		const char *op_str = db_decode(SQL_V(1));
-		operation_t operation = (SQL_V(2) ? atoi(SQL_V(2)) : 0);
-		const char *other = db_decode(SQL_V(3));
-		const char *checktxt = db_decode(SQL_V(4));
-		// For some reason it is¨'' in the tests using postgres but correctly null on mysql
+		const std::string db_filename = rs->get_string(1);
+		const std::string op_str = rs->get_string(2);
+		operation_t operation = rs->get_int(3);
+		auto other = rs->get_string_optional(4);
+		const std::string checktxt = rs->get_string(5);
+		// For some reason it is '' in the tests using postgres but correctly null on mysql
 		// But seems to work (sometime) on db csync2. Doesnt make sense
-		const char *digest = db_decode(SQL_V(5));
-		const char *forced_str = db_decode(SQL_V(6));
-		csync_debug(3, "DIRTY LOOKUP: '%s' '%s'\n", filename, SQL_V(5));
-		int forced = forced_str ? atoi(forced_str) : 0;
+		auto digest = rs->get_string_optional(6);
+		const auto forced_str = rs->get_string_optional(7);
+		csync_debug(3, "DIRTY LOOKUP: '{}' '{}'\n", db_filename.c_str(), checktxt.c_str());
+		int forced = forced_str.has_value() ? atoi(forced_str->c_str()) : 0;
 		int found = 0;
 		for (std::string pattern : patlist)
 		{
-			csync_debug(3, "compare file with pattern %s\n", pattern.c_str());
-			if (get_dirty_by_peer == NULL || get_dirty_by_peer(filename, pattern, recursive))
+			csync_debug(3, "compare file with pattern {}\n", pattern.c_str());
+			if (get_dirty_by_peer == NULL || get_dirty_by_peer(db_filename.c_str(), pattern.c_str(), recursive))
 			{
-				textlist_add5(&tl, filename, op_str, other, checktxt, digest, forced, operation);
+				textlist_add5(&tl, db_filename.c_str(), op_str.c_str(),
+				                other.has_value() ? other->c_str() : NULL, checktxt.c_str(),
+								digest.has_value() ? digest->c_str() : NULL, forced, operation);
 				found = 1;
 			}
 		}
 		if (found)
 		{
-			char *copy_checktxt = filter_mtime_copy(checktxt);
-			csync_info(2, "dirty: %s:%s %s '%s'\n", peername, filename, copy_checktxt, digest);
+			char *copy_checktxt = filter_mtime_copy(checktxt.c_str());
+			csync_info(2, "dirty: {}:{} {} '{}'\n", peername, db_filename.c_str(), copy_checktxt,
+			            digest.has_value() ? digest->c_str() : "");
 			free(copy_checktxt);
 		}
 	}
-	SQL_END;
-
-	if (where_rec)
-		free(where_rec);
-
 	return tl;
 }
 
@@ -872,7 +811,7 @@ static textlist_p db_sql_get_dirty_by_peer(DbApi *db, const char *myhostname, pe
 {
 	std::set<string> patlist;
 	patlist.insert("/");
-	return db->get_dirty_by_peer_match(myhostname, peername, 1, patlist, NULL);
+    	return db->get_dirty_by_peer_match(myhostname, peername, 1, patlist, NULL);
 }
 
 textlist_p DbSql::get_old_operation(const char *checktxt,
@@ -886,33 +825,35 @@ textlist_p DbSql::get_old_operation(const char *checktxt,
 	const char *filename = str_filename.c_str();
 
 	textlist_p tl = 0;
-	SQL_BEGIN(this, "Checking old opertion(s) on dirty",
-			  "SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = '%s' AND "
-			  "(checktxt = '%s' AND device = %s AND inode = %s OR filename = '%s') AND peername = '%s' "
+	auto rs = conn_->execute_query("get_old_operation",
+			  "SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = ? AND "
+			  "(checktxt = ? AND device = ? AND inode = ? OR filename = ?) AND peername = ? "
 			  "ORDER BY timestamp ",
-			  escape(g_myhostname),
-			  escape(checktxt),
-			  escape(device),
-			  escape(ino),
-			  escape(filename),
-			  escape(peername))
-	{
-		operation_t old_operation = csync_operation(SQL_V(0));
-		const char *old_filename = db_decode(SQL_V(1));
-		const char *old_other = db_decode(SQL_V(2));
-		const char *old_checktxt = SQL_V(3);
-		const char *old_digest = SQL_V(4);
-		operation_t op = SQL_V(5) ? atoi(SQL_V(5)) : 0;
+			  g_myhostname,
+			  checktxt,
+			  device,
+			  ino,
+			  filename,
+			  peername);
+
+	while (rs->next()) {
+		operation_t old_operation = csync_operation(rs->get_string(1).c_str());
+		const std::string old_filename = rs->get_string(2);
+		const auto old_other = rs->get_string_optional(3);
+		const auto old_checktxt = rs->get_string_optional(4);
+		const auto old_digest = rs->get_string_optional(5);
+		const auto opt_op = rs->get_string_optional(6);
+		operation_t op = opt_op.has_value() ? atoi(opt_op->c_str()) : 0;
 		if (op != old_operation)
-			csync_warn(0, "WARN: operation changed: %s(%d) => %s(%d)\n", SQL_V(0), old_operation, csync_operation_str(op), op);
-		textlist_add4(&tl, old_filename, old_other, old_checktxt, old_digest, old_operation);
+			csync_warn(0, "WARN: operation changed: {}({}) => {}({})\n",
+			           rs->get_string(1).c_str(), old_operation, csync_operation_str(op), op);
+		textlist_add4(&tl, old_filename,
+		              old_other.has_value() ? *old_other : NULL,
+		              old_checktxt.has_value() ? *old_checktxt : NULL,
+		              old_digest.has_value() ? *old_digest : NULL,
+					  old_operation);
 		break;
 	}
-	SQL_FIN
-	{
-	}
-	SQL_END;
-
 	return tl;
 }
 
@@ -958,46 +899,46 @@ dev_t fstat_dev(struct stat *file_stat)
 	return (file_stat->st_dev != 0 ? file_stat->st_dev : file_stat->st_rdev);
 }
 
-int DbSql::update_dev_no(filename_p encoded, int recursive, dev_t old_no, dev_t new_no)
+int DbSql::update_dev_no(filename_p filename, int recursive, dev_t old_no, dev_t new_no)
 {
     if (recursive) {
         std::string sql_query = "UPDATE file set device=? WHERE (filename = ? OR filename LIKE ?) AND device = ?";
-        std::string recursive_filename = std::string(encoded) + "/%";
-        return conn_->execute_update("update_dev_no_recursive", sql_query, new_no, encoded, recursive_filename, old_no);
+        std::string recursive_filename = std::string(filename) + "/%";
+        return conn_->execute_update("update_dev_no_recursive", sql_query, new_no, filename, recursive_filename, old_no);
     } else {
         std::string sql_query = "UPDATE file set device=? WHERE filename = ? AND device = ?";
-        return conn_->execute_update("update_dev_no", sql_query, new_no, encoded, old_no);
+        return conn_->execute_update("update_dev_no", sql_query, new_no, filename, old_no);
     }
 }
 
-long long DbSql::update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+long long DbSql::update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                               const char *digest)
 {
     return conn_->execute_update("update_file",
                                   "UPDATE file set checktxt=?, device=?, inode=?, "
                                   "digest=?, mode=?, mtime=?, size=?, type=? where filename = ?",
-                                  checktxt_encoded,
+                                  checktxt,
                                   static_cast<long long>(fstat_dev(file_stat)), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
-                                  static_cast<long long>(file_stat->st_mtime), static_cast<long long>(file_stat->st_size), static_cast<int>(get_file_type(file_stat->st_mode)), encoded);
+                                  static_cast<long long>(file_stat->st_mtime), static_cast<long long>(file_stat->st_size), static_cast<int>(get_file_type(file_stat->st_mode)), filename);
 }
 
-long long DbSql::insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+long long DbSql::insert_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                               const char *digest)
 {
     return conn_->execute_update("insert_file",
                                   "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
                                   "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ",
-                                  g_myhostname, encoded,
-                                  checktxt_encoded, static_cast<long long>(fstat_dev(file_stat)), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
+                                  g_myhostname, filename,
+                                  checktxt, static_cast<long long>(fstat_dev(file_stat)), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
                                   static_cast<long long>(file_stat->st_mtime), static_cast<long long>(file_stat->st_size), static_cast<int>(get_file_type(file_stat->st_mode)));
 }
 
-int DbSql::insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+int DbSql::insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
 									 const char *digest)
 {
-	int count = update_file(encoded, checktxt_encoded, file_stat, digest);
+	int count = update_file(filename, checktxt, file_stat, digest);
 	if (count <= 0)
-		count = insert_file(encoded, checktxt_encoded, file_stat, digest);
+		count = insert_file(filename, checktxt, file_stat, digest);
 	return count;
 }
 
@@ -1019,7 +960,7 @@ static int filter_child_to_deleted_dir(const char *filename, const char *checktx
 	{
 		if (*last_dir_del != NULL && strstr(filename, *last_dir_del) == filename)
 		{
-			csync_info(2, "Skipping child (%s) from deleted directory (%s)\n", filename, *last_dir_del);
+			csync_info(2, "Skipping child ({}) from deleted directory ({})\n", filename, *last_dir_del);
 			return 1;
 		}
 		else
@@ -1034,43 +975,51 @@ static int filter_child_to_deleted_dir(const char *filename, const char *checktx
 	return 0;
 }
 
-int DbSql::check_delete(filename_p str_filename, int recursive, int init_run)
+int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 {
-	const char *file = str_filename.c_str();
-	textlist_p tl = 0, t;
-	struct stat st;
+    textlist_p tl = 0, t;
+    struct stat st;
+        csync_info(1, "Checking for deleted files {}{}\n", filename.c_str(), (recursive ? " recursive." : "."));
+	std::string where_rec = csync_generate_recursive_sql_placeholder(recursive, 1);
+	csync_debug(3, "File {}. Hostname: {} \n", filename.c_str(), g_myhostname.c_str());
+	std::string SQL_SELECT = "SELECT filename, checktxt, device, inode, mode FROM file WHERE hostname = ? ";
+	SQL_SELECT += where_rec + " ORDER BY filename";
+	//csync_debug(1, "check_delete SQL: {} \n", SQL_SELECT.c_str());
+	std::string named_statement = "check_delete";
+	if (recursive) {
+	    named_statement += "_recursive";
+	}
+	auto stmt = conn_->prepare(named_statement, SQL_SELECT);
+	stmt->bind(1, g_myhostname);
+	stmt->bind(2, filename);
+	if (recursive) {
+	    stmt->bind(3, filename + "/%");
+	}
 
-	// const char *SELECT_SQL = "SELECT filename, checktxt, device, inode, mode FROM file ";
-	csync_info(1, "Checking for deleted files %s%s\n", file, (recursive ? " recursive." : "."));
-	const char *file_encoded = escape(file);
-	char *where_rec = csync_generate_recursive_sql(file_encoded, recursive, 0, 1);
-	csync_debug(3, "file %s encoded %s. Hostname: %s \n", file, file_encoded, g_myhostname);
+	auto rs = stmt->execute_query();
 
 	char *last_dir_deleted = NULL;
-	SQL_BEGIN(this, "Checking for removed files - check_delete",
-			  "SELECT filename, checktxt, device, inode, mode FROM file "
-			  "WHERE %s hostname = '%s' ORDER BY filename",
-			  where_rec, g_myhostname)
+	while (rs->next())
 	{
-		const char *filename = db_decode(SQL_V(0));
-		const char *checktxt = db_decode(SQL_V(1));
-		const char *device = db_decode(SQL_V(2));
-		const char *inode = db_decode(SQL_V(3));
-		int mode = (SQL_V(4) ? atoi(SQL_V(4)) : 0);
+		const std::string db_filename = rs->get_string(1);
+		const std::string checktxt = rs->get_string(2);
+		const std::string device = rs->get_string(3);
+		const std::string inode = rs->get_string(4);
+		const auto mode = rs->get_string_optional(5);
+		int mode_int = mode.has_value() ? atoi(mode->c_str()) : 0;
 		const struct csync_group *g = NULL;
-		if (!csync_match_file(filename, 0, &g))
+		if (!csync_match_file(db_filename, 0, &g))
 			continue;
 
 		// Not found
-		if (lstat_strict(filename, &st) != 0 || csync_check_pure(filename))
+		if (lstat_strict(db_filename, &st) != 0 || csync_check_pure(db_filename))
 		{
-			if (!filter_child_to_deleted_dir(filename, checktxt, &last_dir_deleted))
+			if (!filter_child_to_deleted_dir(db_filename.c_str(), checktxt.c_str(), &last_dir_deleted))
 			{
-				textlist_add4(&tl, filename, checktxt, device, inode, mode);
+				textlist_add4(&tl, db_filename.c_str(), checktxt.c_str(), device.c_str(), inode.c_str(), mode_int);
 			}
 		}
 	}
-	SQL_END;
 	int count_deletes = 0;
 	time_t now = time(NULL);
 
@@ -1088,19 +1037,16 @@ int DbSql::check_delete(filename_p str_filename, int recursive, int init_run)
 	}
 
 	textlist_free(tl);
-
-	free(where_rec);
 	return count_deletes;
 }
 
 long long DbSql::db_sql_move_file_to_dirty(const char *file, int recursive, const char *peername)
 {
-	char *where_rec = csync_generate_recursive_sql(file, recursive, 0, 1);
-	SQL(this, "Move to dirty for removed files - move_file_to_dirty",
+	std::string where_rec = csync_generate_recursive_sql_placeholder(recursive, 0);
+	conn_->execute_update("db_sql_move_file_to_dirty",
 		"INSERT INTO dirty (filename, myname, peername, operation, op, device, inode) "
-		"select filename, hostname, %s, 'RM', %d, device, inode where filename like '%s'",
-		peername, OP_RM, where_rec);
-	free(where_rec);
+		"select filename, hostname, ?, 'RM', ?, device, inode where " + where_rec,
+		peername, OP_RM);
 	return 0;
 }
 
@@ -1186,8 +1132,8 @@ textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const char *che
 		"     filename NOT IN (SELECT filename FROM dirty "
 		                       "WHERE peername = ? AND device = f.device AND inode = f.inode))"
 		" ORDER BY filename;";
-	//	" AND checktxt  = '%s' "
-	//	" AND digest    = '%s' ";
+	//	" AND checktxt  = '{}' "
+	//	" AND digest    = '{}' ";
 
    	auto stmt = conn_->prepare(name_sql, sql);
     // g_myhostname, st->st_dev, st->st_ino, escaped, peername, peername
@@ -1219,13 +1165,13 @@ textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const char *che
 		}
 		else
 		{
-			csync_info(0, "Different digest\n%s: %s \n%s: %s\n", filename.c_str(), digest, db_filename.c_str(), db_digest->c_str());
+			csync_info(0, "Different digest\n{}: {} \n{}: {}\n", filename.c_str(), digest, db_filename.c_str(), db_digest->c_str());
 		}
 		SQL_COUNT++;
 	}
 	if (SQL_COUNT > 0)
     {
-		csync_info(2, "%d files with same dev:inode (%llu:%llu) as file: %s\n",
+		csync_info(2, "{} files with same dev:inode ({}:{}) as file: {}\n",
 				   SQL_COUNT,
 				   static_cast<unsigned long long>(st->st_dev),
 				   static_cast<unsigned long long>(csync_level_debug == 3 ? st->st_ino : 0l),
@@ -1241,44 +1187,57 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
 	// unused
 	(void)checktxt;
 
-	char *peername_enc = strdup(escape(peername));
-	char *filename_enc = strdup(escape(filename));
-	const char *sqls[] = {" SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = '%s'"
-						  " AND device = %lu and inode = %llu and filename != '%s' and peername = '%s'",
-						  " SELECT filename, checktxt, digest, NULL FROM file WHERE hostname = '%s'  "
-						  " AND device = %lu AND inode = %llu AND filename != '%s' "};
 	textlist_p tl = 0;
 
-	for (int index = 0; index < 2; index++)
-	{
-		SQL_BEGIN(this, "check_dirty_file_same_dev_inode (not checktxt, digest)",
-				  sqls[index], g_myhostname,
-				  st->st_dev, st->st_ino, filename_enc, peername_enc)
-		{
-			const char *db_filename = db_decode(SQL_V(0));
-			const char *db_checktxt = db_decode(SQL_V(1));
-			const char *db_digest = db_decode(SQL_V(2));
-			const char *db_operation = db_decode(SQL_V(3));
+    try {
+        auto rs = conn_->execute_query("check_dirty_file_same_dev_inode",
+                                     "SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = ?"
+                                     " AND device = ? and inode = ? and filename != ? and peername = ?",
+                                     g_myhostname, static_cast<long long>(st->st_dev), static_cast<long long>(st->st_ino), filename, peername);
 
-			if (!digest || !db_digest || !strcmp(digest, db_digest))
-			{
-				textlist_add_new3(&tl, db_filename, db_checktxt, db_operation);
-			}
-			else
-			{
-				csync_info(1, "Different digest for %s %s ", digest, db_digest);
-			}
-		}
-		SQL_FIN
-		{
-			csync_info(2, "%d files with same dev:inode (%lu:%llu) as file: %s\n",
-					   SQL_COUNT,
-					   static_cast<unsigned long long>(st->st_dev),
-					   static_cast<unsigned long long>(st->st_ino), filename.c_str());
-		}
-		SQL_END;
-	}
-	free(filename_enc);
-	free(peername_enc);
+        while (rs->next()) {
+            std::string db_filename = rs->get_string(1);
+            std::string db_checktxt = rs->get_string(2);
+            auto db_digest = rs->get_string_optional(3);
+            auto db_operation = rs->get_string_optional(4);
+
+            if (!digest || !db_digest.has_value() || *db_digest == digest)
+            {
+                textlist_add_new3(&tl, db_filename.c_str(), db_checktxt.c_str(), db_operation.has_value() ? db_operation->c_str() : NULL);
+            }
+            else
+            {
+                csync_info(1, "Different digest for {} {} ", digest, db_digest->c_str());
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to check dirty file same dev inode: {}", e.what());
+    }
+
+    try {
+        auto rs = conn_->execute_query("check_dirty_file_same_dev_inode2",
+                                     "SELECT filename, checktxt, digest, NULL FROM file WHERE hostname = ?  "
+                                     " AND device = ? AND inode = ? AND filename != ? ",
+                                     g_myhostname, static_cast<long long>(st->st_dev), static_cast<long long>(st->st_ino), filename);
+
+        while (rs->next()) {
+            std::string db_filename = rs->get_string(1);
+            std::string db_checktxt = rs->get_string(2);
+            auto db_digest = rs->get_string_optional(3);
+            auto db_operation = rs->get_string_optional(4);
+
+            if (!digest || !db_digest.has_value() || *db_digest == digest)
+            {
+                textlist_add_new3(&tl, db_filename.c_str(), db_checktxt.c_str(), db_operation.has_value() ? db_operation->c_str() : NULL);
+            }
+            else
+            {
+                csync_info(1, "Different digest for {} {} ", digest, db_digest->c_str());
+            }
+        }
+    } catch (const DatabaseError& e) {
+        csync_error(0, "Failed to check dirty file same dev inode: {}", e.what());
+    }
+
 	return tl;
 }

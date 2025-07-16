@@ -34,8 +34,12 @@ public:
 
     // Bind methods for different data types
     virtual void bind(int index, int value) = 0;
-    virtual void bind(int index, long value) = 0;
+    virtual void bind(int index, unsigned short value) { bind(index, static_cast<int>(value)); };
+    virtual void bind(int index, unsigned int value) { bind(index, static_cast<long long>(value)); };
     virtual void bind(int index, long long value) = 0;
+    virtual void bind(int index, long value) { bind(index, static_cast<long long>(value)); };
+    virtual void bind(int index, unsigned long long value) { bind(index, static_cast<long long>(value)); };
+    virtual void bind(int index, long unsigned int value) { bind(index, static_cast<long long>(value)); };
     virtual void bind(int index, double value) = 0;
     virtual void bind(int index, const char *value) = 0;
     virtual void bind(int index, const std::string& value) = 0;
@@ -101,12 +105,6 @@ enum class DBType {
     PostgreSQL
 };
 
-// Helper to bind a single parameter
-template<typename T>
-inline void bind_param(PreparedStatement* stmt, int& index, T value) {
-    stmt->bind(index++, value);
-}
-
 // Specialization for const char*
 inline void bind_param(PreparedStatement* stmt, int& index, const char* value) {
     if (value) {
@@ -114,6 +112,12 @@ inline void bind_param(PreparedStatement* stmt, int& index, const char* value) {
     } else {
         stmt->bind_null(index++);
     }
+}
+
+// Helper to bind a single parameter
+template<typename T>
+inline void bind_param(PreparedStatement* stmt, int& index, T value) {
+    stmt->bind(index++, value);
 }
 
 // Base case for the variadic template recursion

@@ -41,6 +41,51 @@
 #include <vector>
 #include <set>
 #include <string>
+#include <iostream>
+#include <cassert>
+#endif
+
+// Build configuration and debug macros
+#ifdef DEBUG
+    // Debug build: Enable debug output and assertions
+    #ifdef __cplusplus
+        #define CSYNC_DEBUG(x) do { std::cerr << "DEBUG: " << x << std::endl; } while(0)
+        #define CSYNC_DEBUG_SCOPE(x) do { std::cerr << "DEBUG: Entering " << x << std::endl; } while(0)
+        #define CSYNC_DEBUG_VAR(name, value) do { std::cerr << "DEBUG: " << name << " = " << value << std::endl; } while(0)
+    #else
+        #define CSYNC_DEBUG(x) do { fprintf(stderr, "DEBUG: %s\n", x); } while(0)
+        #define CSYNC_DEBUG_SCOPE(x) do { fprintf(stderr, "DEBUG: Entering %s\n", x); } while(0)
+        #define CSYNC_DEBUG_VAR(name, value) do { fprintf(stderr, "DEBUG: %s = %s\n", name, value); } while(0)
+    #endif
+    #define CSYNC_ASSERT(x) assert(x)
+    #define CSYNC_VERIFY(x) assert(x)
+    
+    // Additional debug features
+    #define CSYNC_DEBUG_ENABLED 1
+    
+#else
+    // Release build: Disable debug output and assertions
+    #define CSYNC_DEBUG(x) do { } while(0)
+    #define CSYNC_DEBUG_SCOPE(x) do { } while(0)
+    #define CSYNC_DEBUG_VAR(name, value) do { } while(0)
+    #define CSYNC_ASSERT(x) do { } while(0)
+    #define CSYNC_VERIFY(x) (x)  // Still execute but don't assert
+    
+    #define CSYNC_DEBUG_ENABLED 0
+#endif
+
+// Build type information
+#ifdef BUILD_TYPE
+    #define CSYNC_BUILD_TYPE BUILD_TYPE
+#else
+    #define CSYNC_BUILD_TYPE "unknown"
+#endif
+
+// Address sanitizer detection
+#ifdef HAVE_ADDRESS_SANITIZER
+    #define CSYNC_ASAN_ENABLED 1
+#else
+    #define CSYNC_ASAN_ENABLED 0
 #endif
 
 typedef int operation_t;
@@ -221,7 +266,7 @@ extern int csync_server_child_pid;
 extern int csync_timestamps;
 extern int csync_new_force;
 
-extern char g_myhostname[];
+extern std::string g_myhostname;
 extern const char *csync_port;
 extern const char *csync_confdir;
 extern char *g_active_grouplist;

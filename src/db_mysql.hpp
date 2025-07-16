@@ -12,13 +12,10 @@ public:
     ~DbMySql() override;
 
     int exec(const char *sql) override;
-    int prepare(const char *sql, DbStmt **stmt, const char **pptail) override;
-    void close() override;
     const char* errmsg() override;
-    const char* escape(const char *string) override;
     int upgrade_to_schema(int version) override;
     void shutdown();
-    int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                              const char *digest) override;
 };
 

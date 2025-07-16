@@ -27,6 +27,7 @@
 #include <string.h>
 #include "database_mysql_v2.hpp"
 #include "database_v2.hpp"
+#include "modern_logging.hpp"
 #include "db_api.hpp"
 #include "db.hpp"
 #include "db_mysql.hpp"
@@ -70,15 +71,15 @@ static void *dl_handle;
 #define SO_FILE_ALT "libmariadbclient" SO_FILE_EXT
 
 static void db_mysql_dlopen(void) {
-	csync_debug(3, "Opening shared library %s\n", SO_FILE);
+	csync_debug(3, "Opening shared library {}", SO_FILE);
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL && (dl_handle = dlopen(SO_FILE_ALT, RTLD_LAZY)) == NULL) {
 		csync_fatal(
-				"Could not open " SO_FILE ": %s\nPlease install Mysql/Mariadb client library or use other database (sqlite, postgresql)\n",
+				"Could not open " SO_FILE ": {}\nPlease install Mysql/Mariadb client library or use other database (sqlite, postgresql)",
 				dlerror());
 	}
 
-	csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+	csync_debug(3, "Reading symbols from shared library {}", SO_FILE);
 
 	LOOKUP_SYMBOL(dl_handle, mysql_init);
 	LOOKUP_SYMBOL(dl_handle, mysql_real_connect);
@@ -138,15 +139,9 @@ static int db_mysql_parse_url(char *url, char **host, char **user, char **pass, 
 
 #ifdef HAVE_MYSQL
 
-void DbMySql::close() {
-	if (!private_data)
-		return;
-	f.mysql_close_fn(static_cast<MYSQL*>(private_data));
-	private_data = 0;
-}
-
 const char* DbMySql::errmsg() {
-	if (!private_data)
+    void *private_data = conn_->get_private_data();
+    if (!private_data)
 		return "(no private data in conn)";
 	return f.mysql_error_fn(static_cast<MYSQL*>(private_data));
 }
@@ -183,89 +178,11 @@ static void print_warnings(int level, MYSQL *m) {
 }
 
 int DbMySql::exec(const char *sql) {
-	int rc = DB_ERROR;
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	rc = f.mysql_query_fn(static_cast<MYSQL*>(private_data), sql);
-	/* Treat warnings as errors. For example when a column is too short this should
-	 be an error. */
-
-	affected_rows = f.mysql_affected_rows_fn(static_cast<MYSQL*>(private_data));
-
-	if (rc == 0) {
-		return DB_OK;
-	}
-	if (rc == ER_LOCK_DEADLOCK) {
-		return DB_BUSY;
-	}
-	if (f.mysql_warning_count_fn(static_cast<MYSQL*>(private_data)) > 0) {
-		print_warnings(1, static_cast<MYSQL*>(private_data));
-		return DB_ERROR;
-	}
-	/* On error parse, create DB ERROR element */
-	csync_warn(0, "Unmapped MYSQL error: %d \n", rc);
-	return rc > 0 ? -rc : rc;
+    conn_->query(sql);
+    return 0;
 }
 
-class DbMySqlStmt : public DbStmt {
-public:
-    DbMySqlStmt(MYSQL_RES *res, DbApi *db) : DbStmt(db), private_data(res) {}
-    ~DbMySqlStmt() override { close(); };
-
-    const char* get_column_text(int column) override;
-    const char* get_column_blob(int column) override;
-    int get_column_int(int column) override;
-    int next() override;
-    int close() override;
-    long get_affected_rows() override { return 0; };
-
-private:
-    MYSQL_RES *private_data;
-    MYSQL_ROW private_data2;
-};
-
-const char* DbMySqlStmt::get_column_blob(int column) {
-	if (!private_data2) {
-		return 0;
-	}
-	return private_data2[column];
-}
-
-const char* DbMySqlStmt::get_column_text(int column) {
-	if (!private_data2) {
-		return 0;
-	}
-	return private_data2[column];
-}
-
-int DbMySqlStmt::get_column_int(int column) {
-	const char *value = get_column_text(column);
-	if (value)
-		return atoi(value);
-	/* error mapping */
-	return 0;
-}
-
-int DbMySqlStmt::next() {
-	private_data2 = f.mysql_fetch_row_fn(private_data);
-	/* error mapping */
-	if (private_data2)
-		return DB_ROW;
-	return DB_DONE;
-}
-
-int DbMySqlStmt::close() {
-    if (!private_data) {
-        return DB_OK;
-	}
-	f.mysql_free_result_fn(private_data);
-    private_data = NULL;
-	return DB_OK;
-}
-
-int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+int DbMySql::insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
 		const char *digest) {
 	int count = conn_->execute_update("insert_update_file",
 			        "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
@@ -273,58 +190,60 @@ int DbMySql::insert_update_file(filename_p encoded, const char *checktxt_encoded
 					"ON DUPLICATE KEY UPDATE "
 					"checktxt = ?, device = ?, inode = ?, "
 					"digest = ?, mode = ?, size = ?, mtime = ?, type = ?",
-					g_myhostname, encoded.c_str(), checktxt_encoded,
+					g_myhostname, filename, checktxt,
 					fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, file_stat->st_mode, file_stat->st_size,
 					file_stat->st_mtime, get_file_type(file_stat->st_mode),
 					// SET
-					checktxt_encoded, fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
+					checktxt, fstat_dev(file_stat), static_cast<long long>(file_stat->st_ino), digest, static_cast<int>(file_stat->st_mode),
 					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
 	return count;
 }
 
 int DbMySql::upgrade_to_schema(int new_version) {
-	csync_debug(2, "Upgrading database schema to version %d.\n", new_version);
+	csync_debug(2, "Upgrading database schema to version {}.", new_version);
 
 	/* We want proper logging, so use the csync sql function instead
 	 * of that from the database layer.
 	 */
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating host table", "CREATE TABLE `host` ("
+	conn_->execute_update("Creating host table",
+	        "CREATE TABLE `host` ("
 			"  `host` varchar(%u) DEFAULT NULL,"
 			"  `status`  int,"
 			"  KEY `host` (`host`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", HOST_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /*"Creating action table" */
-	"CREATE TABLE `action` ("
+	conn_->execute_query("Creating action table",
+	        "CREATE TABLE `action` ("
 			"  `filename` varchar(%u) DEFAULT NULL,"
 			"  `command`  text,"
 			"  `logfile` text,"
 			"  KEY `filename` (`filename`(%u),`command`(%u)) "
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating dirty table", "CREATE TABLE `dirty` ("
-//		 "  id        bigint       AUTO_INCREMENT,"
+	conn_->execute_update("Creating dirty table",
+	                "CREATE TABLE `dirty` ("
+             		//"  id        bigint       AUTO_INCREMENT,"
 					"  filename  varchar(%u)  DEFAULT NULL,"
-					"  forced    int \t      DEFAULT NULL,"
+					"  forced    int \t       DEFAULT NULL,"
 					"  myname    varchar(%u)  DEFAULT NULL,"
 					"  peername  varchar(%u)  DEFAULT NULL,"
 					"  operation varchar(20)  DEFAULT NULL,"
-					"  op \t      int\t      DEFAULT NULL,"
+					"  op        int          DEFAULT NULL,"
 					"  checktxt  varchar(%u)  DEFAULT NULL,"
 					"  device    bigint       DEFAULT NULL,"
 					"  inode     bigint       DEFAULT NULL,"
 					"  other     varchar(%u)  DEFAULT NULL,"
 					"  file_id   bigint       DEFAULT NULL,"
 					"  digest    varchar(70)  DEFAULT NULL,"
-					"  mode      int\t      DEFAULT NULL,"
-					"  mtime     int    \t  DEFAULT NULL,"
-					"  type      int    \t  DEFAULT NULL,"
-					"  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+					"  mode      int\t        DEFAULT NULL,"
+					"  mtime     int          DEFAULT NULL,"
+					"  type      int          DEFAULT NULL,"
+					"  `timestamp` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
 					"  UNIQUE KEY `filename_peername_myname` (`filename`(%u),`peername`,`myname`), "
 					"  KEY `idx_file_dev_inode` (`device`,`inode`) "
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), "Creating file table", "CREATE TABLE `file` ("
+	conn_->execute_update("Creating file table", "CREATE TABLE `file` ("
 //		 "  `id`       bigint AUTO_INCREMENT,"
 			//		"  `parent`   bigint DEFAULT NULL,"
 					"  filename varchar(%u)  DEFAULT NULL,"
@@ -343,75 +262,20 @@ int DbMySql::upgrade_to_schema(int new_version) {
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /* "Creating hint table", */
-	"  CREATE TABLE `hint` ("
+	conn_->execute_update("Creating hint table",
+	        "  CREATE TABLE `hint` ("
 			"  `filename` varchar(%u) DEFAULT NULL,"
 			"  `recursive` int(11)    DEFAULT NULL"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 	FILE_LENGTH);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this), NULL, /* "Creating x509_cert table", */
-	"CREATE TABLE `x509_cert` ("
+conn_->execute_query("Creating x509_cert table",
+           	"CREATE TABLE `x509_cert` ("
 			"  `peername` varchar(50)  DEFAULT NULL,"
 			"  `certdata` text DEFAULT NULL,"
 			"  UNIQUE KEY `peername` (`peername`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
 
-	/* csync_db_sql does a csync_fatal on error, so we always return DB_OK here. */
-	return DB_OK;
-}
-
-const char* DbMySql::escape(const char *string) {
-	if (!private_data)
-		return 0;
-	if (string == 0)
-		return 0;
-
-	size_t length = strlen(string);
-	char *escaped_buffer = ringbuffer_malloc(2 * length + 1);
-	f.mysql_real_escape_string_fn(static_cast<MYSQL*>(private_data), escaped_buffer, string, length);
-	return escaped_buffer;
-}
-
-int DbMySql::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
-	// unused
-	(void) pptail;
-
-	int rc = DB_ERROR;
-
-	*stmt_p = NULL;
-
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-
-	/* TODO avoid strlen, use configurable limit? */
-	rc = f.mysql_query_fn(static_cast<MYSQL*>(private_data), sql);
-	(void) rc;
-	/* Treat warnings as errors. For example when a column is too short this should
-	 be an error. */
-
-	if (f.mysql_warning_count_fn(static_cast<MYSQL*>(private_data)) > 0) {
-		print_warnings(1, static_cast<MYSQL*>(private_data));
-		return DB_ERROR;
-	}
-
-	MYSQL_RES *mysql_res = f.mysql_store_result_fn(static_cast<MYSQL*>(private_data));
-	if (mysql_res == NULL) {
-		csync_error(2, "Error in mysql_store_result: %s", f.mysql_error_fn(static_cast<MYSQL*>(private_data)));
-		return DB_ERROR;
-	}
-
-	/* Treat warnings as errors. For example when a column is too short this should
-	 be an error. */
-
-	if (f.mysql_warning_count_fn(static_cast<MYSQL*>(private_data)) > 0) {
-		print_warnings(1, static_cast<MYSQL*>(private_data));
-		return DB_ERROR;
-	}
-
-    *stmt_p = new DbMySqlStmt(mysql_res, this);
 	return DB_OK;
 }
 
@@ -450,9 +314,9 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 			if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
 				ASPRINTF(&create_database_statement, "create database %s", database);
 
-				csync_debug(2, "creating database %s\n", database);
+				csync_debug(2, "creating database {}", database);
 				if (f.mysql_query_fn(db, create_database_statement) != 0)
-					csync_fatal("Cannot create database %s: Error: %s\n", database, f.mysql_error_fn(db));
+					csync_fatal("Cannot create database {}: Error: {}", database, f.mysql_error_fn(db));
 				free(create_database_statement);
 
 				f.mysql_close_fn(db);
@@ -463,13 +327,13 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 			}
 		} else {
 			fatal:
-			csync_fatal("Failed to connect to database: Error: %s\n", f.mysql_error_fn(db));
+			csync_fatal("Failed to connect to database: Error: {}", f.mysql_error_fn(db));
 		}
 	}
 	const char *encoding = mysql_character_set_name(db);
-	csync_debug(2, "Default encoding %s\n", encoding);
+	csync_debug(2, "Default encoding {}", encoding);
 	if (mysql_set_character_set(db, "utf8")) {
-		csync_fatal("Cannot set character set to utf8\n");
+		csync_fatal("Cannot set character set to utf8");
 	}
 	DatabaseConnection *conn = new MySQLConnection(db);
     DbMySql *api = new DbMySql(conn);
@@ -477,8 +341,6 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 		return DB_ERROR;
 	}
 	*api_p = api;
-
-	api->private_data = db;
 
 	free(db_url);
 	return rc;

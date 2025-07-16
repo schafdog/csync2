@@ -14,11 +14,11 @@ public:
     DbSql(DatabaseConnection* conn) : DbApi(conn) {};
     ~DbSql() override {};
 
-    const char* escape(const std::string& string) override;
-    const char* escape(const char *string) override;
+    const char* escape(const std::string& string);
+    const char* escape(const char *string);
 
     int schema_version() override;
-    int check_file(const char *file, const char *encoded, char **other, char *checktxt,
+    int check_file(filename_p str_filename, char **other, char *checktxt,
                    struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no) override;
     int is_dirty(peername_p str_peername, filename_p str_filename, int *operation, int *mode) override;
     int list_dirty(const std::set<std::string> &active_peers, const char *realname, int recursive) override;
@@ -26,10 +26,9 @@ public:
     textlist_p get_dirty_hosts() override;
     int upgrade_db() override;
     textlist_p get_hints() override;
-    int update_format_v1_v2(filename_p filename, int recursive, int do_it) override;
     long long remove_hint(filename_p filename, int recursive) override;
     void force(const char *realname, int recursive) override;
-    void mark(const std::set<std::string>& active_peerlist, const char *realname, int recursive) override;
+    void mark(const std::set<std::string>& active_peerlist, const filename_p realname, int recursive) override;
     void list_hint() override;
     void list_files(filename_p realname) override;
     textlist_p list_file(filename_p str_filename, const char *myhostname, peername_p str_peername,
@@ -61,12 +60,12 @@ public:
                   const char *op_str, const char *checktxt, const char *dev, const char *ino,
                   const char *result_other,
                   operation_t op, int mode, int mtime) override;
-    int update_dev_no(filename_p encoded, int recursive, dev_t old_no, dev_t new_no) override;
-    long long update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    int update_dev_no(filename_p filename, int recursive, dev_t old_no, dev_t new_no) override;
+    long long update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                       const char *digest) override;
-    long long insert_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    long long insert_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                       const char *digest) override;
-    int insert_update_file(filename_p encoded, const char *checktxt_encoded, struct stat *file_stat,
+    int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
                              const char *digest) override;
     int check_delete(filename_p str_filename, int recursive, int init_run) override;
 

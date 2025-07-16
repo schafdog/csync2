@@ -26,6 +26,7 @@
 #include <string.h>
 #include "database_postgres_v2.hpp"
 #include "database_v2.hpp"
+#include "modern_logging.hpp"
 #include "db_api.hpp"
 #include "db.hpp"
 #include "db_postgres.hpp"
@@ -85,14 +86,14 @@ static void *dl_handle;
 #define SO_FILE "libpq" SO_FILE_EXT
 
 static void db_postgres_dlopen(void) {
-	csync_debug(3, "Opening shared library %s\n", SO_FILE);
+	csync_debug(3, "Opening shared library {}", SO_FILE);
 
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL) {
-		csync_fatal("Could not open libpq.so: %s\n"
-				"Please install postgres client library (libpg) or use other database (sqlite, mysql)\n", dlerror());
+		csync_fatal("Could not open libpq.so: {}\n"
+				"Please install postgres client library (libpg) or use other database (sqlite, mysql)", dlerror());
 	}
-	csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+	csync_debug(3, "Reading symbols from shared library {}", SO_FILE);
 
 	LOOKUP_SYMBOL(dl_handle, PQconnectdb);
 	LOOKUP_SYMBOL(dl_handle, PQstatus);
@@ -144,156 +145,39 @@ static int db_pgsql_parse_url(char *url, char **host, char **user, char **pass, 
 	return DB_OK;
 }
 
-void DbPostgres::close() {
-	if (conn_) {
-		delete conn_;
-		// Shuld be deleted
-		private_data = NULL;
-		conn_ = NULL;
-	}
-	if (!private_data)
-		return;
-	f.PQfinish_fn(static_cast<PGconn*>(private_data));
-	private_data = NULL;
-}
-
-
 const char* DbPostgres::errmsg() {
+    void *private_data = conn_->get_private_data();
 	if (!private_data)
 		return "(no private_data data in conn)";
 	return f.PQerrorMessage_fn(static_cast<PGconn*>(private_data));
 }
 
 int DbPostgres::exec(const char *sql) {
-	PGresult *res;
 
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	res = f.PQexec_fn(static_cast<PGconn*>(private_data), sql);
-	affected_rows = 0;
-
-	switch (f.PQresultStatus_fn(res)) {
-	case PGRES_TUPLES_OK:
-		affected_rows = f.PQntuples_fn(res);
-		f.PQclear_fn(res);
-		return DB_OK;
-	case PGRES_COMMAND_OK:
-		f.PQclear_fn(res);
-		return DB_OK;
-
-	case PGRES_EMPTY_QUERY:
-	case PGRES_COPY_OUT:
-	case PGRES_COPY_IN:
-	default:
-		f.PQclear_fn(res);
-		return DB_ERROR;
-	}
-}
-
-class DbPostgresStmt : public DbStmt {
-public:
-    DbPostgresStmt(PGresult *res, DbApi *db) : DbStmt(db), private_data(res) {
-        row_p = new int;
-        *row_p = -1;
-    }
-    ~DbPostgresStmt() override { close(); };
-
-    const char* get_column_text(int column) override;
-    const char* get_column_blob(int column) override;
-    int get_column_int(int column) override;
-    int next() override;
-    int close() override;
-    long get_affected_rows() override { return 0; };
-    DbApi *get_db_api() { return db_; }
-
-private:
-    PGresult *private_data;
-    int *row_p;
-	DbApi *db_;
-};
-
-const char* DbPostgresStmt::get_column_blob(int column) {
-	if (!private_data || !row_p) {
-		return 0;
-	}
-
-	if (*row_p >= f.PQntuples_fn(private_data) || *row_p < 0) {
-		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(private_data));
-		return NULL;
-	}
-	return f.PQgetvalue_fn(private_data, *row_p, column);
-}
-
-const char* DbPostgresStmt::get_column_text(int column) {
-	if (!private_data || !row_p) {
-		return 0;
-	}
-
-	if (*row_p >= f.PQntuples_fn(private_data) || *row_p < 0) {
-		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(private_data));
-		return NULL;
-	}
-	return f.PQgetvalue_fn(private_data, *row_p, column);
-}
-
-int DbPostgresStmt::get_column_int(int column) {
-	if (!private_data || !row_p) {
-		return 0;
-	}
-
-	if (*row_p >= f.PQntuples_fn(private_data) || *row_p < 0) {
-		csync_error(1, "row index out of range (should be between 0 and %d, is %d)\n", *row_p, f.PQntuples_fn(private_data));
-		return 0;
-	}
-	return atoi(f.PQgetvalue_fn(private_data, *row_p, column));
-}
-
-int DbPostgresStmt::next() {
-	if (!private_data || !row_p) {
-		return 0;
-	}
-
-	(*row_p)++;
-	if (*row_p >= f.PQntuples_fn(private_data))
-		return DB_DONE;
-
-	return DB_ROW;
-}
-
-int DbPostgresStmt::close() {
-    if (private_data) {
-		f.PQclear_fn(private_data);
-		private_data = NULL;
-	}
-    if (row_p) {
-        delete row_p;
-        row_p = NULL;
-    }
-	return DB_OK;
+	conn_->query(sql);
+	return 0;
 }
 
 int DbPostgres::upgrade_to_schema(int new_version) {
-	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
+	csync_info(2, "Upgrading database schema to version {}.", new_version);
 
-	csync_db_sql(this, NULL, /* "Creating action table", */
-	    "CREATE TABLE action ("
+	conn_->execute_update("Creating action table",
+	                "CREATE TABLE action ("
 					"  filename varchar(%u),"
 					"  command varchar(1000),"
 					"  logfile varchar(1000),"
 					"  UNIQUE (filename,command));",
 				 FILE_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating host table", */
-	    "CREATE TABLE host ("
+	conn_->execute_update("Creating host table",
+	                "CREATE TABLE host ("
 					"  host varchar(%u),"
 					"  status integer, "
 					"  UNIQUE (host));",
 					HOST_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating dirty table", */
-	    "CREATE TABLE dirty ("
+	conn_->execute_update("Creating dirty table",
+	                "CREATE TABLE dirty ("
 					"  filename  varchar(%u) ,"
 					"  forced    int         ,"
 					"  myname    varchar(%u) ,"
@@ -309,11 +193,14 @@ int DbPostgres::upgrade_to_schema(int new_version) {
     				"  mtime     int         ,"
     				"  type      int         ,"
     				"  file_id   bigint      ,"
-    				"  timestamp timestamp   DEFAULT current_timestamp,"			"  UNIQUE (filename,peername,myname)"			");"			"CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
+    				"  timestamp timestamp   DEFAULT current_timestamp,"
+                    "  UNIQUE (filename,peername,myname)"			");"
+                    "CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
 	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating file table", */
-	"CREATE TABLE file ("//		     "  id     serial        ,"				 "  parent bigint        ,"
+	conn_->execute_update("Creating file table",
+	    "CREATE TABLE file ("
+		//		     "  id     serial        ,"				 "  parent bigint        ,"
         "  filename varchar(%u) ,"				 //"  basename varchar(%u) ,"
         "  hostname varchar(%u) ,"
         "  checktxt varchar(%u) ,"
@@ -330,15 +217,15 @@ int DbPostgres::upgrade_to_schema(int new_version) {
         "CREATE INDEX idx_file_device_inode ON file (device, inode); ",
 	FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50);
 
-	csync_db_sql(this, NULL, /* "Creating hint table", */
+	conn_->execute_update("Creating hint table",
 	    "CREATE TABLE hint ("
 	        "  filename varchar(%u)   ,"
 	        "  recursive int          ,"
 			"  UNIQUE (filename)       "
-		");",
+			");",
 			  FILE_LENGTH);
 
-	csync_db_sql(this, NULL, /* "Creating x509_cert table", */
+	conn_->execute_update("Creating x509_cert table",
 	    "CREATE TABLE x509_cert ("
 					"  peername varchar(50) ,"
 					"  certdata text ,"
@@ -348,79 +235,29 @@ int DbPostgres::upgrade_to_schema(int new_version) {
 	return DB_OK;
 }
 
-const char* DbPostgres::escape(const char *string) {
-	int rc = DB_ERROR;
-	if (!private_data) {
-		return 0;
-	}
-	if (string == NULL) {
-		return NULL;
-	}
-	size_t length = strlen(string);
-	char *escaped_buffer = ringbuffer_malloc(2 * length + 1);
-	f.PQescapeStringConn_fn(static_cast<PGconn*>(private_data), escaped_buffer, string, length, &rc);
-
-	return escaped_buffer;
-}
-
-int DbPostgres::insert_update_file(filename_p encoded, const char *checktxt_encoded,
+int DbPostgres::insert_update_file(filename_p filename, const char *checktxt,
 		struct stat *file_stat, const char *digest) {
-	BUF_P buf = buffer_init();
-	char *digest_quote = buffer_quote(buf, digest);
 	int count =
-			SQL(this, "Add or update file entry",
+			conn_->execute_update("insert_update_file",
 					"INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
-							"VALUES ('%s', '%s', '%s', %lu, %llu, %s, %u, %lu, %lu, %u) ON CONFLICT (filename, hostname) DO UPDATE SET "
-							"checktxt = '%s', device = %lu, inode = %llu, "
-							"digest = %s, mode = %u, size = %lu, mtime = %lu, type = %u", g_myhostname, encoded.c_str(),
-					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
-					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode),
+							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (filename, hostname) DO UPDATE SET "
+							"checktxt = ?, device = ?, inode = ?, "
+							"digest = ?, mode = ?, size = ?, mtime = ?, type = ?",
+							g_myhostname, filename, checktxt,
+							fstat_dev(file_stat), file_stat->st_ino,
+							digest,
+							file_stat->st_mode, file_stat->st_size, file_stat->st_mtime,
+							get_file_type(file_stat->st_mode),
 					// SET
-					checktxt_encoded, fstat_dev(file_stat), file_stat->st_ino, digest_quote, file_stat->st_mode,
+					checktxt, fstat_dev(file_stat), file_stat->st_ino, digest, file_stat->st_mode,
 					file_stat->st_size, file_stat->st_mtime, get_file_type(file_stat->st_mode));
-	buffer_destroy(buf);
 	return count;
-}
-
-int DbPostgres::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
-	// unused
-	(void) pptail;
-
-	PGresult *result;
-
-	*stmt_p = NULL;
-
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	result = f.PQexec_fn(static_cast<PGconn*>(private_data), sql);
-
-	if (result == NULL) {
-		csync_fatal("No memory for result\n");
-	}
-
-	switch (f.PQresultStatus_fn(result)) {
-	case PGRES_COMMAND_OK:
-		f.PQclear_fn(result);
-		return DB_OK;
-	case PGRES_TUPLES_OK:
-		break;
-
-	default:
-		csync_error(1, "Error in PQexec: %s", f.PQresultErrorMessage_fn(result));
-		f.PQclear_fn(result);
-		return DB_ERROR;
-	}
-
-    *stmt_p = new DbPostgresStmt(result, this);
-	return DB_OK;
 }
 
 DbPostgres::DbPostgres() {}
 
 DbPostgres::~DbPostgres() {
-	close();
+    delete conn_;
     if (dl_handle) {
         dlclose(dl_handle);
         dl_handle = NULL;
@@ -442,7 +279,7 @@ int db_postgres_open(const char *file, db_conn_p *api_p) {
 										   host, user, pass, database, port);
 	pg_conn = f.PQconnectdb_fn(pg_conn_info.c_str());
 	if (pg_conn == NULL) {
-		csync_fatal("No memory for postgress connection handle\n");
+		csync_fatal("No memory for postgress connection handle");
 	}
 	if (f.PQstatus_fn(pg_conn) != CONNECTION_OK) {
 		f.PQfinish_fn(pg_conn);
@@ -451,11 +288,9 @@ int db_postgres_open(const char *file, db_conn_p *api_p) {
 	DatabaseConnection *conn = new PostgresConnection(pg_conn);
     DbPostgres *api = new DbPostgres(conn);
 	if (api == NULL) {
-		csync_fatal("No memory for conn\n");
+		csync_fatal("No memory for conn");
 	}
 	*api_p = api;
-
-	api->private_data = pg_conn;
 
 	return DB_OK;
 }

@@ -20,6 +20,7 @@
 #include "csync2.hpp"
 #include "database.hpp"
 #include "database_v2.hpp"
+#include "modern_logging.hpp"
 #include <memory>
 #if defined(HAVE_SQLITE3)
 #include <sqlite3.h>
@@ -36,6 +37,7 @@
 #include "dl.hpp"
 #include "db_sql.hpp"
 #include "ringbuffer.hpp"
+#include "database_sqlite_v2.hpp"
 
 #ifndef HAVE_SQLITE3
 int db_sqlite_open(const char *file, db_conn_p *conn_p) {
@@ -63,18 +65,18 @@ static void *dl_handle = NULL;
 #define SO_FILE "libsqlite3" SO_FILE_EXT
 
 static void db_sqlite3_dlopen(void) {
-    if (dl_handle)
+    if (dl_handle) {
         return;
-
-	csync_debug(3, "Opening shared library %s\n", SO_FILE);
+	}
+	csync_debug(3, "Opening shared library {}", SO_FILE);
 
 	dl_handle = dlopen(SO_FILE, RTLD_LAZY);
 	if (dl_handle == NULL) {
 		csync_fatal(
-				"Could not open %s: %s\nPlease install sqlite3 client library (libsqlite3) or use other database (postgres, mysql)\n",
+				"Could not open {}: {}\nPlease install sqlite3 client library (libsqlite3) or use other database (postgres, mysql)",
 				SO_FILE, dlerror());
 	}
-	csync_debug(3, "Reading symbols from shared library " SO_FILE "\n");
+	csync_debug(3, "Reading symbols from shared library {}", SO_FILE);
 
 
 	LOOKUP_SYMBOL(dl_handle, sqlite3_open);
@@ -106,74 +108,21 @@ static int db_sqlite_error_map(int sqlite_err) {
 	return DB_OK;
 }
 
-void DbSqlite::close() {
-	if (!private_data)
-		return;
-	f.sqlite3_close_fn(static_cast<sqlite3*>(private_data));
-	private_data = 0;
-}
-
 const char* DbSqlite::errmsg() {
-	if (!private_data)
+    void *private_data = conn_->get_private_data();
+    if (!private_data)
 		return "(no private data in conn)";
 	return f.sqlite3_errmsg_fn(static_cast<sqlite3*>(private_data));
 }
 
 int DbSqlite::exec(const char *sql) {
 	int rc;
+	void *private_data = conn_->get_private_data();
 	if (!private_data) {
 		/* added error element */
 		return DB_NO_CONNECTION_REAL;
 	}
 	rc = f.sqlite3_exec_fn(static_cast<sqlite3*>(private_data), sql, 0, 0, 0);
-	return db_sqlite_error_map(rc);
-}
-
-class DbSqliteStmt : public DbStmt {
-public:
-    DbSqliteStmt(sqlite3_stmt *stmt, DbApi *db) : DbStmt(db), private_data(stmt) {}
-    ~DbSqliteStmt() override { close(); };
-
-    const char* get_column_text(int column) override;
-    const char* get_column_blob(int column) override;
-    int get_column_int(int column) override;
-    int next() override;
-    int close() override;
-    long get_affected_rows() override { return 0; };
-
-private:
-    sqlite3_stmt *private_data;
-};
-
-const char* DbSqliteStmt::get_column_text(int column) {
-	if (!private_data) {
-		return 0;
-	}
-	const unsigned char *result = f.sqlite3_column_text_fn(private_data, column);
-	/* error handling */
-	return reinterpret_cast<const char*>(result);
-}
-
-const char *DbSqliteStmt::get_column_blob(int col) {
-	return static_cast<const char*>(f.sqlite3_column_blob_fn(private_data, col));
-}
-
-int DbSqliteStmt::get_column_int(int column) {
-	int rc = f.sqlite3_column_int_fn(private_data, column);
-	return db_sqlite_error_map(rc);
-}
-
-int DbSqliteStmt::next() {
-	int rc = f.sqlite3_step_fn(private_data);
-	return db_sqlite_error_map(rc);
-}
-
-int DbSqliteStmt::close() {
-    if (!private_data) {
-        return DB_OK;
-	}
-	int rc = f.sqlite3_finalize_fn(private_data);
-    private_data = NULL;
 	return db_sqlite_error_map(rc);
 }
 
@@ -184,65 +133,46 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 	if (version > 0)
 		return DB_ERROR;
 
-	csync_info(2, "Upgrading database schema to version %d.\n", new_version);
+	csync_info(2, "Upgrading database schema to version {}.", new_version);
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating file table", */
-	"CREATE TABLE file ("
-			"\tfilename, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
+	conn_->execute_update("Creating file table",
+	        "CREATE TABLE file ("
+			"  filename TEXT NOT NULL, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
 			"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 			"\tUNIQUE (hostname, filename), "
 			"       ON CONFLICT REPLACE); "
 			"       CREATE INDEX idx_file_device_inode on file (device, inode);");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating dirty table", */
+	conn_->execute_update("Creating dirty table",
 			"CREATE TABLE dirty ("
-					"\tfilename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
+					"filename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
 					"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-					"\tUNIQUE (filename, peername), "
-					"\tKEY (device, inode), "
+					"UNIQUE (filename, peername), "
+					"KEY (device, inode), "
 					"       ON CONFLICT IGNORE); "
-					"       CREATE INDEX idx_dirty_device_inode on file (device, inode);");
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating hint table", */
-	"CREATE TABLE hint ("
-			"\tfilename, recursive,"
-			"\tUNIQUE ( filename, recursive ) ON CONFLICT IGNORE)");
+					"CREATE INDEX idx_dirty_device_inode on file (device, inode);");
+	conn_->execute_update("Creating hint table",
+	        "CREATE TABLE hint ("
+			" filename, recursive,"
+			" UNIQUE ( filename, recursive ) ON CONFLICT IGNORE)");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating action table", */
-	"CREATE TABLE action ("
-			"\tfilename, command, logfile, "
-			"\tUNIQUE ( filename, command ) ON CONFLICT IGNORE"
+	conn_->execute_update("Creating action table",
+	        "CREATE TABLE action ("
+			" filename, command, logfile, "
+			" UNIQUE ( filename, command ) ON CONFLICT IGNORE"
 			")");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating host table", */
-	"CREATE TABLE host ("
-			"\thostname, status, "
-			"\tUNIQUE ( hostname ) ON CONFLICT IGNORE)");
+	conn_->execute_update("Creating host table",
+	        "CREATE TABLE host ("
+			" hostname, status, "
+			" UNIQUE ( hostname ) ON CONFLICT IGNORE)");
 
-	csync_db_sql(reinterpret_cast<db_conn_p>(this->private_data), NULL, /* "Creating x509_cert table", */
-	"CREATE TABLE x509_cert ("
-			"\tpeername, certdata, "
-			"\tUNIQUE ( peername ) ON CONFLICT IGNORE)");
+	conn_->execute_update("Creating x509_cert table",
+	        "CREATE TABLE x509_cert ("
+			" peername, certdata, "
+			" UNIQUE ( peername ) ON CONFLICT IGNORE)");
 
 	return DB_OK;
-}
-
-int DbSqlite::prepare(const char *sql, DbStmt **stmt_p, const char **pptail) {
-	int rc;
-
-	*stmt_p = NULL;
-
-	if (!private_data) {
-		/* added error element */
-		return DB_NO_CONNECTION_REAL;
-	}
-	sqlite3_stmt *sqlite_stmt = 0;
-	/* TODO avoid strlen, use configurable limit? */
-	rc = f.sqlite3_prepare_v2_fn(static_cast<sqlite3*>(private_data), sql, strlen(sql), &sqlite_stmt, pptail);
-	if (rc != SQLITE_OK)
-		return db_sqlite_error_map(rc);
-
-    *stmt_p = new DbSqliteStmt(sqlite_stmt, this);
-	return db_sqlite_error_map(rc);
 }
 
 DbSqlite::DbSqlite() {}
@@ -264,14 +194,12 @@ int db_sqlite_open(const char *file, db_conn_p *conn_p) {
 	if (rc != SQLITE_OK) {
 		return db_sqlite_error_map(rc);
 	};
-
-    DbSqlite *conn = new DbSqlite();
+	DatabaseConnection *conn = new SQLiteConnection(db);
+    DbSqlite *dbApi = new DbSqlite(conn);
 	if (conn == NULL) {
 		return DB_ERROR;
 	}
-
-	conn->private_data = db;
-    *conn_p = conn;
+	*conn_p = dbApi;
 
 	return db_sqlite_error_map(rc);
 }

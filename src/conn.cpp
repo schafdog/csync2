@@ -40,6 +40,11 @@
 #include "db.hpp"
 #include "utils.hpp"
 
+// C++20 std::format support
+#if __cplusplus >= 202002L && __has_include(<format>)
+    #include <format>
+#endif
+
 #ifdef HAVE_LIBGNUTLS
 #  include <gnutls/gnutls.h>
 #  include <gnutls/x509.h>
@@ -64,7 +69,7 @@ static struct sockaddr * csync_lookup_addr(const char *hostname, const char *por
 
 	int s = getaddrinfo(hostname, port, &hints, &result);
 	if (s != 0) {
-		csync_warn(1, "Cannot resolve peername, getaddrinfo: %s\n", gai_strerror(s));
+		csync_warn(1, "Cannot resolve peername, getaddrinfo: {}\n", gai_strerror(s));
 		return NULL;
 	}
 
@@ -122,52 +127,52 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 	struct csync_hostinfo *p = csync_hostinfo;
 	const char *peername = str_peername.c_str();
 	const  char *port = csync_port;
-	csync_debug(2, "Looking for alternative host:port for %s\n", peername);
+	csync_debug(2, "Looking for alternative host:port for {}\n", peername);
 	while (p) {
 		if (str_peername == p->name) {
 			peername = p->host;
 			port = p->port;
-			csync_debug(2, "Using alternative port to %s:%s \n", peername, port);
+			csync_debug(2, "Using alternative port to {}:{} \n", peername, port);
 			break;
 		}
 		p = p->next;
 	}
-	csync_debug(2, "Connecting to %s:%s from %s\n", peername, port, myhostname.c_str());
+	csync_debug(2, "Connecting to {}:{} from {}\n", peername, port, myhostname.c_str());
 
 	sfd = socket(ip_version, SOCK_STREAM, 0);
 	if (sfd == -1) {
-		csync_error(0, "Failed to create socket: %d, %s %d %d\n", errno, strerror(errno), AF_INET, AF_INET6);
+		csync_error(0, "Failed to create socket: {}, {} {} {}\n", errno, strerror(errno), AF_INET, AF_INET6);
 		return -1;
 	}
 
 	struct sockaddr *localaddr = csync_lookup_addr(myhostname.c_str(), NULL, ip_version);
 	if (localaddr == NULL) {
-		csync_error(0, "Failed to look up locala address address from %s\n", peername);
+		csync_error(0, "Failed to look up locala address address from {}\n", peername);
 	}
 	struct sockaddr *peeraddr = csync_lookup_addr(peername, port, ip_version);
 
 	if (peeraddr == NULL) {
-		csync_error(0, "Failed to look up peer address from %s\n", peername);
+		csync_error(0, "Failed to look up peer address from {}\n", peername);
 		return -1;
 	}
 	size_t sockaddr_size = get_sockaddr_len(peeraddr);
 
 	if (localaddr != NULL) {
 		char ipstr[INET6_ADDRSTRLEN];
-		csync_info(2, "Using specific address %s\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
+		csync_info(2, "Using specific address {}\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
 		if (bind(sfd, localaddr, sockaddr_size) == -1) {
-			csync_error(0, "Failed to bind to %s: %d, %s\n", ipstr, errno, strerror(errno));
+			csync_error(0, "Failed to bind to {}: {}, {}\n", ipstr, errno, strerror(errno));
 		}
 		free(localaddr);
 	}
 
 	if (connect(sfd, peeraddr, sockaddr_size) == -1) {
-		csync_error(0, "Failed to connect to peer %s:%s: %d, %s\n", peername, port, errno, strerror(errno));
+		csync_error(0, "Failed to connect to peer {}:{}: {}, {}\n", peername, port, errno, strerror(errno));
 		free(peeraddr);
 		return -1;
 	}
 	free(peeraddr);
-	csync_debug(2, "Connected to %s:%s \n", peername, port);
+	csync_debug(2, "Connected to {}:{} \n", peername, port);
 	return sfd;
 }
 
@@ -213,7 +218,7 @@ int conn_set(int infd, int outfd) {
 	// in csync2.c with more restrictive error handling..
 	// FIXME don't even try in "ssh" mode
 	if (setsockopt(outfd, IPPROTO_TCP, TCP_NODELAY, &on, static_cast<socklen_t>(sizeof(on))) < 0)
-		csync_error(1, "Can't set TCP_NODELAY option on TCP socket (outfd): %d.\n", outfd);
+		csync_error(1, "Can't set TCP_NODELAY option on TCP socket (outfd): {}.\n", outfd);
 
 	return 0;
 }
@@ -246,7 +251,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 		gnutls_certificate_free_credentials(conn_x509_cred);
 		gnutls_global_deinit();
 
-		csync_fatal("SSL: failed to use key file %s and/or certificate file %s: %s (%s)\n", ssl_keyfile, ssl_certfile,
+		csync_fatal("SSL: failed to use key file {} and/or certificate file {}: {} ({})\n", ssl_keyfile, ssl_certfile,
 				gnutls_strerror(err), gnutls_strerror_name(err));
 	}
 
@@ -257,7 +262,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 			gnutls_certificate_free_credentials(conn_x509_cred);
 			gnutls_global_deinit();
 
-			csync_fatal("SSL: failed to use certificate file %s as CA.\n", ssl_certfile);
+			csync_fatal("SSL: failed to use certificate file {} as CA.\n", ssl_certfile);
 		}
 	} else
 	gnutls_certificate_free_ca_names(conn_x509_cred);
@@ -295,7 +300,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 		gnutls_certificate_free_credentials(conn_x509_cred);
 		gnutls_global_deinit();
 
-		csync_fatal("SSL: handshake failed: %s (%s)\n", gnutls_strerror(err), gnutls_strerror_name(err))
+		csync_fatal("SSL: handshake failed: {} ({})\n", gnutls_strerror(err), gnutls_strerror_name(err))
 ;	}
 
 	csync_conn_usessl = 1;
@@ -303,7 +308,7 @@ int conn_activate_ssl(int server_role, int conn_fd_in, int conn_fd_out) {
 	return 0;
 }
 
-int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
+int conn_check_peer_cert(DatabaseConnection *conn, peername_p peername, int callfatal) {
 	const gnutls_datum_t *peercerts;
 	unsigned npeercerts;
 	int cert_is_ok = -1;
@@ -318,43 +323,39 @@ int conn_check_peer_cert(db_conn_p db, peername_p peername, int callfatal) {
 		csync_error(1, "Peer did not provide an SSL X509 cetrificate.\n");
 		return 0;
 	}
+	char *certdata = static_cast<char*>(malloc(2 * peercerts[0].size + 1));
+	size_t size;
+	for (size = 0; size < peercerts[0].size; size++)
+		sprintf(&certdata[2 * size], "%02X", peercerts[0].data[size]);
+	certdata[2 * size] = 0;
+	auto rs = conn->execute_query("Checking peer x509 certificate",
+			"SELECT certdata FROM x509_cert WHERE peername = ? ", peername);
 
-	{
-		char *certdata = static_cast<char*>(malloc(2 * peercerts[0].size + 1));
-		size_t size;
-		for (size = 0; size < peercerts[0].size; size++)
-			sprintf(&certdata[2 * size], "%02X", peercerts[0].data[size]);
-		certdata[2 * size] = 0;
+	while (rs->next()) {
+		if (!strcmp(static_cast<const char*>(rs->get_string(1).c_str()), certdata))
+			cert_is_ok = 1;
+			else
+			cert_is_ok = 0;
+    };
 
-		SQL_BEGIN(db, "Checking peer x509 certificate.",
-				"SELECT certdata FROM x509_cert WHERE peername = '%s'",
-				url_encode(peername))
-{				if (!strcmp(static_cast<const char*>(SQL_V(0)), certdata))
-				cert_is_ok = 1;
-				else
-				cert_is_ok = 0;
-			}SQL_END;
-
-		if (cert_is_ok < 0) {
-			csync_debug(1, "Adding peer x509 certificate to db: %s\n", certdata);
-			SQL(db, "Adding peer x509 sha1 hash to database.",
-					"INSERT INTO x509_cert (peername, certdata) VALUES ('%s', '%s')", url_encode(peername),
-					url_encode(certdata));
-			return 1;
-		}
-
-		csync_info(2, "Peer x509 certificate is: %s\n", certdata);
-
-		if (!cert_is_ok) {
-			if (callfatal)
-				csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
-			csync_error(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
-			free(certdata);
-			return 0;
-		}
-		free(certdata);
+	if (cert_is_ok < 0) {
+		csync_debug(1, "Adding peer x509 certificate to db: {}\n", certdata);
+		conn->execute_update("add_certificate",
+				"INSERT INTO x509_cert (peername, certdata) VALUES (?, ?)",
+				peername, certdata);
+		return 1;
 	}
 
+	csync_info(2, "Peer x509 certificate is: {}\n", certdata);
+
+	if (!cert_is_ok) {
+		if (callfatal)
+			csync_fatal("Peer did provide a wrong SSL X509 cetrificate.\n");
+		csync_error(1, "Peer did provide a wrong SSL X509 cetrificate.\n");
+		free(certdata);
+		return 0;
+	}
+	free(certdata);
 	return 1;
 }
 
@@ -399,7 +400,7 @@ static inline size_t READ_POLL(int filedesc, char *buf, size_t count) {
 		pfd.events = POLLIN;
 		int rc = poll(&pfd, 1, TIMEOUT_MS);
 		if (rc < 0) {
-			csync_error(0, "Error in READ: %d %s\n", errno, strerror(errno));
+			csync_error(0, "Error in READ: {} {}\n", errno, strerror(errno));
 			return rc;
 		} else if (rc == 0) {
 			printf("[!] Timeout: no data received.\n");
@@ -412,7 +413,7 @@ static inline size_t READ_POLL(int filedesc, char *buf, size_t count) {
 				csync_error(2, "Interupted while reading. Continue\n");
 			else {
 				if (length < 0) {
-					csync_error(3, "Error in READ: %d %s\n", errno, strerror(errno));
+					csync_error(3, "Error in READ: {} {}\n", errno, strerror(errno));
 					return length;
 				} else if (length == 0) {
 					// EOF
@@ -444,7 +445,7 @@ static size_t READ(int filedesc, void *buf, size_t count) {
 		return -2;
 	}
 	if (rc < 0) {
-		csync_error(0, "Error in READ: %d %s\n", errno, strerror(errno));
+		csync_error(0, "Error in READ: {} {}\n", errno, strerror(errno));
 		return rc;
 	}
 	ssize_t length = 0;
@@ -454,7 +455,7 @@ static size_t READ(int filedesc, void *buf, size_t count) {
 			csync_error(2, "Interupted while reading\n");
 		else {
 			if (length < 0)
-				csync_error(3, "Error in READ: %d %s\n", errno, strerror(errno));
+				csync_error(3, "Error in READ: {} {}\n", errno, strerror(errno));
 			return length;
 		}
 	}
@@ -523,18 +524,18 @@ ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	int rc = !conn_gets(fd, buffer, 200);
 	const char *typestr = "None";
 	if (sscanf(buffer, "octet-stream %zu\n", size) == 1) {
-		csync_info(2, "Got octet-stream %zu\n", *size);
+		csync_info(2, "Got octet-stream {}\n", *size);
 		*type = OCTET_STREAM;
 		typestr = "octet-stream";
 	} else if (sscanf(buffer, "chunked %zu\n", size) == 1) {
-		csync_info(2, "Got chuncked-stream %zu\n", *size);
+		csync_info(2, "Got chuncked-stream {}\n", *size);
 		*type = CHUNKED_MODE;
 		typestr = "chunked";
 	} else {
-		csync_error(0, "Failed to content-length: '%s'\n", buffer);
+		csync_error(0, "Failed to content-length: '{}'\n", buffer);
 	}
 
-	csync_debug(2, "Content length in buffer: '%s' size: %lld rc: %d (%s)\n", buffer, *size, rc, typestr);
+	csync_debug(2, "Content length in buffer: '{}' size: {} rc: {} ({})\n", buffer, *size, rc, typestr);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
 		return -1;
@@ -549,11 +550,11 @@ int conn_write_chunk(int sockfd, const char *buffer, size_t size) {
 		csync_error(0, "Error sending chunk header");
 		return -1;
 	}
-	csync_debug(3,"Chunk header %zx %lu\n", size, size);
+	csync_debug(3,"Chunk header {:x} {}\n", size, size);
 
 	if (size > 0) {
 		if (send(sockfd, buffer, size, 0) == -1) {
-			csync_error(1, "Error sending chunk of size %lu", size);
+			csync_error(1, "Error sending chunk of size {}", size);
 			return -1;
 		}
 	}
@@ -561,7 +562,7 @@ int conn_write_chunk(int sockfd, const char *buffer, size_t size) {
 		csync_error(1, "Error sending chunk delimiter\n");
 		return -1;
 	}
-	csync_debug(3,"Chunk %lu sent.\n", size);
+	csync_debug(3,"Chunk {} sent.\n", size);
 	return 0;
 }
 
@@ -573,7 +574,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	while (1) {
 		ssize_t header_len = recv(sockfd, header, sizeof(header) - 1, MSG_PEEK);
 		if (header_len <= 0) {
-			csync_error(1, "Error receiving chunk header %ld", header_len);
+			csync_error(1, "Error receiving chunk header {}", header_len);
 			return -1;
 		}
 
@@ -587,7 +588,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 		sscanf(header, "%zx", &chunk_size);  // Read the chunk size in hexadecimal
 		recv(sockfd, header, end_of_header - header + 2, 0);  // Consume the header
 		*end_of_header = '\0';
-		csync_debug(3, "CHUNK header %zx %lu\n", chunk_size, chunk_size);
+		csync_debug(3, "CHUNK header {:x} {}\n", chunk_size, chunk_size);
 		break;
 	}
 
@@ -598,9 +599,9 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 		*buffer = static_cast<char*>(malloc(chunk_size));
 		while (bytes_received < chunk_size) {
 			ssize_t n = recv(sockfd, *buffer + bytes_received, chunk_size - bytes_received, 0);
-			csync_debug(3, "Read %ld bytes from peer", n);
+			csync_debug(3, "Read {} bytes from peer", n);
 			if (n <= 0) {
-				csync_debug(1, "Error receiving file chunk %ld %ld %ld", n, chunk_size - bytes_received, CHUNK_SIZE);
+				csync_debug(1, "Error receiving file chunk {} {} {}", n, chunk_size - bytes_received, CHUNK_SIZE);
 				return -1;
 			}
 			bytes_received += n;
@@ -609,7 +610,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 	// Consume the trailing "\r\n" after each chunk
 	char tmp[2];
 	recv(sockfd, tmp, 2, 0);
-	csync_debug(3, "Chunk read %zx %lu\n", *size, *size);
+	csync_debug(3, "Chunk read {:x} {}\n", *size, *size);
 	return static_cast<ssize_t>(*size);
 }
 
@@ -623,9 +624,9 @@ int conn_send_file_chunked(int sockfd, FILE *file, size_t size) {
 			csync_error(0, "Failed reading file while sending");
 			return -1;
 		}
-		//csync_debug(3, "DUMP: %s\n", to_hex(buffer, chunk, hexbuf));
+		//csync_debug(3, "DUMP: {}\n", to_hex(buffer, chunk, hexbuf));
 		if (conn_write_chunk(sockfd, buffer, chunk) != 0) {
-			csync_error(0, "Failed to send file chunked %ld\n", chunk);
+			csync_error(0, "Failed to send file chunked {}\n", chunk);
 			return -1;
 		}
 		size -= chunk;
@@ -726,14 +727,14 @@ void conn_printf(int fd, const char *fmt, ...) {
 	conn_write(fd, buffer, size);
 	conn_remove_key(buffer);
 	char *str = filter_mtime(buffer);
-	csync_info(2, "CONN %s < %s\n", active_peer, str);
+	csync_info(2, "CONN {} < {}\n", active_peer, str);
 }
 
 static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...) {
 	char dummy = 0, *buffer = 0;
 	va_list ap;
 	int size;
-	csync_debug(2, "conn_printf_cmd_filepath: unused parameters cmd %s file %s key_enc %s", cmd, file, key_enc);
+	csync_debug(2, "conn_printf_cmd_filepath: unused parameters cmd {} file {} key_enc {}", cmd, file, key_enc);
 	va_start(ap, fmt);
 	size = vsnprintf(&dummy, 1, fmt, ap);
 	buffer = static_cast<char*>(alloca(size + 1));
@@ -746,7 +747,7 @@ static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, 
 	buffer[size] = 0;
 	conn_write(fd, buffer, size);
 	conn_remove_key(buffer);
-	csync_info(2, "CONN %s < %s\n", active_peer, buffer);
+	csync_info(2, "CONN {} < {}\n", active_peer, buffer);
 }
 
 ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
@@ -769,12 +770,12 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 	int rc = gets_newline(filedesc, s, size, remove_newline);
 	if (rc == -1) {
-		csync_error(0, "CONN %s > %s failed with error '%s' \n", active_peer, s, strerror(errno));
+		csync_error(0, "CONN {} > {} failed with error '{}' \n", active_peer, s, strerror(errno));
 		return rc;
 	}
 	// Filter mtime but on a copy.
 	char *copy = filter_mtime_copy(s);
-	csync_info(2, "CONN %s > '%s'\n", active_peer, copy);
+	csync_info(2, "CONN {} > '{}'\n", active_peer, copy);
 	free(copy);
 	return rc;
 }

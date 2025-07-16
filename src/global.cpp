@@ -25,7 +25,12 @@ int csync_dump_dir_fd = -1;
 const char *csync_confdir = NULL;
 char *csync_database = 0;
 const char *csync_port = "30865";
-char g_myhostname[256] = "";
+std::string g_myhostname;
+
+// C-compatible accessor function
+extern "C" const char* get_g_myhostname(void) {
+    return g_myhostname.c_str();
+}
 
 const char *g_cfgname = "";
 char *g_active_grouplist = 0;

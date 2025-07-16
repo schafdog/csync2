@@ -216,6 +216,96 @@ done
 AC_SUBST([WARNING_CXXFLAGS])
 AC_MSG_RESULT([enabled: $WARNING_CXXFLAGS])
 
+# Build configuration: debug/release modes
+AC_ARG_ENABLE([debug],
+    [AS_HELP_STRING([--enable-debug], [Enable debug build with symbols and sanitizers (default: yes)])],
+    [enable_debug=$enableval],
+    [enable_debug=yes])
+
+AC_ARG_ENABLE([release],
+    [AS_HELP_STRING([--enable-release], [Enable release build with optimizations (default: no)])],
+    [enable_release=$enableval],
+    [enable_release=no])
+
+AC_ARG_ENABLE([address-sanitizer],
+    [AS_HELP_STRING([--enable-address-sanitizer], [Enable AddressSanitizer (default: auto)])],
+    [enable_asan=$enableval],
+    [enable_asan=auto])
+
+# Build type validation
+if test "$enable_debug" = "yes" && test "$enable_release" = "yes"; then
+    AC_MSG_ERROR([Cannot enable both debug and release builds. Choose one.])
+fi
+
+# Configure build type
+BUILD_CXXFLAGS=""
+BUILD_LDFLAGS=""
+
+if test "$enable_release" = "yes"; then
+    AC_MSG_NOTICE([Configuring release build])
+    BUILD_TYPE="release"
+    BUILD_CXXFLAGS="-O2 -DNDEBUG"
+    
+    # Add minimal debug info for release builds
+    BUILD_CXXFLAGS="$BUILD_CXXFLAGS -g1"
+    
+    # Disable AddressSanitizer in release builds unless explicitly enabled
+    if test "$enable_asan" = "auto"; then
+        enable_asan=no
+    fi
+    
+    AC_DEFINE([BUILD_TYPE], ["release"], [Build type])
+    AC_DEFINE([NDEBUG], [1], [Disable debug assertions])
+    
+elif test "$enable_debug" = "yes"; then
+    AC_MSG_NOTICE([Configuring debug build])
+    BUILD_TYPE="debug"
+    BUILD_CXXFLAGS="-g -O0 -DDEBUG"
+    
+    # Enable AddressSanitizer by default in debug builds
+    if test "$enable_asan" = "auto"; then
+        enable_asan=yes
+    fi
+    
+    AC_DEFINE([BUILD_TYPE], ["debug"], [Build type])
+    AC_DEFINE([DEBUG], [1], [Enable debug features])
+    
+else
+    AC_MSG_NOTICE([Configuring default build (debug mode)])
+    BUILD_TYPE="default"
+    BUILD_CXXFLAGS="-g -O0"
+    
+    # Enable AddressSanitizer by default
+    if test "$enable_asan" = "auto"; then
+        enable_asan=yes
+    fi
+    
+    AC_DEFINE([BUILD_TYPE], ["default"], [Build type])
+fi
+
+# Configure AddressSanitizer
+if test "$enable_asan" = "yes"; then
+    AC_MSG_NOTICE([Enabling AddressSanitizer])
+    BUILD_CXXFLAGS="$BUILD_CXXFLAGS -fsanitize=address -fno-omit-frame-pointer"
+    BUILD_LDFLAGS="$BUILD_LDFLAGS -fsanitize=address"
+    AC_DEFINE([HAVE_ADDRESS_SANITIZER], [1], [Define if AddressSanitizer is enabled])
+else
+    AC_MSG_NOTICE([AddressSanitizer disabled])
+fi
+
+# Remove sanitizer flags from WARNING_CXXFLAGS since we handle them separately now
+WARNING_CXXFLAGS=`echo "$WARNING_CXXFLAGS" | sed -e 's/-fsanitize=address//g' -e 's/-fno-omit-frame-pointer//g'`
+
+# Substitute build configuration variables
+AC_SUBST([BUILD_CXXFLAGS])
+AC_SUBST([BUILD_LDFLAGS])
+AC_SUBST([BUILD_TYPE])
+
+AC_MSG_NOTICE([Build configuration: $BUILD_TYPE])
+AC_MSG_NOTICE([Build CXXFLAGS: $BUILD_CXXFLAGS])
+AC_MSG_NOTICE([Build LDFLAGS: $BUILD_LDFLAGS])
+AC_MSG_NOTICE([AddressSanitizer: $enable_asan])
+
 # macOS-specific bison verification
 case "$host_os" in
     darwin*)

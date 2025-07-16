@@ -51,6 +51,7 @@ public:
     PostgresPreparedStatement(PGconn* conn, const std::string& name, const std::string& sql, std::shared_ptr<PostgresAPI> api);
     ~PostgresPreparedStatement() override = default; // Nothing to do, server cleans up
 
+    using PreparedStatement::bind; // Bring all base class bind methods into scope
     void bind(int index, int value) override;
     void bind(int index, long long value) override;
     void bind(int index, long value) override;

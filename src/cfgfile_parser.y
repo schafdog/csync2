@@ -88,7 +88,7 @@ static void add_host(char *hostname, char *peername, int slave)
 		hostname[i] = tolower(hostname[i]);
     for (i=0; peername[i]; i++)
 		peername[i] = tolower(peername[i]);
-    if ( strcmp(hostname, g_myhostname) == 0 ) {
+    if ( strcmp(hostname, get_g_myhostname()) == 0 ) {
 		csync_group->local_slave = slave;
 		if (!csync_group->myname)
 			csync_group->myname = peername;
@@ -510,7 +510,7 @@ static void create_prefix_entry(char *pattern,  char *path)
 	if (path[0] != '/')
 		csync_fatal_c("Config error: Prefix '%s' is not an absolute path.\n", path);
 
-	if (!csync_prefix->path && !fnmatch(pattern, g_myhostname, 0)) {
+	if (!csync_prefix->path && !fnmatch(pattern, get_g_myhostname(), 0)) {
 #ifdef __CYGWIN__
 		if (isalpha(path[0]) && path[1] == ':' &&
 		    (path[2] == '/' || path[2] == '\\')) {

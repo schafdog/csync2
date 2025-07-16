@@ -112,7 +112,7 @@ void test_db_api(const std::string &conn_str) {
     filestat.st_ino = 12345;
     filestat.st_dev = 67890;
     // BUG 1
-    strcpy(g_myhostname, hostname);
+    g_myhostname = hostname;
     int count = api->remove_dirty(peername, filename, 0);
     std::cout << "remove_dirty count (recursive): " << count << std::endl;
     count = api->remove_dirty(peername, filename, 1);

@@ -4,6 +4,7 @@
  */
 
 #include "csync2.hpp"
+#include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -12,17 +13,38 @@
 #include <time.h>
 #include "db_api.hpp"
 
+#include "database.hpp"
 #include "db_mysql.hpp"
 #include "db_postgres.hpp"
 #include "db_sqlite.hpp"
-#include "db_sqlite2.hpp"
 
 #define DEADLOCK_MESSAGE \
 	"Database backend is exceedingly busy => Terminating (requesting retry).\n"
 
+DbApi *db_create_api(std::unique_ptr<DatabaseConnection>& conn) {
+		switch (conn->getType()) {
+		case DBType::SQLite:
+			return new DbSqlite(conn);
+		case DBType::MySQL:
+			return new DbMySql(conn.release());
+		case DBType::PostgreSQL:
+			return new DbPostgres(conn.release());
+		default:
+			throw DatabaseError("Unknown DatabaseConnection");
+		}
+}
+
+DbApi *db_create_api(const char *conn_str) {
+    auto conn = create_connection(conn_str);
+	if (conn == NULL) {
+		throw DatabaseError(std::string("Unknown DatabaseConnection:") + conn_str);
+	}
+	return db_create_api(conn);
+}
+
 static int db_detect_type(const char **db_str, int type) {
-	const char *db_types[] = { "mysql://", "sqlite3://", "sqlite2://", "pgsql://", 0 };
-	int types[] = { DB_MYSQL, DB_SQLITE3, DB_SQLITE2, DB_PGSQL };
+	const char *db_types[] = { "mysql://", "sqlite3://", "pgsql://", 0 };
+	int types[] = { DB_MYSQL, DB_SQLITE3, DB_PGSQL };
 	int index;
 	for (index = 0; 1; index++) {
 		if (db_types[index] == 0)
@@ -91,95 +113,5 @@ void db_set_logger(db_conn_p conn, void (*logger)(int priority, int lv, const ch
 void db_conn_close(db_conn_p conn) {
 	if (!conn)
 		return;
-	conn->close();
-}
-
-const char* db_errmsg(db_conn_p conn) {
-	if (conn)
-		return conn->errmsg();
-
-	return "(no error message function available)";
-}
-
-const char* db_escape(db_conn_p conn, const char *string) {
-	if (!string)
-		return string;
-	if (conn)
-		return conn->escape(string);
-	csync_error(0, "No Connection to escape %s.", string);
-	return string;
-}
-
-const char* db_escape(db_conn_p conn, filename_p filename) {
-	const char *string = filename.c_str();
-	if (!string)
-		return string;
-	if (conn)
-		return conn->escape(string);
-	csync_error(0, "No Connection configured.");
-	return string;
-}
-
-int db_exec(db_conn_p conn, const char *sql) {
-	if (conn)
-		return conn->exec(sql);
-
-	csync_error(0, "No exec function in db_exec.\n");
-	return DB_ERROR;
-}
-
-int db_prepare_stmt(db_conn_p conn, const char *sql, db_stmt_p *stmt, const char **pptail) {
-	if (conn)
-		return conn->prepare(sql, stmt, pptail);
-
-	csync_error(0, "No conn to prepare %s.\n", sql);
-	return DB_ERROR;
-}
-
-const char* db_stmt_get_column_text(db_stmt_p stmt, int column) {
-	if (stmt)
-		return stmt->get_column_text(column);
-
-	csync_error(0, "No stmt in db_stmt_get_column_text / no function.\n");
-	return NULL;
-}
-
-int db_stmt_get_column_int(db_stmt_p stmt, int column) {
-	if (stmt)
-		return stmt->get_column_int(column);
-
-	csync_error(0, "No stmt in db_stmt_get_column_int / no function.\n");
-	return 0;
-}
-
-int db_stmt_next(db_stmt_p stmt) {
-	if (stmt)
-		return stmt->next();
-
-	csync_error(0, "No stmt in db_stmt_next / no function.\n");
-	return DB_ERROR;
-}
-
-int db_stmt_close(db_stmt_p stmt) {
-	if (stmt) {
-		int rc =  stmt->close();
-		delete stmt;
-		return rc;
-	}
-
-	csync_error(0, "No stmt in db_stmt_close / no function.\n");
-	return DB_ERROR;
-}
-
-int db_schema_version(db_conn_p db) {
-	int version = db->schema_version();
-	csync_debug(2, "db_schema_version: %d\n", version);
-	return version;
-}
-
-int db_upgrade_to_schema(db_conn_p db, int version) {
-	csync_debug(0, "db_upgrade_to_schema: %d\n", version);
-	if (db)
-		return db->upgrade_to_schema(version);
-	return DB_ERROR;
+	delete conn;
 }
