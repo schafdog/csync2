@@ -136,15 +136,17 @@ function daemon {
     CMD=$1
     DCFG=$2
     DNAME=$3
-    if [ "$DAEMON" == "NO" ] ; then
-	echo "daemon start disabled";
-	return 
-    fi
     if [ "$DCFG" == "" ] ; then
 	DCFG=peer
     fi
     if [ "$DNAME" == "" ] ; then
 	DNAME=local
+    fi
+    if [ "$DAEMON" == "NO" ] ; then
+	echo "daemon start disabled";
+	echo "${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG (enter to continue)"
+	read
+	return 
     fi
     # Create backupdir
     mkdir -p /tmp/csync2 
