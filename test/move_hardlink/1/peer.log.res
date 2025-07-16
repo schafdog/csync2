@@ -16,20 +16,6 @@ Checking for modified files <TESTBASE>/test/peer/Maildir
 Checking for deleted files <TESTBASE>/test/peer/Maildir.
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir  
 IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Command: local: MKDIR <TESTBASE>/test/peer/Maildir/.Trash - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Running check for <TESTBASE>/test/peer/Maildir/.Trash ...
-Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash 
-Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash.
-Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash  
-IDENT (cmd_finished).
-Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Command: local: MKDIR <TESTBASE>/test/peer/Maildir/.Trash/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
-Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
-Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
-Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
-IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: MKDIR <TESTBASE>/test/peer/Maildir/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/Maildir/cur ...
@@ -43,6 +29,20 @@ Running check for <TESTBASE>/test/peer/Maildir/tmp ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/tmp 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/tmp  
+IDENT (cmd_finished).
+Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MKDIR <TESTBASE>/test/peer/Maildir/.Trash - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Running check for <TESTBASE>/test/peer/Maildir/.Trash ...
+Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash 
+Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash.
+Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash  
+IDENT (cmd_finished).
+Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MKDIR <TESTBASE>/test/peer/Maildir/.Trash/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
+Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
+Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
+Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/tmp/123 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: CREATE <TESTBASE>/test/peer/Maildir/tmp/123 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -61,13 +61,6 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
-Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Command: local: MOD <TESTBASE>/test/peer/Maildir/.Trash/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
-Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
-Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
-Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
-IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: MOD <TESTBASE>/test/peer/Maildir/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/Maildir/cur ...
@@ -81,6 +74,13 @@ Running check for <TESTBASE>/test/peer/Maildir/tmp ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/tmp 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/tmp  
+IDENT (cmd_finished).
+Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer/Maildir/.Trash/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
+Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
+Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
+Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/tmp/123 <TESTBASE>/test/peer/Maildir/cur/123,Sab        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/tmp/123 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/123,Sab 1
@@ -97,7 +97,7 @@ Updated(mkhardlink) local:<TESTBASE>/test/peer/Maildir/.Trash/cur/123,Sab <TESTB
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/.Trash/cur xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/tmp xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/cur xxxxxxxx        
-Command: local: SETTIME <TESTBASE>/test/peer/Maildir xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/.Trash xxxxxxxx        
+Command: local: SETTIME <TESTBASE>/test/peer/Maildir xxxxxxxx        
 Command: local: BYE          
 goto nofork.

@@ -73,11 +73,13 @@ Checking for modified files <TESTBASE>/test/peer/new_file 'N' all.link
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.link.
 Removing file <TESTBASE>/test/peer/new_file 'N' all.link
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/new_file 'N' all.link from file db.
 Running check for <TESTBASE>/test/peer/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 Removing file <TESTBASE>/test/peer/new_file 'N' all
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
 Running check for <TESTBASE>/test/peer/bad.link ...

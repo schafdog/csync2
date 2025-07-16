@@ -20,9 +20,9 @@ Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir' ''
-Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash' ''
-Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' ''
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/cur' ''
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/tmp' ''
+Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash' ''
+Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' ''
 Updating (NEW) 'peer:<TESTBASE>/test/local/Maildir/tmp/123' ''
 CREATE <TESTBASE>/test/local/Maildir/tmp/123 4

@@ -340,6 +340,7 @@ check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older/update_both won
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolved. clear dirty
 backup <TESTBASE>/test/peer/auto/older/update_both 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.3 due  3 
 Remove backup /tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.3 due to generation 3 
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.2' to '/tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.3'. rc = 0
@@ -437,6 +438,7 @@ Checking for deleted files <TESTBASE>/test/peer/auto/older/update_both.
 daemon_check_dirty: <TESTBASE>/test/peer/auto/older/update_both is clean
 Removing file <TESTBASE>/test/peer/auto/older/update_both
 backup <TESTBASE>/test/peer/auto/older/update_both 0 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.3 due  3 
 Remove backup /tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.3 due to generation 3 

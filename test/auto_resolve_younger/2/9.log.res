@@ -33,7 +33,10 @@ dirty: peer:<TESTBASE>/test/local/auto v2:mtime=xxxxxxxxxx:mode=16877:user=denni
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.0.0.1
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -45,15 +48,10 @@ CONN peer < HELLO local
 CONN peer > 'OK (cmd_finished).'
 Dirty (missing) item <TESTBASE>/test/local RM  0
 Deleting peer:<TESTBASE>/test/local
-CONN peer < SIG %25test%25 
+CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
 delete flags: 0
-CONN peer > 'octet-stream 0'
-Got octet-stream 0
-Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
-rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local
-CONN peer > 'OK (cmd_finished).'
 CONN peer < DEL %25test%25 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)

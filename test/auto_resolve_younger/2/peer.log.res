@@ -1,6 +1,6 @@
 Config-File:   csync2_pgsql_peer.cfg
 Found my alias peer localhost 30861 
-Binding to 30861 IPv0 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
@@ -13,20 +13,22 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: MKDIR <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon_check_dirty: <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
@@ -38,17 +40,17 @@ mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err =
 setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer
 Updated(mkdir) local:<TESTBASE>/test/peer  
+Daemon end_command <TESTBASE>/test/peer MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: MKDIR <TESTBASE>/test/peer/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: MKDIR <TESTBASE>/test/peer/auto - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon_check_dirty: <TESTBASE>/test/peer/auto
 Running check for <TESTBASE>/test/peer/auto ...
 Checking for modified files <TESTBASE>/test/peer/auto 
@@ -60,19 +62,19 @@ mkdir <TESTBASE>/test/peer/auto rc = 0 errno = 2 err =
 setown <TESTBASE>/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto
 Updated(mkdir) local:<TESTBASE>/test/peer/auto  
+Daemon end_command <TESTBASE>/test/peer/auto MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer/auto/younger user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 daemon_check_auto_resolve: <TESTBASE>/test/peer/auto/younger failed stat
 CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: MKDIR <TESTBASE>/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: MKDIR <TESTBASE>/test/peer/auto/younger - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 daemon_check_auto_resolve: <TESTBASE>/test/peer/auto/younger failed stat
 daemon_check_dirty: <TESTBASE>/test/peer/auto/younger
@@ -88,21 +90,21 @@ mkdir <TESTBASE>/test/peer/auto/younger rc = 0 errno = 2 err =
 setown <TESTBASE>/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto/younger
 Updated(mkdir) local:<TESTBASE>/test/peer/auto/younger  
+Daemon end_command <TESTBASE>/test/peer/auto/younger MKDIR 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto xxxxxxxxxx'
 Command: local: SETTIME <TESTBASE>/test/peer/auto xxxxxxxx        
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto
+Daemon end_command <TESTBASE>/test/peer/auto SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer
+Daemon end_command <TESTBASE>/test/peer SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
@@ -122,16 +124,18 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 12 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 12 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer/auto/younger/local_oldest user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger/local_oldest
 CONN local < OK (data_follows).
 
@@ -142,10 +146,11 @@ Sending sig_file for <TESTBASE>/test/peer/auto/younger/local_oldest to peer.
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
+Daemon end_command <TESTBASE>/test/peer/auto/younger/local_oldest SIG 0 
 CONN local < OK (cmd_finished).
 
-CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 12 xxxxxxxxxx'
-Command: local: PATCH <TESTBASE>/test/peer/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 12 xxxxxxxx
+CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: PATCH <TESTBASE>/test/peer/auto/younger/local_oldest - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger/local_oldest
 daemon_check_dirty: <TESTBASE>/test/peer/auto/younger/local_oldest
 Running check for <TESTBASE>/test/peer/auto/younger/local_oldest ...
@@ -156,10 +161,11 @@ mark other operation: 'NEW' 'local:<TESTBASE>/test/peer/auto/younger/local_oldes
 mark other operation: 'NEW' 'other:<TESTBASE>/test/peer/auto/younger/local_oldest' '-'.
 Inserted/updated <TESTBASE>/test/peer/auto/younger/local_oldest rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
-daemon_check_dirty: <TESTBASE>/test/peer/auto/younger/local_oldest is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/auto/younger/local_oldest is clean
 daemon_check_dirty: peer operation  local <TESTBASE>/test/peer/auto/younger/local_oldest NEW
 File <TESTBASE>/test/peer/auto/younger/local_oldest is dirty here: NEW 2
 File local:<TESTBASE>/test/peer/auto/younger/local_oldest is dirty here. Continuing.
+Daemon end_command <TESTBASE>/test/peer/auto/younger/local_oldest PATCH 3 File is also marked dirty here!
 ERROR: File is also marked dirty here! (<TESTBASE>/test/peer/auto/younger/local_oldest)
 CONN local < File also marked dirty here! 
 CONN local > 'GETTM 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest'
@@ -173,7 +179,7 @@ CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209k
 Command: local: SETTIME <TESTBASE>/test/peer/auto/younger xxxxxxxx        
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto/younger
+Daemon end_command <TESTBASE>/test/peer/auto/younger SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
@@ -193,16 +199,18 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -210,10 +218,11 @@ CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%
 
 CONN local < octet-stream 0
 
+Daemon end_command <TESTBASE>/test/peer SIG 0 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: MOD <TESTBASE>/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon_check_dirty: <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
@@ -223,13 +232,13 @@ daemon_check_dirty: <TESTBASE>/test/peer is clean
 setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer
 Updated(mod) local:<TESTBASE>/test/peer  
+Daemon end_command <TESTBASE>/test/peer MOD 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -237,10 +246,11 @@ CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%
 
 CONN local < octet-stream 0
 
+Daemon end_command <TESTBASE>/test/peer/auto SIG 0 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: MOD <TESTBASE>/test/peer/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: MOD <TESTBASE>/test/peer/auto - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon_check_dirty: <TESTBASE>/test/peer/auto
 Running check for <TESTBASE>/test/peer/auto ...
 Checking for modified files <TESTBASE>/test/peer/auto 
@@ -250,13 +260,13 @@ daemon_check_dirty: <TESTBASE>/test/peer/auto is clean
 setown <TESTBASE>/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto
 Updated(mod) local:<TESTBASE>/test/peer/auto  
+Daemon end_command <TESTBASE>/test/peer/auto MOD 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer/auto/younger user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolved. clear dirty
@@ -267,10 +277,11 @@ CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%
 
 CONN local < octet-stream 0
 
+Daemon end_command <TESTBASE>/test/peer/auto/younger SIG 0 
 CONN local < OK (cmd_finished).
 
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
-Command: local: MOD <TESTBASE>/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: MOD <TESTBASE>/test/peer/auto/younger - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 daemon_check_dirty: <TESTBASE>/test/peer/auto/younger
@@ -284,13 +295,13 @@ daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 setown <TESTBASE>/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
 setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto/younger
 Updated(mod) local:<TESTBASE>/test/peer/auto/younger  
+Daemon end_command <TESTBASE>/test/peer/auto/younger MOD 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 14 xxxxxxxxxx'
-Command: local: SIG <TESTBASE>/test/peer/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 14 xxxxxxxx
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: SIG <TESTBASE>/test/peer/auto/younger/local_oldest user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger/local_oldest
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolved. clear dirty
@@ -303,10 +314,11 @@ Sending sig_file for <TESTBASE>/test/peer/auto/younger/local_oldest to peer.
 CONN local < octet-stream 32
 
 Signature has been sent to peer successfully.
+Daemon end_command <TESTBASE>/test/peer/auto/younger/local_oldest SIG 0 
 CONN local < OK (cmd_finished).
 
-CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 14 xxxxxxxxxx'
-Command: local: PATCH <TESTBASE>/test/peer/auto/younger/local_oldest - 1234 1000 dennis schafroth 33188 - 14 xxxxxxxx
+CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: PATCH <TESTBASE>/test/peer/auto/younger/local_oldest - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger/local_oldest
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolve
 daemon_check_dirty: <TESTBASE>/test/peer/auto/younger/local_oldest
@@ -318,7 +330,8 @@ daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younge
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolved. clear dirty
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
 Remove backup /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due to generation 3 
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.2' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3'. rc = 0
@@ -335,8 +348,8 @@ Content length in buffer: 'octet-stream 20' size: 20 rc: 0 (octet-stream)
 Locking 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/peer/auto/younger/.local_oldest.XXXXXX'
 Locking 'MOVED_TO:<TESTBASE>/test/peer/auto/younger/local_oldest'
 settime <TESTBASE>/test/peer/auto/younger/local_oldest rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto/younger/local_oldest
 Updated(patch) local:<TESTBASE>/test/peer/auto/younger/local_oldest  
+Daemon end_command <TESTBASE>/test/peer/auto/younger/local_oldest PATCH 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
@@ -344,19 +357,19 @@ CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209k
 Command: local: SETTIME <TESTBASE>/test/peer/auto/younger xxxxxxxx        
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto/younger
+Daemon end_command <TESTBASE>/test/peer/auto/younger SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto xxxxxxxxxx'
 Command: local: SETTIME <TESTBASE>/test/peer/auto xxxxxxxx        
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/auto
+Daemon end_command <TESTBASE>/test/peer/auto SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
-daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer
+Daemon end_command <TESTBASE>/test/peer SETTIME 0 
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
@@ -376,24 +389,22 @@ CONN (null) < OK (cmd_finished).
 CONN (null) > 'DEBUG 2'
 Command: (null): DEBUG          
 DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'HELLO local'
 Command: local HELLO
 DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group'
-Command: local: SIG <TESTBASE>/test/peer user/group        
+CONN local > 'STAT 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group'
+Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>    
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
 CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
-
-CONN local < octet-stream 0
-
-CONN local < OK (cmd_finished).
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 '
 Command: local: DEL <TESTBASE>/test/peer         
@@ -416,7 +427,8 @@ Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
 daemon_check_dirty: <TESTBASE>/test/peer/auto/younger/local_oldest is clean
 Removing file <TESTBASE>/test/peer/auto/younger/local_oldest
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
 Remove backup /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due to generation 3 
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.2' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3'. rc = 0
@@ -425,14 +437,16 @@ renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest
 Locking 'DELETE:<TESTBASE>/test/peer/auto/younger/local_oldest'
 Removing <TESTBASE>/test/peer/auto/younger/local_oldest from file db.
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/auto/younger'
-Removed directory <TESTBASE>/test/peer/auto/younger 0
+Removing directory <TESTBASE>/test/peer/auto/younger 0
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/auto'
-Removed directory <TESTBASE>/test/peer/auto 0
+Removing directory <TESTBASE>/test/peer/auto 0
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
-Removed directory <TESTBASE>/test/peer 0
+Removing directory <TESTBASE>/test/peer 0
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
+DEL local:<TESTBASE>/test/peer rc: 1
 Updated(del) local:<TESTBASE>/test/peer  
+Daemon end_command <TESTBASE>/test/peer DEL 1 
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 

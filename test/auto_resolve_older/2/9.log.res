@@ -35,7 +35,7 @@ Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Using alternative port to localhost:30861 
 Connecting to localhost:30861 
-Using specific address 127.0.0.2
+Using specific address 127.0.0.1
 Connected to localhost:30861 
 CONN peer < CONFIG 
 
