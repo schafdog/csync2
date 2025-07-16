@@ -499,10 +499,8 @@ textlist_p csync_check_move(db_conn_p db, peername_p peername,
 
 textlist_p csync_check_link_move(db_conn_p db, peername_p peername,
 		filename_p filename, const char *checktxt, int operation,
-		const char *digest, struct stat *st, textlist_loop_t loop) {
-	if (loop) {
-		csync_info(2, "check_link_move:  unused parameter textlist_loop_t {}\n", (void *) loop);
-	}
+		const char *digest, struct stat *st) {
+
 	textlist_p t, tl = NULL;
 	textlist_p db_tl = db->check_dirty_file_same_dev_inode(peername.c_str(),
 														   filename.c_str(), checktxt, digest, st);
