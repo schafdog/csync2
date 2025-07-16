@@ -752,7 +752,7 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 								   const char *uid, const char *gid, operation_t operation,
 								   const char *checktxt, const char *digest, int is_identical,
 								   int *last_conn_status) {
-	textlist_p tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st, NULL);
+	textlist_p tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st);
 	textlist_p t = tl;
 	int found_one = 0;
 	int errors = 0;
