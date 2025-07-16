@@ -1086,6 +1086,11 @@ int csync2_main(int argc, char **argv)
 	return csync_start(mode, flags, argc, argv, update_function, listenfd, cmd_db_version, cmd_ip_version);
 };
 
+// Forward declarations
+static int csync_start_server(int mode, int flags, int argc, char *argv[], int listenfd, db_conn_p *db_ptr, int cmd_db_version, int cmd_ip_version);
+static int csync_start_client(int mode, int flags, int argc, char *argv[], update_func updater, int cmd_db_version, int cmd_ip_version);
+static int handle_server_error(int mode, int conn);
+
 /* Entry point for command line and daemon callback on PING
  Responsible for looping in server mode. Need rewrite
  */
@@ -1095,44 +1100,96 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 {
 	int start_time = time(NULL);
 	int server = mode & MODE_DAEMON;
-	int server_standalone = mode & MODE_STANDALONE;
 	int retval = -1;
-	textlist_p tl = 0, t;
 	db_conn_p db = NULL;
-	int first = 1;
-nofork:
-	csync_debug(4, "Mode: {} Flags: {} PID: {}", mode, flags, getpid());
-	// init syslog if needed.
-	if (first && csync_syslog && csync_server_child_pid == 0 /* client or child ? */)
+
+	// Loop to handle non-forking mode without recursion
+	while (true)
+	{
+		csync_debug(4, "Mode: {} Flags: {} PID: {}", mode, flags, getpid());
+
+		// print time (if -t is set)
+		csync_printtime();
+
+		// Handle server mode
+		if (server)
+		{
+			int server_result = csync_start_server(mode, flags, argc, argv, listenfd, &db, cmd_db_version, cmd_ip_version);
+
+			if (server_result == 1)
+				return 1; // Server failure
+
+			if (server_result == 2)
+			{
+				// Continue in non-forking mode - restart loop
+				continue;
+			}
+
+			// Normal server completion - cleanup
+			csync_redis_close();
+			csync_run_commands(db);
+			csync_db_close(db);
+			csync_config_destroy();
+			// Common cleanup and timing for both modes
+			if (mode & MODE_DAEMON)
+			{
+				csync_info(4, "Connection closed. Pid {} mode {}", csync_server_child_pid, mode);
+
+				if (mode & MODE_NOFORK)
+				{
+					csync_debug(1, "goto nofork." /*"Continuing in non-forking mode." */);
+					continue; // Loop back instead of recursive call
+				}
+			}
+		}
+		else
+		{
+			// Handle client mode
+			retval = csync_start_client(mode, flags, argc, argv, updater, cmd_db_version, cmd_ip_version);
+		}
+		// Exit the loop for non-daemon modes or when daemon is done
+		break;
+	}
+
+	if (csync_error_count != 0 || (csync_messages_printed && csync_level_debug))
+	{
+		int run_time = time(NULL) - start_time;
+		if (csync_error_count > 0)
+			csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
+		else
+			csync_info(1, "Finished succesfully in {} seconds.", run_time);
+	}
+	csync_printtotaltime();
+
+	if (retval >= 0 && csync_error_count == 0)
+		return retval;
+	return csync_error_count != 0;
+}
+
+// Server startup function - handles daemon mode connection setup
+static int csync_start_server(int mode, int flags, int argc, char *argv[], int listenfd, db_conn_p *db_ptr, int cmd_db_version, int cmd_ip_version)
+{
+	int conn = -1;
+	int conn_out = 1;
+	int server_standalone = mode & MODE_STANDALONE;
+	char line[4096], *cmd, *para;
+
+	// init syslog if needed
+	if (csync_syslog && csync_server_child_pid == 0)
 	{
 		csync_openlog(csync_facility);
-		first = 0;
 	}
-	// mode keeps its original value, but now checking on server
-	int conn = -1;
-	if (server_standalone)
-	{
+	while (true) {
+		if (server_standalone)
+		{
 #ifdef HAVE_LIBSYSTEMD
-		sd_pid_notify(getpid(), 0, "READY=1");
+			sd_pid_notify(getpid(), 0, "READY=1");
 #endif
-		if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK), listenfd, &conn))
-			return 1; // server failure returns
-	}
+			if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK), listenfd, &conn))
+				return 1;
+		}
 
-	// print time (if -t is set)
-	csync_printtime();
-	int conn_out = 1;
-
-	/* In inetd (actually any server) mode we need to read the module name from the peer
-	 * before we open the config file and database
-	 */
-	std::string hostname = check_string(g_myhostname.c_str());
-	if (server)
-	{
-		// Connected with client (after accept)
-		start_time = time(NULL);
-		char line[4096], *cmd, *para;
-		/* configure conn.c for inetd mode */
+		// configure conn.c for MODE_INETD or STANDALONE
 		if (MODE_INETD & mode)
 		{
 			conn = 0;
@@ -1144,10 +1201,12 @@ nofork:
 			conn_out = dup(conn);
 			conn_set(conn, conn_out);
 		}
+
 		if (!conn_gets(conn, line, 4096))
 		{
-			goto handle_error;
+			return handle_server_error(mode, conn);
 		}
+
 		cmd = strtok(line, "\t \r\n");
 		para = cmd ? strtok(0, "\t \r\n") : 0;
 
@@ -1159,34 +1218,130 @@ nofork:
 
 			if (!conn_gets(conn, line, 4096))
 			{
-				goto handle_error;
+				return handle_server_error(mode, conn);
 			}
 			cmd = strtok(line, "\t \r\n");
 			para = cmd ? strtok(0, "\t \r\n") : 0;
 #else
 			conn_printf(conn_out, "This csync2 server is built without SSL support.\n");
-			goto handle_error;
+			return handle_server_error(mode, conn);
 #endif
 		}
 
 		if (!cmd || strcasecmp(cmd, "config"))
 		{
 			conn_printf(conn, "Expecting SSL (optional) and CONFIG as first commands.\n");
-			goto handle_error;
+			return handle_server_error(mode, conn);
 		}
 
 		if (para)
 			g_cfgname = strdup(url_decode(para));
+
+		if (csync_read_config(g_cfgname, conn, mode) == -1)
+			return handle_server_error(mode, conn);
+
+		// Move configuration versions into place, if configured
+		if (cfg_db_version != -1)
+		{
+			if (cmd_db_version)
+				csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}", cfg_db_version, cmd_db_version);
+			else
+				g_db_version = cfg_db_version;
+		}
+
+		if (cfg_protocol_version != -1)
+			protocol_version = cfg_protocol_version;
+
+		if (cfg_ip_version != -1)
+		{
+			if (cmd_ip_version)
+				csync_info(0, "Command line overrides configuration ip protocol version: {} -> {}", cfg_ip_version, g_ip_version);
+			else if (cfg_ip_version == 4)
+				g_ip_version = AF_INET;
+			else if (cfg_ip_version == 6)
+				g_ip_version = AF_INET6;
+			else
+			{
+				csync_error(0, "Unknown IP version: %d\n", cfg_ip_version);
+				exit(1);
+			}
+		}
+
+		// Read database name from config unless it's overridden from command line
+		if (!csync_database)
+			csync_database = db_default_database(dbdir, g_myhostname.c_str(), g_cfgname);
+
+		csync_info(2, "My hostname is {}.", g_myhostname.c_str());
+		csync_info(2, "Database File: {}", csync_database);
+		csync_info(2, "DB Version:    {}", g_db_version);
+		csync_info(2, "IP Version:    {}", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
+		csync_info(3, "GIT:           {}", CSYNC_GIT_VERSION);
+
+		int found = 0;
+		const struct csync_group *g;
+		for (g = csync_group; g; g = g->next) {
+			if (g->myname)
+			{
+				found = 1;
+				break;
+			}
+		}
+		if (!found)
+			csync_fatal("This host ({}) is not a member of any configured group.", g_myhostname.c_str());
+
+		*db_ptr = csync_db_open(csync_database);
+		(*db_ptr)->version = g_db_version;
+		// Handles NULL
+		csync_redis_connect(csync_redis);
+
+		for (int i = optind; i < argc; i++)
+			on_cygwin_lowercase(argv[i]);
+
+		// Server initialization successful, now handle the session
+		conn_printf(conn, "OK (cmd_finished).\n");
+		csync_daemon_session(conn, conn_out, *db_ptr, protocol_version, mode);
+
+		// Check if we should continue in non-forking mode
+		if (mode & MODE_NOFORK)
+		{
+			csync_debug(1, "goto nofork." /*"Continuing in non-forking mode." "Continuing server loop in non-forking mode." */);
+			// Clean up before continuing
+			csync_redis_close();
+			csync_run_commands(*db_ptr);
+			csync_db_close(*db_ptr);
+			csync_config_destroy();
+			continue;
+		}
+		// We are done
+		break;
 	}
 
-	if (csync_read_config(g_cfgname, conn, mode) == -1)
-		goto handle_error;
-	// Move configuration versions into place, if configured.
+	return 0;
+}
+
+// Helper function for server error handling
+static int handle_server_error(int mode, int conn)
+{
+	if (mode & MODE_NOFORK)
+		return 2; // Signal to continue loop
+	return 0;
+}
+
+// Client startup function - handles all non-daemon operations
+static int csync_start_client(int mode, int flags, int argc, char *argv[], update_func updater, int cmd_db_version, int cmd_ip_version)
+{
+	int retval = -1;
+	textlist_p tl = 0, t;
+	db_conn_p db = NULL;
+
+	if (csync_read_config(g_cfgname, 0, mode) == -1)
+		return -1;
+
+	// Move configuration versions into place, if configured
 	if (cfg_db_version != -1)
 	{
 		if (cmd_db_version)
-			csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}", cfg_db_version,
-					   cmd_db_version);
+			csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}", cfg_db_version, cmd_db_version);
 		else
 			g_db_version = cfg_db_version;
 	}
@@ -1197,8 +1352,7 @@ nofork:
 	if (cfg_ip_version != -1)
 	{
 		if (cmd_ip_version)
-			csync_info(0, "Command line overrides configuration ip protocol version: {} -> {}", cfg_ip_version,
-					   g_ip_version);
+			csync_info(0, "Command line overrides configuration ip protocol version: {} -> {}", cfg_ip_version, g_ip_version);
 		else if (cfg_ip_version == 4)
 			g_ip_version = AF_INET;
 		else if (cfg_ip_version == 6)
@@ -1210,7 +1364,7 @@ nofork:
 		}
 	}
 
-	/* Read database name from config unless it's overridden from command line */
+	// Read database name from config unless it's overridden from command line
 	if (!csync_database)
 		csync_database = db_default_database(dbdir, g_myhostname.c_str(), g_cfgname);
 
@@ -1219,6 +1373,7 @@ nofork:
 	csync_info(2, "DB Version:    {}", g_db_version);
 	csync_info(2, "IP Version:    {}", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
 	csync_info(3, "GIT:           {}", CSYNC_GIT_VERSION);
+
 	{
 		int found = 0;
 		const struct csync_group *g;
@@ -1241,11 +1396,7 @@ nofork:
 	for (int i = optind; i < argc; i++)
 		on_cygwin_lowercase(argv[i]);
 
-   	if (server)
-	{
-		conn_printf(conn, "OK (cmd_finished).\n");
-		csync_daemon_session(conn, conn_out, db, protocol_version, mode);
-	};
+	std::string hostname = check_string(g_myhostname.c_str());
 
 	if (mode == MODE_UPGRADE_DB)
 	{
@@ -1260,17 +1411,15 @@ nofork:
 		{
 			csync_check(db, "/", flags);
 			std::set<std::string> patlist = {"/"};
-			csync_update(db, hostname, g_active_peers, patlist, g_ip_version,
-						 csync_update_host, flags);
+			csync_update(db, hostname, g_active_peers, patlist, g_ip_version, csync_update_host, flags);
 		}
 		else
 		{
 			std::set<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags | FLAG_DO_CHECK);
-			// Use the new C++ API directly
 			csync_update(db, hostname, g_active_peers, realnames, g_ip_version, csync_update_host, flags);
-			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
 	}
+
 	if (mode == MODE_HINT)
 	{
 		for (int i = optind; i < argc; i++)
@@ -1284,10 +1433,10 @@ nofork:
 			else
 			{
 				csync_warn(0, "{} did not match a real path. Skipping.\n", argv[i]);
-			};
+			}
 			free_realname(realname);
-		};
-	};
+		}
+	}
 
 	if (mode & MODE_CHECK)
 	{
@@ -1309,9 +1458,8 @@ nofork:
 				csync_debug(0, "No argument was matched in configuration");
 				exit(2);
 			}
-			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
-	};
+	}
 
 	if (mode & MODE_FORCE)
 	{
@@ -1320,8 +1468,8 @@ nofork:
 			char *realname = getrealfn(argv[i]);
 			db->force(realname, flags & FLAG_RECURSIVE);
 			free_realname(realname);
-		};
-	};
+		}
+	}
 
 	if (mode & MODE_UPDATE || mode & MODE_EQUAL)
 	{
@@ -1334,16 +1482,14 @@ nofork:
 			std::set<std::string> realnames = check_file_args(db, argv + optind, argc - optind, flags);
 			if (!realnames.empty())
 			{
-				// Use the new C++ API directly
 				csync_update(db, hostname, g_active_peers, realnames, g_ip_version, updater, flags);
 			}
 			else
 			{
 				csync_debug(0, "No argument was matched in configuration");
 			}
-			// No manual cleanup needed - strings automatically freed when vector goes out of scope
 		}
-	};
+	}
 
 	if (mode == MODE_COMPARE)
 	{
@@ -1364,24 +1510,23 @@ nofork:
 				csync_warn(0, "{} is not a real path\n", argv[i]);
 			}
 		}
-	};
+	}
 
 	if (mode == MODE_MARK)
 	{
 		for (int i = optind; i < argc; i++)
 		{
-			//char *realname = realpath(argv[i], NULL);
 			char *realname = getrealfn(argv[i]);
 			db->mark(g_active_peers, realname, flags & FLAG_RECURSIVE);
 			free_realname(realname);
 		}
-	};
+	}
 
 	if (mode == MODE_LIST_HINT)
 	{
 		retval = 2;
 		db->list_hint();
-	};
+	}
 
 	if (mode == MODE_LIST_FILE)
 	{
@@ -1395,8 +1540,7 @@ nofork:
 		if (optind < argc) {
 			free(const_cast<char*>(realname));
 		}
-
-	};
+	}
 
 	if (mode == MODE_TAIL)
 	{
@@ -1406,7 +1550,6 @@ nofork:
 		{
 			fileno = open(argv[optind], O_RDONLY);
 			csync_debug(1, "monitor: Opening {} {}", argv[optind], fileno);
-			// TODO load "saved position" in cases of restart
 			lseek(fileno, 0, SEEK_END);
 		}
 		else
@@ -1414,14 +1557,13 @@ nofork:
 			csync_debug(1, "tailing stdin");
 		}
 		csync_tail(db, fileno, flags);
-	};
+	}
 
 	if (mode == MODE_LIST_SYNC)
 	{
 		db->list_sync(argv[optind], argv[optind + 1]);
 		retval = 2;
-		// ???
-	};
+	}
 
 	if (mode == MODE_TEST_SYNC)
 	{
@@ -1458,7 +1600,8 @@ nofork:
 				retval = 2;
 			break;
 		}
-	};
+	}
+
 	csync_debug(3, "MODE {}", mode);
 	if (mode == MODE_LIST_DIRTY)
 	{
@@ -1471,6 +1614,7 @@ nofork:
 		db->list_dirty(g_active_peers, realname != NULL ? realname : "", flags & FLAG_RECURSIVE);
 		free_realname(realname);
 	}
+
 	if (mode == MODE_REMOVE_OLD)
 	{
 		char *realname = NULL;
@@ -1480,7 +1624,6 @@ nofork:
 		}
 		if (g_active_grouplist)
 			csync_fatal("Never run -R with -G!");
-		// TODO add "path" to limit clean up
 		csync_remove_old(db, realname != NULL ? realname : "");
 		free_realname(realname);
 	}
@@ -1489,36 +1632,8 @@ nofork:
 	csync_run_commands(db);
 	csync_db_close(db);
 	csync_config_destroy();
-	// g_active_peers is now managed by std::set, no need to free
-	if (mode & MODE_DAEMON)
-	{
-		csync_info(4, "Connection closed. Pid {} mode {}", csync_server_child_pid, mode);
 
-		if (mode & MODE_NOFORK)
-		{
-			csync_debug(1, "goto nofork.");
-			goto nofork;
-		}
-	}
-
-	if (csync_error_count != 0 || (csync_messages_printed && csync_level_debug))
-	{
-		int run_time = time(NULL) - start_time;
-		if (csync_error_count > 0)
-			csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
-		else
-			csync_info(1, "Finished succesfully in {} seconds.", run_time);
-	}
-	csync_printtotaltime();
-
-	if (retval >= 0 && csync_error_count == 0)
-		return retval;
-	return csync_error_count != 0;
-
-handle_error:
-	if (mode == MODE_NOFORK)
-		goto nofork;
-	return 0;
+	return retval;
 }
 
 // Add this function before csync_start
