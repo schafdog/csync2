@@ -670,7 +670,7 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 				realnames.insert(real_name);
 				if (flags & FLAG_DO_CHECK)
 				{
-					csync_debug(2, "csync_file_args: chec'{}' flags {}", real_name, flags);
+					csync_debug(2, "csync_file_args: check '{}' flags {}", real_name, flags);
 					csync_check(db, real_name, flags);
 				}
 			}

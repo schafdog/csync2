@@ -727,7 +727,7 @@ void conn_printf(int fd, const char *fmt, ...) {
 	conn_write(fd, buffer, size);
 	conn_remove_key(buffer);
 	char *str = filter_mtime(buffer);
-	csync_info(2, "CONN {} < {}\n", active_peer, str);
+	csync_info(2, "CONN {} < {}\n", active_peer ? active_peer : "(null)", str);
 }
 
 static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...) {
@@ -768,14 +768,15 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 }
 
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
+    std::string peer = active_peer != NULL ? active_peer : "(null)";
 	int rc = gets_newline(filedesc, s, size, remove_newline);
 	if (rc == -1) {
-		csync_error(0, "CONN {} > {} failed with error '{}' \n", active_peer, s, strerror(errno));
+		csync_error(0, "CONN {} > {} failed with error '{}' \n", peer, s, strerror(errno));
 		return rc;
 	}
 	// Filter mtime but on a copy.
 	char *copy = filter_mtime_copy(s);
-	csync_info(2, "CONN {} > '{}'\n", active_peer, copy);
+	csync_info(2, "CONN {} > '{}'\n", peer, copy);
 	free(copy);
 	return rc;
 }

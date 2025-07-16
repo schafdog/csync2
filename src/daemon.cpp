@@ -781,8 +781,6 @@ static void destroy_tag(const char *tag[32]) {
 static int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error);
 
 static textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl) {
-	(void *) st;
-
     const char *cmd_error = NULL;
 	textlist_p t = tl;
 	while (t) {
@@ -1567,12 +1565,12 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 		break;
 	case A_DEBUG:
 		{
-			csync_info(2, "DEBUG from {} {}\n", *peername, params->first);
+			csync_info(2, "DEBUG from {} {}\n", (*peername) ? *peername : "(Unknown)", params->first);
 			int client_debug_level = 0;
 			if (params->first[0])
 				client_debug_level = atoi(params->first);
 			if (client_debug_level > csync_level_debug) {
-				csync_info(1, "Increasing {} DEBUG level to {}\n", *peername, params->first);
+				csync_info(1, "Increasing {} DEBUG level to {}\n",(*peername) ? *peername : "(Unknown)", params->first);
 				csync_level_debug = client_debug_level;
 			}
 			break;
