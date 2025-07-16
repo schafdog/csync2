@@ -8,7 +8,8 @@
 class DbSqlite : public DbSql {
 public:
     DbSqlite();
-    DbSqlite(DatabaseConnection* conn) : DbSql(conn) {};
+    DbSqlite(std::unique_ptr<DatabaseConnection>& conn) : DbSql(conn.release()) {};
+    DbSqlite(DatabaseConnection *conn) : DbSql(conn) {};
     ~DbSqlite() override;
 
     int exec(const char *sql) override;
