@@ -893,7 +893,9 @@ int csync_update_directory(int conn, peername_p myname, peername_p peername, con
 				return rc;
 			}
 		}
-		csync_info(2, "update_directory: Setting directory time {} {}.\n", dirname, dir_st.st_mtime);
+		
+		csync_info(2, "update_directory: Setting directory time {} {}.\n", dirname,
+				   csync_zero_mtime_debug ? 0 : dir_st.st_mtime);
 		rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
 		return rc;
 	}
@@ -1337,8 +1339,10 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 
 			if (st.st_nlink > 1) {
 				char *copy_checktxt = filter_mtime_copy(checktxt);
+				auto dev = csync_zero_mtime_debug ? 0 : st.st_dev;
+				auto ino = csync_zero_mtime_debug ? 0 : st.st_ino;
 				csync_debug(2, "PATCH hardlink: checking dirty hardlinks: {}:{} {} {} {} {}\n",
-							peername.c_str(), filename.c_str(), st.st_dev, st.st_ino, copy_checktxt, digest);
+							peername.c_str(), filename.c_str(), dev, ino, copy_checktxt, digest);
 				db->update_dirty_hardlinks(peername.c_str(), filename.c_str(), &st);
 				free(copy_checktxt);
 			 }
@@ -1539,6 +1543,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		csync_error(0, "ERROR: Connection to remote host `{}' failed.\n", peername);
 		csync_error(1, "Host stays in dirty state. "
 				"Try again later...\n");
+		textlist_free(tl);
 		return;
 	}
 
@@ -1547,6 +1552,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		conn_printf(conn, "BYE\n");
 		read_conn_status(conn, "<BYE>", peername);
 		conn_close(conn);
+		textlist_free(tl);		
 		return;
 	}
 	int rc = -1;
@@ -1622,8 +1628,8 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		free(last_dir_deleted);
 	}
 	textlist_free(tl);
-
 	textlist_free(tl_del);
+
 	rc = 0;
 	if (!(flags & FLAG_DRY_RUN))
 		for (const std::string& directory : directory_list) {

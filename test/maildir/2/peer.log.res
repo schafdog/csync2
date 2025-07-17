@@ -1,13 +1,12 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861 
-Binding to 30861 IPv2 
+Found my alias peer localhost 30861
+Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -206,7 +205,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -323,7 +321,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -397,7 +394,8 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,'
-SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764' or filename like '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764/%'
+SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 Daemon end_command <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 MV 0 
 CONN local < OK (cmd_finished).
@@ -431,7 +429,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -478,7 +475,8 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S'
-SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,' or filename like '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,/%'
+SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, MV 0 
 CONN local < OK (cmd_finished).
@@ -506,7 +504,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -580,7 +577,8 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
-SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S' or filename like '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S/%'
+SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S MV 0 
 CONN local < OK (cmd_finished).
@@ -651,7 +649,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -744,6 +741,7 @@ renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S'
 DEL local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S rc: 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S, param2: peer
 Updated(del) local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S  
 Daemon end_command <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S DEL 0 
 CONN local < OK (cmd_finished).
@@ -771,6 +769,7 @@ renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=66
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
 DEL local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST rc: 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST, param2: peer
 Updated(del) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST  
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST DEL 0 
 CONN local < OK (cmd_finished).
@@ -798,7 +797,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -837,25 +835,33 @@ Removing <TESTBASE>/test/peer/Maildir/* ..
 Removing <TESTBASE>/test/peer/Maildir/tmp/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/tmp'
 Removing directory <TESTBASE>/test/peer/Maildir/tmp 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/tmp, param2: <TESTBASE>/test/peer/Maildir/tmp/%, param3: peer
 Removing <TESTBASE>/test/peer/Maildir/new/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/new'
 Removing directory <TESTBASE>/test/peer/Maildir/new 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/new, param2: <TESTBASE>/test/peer/Maildir/new/%, param3: peer
 Removing <TESTBASE>/test/peer/Maildir/cur/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/cur'
 Removing directory <TESTBASE>/test/peer/Maildir/cur 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/cur, param2: <TESTBASE>/test/peer/Maildir/cur/%, param3: peer
 Removing <TESTBASE>/test/peer/Maildir/.Trash/* ..
 Removing <TESTBASE>/test/peer/Maildir/.Trash/cur/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash/cur'
 Removing directory <TESTBASE>/test/peer/Maildir/.Trash/cur 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/.Trash/cur, param2: <TESTBASE>/test/peer/Maildir/.Trash/cur/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash'
 Removing directory <TESTBASE>/test/peer/Maildir/.Trash 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/.Trash, param2: <TESTBASE>/test/peer/Maildir/.Trash/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir'
 Removing directory <TESTBASE>/test/peer/Maildir 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir, param2: <TESTBASE>/test/peer/Maildir/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 6 1 
 DEL local:<TESTBASE>/test/peer rc: 1
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
 Updated(del) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer DEL 1 
 IDENT (cmd_finished).

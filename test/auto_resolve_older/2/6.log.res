@@ -4,12 +4,12 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 dirty: peer:<TESTBASE>/test/local/auto/older/update_both v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=14 ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Looking for alternative host:port for peer
 Using alternative port to localhost:30861 
-Connecting to localhost:30861 
+Connecting to localhost:30861 from local
 Using specific address 127.0.0.2
 Connected to localhost:30861 
 CONN peer < CONFIG 
@@ -43,11 +43,15 @@ CONN peer < PATCH %25test%25/auto/older/update_both - <UID> <GID> <USER> <GROUP>
 CONN peer > 'File is also marked dirty here! (<TESTBASE>/test/peer/auto/older/update_both)'
 While syncing file: <TESTBASE>/test/local/auto/older/update_both
 ERROR from peer: File is also marked dirty here! (<TESTBASE>/test/peer/auto/older/update_both) rc: -11 
-Auto resolve method OLDER 3 for peer:<TESTBASE>/test/local/auto/older/update_both CONN peer < GETTM 
+Auto resolve method OLDER 3 for peer:<TESTBASE>/test/local/auto/older/update_both 
+CONN peer < GETTM 
 CONN peer > 'OK (data_follows).'
 CONN peer > '1591639200'
 Do not auto-resolve conflict: Lost 'younger/older' test.
 File stays in dirty state after autoresolve. Try again later...
+Directory time <TESTBASE>/test/local/auto/older <TESTBASE>/test/local/auto/older/update_both
+SETTIME peer:<TESTBASE>/test/local/auto/older
+update_directory: Setting directory time <TESTBASE>/test/local/auto/older 0.
 CONN peer < SETTIME %25test%25/auto/older 
 CONN peer > 'OK (cmd_finished).'
 CONN peer < BYE

@@ -4,8 +4,7 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
-Not in one of my groups: <TESTBASE>/test (NULL)
+Not in one of my groups: <TESTBASE>/test ()
 mark other operation: 'MARK' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MARK' 'peer:<TESTBASE>/test/local/usr' '-'.
 mark other operation: 'MARK' 'peer:<TESTBASE>/test/local/usr/local' '-'.

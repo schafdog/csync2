@@ -4,15 +4,15 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 dirty: peer:<TESTBASE>/test/local/auto/older/update_both v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=14 ''
 dirty: peer:<TESTBASE>/test/local/auto/older v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 dirty: peer:<TESTBASE>/test/local/auto v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Looking for alternative host:port for peer
 Using alternative port to localhost:30861 
-Connecting to localhost:30861 
+Connecting to localhost:30861 from local
 Using specific address 127.0.0.2
 Connected to localhost:30861 
 CONN peer < CONFIG 
@@ -41,6 +41,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < MOD %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
+Directory time <TESTBASE>/test <TESTBASE>/test/local
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/auto' ''
 CONN peer < SIG %25test%25/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
@@ -58,6 +59,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < MOD %25test%25/auto - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/auto (0)
+Directory time <TESTBASE>/test/local <TESTBASE>/test/local/auto
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/auto/older' ''
 CONN peer < SIG %25test%25/auto/older user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
@@ -78,6 +80,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < MOD %25test%25/auto/older - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/auto/older (0)
+Directory time <TESTBASE>/test/local/auto <TESTBASE>/test/local/auto/older
 Updating (NEW) 'peer:<TESTBASE>/test/local/auto/older/update_both' ''
 CONN peer < SIG %25test%25/auto/older/update_both user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
@@ -106,12 +109,20 @@ CONN peer < octet-stream 20
 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/auto/older/update_both (0)
+Directory time <TESTBASE>/test/local/auto/older <TESTBASE>/test/local/auto/older/update_both
+SETTIME peer:<TESTBASE>/test/local/auto/older
+update_directory: Setting directory time <TESTBASE>/test/local/auto/older 0.
 CONN peer < SETTIME %25test%25/auto/older 
 CONN peer > 'OK (cmd_finished).'
+SETTIME peer:<TESTBASE>/test/local/auto
+update_directory: Setting directory time <TESTBASE>/test/local/auto 0.
 CONN peer < SETTIME %25test%25/auto 
 CONN peer > 'OK (cmd_finished).'
+SETTIME peer:<TESTBASE>/test/local
+update_directory: Setting directory time <TESTBASE>/test/local 0.
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
+SETTIME peer:<TESTBASE>/test
 CONN peer < BYE
 
 CONN peer > 'OK (cu_later).'

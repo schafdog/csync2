@@ -736,7 +736,7 @@ long long DbSql::remove_file(filename_p str_filename, int recursive)
 
 	if (recursive) {
 		std::string recursive_filename = std::string(filename) + "/%";
-		csync_info(2, "remove_file SQL: {}, param1: {}, param2: {}, param3: {}", sql_query.c_str(), filename, recursive_filename.c_str(), g_myhostname.c_str());
+		csync_info(2, "remove_file SQL: {}, param1: {}, param2: {}, param3: {}\n", sql_query.c_str(), filename, recursive_filename.c_str(), g_myhostname);
 		return conn_->execute_update("remove_file_recursive",
 									  sql_query,
 									  g_myhostname, filename, recursive_filename);

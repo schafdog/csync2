@@ -4,35 +4,41 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
+csync_file_args: '<TESTBASE>/test' flags 65 
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 Checking <TESTBASE>/test/* ..
+Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 New file: <TESTBASE>/test/local
 csync_check_file_same_dev_inode <TESTBASE>/test/local <TESTBASE>/test/local
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local' '-'.
-Inserted/updated <TESTBASE>/test/local rows matched: 0
+Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
+Calling check_mod on <TESTBASE>/test/local/type_change from <TESTBASE>/test/local
 New file: <TESTBASE>/test/local/type_change
 csync_check_file_same_dev_inode <TESTBASE>/test/local/type_change <TESTBASE>/test/local/type_change
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/type_change' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/type_change' '-'.
-Inserted/updated <TESTBASE>/test/local/type_change rows matched: 0
+Inserted/updated <TESTBASE>/test/local/type_change rows matched: 1
 Checking <TESTBASE>/test/local/type_change/* ..
+Calling check_mod on <TESTBASE>/test/local/type_change/new_file 'N' all from <TESTBASE>/test/local/type_change
 New file: <TESTBASE>/test/local/type_change/new_file 'N' all
-csync_check_file_same_dev_inode <TESTBASE>/test/local/type_change/new_file 'N' all <TESTBASE>/test/local/type_change/new_file ''N'' all
+csync_check_file_same_dev_inode <TESTBASE>/test/local/type_change/new_file 'N' all <TESTBASE>/test/local/type_change/new_file 'N' all
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
-Inserted/updated <TESTBASE>/test/local/type_change/new_file 'N' all rows matched: 0
+Inserted/updated <TESTBASE>/test/local/type_change/new_file 'N' all rows matched: 1
 Checking for deleted files <TESTBASE>/test recursive.
-csync_file_args: '<TESTBASE>/test' flags 65 
 dirty: peer:<TESTBASE>/test/local/type_change/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
 dirty: peer:<TESTBASE>/test/local/type_change v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Connecting to localhost:30861 
+Looking for alternative host:port for peer
+Using alternative port to localhost:30861 
+Connecting to localhost:30861 from local
+Using specific address 127.0.0.2
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -43,34 +49,42 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local RC 32
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
+Directory time <TESTBASE>/test <TESTBASE>/test/local
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/type_change' ''
-CONN peer < SIG %25test%25/type_change user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/type_change user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/type_change RC 32
-CONN peer < MKDIR %25test%25/type_change - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/type_change - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/type_change (0)
+Directory time <TESTBASE>/test/local <TESTBASE>/test/local/type_change
 Updating (NEW) 'peer:<TESTBASE>/test/local/type_change/new_file 'N' all' ''
-CONN peer < SIG %25test%25/type_change/new_file%20%27N%27%20all user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/type_change/new_file%20%27N%27%20all user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/type_change/new_file 'N' all RC 32
-CONN peer < CREATE %25test%25/type_change/new_file%20%27N%27%20all - 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < CREATE %25test%25/type_change/new_file%20%27N%27%20all - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (send data).'
 CREATE <TESTBASE>/test/local/type_change/new_file 'N' all 4
 CONN peer < octet-stream 4
 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/type_change/new_file 'N' all (0)
+Directory time <TESTBASE>/test/local/type_change <TESTBASE>/test/local/type_change/new_file 'N' all
+SETTIME peer:<TESTBASE>/test/local/type_change
+update_directory: Setting directory time <TESTBASE>/test/local/type_change 0.
 CONN peer < SETTIME %25test%25/type_change 
 CONN peer > 'OK (cmd_finished).'
+SETTIME peer:<TESTBASE>/test/local
+update_directory: Setting directory time <TESTBASE>/test/local 0.
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
+SETTIME peer:<TESTBASE>/test
 CONN peer < BYE
 
 CONN peer > 'OK (cu_later).'
