@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -58,8 +58,8 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir'
 mkdir <TESTBASE>/test/peer/Maildir rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir  
 Daemon end_command <TESTBASE>/test/peer/Maildir MKDIR 1 
@@ -80,8 +80,8 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash'
 mkdir <TESTBASE>/test/peer/Maildir/.Trash rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/.Trash rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/.Trash rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/.Trash rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash  
 Daemon end_command <TESTBASE>/test/peer/Maildir/.Trash MKDIR 1 
@@ -102,8 +102,8 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash/cur'
 mkdir <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/.Trash/cur MKDIR 1 
@@ -124,8 +124,8 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/cur'
 mkdir <TESTBASE>/test/peer/Maildir/cur rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur MKDIR 1 
@@ -146,8 +146,8 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/new is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/new'
 mkdir <TESTBASE>/test/peer/Maildir/new rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/new rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/new rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/new  
 Daemon end_command <TESTBASE>/test/peer/Maildir/new MKDIR 1 
@@ -168,8 +168,8 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/tmp is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/tmp'
 mkdir <TESTBASE>/test/peer/Maildir/tmp rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/tmp rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/tmp  
 Daemon end_command <TESTBASE>/test/peer/Maildir/tmp MKDIR 1 
@@ -225,7 +225,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/new user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -239,8 +239,8 @@ Running check for <TESTBASE>/test/peer/Maildir/new ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/new is clean
-setown <TESTBASE>/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/new rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/new rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/new  
 Daemon end_command <TESTBASE>/test/peer/Maildir/new MOD 1 
@@ -252,7 +252,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/tmp user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -266,8 +266,8 @@ Running check for <TESTBASE>/test/peer/Maildir/tmp ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/tmp 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/tmp is clean
-setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/tmp rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/tmp  
 Daemon end_command <TESTBASE>/test/peer/Maildir/tmp MOD 1 
@@ -291,7 +291,7 @@ daemon CREATE <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 1 0
 CONN local < OK 
 CONN local > 'octet-stream 8'
 Got octet-stream 8
-Content length in buffer: 'octet-stream 8' size: 8 rc: 0 (octet-stream)
+Content length in buffer: 'octet-st' size: 8 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
 Daemon end_command <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 CREATE 1 
@@ -341,7 +341,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -355,8 +355,8 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur MOD 1 
@@ -368,7 +368,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/new user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -382,8 +382,8 @@ Running check for <TESTBASE>/test/peer/Maildir/new ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/new is clean
-setown <TESTBASE>/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/new rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/new rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/new  
 Daemon end_command <TESTBASE>/test/peer/Maildir/new MOD 1 
@@ -449,7 +449,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -463,8 +463,8 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur MOD 1 
@@ -524,7 +524,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GI
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -538,8 +538,8 @@ Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur is clean
-setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/.Trash/cur MOD 1 
@@ -551,7 +551,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -565,8 +565,8 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur MOD 1 
@@ -592,7 +592,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=8
 
 Sending sig_file for <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
 CONN local < octet-stream 32
@@ -669,7 +669,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GI
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -683,8 +683,8 @@ Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur is clean
-setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/.Trash/cur MOD 1 
@@ -696,7 +696,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -710,8 +710,8 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur MOD 1 
@@ -723,7 +723,7 @@ Command: local: STAT <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=8
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S '
 Command: local: DEL <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S         
@@ -735,10 +735,6 @@ daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=67
 backup <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.2' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.1' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.2'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S'
 DEL local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S rc: 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S, param2: peer
@@ -751,7 +747,7 @@ Command: local: STAT <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=8
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST '
 Command: local: DEL <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST         
@@ -763,10 +759,6 @@ daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 backup <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.2' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.1' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.2'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
 DEL local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST rc: 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST, param2: peer
@@ -817,7 +809,7 @@ Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 '
 Command: local: DEL <TESTBASE>/test/peer         

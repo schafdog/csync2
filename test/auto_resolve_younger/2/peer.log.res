@@ -1,6 +1,6 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861 
-Binding to 30861 IPv2 
+Found my alias peer localhost 30861
+Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -58,8 +58,8 @@ Checking for deleted files <TESTBASE>/test/peer/auto.
 daemon_check_dirty: <TESTBASE>/test/peer/auto is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/auto'
 mkdir <TESTBASE>/test/peer/auto rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/auto rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/auto  
 Daemon end_command <TESTBASE>/test/peer/auto MKDIR 1 
@@ -86,8 +86,8 @@ daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younge
 daemon_check_auto_resolve: <TESTBASE>/test/peer/auto/younger failed stat
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/auto/younger'
 mkdir <TESTBASE>/test/peer/auto/younger rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/auto/younger rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/auto/younger  
 Daemon end_command <TESTBASE>/test/peer/auto/younger MKDIR 1 
@@ -138,7 +138,7 @@ daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younge
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=13
 
 Sending sig_file for <TESTBASE>/test/peer/auto/younger/local_oldest to peer.
 CONN local < octet-stream 32
@@ -171,7 +171,7 @@ Command: local: GETTM <TESTBASE>/test/peer/auto/younger/local_oldest
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger/local_oldest
 CONN local < OK (data_follows).
 
-CONN local < 1623103200
+CONN local < 1623146400
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger xxxxxxxxxx'
 Command: local: SETTIME <TESTBASE>/test/peer/auto/younger xxxxxxxx        
@@ -211,7 +211,7 @@ Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -226,8 +226,8 @@ Checking for modified files <TESTBASE>/test/peer
 Inserted/updated <TESTBASE>/test/peer rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MOD 1 
@@ -239,7 +239,7 @@ Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GRO
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -254,8 +254,8 @@ Checking for modified files <TESTBASE>/test/peer/auto
 Inserted/updated <TESTBASE>/test/peer/auto rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer/auto.
 daemon_check_dirty: <TESTBASE>/test/peer/auto is just marked dirty
-setown <TESTBASE>/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/auto rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/auto  
 Daemon end_command <TESTBASE>/test/peer/auto MOD 1 
@@ -270,7 +270,7 @@ daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -289,8 +289,8 @@ daemon_check_dirty: <TESTBASE>/test/peer/auto/younger is clean
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolved. clear dirty
-setown <TESTBASE>/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/auto/younger rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/auto/younger  
 Daemon end_command <TESTBASE>/test/peer/auto/younger MOD 1 
@@ -305,7 +305,7 @@ daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=13
 
 Sending sig_file for <TESTBASE>/test/peer/auto/younger/local_oldest to peer.
 CONN local < octet-stream 32
@@ -329,10 +329,6 @@ daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.2' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.1' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.2'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.1'. rc = 0
 CONN local < OK 
 Sending sig_file for <TESTBASE>/test/peer/auto/younger/local_oldest to peer.
 CONN local < octet-stream 32
@@ -399,7 +395,7 @@ Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 '
 Command: local: DEL <TESTBASE>/test/peer         
@@ -424,9 +420,6 @@ Removing file <TESTBASE>/test/peer/auto/younger/local_oldest
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.2' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.1' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.2'. rc = 0
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/auto/younger/local_oldest'
 Removing <TESTBASE>/test/peer/auto/younger/local_oldest from file db.

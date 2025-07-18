@@ -15,7 +15,7 @@ Connecting to host peer (PLAIN) ...
 Looking for alternative host:port for peer
 Using alternative port to localhost:30861 
 Connecting to localhost:30861 from local
-Using specific address 127.0.0.2
+Using specific address 127.x.x.x
 Connected to localhost:30861 
 CONN peer < CONFIG 
 
@@ -28,29 +28,29 @@ CONN peer < HELLO local
 CONN peer > 'OK (cmd_finished).'
 CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
 
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4	<TESTBASE>/test/peer/new_file 'N' all'
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4	<TESTBASE>/test/peer/new_file 'N' all'
 DbSql::list_file local <-> peer <TESTBASE>/test/peer/new_file 'N' all
 D	local	peer	<TESTBASE>/test/peer/new_file 'N' all
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 peer
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	<TESTBASE>/test/peer/A'
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0	<TESTBASE>/test/peer/A'
 DbSql::list_file local <-> peer <TESTBASE>/test/peer/A
 D	local	peer	<TESTBASE>/test/peer/A
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0	<TESTBASE>/test/peer/.Test'
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0	<TESTBASE>/test/peer/.Test'
 DbSql::list_file local <-> peer <TESTBASE>/test/peer/.Test
 D	local	peer	<TESTBASE>/test/peer/.Test
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 peer
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	<TESTBASE>/test/peer'
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir	<TESTBASE>/test/peer'
 DbSql::list_file local <-> peer <TESTBASE>/test/peer
 D	local	peer	<TESTBASE>/test/peer
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir peer
+>>> v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir peer
 >>> --- local
 CONN peer > 'OK (cmd_finished).'
 End of query results: OK (cmd_finished).

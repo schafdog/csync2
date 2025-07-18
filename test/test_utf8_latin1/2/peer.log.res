@@ -1,6 +1,6 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861 
-Binding to 30861 IPv2 
+Found my alias peer localhost 30861
+Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -61,7 +61,7 @@ daemon CREATE <TESTBASE>/test/peer/ÆØÅ Café.utf8 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/ÆØÅ Café.utf8 rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/ÆØÅ Café.utf8  
 Daemon end_command <TESTBASE>/test/peer/ÆØÅ Café.utf8 CREATE 1 
@@ -105,7 +105,7 @@ Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -119,8 +119,8 @@ Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MOD 1 
@@ -132,7 +132,7 @@ Command: local: STAT <TESTBASE>/test/peer/ÆØÅ Café.utf8 user/group <UID> <GI
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/ÆØÅ%20Café.utf8 '
 Command: local: DEL <TESTBASE>/test/peer/ÆØÅ Café.utf8         
@@ -144,10 +144,6 @@ daemon_check_dirty: <TESTBASE>/test/peer/ÆØÅ Café.utf8 is clean
 backup <TESTBASE>/test/peer/ÆØÅ Café.utf8 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.2' to '/tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.1' to '/tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.2'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8' to '/tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/ÆØÅ Café.utf8'
 DEL local:<TESTBASE>/test/peer/ÆØÅ Café.utf8 rc: 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/ÆØÅ Café.utf8, param2: peer

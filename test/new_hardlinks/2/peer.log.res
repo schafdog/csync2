@@ -1,6 +1,6 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861 
-Binding to 30861 IPv2 
+Found my alias peer localhost 30861
+Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -58,8 +58,8 @@ Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/new'
 mkdir <TESTBASE>/test/peer/new rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/new  
 Daemon end_command <TESTBASE>/test/peer/new MKDIR 1 
@@ -83,7 +83,7 @@ daemon CREATE <TESTBASE>/test/peer/new/new_file 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/new/new_file rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/new/new_file  
 Daemon end_command <TESTBASE>/test/peer/new/new_file CREATE 1 
@@ -99,7 +99,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/new_file user/group <UID> <GID> <US
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/new_file to peer.
 CONN local < octet-stream 32
@@ -164,7 +164,7 @@ Command: local: SIG <TESTBASE>/test/peer/new user/group <UID> <GID> <USER> <GROU
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -178,8 +178,8 @@ Running check for <TESTBASE>/test/peer/new ...
 Checking for modified files <TESTBASE>/test/peer/new 
 Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
-setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/new  
 Daemon end_command <TESTBASE>/test/peer/new MOD 1 
@@ -195,7 +195,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/hardlinked user/group <UID> <GID> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/hardlinked to peer.
 CONN local < octet-stream 32
@@ -226,7 +226,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/hardlinked user/group <UID> <GID> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/hardlinked to peer.
 CONN local < octet-stream 32
@@ -291,7 +291,7 @@ Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -303,7 +303,7 @@ Command: local: SIG <TESTBASE>/test/peer/new user/group <UID> <GID> <USER> <GROU
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -315,7 +315,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/hardlinked user/group <UID> <GID> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/hardlinked to peer.
 CONN local < octet-stream 32
@@ -329,7 +329,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/hardlinked_2 user/group <UID> <GID>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/hardlinked_2 to peer.
 CONN local < octet-stream 32
@@ -343,7 +343,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/hardlinked_3 user/group <UID> <GID>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/hardlinked_3 to peer.
 CONN local < octet-stream 32
@@ -365,7 +365,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/new_file user/group <UID> <GID> <US
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/new_file to peer.
 CONN local < octet-stream 32
@@ -405,7 +405,7 @@ Command: local: SIG <TESTBASE>/test/peer/new user/group <UID> <GID> <USER> <GROU
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -419,8 +419,8 @@ Running check for <TESTBASE>/test/peer/new ...
 Checking for modified files <TESTBASE>/test/peer/new 
 Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
-setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/new  
 Daemon end_command <TESTBASE>/test/peer/new MOD 1 
@@ -436,7 +436,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/new_file user/group <UID> <GID> <US
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/new_file to peer.
 CONN local < octet-stream 32
@@ -467,7 +467,7 @@ Command: local: SIG <TESTBASE>/test/peer/new/new_file user/group <UID> <GID> <US
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/new/new_file to peer.
 CONN local < octet-stream 32
@@ -532,7 +532,7 @@ Command: local: SIG <TESTBASE>/test/peer/new user/group <UID> <GID> <USER> <GROU
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -546,8 +546,8 @@ Running check for <TESTBASE>/test/peer/new ...
 Checking for modified files <TESTBASE>/test/peer/new 
 Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
-setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/new  
 Daemon end_command <TESTBASE>/test/peer/new MOD 1 
@@ -571,7 +571,7 @@ daemon CREATE <TESTBASE>/test/peer/new/was_hardlink 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/new/was_hardlink rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/new/was_hardlink  
 Daemon end_command <TESTBASE>/test/peer/new/was_hardlink CREATE 1 

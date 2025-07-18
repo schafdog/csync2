@@ -20,7 +20,7 @@ Checking <TESTBASE>/test/local/* ..
 Calling check_mod on <TESTBASE>/test/local/Z from <TESTBASE>/test/local
 New file: <TESTBASE>/test/local/Z
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Z <TESTBASE>/test/local/Z
-1 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/Z
+1 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/Z
 check same file (64) <TESTBASE>/test/local/A -> <TESTBASE>/test/local/Z 
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/local/A, param2: local
 Found MOVE <TESTBASE>/test/local/A -> <TESTBASE>/test/local/Z 

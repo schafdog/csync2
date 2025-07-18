@@ -1,6 +1,6 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861 
-Binding to 30861 IPv2 
+Found my alias peer localhost 30861
+Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -75,7 +75,7 @@ Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -87,7 +87,7 @@ Command: local: SIG <TESTBASE>/test/peer/different user/group <UID> <GID> <USER>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/different to peer.
 CONN local < octet-stream 32
@@ -151,7 +151,7 @@ Command: local: SIG <TESTBASE>/test/peer/different user/group <UID> <GID> <USER>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/different to peer.
 CONN local < octet-stream 32
@@ -220,7 +220,7 @@ Command: local: SIG <TESTBASE>/test/peer/different user/group <UID> <GID> <USER>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Sending sig_file for <TESTBASE>/test/peer/different to peer.
 CONN local < octet-stream 32
@@ -239,10 +239,6 @@ daemon_check_dirty: <TESTBASE>/test/peer/different is clean
 backup <TESTBASE>/test/peer/different 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/different.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/different.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/different.2' to '/tmp/csync2<TESTBASE>/test/peer/different.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/different.1' to '/tmp/csync2<TESTBASE>/test/peer/different.2'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/different' to '/tmp/csync2<TESTBASE>/test/peer/different.1'. rc = 0
 CONN local < OK 
 Sending sig_file for <TESTBASE>/test/peer/different to peer.
 CONN local < octet-stream 32
@@ -250,7 +246,7 @@ CONN local < octet-stream 32
 Signature has been sent to peer successfully.
 CONN local > 'octet-stream 10'
 Got octet-stream 10
-Content length in buffer: 'octet-stream 10' size: 10 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stre' size: 10 rc: 0 (octet-stream)
 Locking 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/peer/.different.XXXXXX'
 Locking 'MOVED_TO:<TESTBASE>/test/peer/different'
 settime <TESTBASE>/test/peer/different rc = 0 time: 0 errno = 0 err = 
@@ -296,7 +292,7 @@ Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -311,8 +307,8 @@ Checking for modified files <TESTBASE>/test/peer
 Inserted/updated <TESTBASE>/test/peer rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MOD 1 
@@ -324,7 +320,7 @@ Command: local: SIG <TESTBASE>/test/peer/tmp user/group <UID> <GID> <USER> <GROU
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -345,8 +341,8 @@ Checking for deleted files <TESTBASE>/test/peer/tmp.
 daemon_check_dirty: <TESTBASE>/test/peer/tmp is just marked dirty
 daemon_check_dirty: peer operation  local <TESTBASE>/test/peer/tmp MKDIR
 Ignoring dirty directory <TESTBASE>/test/peer/tmp
-setown <TESTBASE>/test/peer/tmp rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
-setmod <TESTBASE>/test/peer/tmp rc = 0 mod: 16877 errno = 0 err = 
+setown <TESTBASE>/test/peer/tmp rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
+setmod <TESTBASE>/test/peer/tmp rc = 0 mod: 16877 errno = 22 err = 
 settime <TESTBASE>/test/peer/tmp rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/tmp  
 Daemon end_command <TESTBASE>/test/peer/tmp MOD 1 

@@ -29,7 +29,7 @@ Calling check_mod on <TESTBASE>/test/local/new/new_file from <TESTBASE>/test/loc
 Calling check_mod on <TESTBASE>/test/local/new/hardlinked_6 from <TESTBASE>/test/local/new
 New file: <TESTBASE>/test/local/new/hardlinked_6
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked_6 <TESTBASE>/test/local/new/hardlinked_6
-1 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/new/hardlinked_6
+1 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/new/hardlinked_6
 check same file (32) <TESTBASE>/test/local/new/was_hardlink -> <TESTBASE>/test/local/new/hardlinked_6 
 Found HARDLINK <TESTBASE>/test/local/new/was_hardlink -> <TESTBASE>/test/local/new/hardlinked_6 
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/new/hardlinked_6' '<TESTBASE>/test/local/new/was_hardlink'.

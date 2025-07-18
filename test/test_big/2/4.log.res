@@ -35,7 +35,7 @@ Dirty (missing) item <TESTBASE>/test/local RM (null) 0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < SIG %25test%25 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 delete flags: 0
 CONN peer > 'octet-stream 0'
 Got octet-stream 0

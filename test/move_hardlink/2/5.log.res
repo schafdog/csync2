@@ -31,7 +31,7 @@ Checking <TESTBASE>/test/local/Maildir/.Trash/cur/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab from <TESTBASE>/test/local/Maildir/.Trash/cur
 New file: <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab
-1 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab
+1 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab
 check same file (32) <TESTBASE>/test/local/Maildir/cur/123,Sab -> <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab 
 Found HARDLINK <TESTBASE>/test/local/Maildir/cur/123,Sab -> <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab 
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab' '<TESTBASE>/test/local/Maildir/cur/123,Sab'.
