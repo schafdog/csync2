@@ -161,7 +161,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		char ipstr[INET6_ADDRSTRLEN];
 		csync_info(2, "Using specific address {}\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
 		if (bind(sfd, localaddr, sockaddr_size) == -1) {
-			csync_error(0, "Failed to bind to {}: {}, {}\n", ipstr, errno, strerror(errno));
+			csync_error(0, "Failed to bind to {}: {}, {}\n", static_cast<char *>(ipstr), errno, strerror(errno));
 		}
 		free(localaddr);
 	}
@@ -521,7 +521,8 @@ static void conn_debug(const char *name, const char *buf, size_t count) {
 ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	char buffer[200];
 	*size = 0;
-	int rc = !conn_gets(fd, buffer, 200);
+	ssize_t str_size = conn_gets(fd, buffer, 200);
+	int rc = !str_size;
 	const char *typestr = "None";
 	if (sscanf(buffer, "octet-stream %zu\n", size) == 1) {
 		csync_info(2, "Got octet-stream {}\n", *size);
@@ -534,8 +535,8 @@ ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	} else {
 		csync_error(0, "Failed to content-length: '{}'\n", buffer);
 	}
-
-	csync_debug(2, "Content length in buffer: '{}' size: {} rc: {} ({})\n", buffer, *size, rc, typestr);
+	buffer[*size] = 0;
+	csync_debug(2, "Content length in buffer: '{}' size: {} rc: {} ({})\n", static_cast<char *>(buffer), *size, rc, typestr);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
 		return -1;
@@ -751,9 +752,9 @@ static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, 
 }
 
 ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
-	size_t i = 0;
+	ssize_t i = 0;
 	ssize_t rc = 0;
-	while (i < size - 1) {
+	while (i < static_cast<ssize_t>(size) - 1) {
 		rc = conn_raw_read(filedesc, s + i, 1);
 		if (rc != 1)
 			break;
@@ -764,7 +765,7 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 		}
 	}
 	s[i] = 0;
-	return rc ? rc : static_cast<ssize_t>(i);
+	return i;
 }
 
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {

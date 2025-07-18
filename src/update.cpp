@@ -1902,7 +1902,7 @@ static int csync_insynctest_readline(int conn, char **file, char **checktxt) {
 		return 1;
 	if (inbuf[0] != 'v') {
 		if (!strncmp(inbuf, "OK (", 4)) {
-			csync_debug(2, "End of query results: {}", inbuf);
+			csync_debug(2, "End of query results: {}", static_cast<char *>(inbuf));
 			return 1;
 		}
 		csync_error_count++;
