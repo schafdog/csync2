@@ -969,6 +969,7 @@ static int csync_daemon_setown(filename_p filename, const char *uidp, const char
 		int local_gid = name_to_gid(group);
 		if (local_gid != -1)
 			gid = local_gid;
+		errno = 0;
 		if (lchown(filename.c_str(), uid, gid))
 			*cmd_error = strerror(errno);
 	}
