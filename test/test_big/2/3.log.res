@@ -26,17 +26,17 @@ CONN peer < HELLO local
 CONN peer > 'OK (cmd_finished).'
 CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
 
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=102400000	<TESTBASE>/test/peer/big_file'
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=102400000	<TESTBASE>/test/peer/big_file'
 db_sql_list_file local <-> peer <TESTBASE>/test/peer/big_file
 D	local	peer	<TESTBASE>/test/peer/big_file
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=102400000 peer
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=102400000 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	<TESTBASE>/test/peer'
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir	<TESTBASE>/test/peer'
 db_sql_list_file local <-> peer <TESTBASE>/test/peer
 D	local	peer	<TESTBASE>/test/peer
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir peer
+>>> v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir peer
 >>> --- local
 CONN peer > 'OK (cmd_finished).'
 End of query results: OK (cmd_finished).CONN peer < BYE

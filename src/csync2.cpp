@@ -665,7 +665,7 @@ static std::set<std::string> check_file_args(db_conn_p db, char *files[], int fi
 				realnames.insert(real_name);
 				if (flags & FLAG_DO_CHECK)
 				{
-					csync_debug(2, "csync_file_args: chec'{}' flags {}", real_name, flags);
+					csync_debug(2, "csync_file_args: '{}' flags {} \n", real_name, flags);
 					csync_check(db, real_name, flags);
 				}
 			}
@@ -1368,7 +1368,7 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	if (!csync_database)
 		csync_database = db_default_database(dbdir, g_myhostname.c_str(), g_cfgname);
 
-	csync_info(2, "My hostname is {}.", g_myhostname.c_str());
+	csync_info(2, "My hostname is {}.", g_myhostname);
 	csync_info(2, "Database File: {}", csync_database);
 	csync_info(2, "DB Version:    {}", g_db_version);
 	csync_info(2, "IP Version:    {}", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));

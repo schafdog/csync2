@@ -20,8 +20,14 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "s|/export/home/dennis/Projects/csync2/csync2/test|<TESTBASE>|g" \
     -e "s|user/group [0-9]* [0-9]* [^ ]* [^ ]*|user/group <UID> <GID> <USER> <GROUP>|g" \
     -e "s|- [0-9]* [0-9]* [^ ]* [^ ]* |- <UID> <GID> <USER> <GROUP> |g" \
+    -e "s| uid: [^ ]* gid: [^ ]* | gid: <UID> gid: <GID> |g" \
+    -e "s|:user=[^:]*:group=[^:]*:|:user=<USER>:group=<GROUP>:|g" \
+    -e "s|%3Auser=[^%]*%|%3Auser=<USER>%|g" \
+    -e "s|Using specific address 127.*|Using specific address 127.x.x.x|g" \
+    -e "s|%3Agroup=[^%]*%|%3Agroup=<GROUP>%|g" \
     -e "s|<GROUP> [0-9]* - [0-9]*|<GROUP> <BLKSIZE> - <DIRSIZE>|g" \
     -e "s|substring(filename,[0-9]*)|substring(filename,<LEN>)|g" \
+    -e "s| same dev:inode ([0-9:]*) | same dev:inode (x:y) |g" \
     -e "s|Changing owner of /tmp/csync2/[^ ]* to user [0-9]* and group [0-9]*, rc= -1|Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1|g" \
     -e "/----------/d" \
     -e "/----------+/d" \

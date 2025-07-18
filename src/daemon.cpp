@@ -781,8 +781,6 @@ static void destroy_tag(const char *tag[32]) {
 static int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error);
 
 static textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl) {
-	(void *) st;
-
     const char *cmd_error = NULL;
 	textlist_p t = tl;
 	while (t) {
@@ -853,7 +851,7 @@ static int csync_daemon_patch(int conn, filename_p filename, const char **cmd_er
 		csync_rs_sig(conn, filename);
 		if (csync_patch(conn, filename)) {
 			*cmd_error = strerror(errno);
-			csync_error(1, "PATCH failed: {} {}", (int) errno, *cmd_error);
+			csync_error(1, "PATCH failed: {} {}", static_cast<int>(errno), *cmd_error);
 			return ABORT_CMD;
 		}
 
@@ -971,6 +969,7 @@ static int csync_daemon_setown(filename_p filename, const char *uidp, const char
 		int local_gid = name_to_gid(group);
 		if (local_gid != -1)
 			gid = local_gid;
+		errno = 0;
 		if (lchown(filename.c_str(), uid, gid))
 			*cmd_error = strerror(errno);
 	}
@@ -1567,12 +1566,12 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 		break;
 	case A_DEBUG:
 		{
-			csync_info(2, "DEBUG from {} {}\n", *peername, params->first);
+			csync_info(2, "DEBUG from {} {}\n", (*peername) ? *peername : "(null)", params->first);
 			int client_debug_level = 0;
 			if (params->first[0])
 				client_debug_level = atoi(params->first);
 			if (client_debug_level > csync_level_debug) {
-				csync_info(1, "Increasing {} DEBUG level to {}\n", *peername, params->first);
+				csync_info(1, "Increasing {} DEBUG level to {}\n",(*peername) ? *peername : "(null)", params->first);
 				csync_level_debug = client_debug_level;
 			}
 			break;

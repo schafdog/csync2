@@ -137,7 +137,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		}
 		p = p->next;
 	}
-	csync_debug(2, "Connecting to {}:{} from {}\n", peername, port, myhostname.c_str());
+	csync_debug(2, "Connecting to {}:{} from {}\n", peername, port, myhostname);
 
 	sfd = socket(ip_version, SOCK_STREAM, 0);
 	if (sfd == -1) {
@@ -161,7 +161,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		char ipstr[INET6_ADDRSTRLEN];
 		csync_info(2, "Using specific address {}\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
 		if (bind(sfd, localaddr, sockaddr_size) == -1) {
-			csync_error(0, "Failed to bind to {}: {}, {}\n", ipstr, errno, strerror(errno));
+			csync_error(0, "Failed to bind to {}: {}, {}\n", static_cast<char *>(ipstr), errno, strerror(errno));
 		}
 		free(localaddr);
 	}
@@ -521,7 +521,8 @@ static void conn_debug(const char *name, const char *buf, size_t count) {
 ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	char buffer[200];
 	*size = 0;
-	int rc = !conn_gets(fd, buffer, 200);
+	ssize_t str_size = conn_gets(fd, buffer, 200);
+	int rc = !str_size;
 	const char *typestr = "None";
 	if (sscanf(buffer, "octet-stream %zu\n", size) == 1) {
 		csync_info(2, "Got octet-stream {}\n", *size);
@@ -534,8 +535,8 @@ ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	} else {
 		csync_error(0, "Failed to content-length: '{}'\n", buffer);
 	}
-
-	csync_debug(2, "Content length in buffer: '{}' size: {} rc: {} ({})\n", buffer, *size, rc, typestr);
+	buffer[*size] = 0;
+	csync_debug(2, "Content length in buffer: '{}' size: {} rc: {} ({})\n", static_cast<char *>(buffer), *size, rc, typestr);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
 		return -1;
@@ -727,7 +728,7 @@ void conn_printf(int fd, const char *fmt, ...) {
 	conn_write(fd, buffer, size);
 	conn_remove_key(buffer);
 	char *str = filter_mtime(buffer);
-	csync_info(2, "CONN {} < {}\n", active_peer, str);
+	csync_info(2, "CONN {} < {}\n", active_peer ? active_peer : "(null)", str);
 }
 
 static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, const char *key_enc, const char *fmt, ...) {
@@ -751,9 +752,9 @@ static void conn_printf_cmd_filepath(int fd, const char *cmd, const char *file, 
 }
 
 ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
-	size_t i = 0;
+	ssize_t i = 0;
 	ssize_t rc = 0;
-	while (i < size - 1) {
+	while (i < static_cast<ssize_t>(size) - 1) {
 		rc = conn_raw_read(filedesc, s + i, 1);
 		if (rc != 1)
 			break;
@@ -764,18 +765,19 @@ ssize_t gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
 		}
 	}
 	s[i] = 0;
-	return rc ? rc : static_cast<ssize_t>(i);
+	return i;
 }
 
 ssize_t conn_gets_newline(int filedesc, char *s, size_t size, int remove_newline) {
+    std::string peer = active_peer != NULL ? active_peer : "(null)";
 	int rc = gets_newline(filedesc, s, size, remove_newline);
 	if (rc == -1) {
-		csync_error(0, "CONN {} > {} failed with error '{}' \n", active_peer, s, strerror(errno));
+		csync_error(0, "CONN {} > {} failed with error '{}' \n", peer, s, strerror(errno));
 		return rc;
 	}
 	// Filter mtime but on a copy.
 	char *copy = filter_mtime_copy(s);
-	csync_info(2, "CONN {} > '{}'\n", active_peer, copy);
+	csync_info(2, "CONN {} > '{}'\n", peer, copy);
 	free(copy);
 	return rc;
 }

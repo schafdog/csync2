@@ -29,6 +29,7 @@ src/csync2
 src/db_test_postgres
 src/db_test_sqlite
 src/db_test_mysql
+src/test_database
 src/database_example
 #csync2.sql
 depcomp

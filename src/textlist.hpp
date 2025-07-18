@@ -181,7 +181,7 @@ static inline void textlist_add_new3(struct textlist **listhandle, filename_p fi
 	    csync2::g_logger.log(csync2::LogLevel::Debug, 3, "Adding textlist_add_new3: %s\n", filename.c_str());
     }
     else {
-	    csync_debug(3, "Skipping textlist_add_new3: %s\n", filename.c_str());
+	    csync_debug(3, "Skipping textlist_add_new3: %s\n", filename);
   }
 }
 
