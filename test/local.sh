@@ -80,7 +80,7 @@ function cmd {
 	return 
     fi
     mkdir -p ${TESTNAME}/${LEVEL}
-    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${LEVEL}/${COUNT}.log
+    echo cmd $CMD \"$2\" $HOST $PEER $TESTPATH > ${TESTNAME}/${LEVEL}/${COUNT}.log.raw
     OPTS="$CSYNC2_OPT -y -q -P peer -K csync2_${DATABASE}_$HOST.cfg -N $HOST -${CMD}${RECURSIVE}$DEBUG"
     if [ "$LLDB" != "" ] ; then 
 	$LLDB -f ${PROG} -- ${OPTS} "${TESTPATH}"
@@ -91,7 +91,12 @@ function cmd {
 	time $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log
     else
 	echo $PROG ${OPTS} "${TESTPATH}"
-        $PROG ${OPTS} "${TESTPATH}" 2>&1 | grep -a -v Finished | ./normalize_paths.sh >> ${TESTNAME}/${LEVEL}/${COUNT}.log
+        ASAN_OPTIONS=${ASAN_OPTIONS} $PROG ${OPTS} "${TESTPATH}" 2>&1 | \
+	    grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log.raw
+	cat ${TESTNAME}/${LEVEL}/${COUNT}.log.raw |./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.log
+	if [ "$KEEP_RAW" != "YES" ] ; then
+	    rm ${TESTNAME}/${LEVEL}/${COUNT}.log.raw
+	fi
     fi
     if [ "$SKIP_LOG" != "YES" ] ; then
        testing ${TESTNAME}/${LEVEL}/${COUNT}.log
@@ -147,7 +152,8 @@ function daemon {
 	DNAME=local
     fi
     # Create backupdir
-    mkdir -p /tmp/csync2 
+    mkdir -p /tmp/csync2
+    rm -rf   /tmp/csync2/*
     CMD="$1"
     echo $DCFG $DNAME
     mkdir  -p $TESTNAME/${LEVEL}
@@ -234,9 +240,12 @@ done
 echo "DAEMON:"
 # Process the raw daemon log and apply normalization
 if [ -f ${TESTNAME}/${LEVEL}/peer.log.raw ]; then
-    cat ${TESTNAME}/${LEVEL}/peer.log.raw | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log
+    cat ${TESTNAME}/${LEVEL}/peer.log.raw | sed "s/<[0-9]*> //" | grep -a -v connection \
+	| ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log
+    if [ "$KEEP_RAW" != "YES" ] ; then
+	rm ${TESTNAME}/${LEVEL}/peer.log.raw
+    fi
     # Remove the raw log file after processing
-    rm ${TESTNAME}/${LEVEL}/peer.log.raw
 else
     # Fallback to existing log file if raw doesn't exist
     cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log.tmp
