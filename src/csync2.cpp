@@ -1219,7 +1219,7 @@ nofork:
 	if (!csync_database)
 		csync_database = db_default_database(dbdir, g_myhostname.c_str(), g_cfgname);
 
-	csync_info(2, "My hostname is {}.", g_myhostname.c_str());
+	csync_info(2, "My hostname is {}.", g_myhostname);
 	csync_info(2, "Database File: {}", csync_database);
 	csync_info(2, "DB Version:    {}", g_db_version);
 	csync_info(2, "IP Version:    {}", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));

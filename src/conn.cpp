@@ -137,7 +137,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		}
 		p = p->next;
 	}
-	csync_debug(2, "Connecting to {}:{} from {}\n", peername, port, myhostname.c_str());
+	csync_debug(2, "Connecting to {}:{} from {}\n", peername, port, myhostname);
 
 	sfd = socket(ip_version, SOCK_STREAM, 0);
 	if (sfd == -1) {
