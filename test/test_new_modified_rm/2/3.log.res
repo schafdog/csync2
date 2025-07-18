@@ -18,7 +18,7 @@ Inserted/updated <TESTBASE>/test/local rows matched: 0
 Checking <TESTBASE>/test/local/* ..
 New file: <TESTBASE>/test/local/newdir
 csync_check_file_same_dev_inode <TESTBASE>/test/local/newdir <TESTBASE>/test/local/newdir
-1 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/newdir
+1 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/newdir
 check same file (64) <TESTBASE>/test/local/A -> <TESTBASE>/test/local/newdir 
 Found MOVE <TESTBASE>/test/local/A -> <TESTBASE>/test/local/newdir 
 mark other operation: 'MV' 'peer:<TESTBASE>/test/local/newdir' '<TESTBASE>/test/local/A'.

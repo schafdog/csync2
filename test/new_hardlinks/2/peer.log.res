@@ -35,7 +35,11 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
+<<<<<<< HEAD
 setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+=======
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer
@@ -57,7 +61,11 @@ Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/new'
 mkdir <TESTBASE>/test/peer/new rc = 0 errno = 2 err = 
+<<<<<<< HEAD
 setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+=======
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/new
@@ -175,7 +183,11 @@ Running check for <TESTBASE>/test/peer/new ...
 Checking for modified files <TESTBASE>/test/peer/new 
 Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
+<<<<<<< HEAD
 setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+=======
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/new
@@ -407,7 +419,11 @@ Running check for <TESTBASE>/test/peer/new ...
 Checking for modified files <TESTBASE>/test/peer/new 
 Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
+<<<<<<< HEAD
 setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+=======
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/new
@@ -586,7 +602,11 @@ Running check for <TESTBASE>/test/peer/new ...
 Checking for modified files <TESTBASE>/test/peer/new 
 Checking for deleted files <TESTBASE>/test/peer/new.
 daemon_check_dirty: <TESTBASE>/test/peer/new is clean
+<<<<<<< HEAD
 setown <TESTBASE>/test/peer/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+=======
+setown <TESTBASE>/test/peer/new rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 setmod <TESTBASE>/test/peer/new rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/new rc = 0 time: 0 errno = 0 err = 
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/new

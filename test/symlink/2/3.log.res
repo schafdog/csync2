@@ -22,9 +22,14 @@ WARN: stat failed. op: 2
 mark other operation: 'RM?' 'other:<TESTBASE>/test/local/bad.link' 'missing'.
 Inserted/updated <TESTBASE>/test/local/bad.link rows matched: 0
 Checking for deleted files <TESTBASE>/test recursive.
+<<<<<<< HEAD
 csync_file_args: '<TESTBASE>/test' flags 65 
 dirty: peer:<TESTBASE>/test/local/bad.link v2:mtime=xxxxxxxxxx:mode=41471:user=dennis:group=schafroth:type=lnk:target=missing ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+=======
+dirty: peer:<TESTBASE>/test/local/bad.link v2:mtime=xxxxxxxxxx:mode=41471:user=<USER>:group=<GROUP>:type=lnk:target=missing ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Using alternative port to localhost:30861 

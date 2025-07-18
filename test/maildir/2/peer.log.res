@@ -1,13 +1,12 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861 
-Binding to 30861 IPv2 
+Found my alias peer localhost 30861
+Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -37,7 +36,7 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
@@ -59,7 +58,7 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir'
 mkdir <TESTBASE>/test/peer/Maildir rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir  
@@ -81,7 +80,7 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash'
 mkdir <TESTBASE>/test/peer/Maildir/.Trash rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/.Trash rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/.Trash rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash  
@@ -103,7 +102,7 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash/cur'
 mkdir <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
@@ -125,7 +124,7 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/cur'
 mkdir <TESTBASE>/test/peer/Maildir/cur rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/cur  
@@ -147,7 +146,7 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/new is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/new'
 mkdir <TESTBASE>/test/peer/Maildir/new rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/new rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/new rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/new  
@@ -169,7 +168,7 @@ Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/tmp is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/Maildir/tmp'
 mkdir <TESTBASE>/test/peer/Maildir/tmp rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/tmp rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/tmp  
@@ -206,7 +205,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -227,7 +225,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/new user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -241,7 +239,7 @@ Running check for <TESTBASE>/test/peer/Maildir/new ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/new is clean
-setown <TESTBASE>/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/new rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/new rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/new  
@@ -254,7 +252,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/tmp user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -268,7 +266,7 @@ Running check for <TESTBASE>/test/peer/Maildir/tmp ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/tmp 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/tmp is clean
-setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/tmp rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/tmp rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/tmp rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/tmp  
@@ -293,7 +291,7 @@ daemon CREATE <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 1 0
 CONN local < OK 
 CONN local > 'octet-stream 8'
 Got octet-stream 8
-Content length in buffer: 'octet-stream 8' size: 8 rc: 0 (octet-stream)
+Content length in buffer: 'octet-st' size: 8 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
 Daemon end_command <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 CREATE 1 
@@ -323,7 +321,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -344,7 +341,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -358,7 +355,7 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
@@ -371,7 +368,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/new user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -385,7 +382,7 @@ Running check for <TESTBASE>/test/peer/Maildir/new ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/new is clean
-setown <TESTBASE>/test/peer/Maildir/new rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/new rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/new rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/new rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/new  
@@ -397,7 +394,8 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,'
-SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764' or filename like '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764/%'
+SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 Daemon end_command <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 MV 0 
 CONN local < OK (cmd_finished).
@@ -431,7 +429,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -452,7 +449,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -466,7 +463,7 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
@@ -478,7 +475,8 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S'
-SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,' or filename like '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,/%'
+SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, MV 0 
 CONN local < OK (cmd_finished).
@@ -506,7 +504,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -527,7 +524,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GI
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -541,7 +538,7 @@ Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur is clean
-setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
@@ -554,7 +551,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -568,7 +565,7 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
@@ -580,7 +577,8 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
-SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S' or filename like '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S/%'
+SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S MV 0 
 CONN local < OK (cmd_finished).
@@ -594,7 +592,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=8
 
 Sending sig_file for <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST to peer.
 CONN local < octet-stream 32
@@ -651,7 +649,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -672,7 +669,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GI
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -686,7 +683,7 @@ Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur is clean
-setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/.Trash/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
@@ -699,7 +696,7 @@ Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USE
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local < octet-stream 0
 
@@ -713,7 +710,7 @@ Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur is clean
-setown <TESTBASE>/test/peer/Maildir/cur rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer/Maildir/cur rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/Maildir/cur rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/Maildir/cur rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
@@ -726,7 +723,7 @@ Command: local: STAT <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=8
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S '
 Command: local: DEL <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S         
@@ -738,12 +735,9 @@ daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=67
 backup <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.2' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.1' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.2'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S'
 DEL local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S rc: 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S, param2: peer
 Updated(del) local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S  
 Daemon end_command <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S DEL 0 
 CONN local < OK (cmd_finished).
@@ -753,7 +747,7 @@ Command: local: STAT <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=8
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=8
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST '
 Command: local: DEL <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST         
@@ -765,12 +759,9 @@ daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 backup <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3 due  3 
-Remove backup /tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3 due to generation 3 
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.2' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.1' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.2'. rc = 0
-renaming backup files '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' to '/tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
 DEL local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST rc: 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST, param2: peer
 Updated(del) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST  
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST DEL 0 
 CONN local < OK (cmd_finished).
@@ -798,7 +789,6 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -819,7 +809,7 @@ Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir
 
 CONN local > 'DEL 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 '
 Command: local: DEL <TESTBASE>/test/peer         
@@ -837,25 +827,33 @@ Removing <TESTBASE>/test/peer/Maildir/* ..
 Removing <TESTBASE>/test/peer/Maildir/tmp/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/tmp'
 Removing directory <TESTBASE>/test/peer/Maildir/tmp 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/tmp, param2: <TESTBASE>/test/peer/Maildir/tmp/%, param3: peer
 Removing <TESTBASE>/test/peer/Maildir/new/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/new'
 Removing directory <TESTBASE>/test/peer/Maildir/new 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/new, param2: <TESTBASE>/test/peer/Maildir/new/%, param3: peer
 Removing <TESTBASE>/test/peer/Maildir/cur/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/cur'
 Removing directory <TESTBASE>/test/peer/Maildir/cur 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/cur, param2: <TESTBASE>/test/peer/Maildir/cur/%, param3: peer
 Removing <TESTBASE>/test/peer/Maildir/.Trash/* ..
 Removing <TESTBASE>/test/peer/Maildir/.Trash/cur/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash/cur'
 Removing directory <TESTBASE>/test/peer/Maildir/.Trash/cur 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/.Trash/cur, param2: <TESTBASE>/test/peer/Maildir/.Trash/cur/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir/.Trash'
 Removing directory <TESTBASE>/test/peer/Maildir/.Trash 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir/.Trash, param2: <TESTBASE>/test/peer/Maildir/.Trash/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/Maildir'
 Removing directory <TESTBASE>/test/peer/Maildir 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/Maildir, param2: <TESTBASE>/test/peer/Maildir/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 6 1 
 DEL local:<TESTBASE>/test/peer rc: 1
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
 Updated(del) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer DEL 1 
 IDENT (cmd_finished).

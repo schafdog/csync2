@@ -18,7 +18,13 @@ Inserted/updated <TESTBASE>/test/local/new rows matched: 0
 Checking <TESTBASE>/test/local/new/* ..
 New file: <TESTBASE>/test/local/new/hardlinked_3
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked_3 <TESTBASE>/test/local/new/hardlinked_3
+<<<<<<< HEAD
 2 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/new/hardlinked_3
+=======
+2 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_3
+check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_3 
+Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_3 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_3 
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_3 
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_3 
@@ -29,7 +35,13 @@ mark other: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_fi
 Inserted/updated <TESTBASE>/test/local/new/hardlinked_3 rows matched: 0
 New file: <TESTBASE>/test/local/new/hardlinked_2
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked_2 <TESTBASE>/test/local/new/hardlinked_2
+<<<<<<< HEAD
 3 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/new/hardlinked_2
+=======
+3 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_2
+check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_2 
+Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_2 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 check same file (32) <TESTBASE>/test/local/new/hardlinked_3 -> <TESTBASE>/test/local/new/hardlinked_2 
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked_3 -> <TESTBASE>/test/local/new/hardlinked_2 
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_2 

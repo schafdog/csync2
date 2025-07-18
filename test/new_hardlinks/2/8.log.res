@@ -41,6 +41,7 @@ Updating (MARK) 'peer:<TESTBASE>/test/local/new/hardlinked_4' ''
 CONN peer < SIG %25test%25/new/hardlinked_4 user/group 1234 1000 dennis schafroth 33188 - 4 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new/hardlinked_4 RC 32
+<<<<<<< HEAD
 CHECKING SAME DEV INODE <TESTBASE>/test/local/new/hardlinked_4 '32a0617aab4c9fe725f1b5bc441291180ad25b73'
 5 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/new/hardlinked_4
 check same file (32) <TESTBASE>/test/local/new/hardlinked_5 -> <TESTBASE>/test/local/new/hardlinked_4 
@@ -56,6 +57,43 @@ check same file (32) <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/l
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/local/new/hardlinked_4 
 do hardlink check <TESTBASE>/test/local/new/hardlinked_4 <TESTBASE>/test/local/new/hardlinked_2 
 CONN peer < SIG %25test%25/new/hardlinked_2 user/group 1234 1000 dennis schafroth 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
+=======
+Find same DEV INODE <TESTBASE>/test/local/new/hardlinked_4 already on peer and hardlink
+4 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_4
+check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
+Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
+do hardlink check <TESTBASE>/test/local/new/hardlinked_4 <TESTBASE>/test/local/new/new_file 
+CONN peer < SIG %25test%25/new/new_file user/group <UID> <GID> <USER> <GROUP> 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
+CONN peer > 'OK (data_follows).'
+update_file_sig <TESTBASE>/test/local/new/new_file RC 0
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4'
+CONN peer > 'octet-stream 32'
+Got octet-stream 32
+Content length in buffer: 'octet-stream 32' size: 32 rc: 0 (octet-stream)
+rs_check: Receiving signature 32 bytes for <TESTBASE>/test/local/new/new_file
+CONN peer > 'OK (cmd_finished).'
+?S: peer            <TESTBASE>/test/local/new/new_file
+Hardlinking peer <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4
+CONN peer < MKHARDLINK %25test%25/new/hardlinked_4 %25test%25/new/new_file 
+CONN peer > 'OK (cmd_finished).'
+Clear dirty peer:<TESTBASE>/test/local/new/hardlinked_4 (0)
+check_update_hardlink result: <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4: 0
+Hardlinked peer:<TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4
+Clear dirty peer:<TESTBASE>/test/local/new/hardlinked_4 (0)
+csync_find_update_hardlink: result: peer:<TESTBASE>/test/local/new/hardlinked_4 0
+Returning after hard link check peer:<TESTBASE>/test/local/new/hardlinked_4 0
+Directory time <TESTBASE>/test/local/new <TESTBASE>/test/local/new/hardlinked_4
+Updating (MARK) 'peer:<TESTBASE>/test/local/new/hardlinked_5' ''
+CONN peer < SIG %25test%25/new/hardlinked_5 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'OK (not_found).'
+update_file_sig <TESTBASE>/test/local/new/hardlinked_5 RC 32
+Find same DEV INODE <TESTBASE>/test/local/new/hardlinked_5 already on peer and hardlink
+5 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_5
+check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
+Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
+do hardlink check <TESTBASE>/test/local/new/hardlinked_5 <TESTBASE>/test/local/new/new_file 
+CONN peer < SIG %25test%25/new/new_file user/group <UID> <GID> <USER> <GROUP> 33188 32a0617aab4c9fe725f1b5bc441291180ad25b73 4 
+>>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/new/hardlinked_2 RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4'
