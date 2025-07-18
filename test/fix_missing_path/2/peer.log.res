@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -54,8 +54,8 @@ Checking for deleted files <TESTBASE>/test/peer/recursive.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/recursive'
 mkdir <TESTBASE>/test/peer/recursive rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/recursive rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/recursive rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/recursive rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/recursive rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/recursive rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive  
 Daemon end_command <TESTBASE>/test/peer/recursive MKDIR 1 
@@ -72,8 +72,8 @@ Checking for deleted files <TESTBASE>/test/peer/recursive/1.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive/1 is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/recursive/1'
 mkdir <TESTBASE>/test/peer/recursive/1 rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/recursive/1 rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/recursive/1 rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/recursive/1 rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/recursive/1 rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/recursive/1 rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1  
 Daemon end_command <TESTBASE>/test/peer/recursive/1 MKDIR 1 
@@ -90,8 +90,8 @@ Checking for deleted files <TESTBASE>/test/peer/recursive/1/2.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive/1/2 is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/recursive/1/2'
 mkdir <TESTBASE>/test/peer/recursive/1/2 rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/recursive/1/2 rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/recursive/1/2 rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/recursive/1/2 rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/recursive/1/2 rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/recursive/1/2 rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2  
 Daemon end_command <TESTBASE>/test/peer/recursive/1/2 MKDIR 1 
@@ -108,8 +108,8 @@ Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive/1/2/3 is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/recursive/1/2/3'
 mkdir <TESTBASE>/test/peer/recursive/1/2/3 rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/recursive/1/2/3 rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/recursive/1/2/3 rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/recursive/1/2/3 rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/recursive/1/2/3 rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/recursive/1/2/3 rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2/3  
 Daemon end_command <TESTBASE>/test/peer/recursive/1/2/3 MKDIR 1 
@@ -126,8 +126,8 @@ Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive/1/2/3/4 is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/recursive/1/2/3/4'
 mkdir <TESTBASE>/test/peer/recursive/1/2/3/4 rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/recursive/1/2/3/4 rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/recursive/1/2/3/4 rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/recursive/1/2/3/4 rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/recursive/1/2/3/4 rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/recursive/1/2/3/4 rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2/3/4  
 Daemon end_command <TESTBASE>/test/peer/recursive/1/2/3/4 MKDIR 1 
@@ -144,8 +144,8 @@ Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4/5.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive/1/2/3/4/5 is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/recursive/1/2/3/4/5'
 mkdir <TESTBASE>/test/peer/recursive/1/2/3/4/5 rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/recursive/1/2/3/4/5 rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/recursive/1/2/3/4/5 rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/recursive/1/2/3/4/5 rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/recursive/1/2/3/4/5 rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/recursive/1/2/3/4/5 rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2/3/4/5  
 Daemon end_command <TESTBASE>/test/peer/recursive/1/2/3/4/5 MKDIR 1 

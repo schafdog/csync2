@@ -4,8 +4,7 @@
 (3 rows)
 
  other    | <TESTBASE>/test/local                              | MKDIR     |       |  1
- peer     | <TESTBASE>/test/local                              | MKDIR     |       |  1
  other    | <TESTBASE>/test/local/type_change                  | MKDIR     |       |  1
  other    | <TESTBASE>/test/local/type_change/new_file 'N' all | NEW       |       |  2
-(4 rows)
+(3 rows)
 

@@ -31,7 +31,7 @@ Inserted/updated <TESTBASE>/test/local/new/new_file rows matched: 1
 Calling check_mod on <TESTBASE>/test/local/new/hardlinked from <TESTBASE>/test/local/new
 New file: <TESTBASE>/test/local/new/hardlinked
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked <TESTBASE>/test/local/new/hardlinked
-1 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/new/hardlinked
+1 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked 
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/new/hardlinked' '<TESTBASE>/test/local/new/new_file'.

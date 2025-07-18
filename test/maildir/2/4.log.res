@@ -33,7 +33,7 @@ Checking <TESTBASE>/test/local/Maildir/cur/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, from <TESTBASE>/test/local/Maildir/cur
 New file: <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,
-1 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,
+1 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,
 check same file (64) <TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764 -> <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764, param2: local
 Found MOVE <TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764 -> <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, 

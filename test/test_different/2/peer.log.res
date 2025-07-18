@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -307,8 +307,8 @@ Checking for modified files <TESTBASE>/test/peer
 Inserted/updated <TESTBASE>/test/peer rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
-setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MOD 1 
@@ -341,8 +341,8 @@ Checking for deleted files <TESTBASE>/test/peer/tmp.
 daemon_check_dirty: <TESTBASE>/test/peer/tmp is just marked dirty
 daemon_check_dirty: peer operation  local <TESTBASE>/test/peer/tmp MKDIR
 Ignoring dirty directory <TESTBASE>/test/peer/tmp
-setown <TESTBASE>/test/peer/tmp rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/tmp rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/tmp rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/tmp rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/tmp rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/tmp  
 Daemon end_command <TESTBASE>/test/peer/tmp MOD 1 

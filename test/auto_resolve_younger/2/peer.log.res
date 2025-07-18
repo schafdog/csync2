@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -58,8 +58,8 @@ Checking for deleted files <TESTBASE>/test/peer/auto.
 daemon_check_dirty: <TESTBASE>/test/peer/auto is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/auto'
 mkdir <TESTBASE>/test/peer/auto rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/auto rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/auto rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/auto  
 Daemon end_command <TESTBASE>/test/peer/auto MKDIR 1 
@@ -86,8 +86,8 @@ daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younge
 daemon_check_auto_resolve: <TESTBASE>/test/peer/auto/younger failed stat
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/auto/younger'
 mkdir <TESTBASE>/test/peer/auto/younger rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/auto/younger rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/auto/younger rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/auto/younger  
 Daemon end_command <TESTBASE>/test/peer/auto/younger MKDIR 1 
@@ -171,7 +171,7 @@ Command: local: GETTM <TESTBASE>/test/peer/auto/younger/local_oldest
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger/local_oldest
 CONN local < OK (data_follows).
 
-CONN local < 1623146400
+CONN local < 1623103200
 
 CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger xxxxxxxxxx'
 Command: local: SETTIME <TESTBASE>/test/peer/auto/younger xxxxxxxx        
@@ -226,8 +226,8 @@ Checking for modified files <TESTBASE>/test/peer
 Inserted/updated <TESTBASE>/test/peer rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
-setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MOD 1 
@@ -254,8 +254,8 @@ Checking for modified files <TESTBASE>/test/peer/auto
 Inserted/updated <TESTBASE>/test/peer/auto rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer/auto.
 daemon_check_dirty: <TESTBASE>/test/peer/auto is just marked dirty
-setown <TESTBASE>/test/peer/auto rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/auto rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/auto  
 Daemon end_command <TESTBASE>/test/peer/auto MOD 1 
@@ -289,8 +289,8 @@ daemon_check_dirty: <TESTBASE>/test/peer/auto/younger is clean
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolved. clear dirty
-setown <TESTBASE>/test/peer/auto/younger rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/auto/younger rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/auto/younger  
 Daemon end_command <TESTBASE>/test/peer/auto/younger MOD 1 

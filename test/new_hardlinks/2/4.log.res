@@ -23,7 +23,7 @@ Calling check_mod on <TESTBASE>/test/local/new/new_file from <TESTBASE>/test/loc
 Calling check_mod on <TESTBASE>/test/local/new/hardlinked_3 from <TESTBASE>/test/local/new
 New file: <TESTBASE>/test/local/new/hardlinked_3
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked_3 <TESTBASE>/test/local/new/hardlinked_3
-2 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/new/hardlinked_3
+2 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_3
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_3 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_3 
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_3 
@@ -35,7 +35,7 @@ Inserted/updated <TESTBASE>/test/local/new/hardlinked_3 rows matched: 1
 Calling check_mod on <TESTBASE>/test/local/new/hardlinked_2 from <TESTBASE>/test/local/new
 New file: <TESTBASE>/test/local/new/hardlinked_2
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked_2 <TESTBASE>/test/local/new/hardlinked_2
-3 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/new/hardlinked_2
+3 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_2
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_2 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_2 
 check same file (32) <TESTBASE>/test/local/new/hardlinked_3 -> <TESTBASE>/test/local/new/hardlinked_2 

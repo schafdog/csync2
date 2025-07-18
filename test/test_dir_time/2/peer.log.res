@@ -36,8 +36,8 @@ Checking for deleted files <TESTBASE>/test/peer.
 daemon_check_dirty: <TESTBASE>/test/peer is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer'
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer MKDIR 1 
@@ -58,8 +58,8 @@ Checking for deleted files <TESTBASE>/test/peer/usr.
 daemon_check_dirty: <TESTBASE>/test/peer/usr is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/usr'
 mkdir <TESTBASE>/test/peer/usr rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/usr rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/usr rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/usr rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/usr rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/usr rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/usr  
 Daemon end_command <TESTBASE>/test/peer/usr MKDIR 1 
@@ -80,8 +80,8 @@ Checking for deleted files <TESTBASE>/test/peer/usr/local.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/usr/local'
 mkdir <TESTBASE>/test/peer/usr/local rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/usr/local rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/usr/local rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/usr/local rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/usr/local rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/usr/local rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/usr/local  
 Daemon end_command <TESTBASE>/test/peer/usr/local MKDIR 1 
@@ -102,8 +102,8 @@ Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local/sbin is clean
 Locking 'CREATE,ISDIR:<TESTBASE>/test/peer/usr/local/sbin'
 mkdir <TESTBASE>/test/peer/usr/local/sbin rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/usr/local/sbin rc = 0 time: 0 errno = 0 err = 
 Updated(mkdir) local:<TESTBASE>/test/peer/usr/local/sbin  
 Daemon end_command <TESTBASE>/test/peer/usr/local/sbin MKDIR 1 
@@ -173,8 +173,8 @@ Running check for <TESTBASE>/test/peer/usr/local/sbin ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local/sbin is clean
-setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/usr/local/sbin rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/usr/local/sbin  
 Daemon end_command <TESTBASE>/test/peer/usr/local/sbin MOD 1 
@@ -256,8 +256,8 @@ Running check for <TESTBASE>/test/peer/usr/local ...
 Checking for modified files <TESTBASE>/test/peer/usr/local 
 Checking for deleted files <TESTBASE>/test/peer/usr/local.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local is clean
-setown <TESTBASE>/test/peer/usr/local rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/usr/local rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/usr/local rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/usr/local rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/usr/local rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/usr/local  
 Daemon end_command <TESTBASE>/test/peer/usr/local MOD 1 
@@ -351,8 +351,8 @@ Running check for <TESTBASE>/test/peer/usr/local/sbin ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local/sbin is clean
-setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/usr/local/sbin rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/usr/local/sbin  
 Daemon end_command <TESTBASE>/test/peer/usr/local/sbin MOD 1 
@@ -446,8 +446,8 @@ Running check for <TESTBASE>/test/peer/usr/local/sbin ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local/sbin is clean
-setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 22 err = 
-setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 22 err = 
+setown <TESTBASE>/test/peer/usr/local/sbin rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer/usr/local/sbin rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/usr/local/sbin rc = 0 time: 0 errno = 0 err = 
 Updated(mod) local:<TESTBASE>/test/peer/usr/local/sbin  
 Daemon end_command <TESTBASE>/test/peer/usr/local/sbin MOD 1 

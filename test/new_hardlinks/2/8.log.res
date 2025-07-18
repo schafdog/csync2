@@ -46,7 +46,7 @@ CONN peer < SIG %25test%25/new/hardlinked_4 user/group <UID> <GID> <USER> <GROUP
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new/hardlinked_4 RC 32
 Find same DEV INODE <TESTBASE>/test/local/new/hardlinked_4 already on peer and hardlink
-4 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/new/hardlinked_4
+4 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_4
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
 do hardlink check <TESTBASE>/test/local/new/hardlinked_4 <TESTBASE>/test/local/new/new_file 
@@ -75,7 +75,7 @@ CONN peer < SIG %25test%25/new/hardlinked_5 user/group <UID> <GID> <USER> <GROUP
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new/hardlinked_5 RC 32
 Find same DEV INODE <TESTBASE>/test/local/new/hardlinked_5 already on peer and hardlink
-5 files with same dev:inode (16777232:0) as file: <TESTBASE>/test/local/new/hardlinked_5
+5 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_5
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
 do hardlink check <TESTBASE>/test/local/new/hardlinked_5 <TESTBASE>/test/local/new/new_file 

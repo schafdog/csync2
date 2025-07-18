@@ -46,7 +46,7 @@ ERROR from peer: File is also marked dirty here! (<TESTBASE>/test/peer/auto/youn
 Auto resolve method YOUNGER 2 for peer:<TESTBASE>/test/local/auto/younger/local_oldest 
 CONN peer < GETTM 
 CONN peer > 'OK (data_follows).'
-CONN peer > '1623146400'
+CONN peer > '1623103200'
 Do not auto-resolve conflict: Lost 'younger/older' test.
 File stays in dirty state after autoresolve. Try again later...
 Directory time <TESTBASE>/test/local/auto/younger <TESTBASE>/test/local/auto/younger/local_oldest
