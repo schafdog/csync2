@@ -17,11 +17,6 @@ csync_debug_c(N, "--> %s %d\n", __FILE__, __LINE__)
 	exit(1);							\
 } while(0)
 
-#define csync_fatal(fmt, ...) do {				\
-	csync_log_c(LOG_CRIT, 0,fmt __VA_OPT__(, ) __VA_ARGS__);	\
-	exit(1);							\
-} while(0)
-
 #define csync_crit_c(level, fmt, ...)  csync_log_c(LOG_CRIT, level, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define csync_debug_c(level, fmt, ...) csync_log_c(LOG_DEBUG, level, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define csync_info_c(level, fmt, ...)  csync_log_c(LOG_INFO, level, fmt __VA_OPT__(, ) __VA_ARGS__)

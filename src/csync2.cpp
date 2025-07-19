@@ -1021,7 +1021,7 @@ int csync2_main(int argc, char **argv)
 		}
 	}
 
-	if (optind < argc && mode != MODE_HINT && mode != MODE_MARK && !(mode & MODE_FORCE) && mode != MODE_SIMPLE && !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE && mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE && mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL)
+	if (mode == MODE_NONE || (optind < argc && mode != MODE_HINT && mode != MODE_MARK && !(mode & MODE_FORCE) && mode != MODE_SIMPLE && !(mode & MODE_UPDATE) && mode != MODE_CHECK && mode != MODE_COMPARE && mode != MODE_CHECK_AND_UPDATE && mode != MODE_LIST_SYNC && mode != MODE_TEST_SYNC && mode != MODE_UPGRADE_DB && mode != MODE_LIST_FILE && mode != MODE_LIST_DIRTY && mode != MODE_EQUAL && mode != MODE_REMOVE_OLD && mode != MODE_TAIL))
 		help(argv[0]);
 
 	if (mode == MODE_TEST_SYNC && optind != argc && optind + 1 != argc && optind + 2 != argc && optind + 3 != argc)

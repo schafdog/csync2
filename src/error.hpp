@@ -10,6 +10,7 @@
 #define csync_info(level, fmt, ...)   csync_info_cpp(level, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define csync_warn(level, fmt, ...)   csync_warn_cpp(level, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define csync_error(level, fmt, ...)  csync_error_cpp(level, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define csync_fatal(fmt, ...)         csync_fatal_cpp(fmt __VA_OPT__(, ) __VA_ARGS__)
 
 extern "C" {
 #include "error.h"
