@@ -33,4 +33,5 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "/----------+/d" \
     -e "/Transfer starting:/d" \
     -e "/total size is.*speedup/d" \
+    -e "s|:mode=[^:]*:user=<USER>:group=<GROUP>:type=lnk:|:mode=<LINK>:user=<USER>:group=<GROUP>:type=lnk:|g" \
     -e "s|mtime=[0-9]*:|mtime=<MTIME>|g"

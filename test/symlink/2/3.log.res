@@ -27,7 +27,7 @@ WARN: stat failed. op: 2
 mark other operation: 'RM?' 'other:<TESTBASE>/test/local/bad.link' 'missing'.
 Inserted/updated <TESTBASE>/test/local/bad.link rows matched: 1
 Checking for deleted files <TESTBASE>/test recursive.
-dirty: peer:<TESTBASE>/test/local/bad.link v2:mtime=xxxxxxxxxx:mode=41471:user=<USER>:group=<GROUP>:type=lnk:target=missing ''
+dirty: peer:<TESTBASE>/test/local/bad.link v2:mtime=xxxxxxxxxx:mode=<LINK>:user=<USER>:group=<GROUP>:type=lnk:target=missing ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...

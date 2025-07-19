@@ -27,7 +27,7 @@ mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/new_file 'N' all' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/new_file 'N' all' '-'.
 Inserted/updated <TESTBASE>/test/local/new_file 'N' all rows matched: 1
 Checking for deleted files <TESTBASE>/test recursive.
-dirty: peer:<TESTBASE>/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=41471:user=<USER>:group=<GROUP>:type=lnk:target=new_file 'N' all ''
+dirty: peer:<TESTBASE>/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=<LINK>:user=<USER>:group=<GROUP>:type=lnk:target=new_file 'N' all ''
 dirty: peer:<TESTBASE>/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
