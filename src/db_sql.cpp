@@ -234,9 +234,9 @@ int DbSql::list_dirty(const std::set<std::string> &active_peers, const char *rea
 
 	int retval = 0;
     try {
-        std::string sql = "SELECT forced, myname, peername, filename, operation, op, (op & ?) AS type FROM dirty ";
+        std::string sql = "SELECT forced, myname, peername, filename, operation, op, (op & ?) AS type FROM dirty WHERE ";
         if (realname[0] != 0) {
-            sql += "WHERE (filename = ? OR filename LIKE ?) AND ";
+            sql += "(filename = ? OR filename LIKE ?) AND ";
         }
         sql += " peername not in (SELECT host FROM host WHERE status = 1) AND myname = ? ORDER BY type, filename";
 
