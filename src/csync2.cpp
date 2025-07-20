@@ -1133,7 +1133,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 			// Common cleanup and timing for both modes
 			if (mode & MODE_DAEMON)
 			{
-				csync_info(4, "Connection closed. Pid {} mode {}", csync_server_child_pid, mode);
+				csync_info(2, "Connection closed. Pid {} mode {}", csync_server_child_pid, mode);
 
 				if (mode & MODE_NOFORK)
 				{
@@ -1164,6 +1164,26 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	if (retval >= 0 && csync_error_count == 0)
 		return retval;
 	return csync_error_count != 0;
+}
+
+int check_ip_version(int ip_version, int cmd_ip_version) {
+    if (ip_version != -1)
+	{
+		if (cmd_ip_version) {
+			csync_info(0, "Command line overrides configuration ip protocol version: {} -> {}", ip_version, cmd_ip_version);
+			ip_version = cmd_ip_version;
+		}
+		if (ip_version == 4)
+			return AF_INET;
+		else if (ip_version == 6)
+			return AF_INET6;
+		else
+		{
+			csync_error(0, "Unknown IP version: %d\n", ip_version);
+			exit(1);
+		}
+	}
+	return AF_INET;
 }
 
 // Server startup function - handles daemon mode connection setup
@@ -1252,21 +1272,7 @@ static int csync_start_server(int mode, int flags, int argc, char *argv[], int l
 		if (cfg_protocol_version != -1)
 			protocol_version = cfg_protocol_version;
 
-		if (cfg_ip_version != -1)
-		{
-			if (cmd_ip_version)
-				csync_info(0, "Command line overrides configuration ip protocol version: {} -> {}", cfg_ip_version, g_ip_version);
-			else if (cfg_ip_version == 4)
-				g_ip_version = AF_INET;
-			else if (cfg_ip_version == 6)
-				g_ip_version = AF_INET6;
-			else
-			{
-				csync_error(0, "Unknown IP version: %d\n", cfg_ip_version);
-				exit(1);
-			}
-		}
-
+		g_ip_version = check_ip_version(cfg_ip_version, cmd_ip_version);
 		// Read database name from config unless it's overridden from command line
 		if (!csync_database)
 			csync_database = db_default_database(dbdir, g_myhostname.c_str(), g_cfgname);
@@ -1349,20 +1355,7 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	if (cfg_protocol_version != -1)
 		protocol_version = cfg_protocol_version;
 
-	if (cfg_ip_version != -1)
-	{
-		if (cmd_ip_version)
-			csync_info(0, "Command line overrides configuration ip protocol version: {} -> {}", cfg_ip_version, g_ip_version);
-		else if (cfg_ip_version == 4)
-			g_ip_version = AF_INET;
-		else if (cfg_ip_version == 6)
-			g_ip_version = AF_INET6;
-		else
-		{
-			csync_error(0, "Unknown IP version: %d\n", cfg_ip_version);
-			exit(1);
-		}
-	}
+	g_ip_version = check_ip_version(cfg_ip_version, cmd_ip_version);
 
 	// Read database name from config unless it's overridden from command line
 	if (!csync_database)
