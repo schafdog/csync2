@@ -1,6 +1,5 @@
-cmd T "List daemon" local peer test/local
-Connecting to host peer (PLAIN) ...
-D	local	peer	<TESTBASE>/test/peer/new_file 'N' all
-D	local	peer	<TESTBASE>/test/peer/A
-D	local	peer	<TESTBASE>/test/peer/.Test
-D	local	peer	<TESTBASE>/test/peer
+cmd M "New local/new_file 'N' all" local peer test
+  MKDIR	local	peer	<TESTBASE>/test/local	1	1
+  NEW	local	peer	<TESTBASE>/test/local/.Test	2	2
+  NEW	local	peer	<TESTBASE>/test/local/A	2	2
+  NEW	local	peer	<TESTBASE>/test/local/new_file 'N' all	2	2

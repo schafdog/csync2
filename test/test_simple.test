@@ -8,6 +8,8 @@ mkdir -p "test/$NAME"
 echo "far" > "test/$NAME/$FILENAME"
 ./portable_touch.sh "test/$NAME/A"
 ./portable_touch.sh "test/$NAME/.Test"
+cmd c "New $NAME/$FILENAME"
+cmd M "New $NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
 cmd T test/$NAME "List daemon" 
 rm -rf test/$NAME
