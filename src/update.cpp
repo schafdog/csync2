@@ -691,10 +691,11 @@ static int csync_update_file_sig(int conn, peername_p myname, peername_p peernam
 	 flag |= IGNORE_MTIME;
 	 */
 	csync_debug(3, "Flags for gencheck: {} \n", flag);
-
-	if (!chk_local)
-		chk_local = csync_genchecktxt_version(st, filename, flag, peer_version);
-
+	std::string chk_local_str;
+	if (!chk_local) {
+		chk_local_str = csync_genchecktxt_version(st, filename, flag, peer_version);
+		chk_local = chk_local_str.c_str();
+	}
 	if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 		csync_info(log_level, "{} is different on peer (cktxt char #{}).\n", filename, i);
 		csync_info(log_level, ">>> {}:\t{}\n>>> {}:\t{}\n", peername, chk_peer_decoded, "LOCAL", chk_local);
@@ -884,7 +885,7 @@ int csync_update_directory(int conn, peername_p myname, peername_p peername, con
 				return rc;
 			}
 		}
-		
+
 		csync_info(2, "update_directory: Setting directory time {} {}.\n", dirname,
 				   csync_zero_mtime_debug ? 0 : dir_st.st_mtime);
 		rc = csync_update_file_settime(conn, peername, key_enc, dirname, dirname_enc, &dir_st);
@@ -942,7 +943,7 @@ int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peerna
 	return rc;
 }
 
-int csync_update_file_mod(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
+static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
 								   operation_t operation, const char *other, const char *checktxt, const char *digest,
 								   int force, int dry_run);
 
@@ -1102,9 +1103,10 @@ static int csync_find_update_hardlink(int conn, db_conn_p db, const char *key_en
 	return rc;
 }
 
-static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
-		operation_t operation, const char *other, const char *checktxt, const char *digest, int force, int dry_run,
-		BUF_P buffer) {
+static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
+		operation_t operation, const char *other, const char *checktxt, const char *digest, int force, int dry_run)
+{
+	csync2::Buffer buffer;
 	struct stat st;
 	char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
 	int last_conn_status = 0, auto_resolve_run = 0;
@@ -1207,8 +1209,7 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 			int has_links = (st.st_nlink > 1 && S_ISREG(st.st_mode));
 			if (has_links && digest) {
 				if (!checktxt) {
-					checktxt = buffer_strdup(buffer,
-							csync_genchecktxt_version(&st, filename, SET_USER | SET_GROUP, db->version));
+					checktxt = buffer.strdup(csync_genchecktxt_version(&st, filename, SET_USER | SET_GROUP, db->version));
 				}
 
 				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername,
@@ -1445,17 +1446,6 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 	return rc;
 }
 
-int csync_update_file_mod(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
-						  operation_t operation, const char *other,
-						  const char *checktxt, const char *digest, int force, int dry_run) {
-	BUF_P buffer = buffer_init();
-	int rc = OK;
-	rc = csync_update_file_mod_internal(conn, db, myname, peername, filename, operation, other, checktxt, digest,
-										force, dry_run, buffer);
-	buffer_destroy(buffer);
-	return rc;
-}
-
 static void csync_directory_add(std::list<std::string>& dirlist, const std::string& filepath) {
 	std::string directory = filepath.substr(0, filepath.find_last_of('/'));
 	if (directory.size() > 0) {
@@ -1548,7 +1538,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		conn_printf(conn, "BYE\n");
 		read_conn_status(conn, "<BYE>", peername);
 		conn_close(conn);
-		textlist_free(tl);		
+		textlist_free(tl);
 		return;
 	}
 	int rc = -1;
@@ -1585,9 +1575,9 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 						   peername.c_str(), filename.c_str());
 				std::set<string> peerlist;
 				peerlist.insert(peername);
-				csync_mark(db, filename, "", peerlist, OP_RM, NULL, NULL, NULL, 0, time(NULL));
+				csync_mark(db, filename, "", peerlist, OP_RM, "" /* NULL checktxt */, NULL, NULL, 0, time(NULL));
 				if (other) {
-					csync_mark(db, other, "", peerlist, OP_MARK, NULL, NULL, NULL, 0, time(NULL));
+					csync_mark(db, other, "", peerlist, OP_MARK, "" /* NULL checktxt */, NULL, NULL, 0, time(NULL));
 					csync_debug(0, "make other dirty {}\n", other);
 				}
 			} else {
