@@ -74,8 +74,7 @@ typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st
 int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
 int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std::string& ino, struct stat *old_stat);
 
-//int csync_calc_digest(const char *file, csync2::Buffer& buffer, char **digest);
-int csync_calc_digest(const std::string& file, std::string& digest);
+int csync_calc_digest(const char *file, csync2::Buffer& buffer, char **digest);
 
 /* Peer list functions */
 void parse_peerlist(const char *peerlist);
@@ -100,7 +99,7 @@ extern int csync_check_dir(db_conn_p db, peername_p file, int flags);
 /* Mark and path functions */
 extern void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 					   const std::set<std::string>& peerfilter, operation_t op,
-					   const char *checktxt, const char *dev, const char *ino, int mode, int mtime);
+					   const std::string& checktxt, const char *dev, const char *ino, int mode, int mtime);
 extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(filename_p filename);
 extern int   csync_check_pure(filename_p filename);
