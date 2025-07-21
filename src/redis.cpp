@@ -84,14 +84,12 @@ int csync_redis_check_connection(void) {
 	return 1;
 }
 
-static const char* build_key(const char *key, const char *domain, BUF_P buffer) {
+static std::string  build_key(const char *key, const char *domain) {
 	const char *spacer = "";
 	if (domain && domain[0] != 0) {
 		spacer = ":";
 	}
-	char *str = buffer_malloc(buffer, strlen(not_null(domain)) + strlen(key) + strlen(spacer) + 100);
-	sprintf(str, "%s%s%s", not_null(domain), spacer, key);
-	return str;
+	return std::format("{}{}{}", not_null(domain), spacer, key);
 }
 
 static const char* redis_str(redisReply *reply) {
@@ -105,13 +103,11 @@ time_t csync_redis_get_custom(const std::string& key, const std::string& domain)
 time_t csync_redis_get_custom(const char *key, const char *domain) {
 	if (redis_context == NULL)
 		return 0;
-	BUF_P buffer = buffer_init();
 
-	const char *domain_key = build_key(key, domain, buffer);
-	const char *argv[] = { "GET", domain_key };
+	std::string domain_key = build_key(key, domain);
+	const char *argv[] = { "GET", domain_key.c_str() };
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, 2, argv, NULL);
 	csync_debug(3, "Redis reply: GET '{}' -> {}\n", domain_key, redis_str(redis_reply));
-	buffer_destroy(buffer);
 
 	if (redis_reply) {
 		if (redis_reply->str) {
@@ -139,9 +135,8 @@ time_t csync_redis_get(const char *key) {
 int csync_redis_set(const char *key, const char *domain, const char *value, int nx, int expire) {
 	if (redis_context == NULL)
 		return 0;
-	BUF_P buffer = buffer_init();
-	const char *domain_key = build_key(key, domain, buffer);
-	const char *argv[] = { "SET", domain_key, value, NULL, NULL, NULL };
+	std::string domain_key = build_key(key, domain);
+	const char *argv[] = { "SET", domain_key.c_str(), value, NULL, NULL, NULL };
 	int argc = 3;
 	if (nx) {
 		argv[argc] = "NX";
@@ -158,8 +153,6 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, argc, argv, NULL);
 	csync_debug(3, "Redis reply: SET '{}' '{}' {} {} {} -> {}\n", domain_key, value, nx ? "NX" : "",
 			expire > 0 ? "EX" : "", expire > 0 ? time : "", redis_str(redis_reply));
-
-	buffer_destroy(buffer);
 
 	if (redis_reply == NULL) {
 		csync_error(1, "No redis response: {}", redis_context->err);
@@ -211,12 +204,10 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 	if (redis_context == NULL)
 		return 0;
 
-	BUF_P buffer = buffer_init();
 	int rc = 0;
-
-	const char *domain_key = build_key(key, domain, buffer);
+	std::string domain_key = build_key(key, domain);
 	csync_debug(3, "Deleting key '{}'\n", domain_key);
-	const char *argv[] = { "DEL", domain_key };
+	const char *argv[] = { "DEL", domain_key.c_str() };
 
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, 2, argv, NULL);
 	if (redis_reply == NULL) {
@@ -232,7 +223,6 @@ int csync_redis_del_custom(const char *key, const char *domain) {
 		csync_error(1, "csync_redis_del failed to delete key: {} {}\n", domain_key, redis_reply->integer);
 	} else
 		rc = redis_reply->integer;
-	buffer_destroy(buffer);
 	freeReplyObject(redis_reply);
 	return rc;
 }
