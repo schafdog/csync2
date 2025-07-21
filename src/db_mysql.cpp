@@ -32,7 +32,6 @@
 #include "db.hpp"
 #include "db_mysql.hpp"
 #include "dl.hpp"
-#include "ringbuffer.hpp"
 #include "utils.hpp"
 
 #ifdef HAVE_MYSQL

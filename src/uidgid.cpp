@@ -65,7 +65,7 @@ int uid_to_name(uid_t uid, char *buffer, int length, const char *default_value) 
 int gid_to_name(gid_t gid, char *buffer, int length, const char *default_value) {
 	long buflen = sysconf(_SC_GETGR_R_SIZE_MAX);
 	if (buflen == -1)
-		buflen = 100000;
+		buflen = 1000;
 	//return NULL;
 	// requires c99
 	char *buf = static_cast<char*>(malloc(buflen));
@@ -106,21 +106,22 @@ uid_t name_to_gid(char const *name) {
 
 int main(int argc, char **argv)
 {
-  gid_t gid; 
+  gid_t gid;
   uid_t uid = name_to_uid(argv[1], &gid);
   char buffer[100];
-  char *ptr = uid_to_name(uid, buffer, 100);
-  if (ptr == NULL)
-    ptr = "<error>";
-  printf("USER: %i %s\n", uid, ptr);
+  int rc = uid_to_name(uid, buffer, 100, NULL);
+  if (rc == -1)
+    printf("USER: %i <error>\n", uid);
+  else
+    printf("USER: %i %s\n", uid, buffer);
 
   gid_t newgid;
-  ptr = gid_to_name(gid, buffer, 100);
-  if (ptr == NULL)
+  rc = gid_to_name(gid, buffer, 100, NULL);
+  if (rc == -1)
     ptr = "<error>";
-  else 
-    newgid = name_to_gid(ptr); 
-  printf("GROUP: %i %s %i\n", gid, ptr, newgid);
+  else
+    newgid = name_to_gid(buffer);
+  printf("GROUP: %i %s %i\n", gid, buffer, newgid);
   return 0;
 }
 #endif

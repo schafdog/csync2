@@ -56,7 +56,6 @@
 #include "check.hpp"
 #include "update.hpp"
 #include "utils.hpp"
-#include "ringbuffer.hpp"
 #include "urlencode.hpp"
 #include "daemon.hpp"
 #include "action.hpp"
@@ -763,8 +762,6 @@ int csync2_main(int argc, char **argv)
 	long mode = MODE_NONE;
 	int flags = 0;
 	int opt;
-
-	ringbuffer_init();
 
 	// Configure modern logger to match old behavior
 	csync2::g_logger.configure(csync2::LogLevel::Debug, csync_level_debug, csync2::Logger::Output::Console);

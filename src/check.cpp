@@ -284,8 +284,10 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 			/* We dont currently have a checktxt when marking files. */
 			/* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run,
 			 and thus leaking other side */
-			if (1 && !checktxt.empty()) {
-				textlist_p tl = db->get_old_operation( checktxt.c_str(), peername,
+            const char *checktxt_c = checktxt.empty() ? NULL : checktxt.c_str();
+
+			if (1 && checktxt_c) {
+				textlist_p tl = db->get_old_operation(checktxt_c, peername,
 						file, dev, ino);
 				if (tl) {
 					textlist_p t = check_old_operation(file.c_str(), operation, mode,
