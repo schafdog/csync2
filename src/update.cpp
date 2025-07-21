@@ -345,34 +345,34 @@ static int csync_check_auto_resolve(int conn, peername_p peername, const char *k
 /* PRE: all values must have been encoded
  Only send file stat if present
  */
-static void cmd_printf(int conn, const char *cmd, const char *key, filename_p filename, const char *secondname,
+static void cmd_printf(int conn, const char *cmd, const std::string &key, filename_p filename, const char *secondname,
 		const struct stat *st, const char *uid, const char *gid, const char *digest) {
 	if (digest != NULL && !strcmp(digest, "")) {
 		digest = NULL;
 	}
 
 	if (st) {
-		conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %zu %zu\n", cmd, key, filename.c_str(), secondname, st->st_uid,
+		conn_printf(conn, "%s %s %s %s %d %d %s %s %d %s %zu %zu\n", cmd, key.c_str(),
+					filename.c_str(), secondname, st->st_uid,
 					st->st_gid, uid, gid, st->st_mode, digest ? digest : "-",
 					static_cast<long long>(st->st_size),
 					static_cast<long long>(st->st_mtime));
 
 	} else {
-		conn_printf(conn, "%s %s %s %s\n", cmd, key, filename.c_str(), secondname);
+		conn_printf(conn, "%s %s %s %s\n", cmd, key.c_str(), filename.c_str(), secondname);
 	}
 }
 
-
-static int csync_update_file_setown(int conn, peername_p peername, const char *key_enc, filename_p filename,
+static int csync_update_file_setown(int conn, peername_p peername, const std::string& key_enc, filename_p filename,
 		filename_p filename_enc, const struct stat *st, const char *uid, const char *gid) {
 	// Optimize this. The daemon could have done this in the command.
 	cmd_printf(conn, "SETOWN", key_enc, filename_enc, "user/group", st, uid, gid, NULL);
 	return read_conn_status(conn, filename, peername);
 }
 
-static int csync_update_file_setmod(int conn, peername_p peername, const char *key_enc, filename_p filename,
+static int csync_update_file_setmod(int conn, peername_p peername, const std::string& key_enc, filename_p filename,
 		filename_p filename_enc, const struct stat *st) {
-	conn_printf(conn, "SETMOD %s %s %d\n", key_enc, filename_enc.c_str(), st->st_mode);
+	conn_printf(conn, "SETMOD %s %s %d\n", key_enc.c_str(), filename_enc.c_str(), st->st_mode);
 	return read_conn_status(conn, filename, peername);
 }
 
@@ -436,8 +436,8 @@ static int check_auto_resolve_peer(peername_p peername, filename_p filename, con
 	return auto_resolved;
 }
 
-static int csync_flush(int conn, const char *key_enc, peername_p peername, filename_p filename_enc) {
-	conn_printf(conn, "FLUSH %s %s\n", key_enc, filename_enc.c_str());
+static int csync_flush(int conn, const std::string& key_enc, peername_p peername, filename_p filename_enc) {
+	conn_printf(conn, "FLUSH %s %s\n", key_enc.c_str(), filename_enc.c_str());
 	int rc = read_conn_status(conn, filename_enc, peername);
 	return rc;
 }
@@ -492,7 +492,8 @@ static int csync_update_file_del(int conn, db_conn_p db, peername_p peername, fi
 			return ERROR;
 		}
 		int n = sscanf(buffer, "%s %s", chk_peer, digest_peer);
-		const char *chk_peer_decoded = url_decode(chk_peer);
+		UrlDecoder url_decode;
+		std::string chk_peer_decoded = url_decode(chk_peer);
 		if (n == 2) {
 			csync_info(2, "Got digest from remote: {}\n", digest_peer);
 		}
@@ -500,25 +501,18 @@ static int csync_update_file_del(int conn, db_conn_p db, peername_p peername, fi
 		csync_info(2, "delete flags: {}\n", flags);
 		if (flags & FLAG_IGN_MTIME) {
 			csync_info(2, "Compare components (ignore mtime)\n");
-			differs = csync_cmpchecktxt_component(chk_peer_decoded, chk_local, flags);
+			differs = csync_cmpchecktxt_component(chk_peer_decoded.c_str(), chk_local, flags);
 		} else {
 			differs = csync_cmpchecktxt(chk_peer_decoded, chk_local);
 		}
 		if (differs) {
-			char *peer_log = strdup(chk_peer_decoded), *local_log = strdup(chk_local);
-			if (csync_zero_mtime_debug) {
-				filter_mtime(peer_log);
-				filter_mtime(local_log);
-			}
 			//csync_info(1, "ZERO time %d\n", csync_zero_mtime_debug);
 			csync_info(3, "{} is different on peer (cktxt char #{}).\n", filename, differs);
-			csync_info(3, ">>> PEER:  {}\n>>> LOCAL: {}\n", peer_log, local_log);
-			free(peer_log);
-			free(local_log);
+			csync_info(3, ">>> PEER:  {}\n>>> LOCAL: {}\n", chk_peer_decoded, chk_local);
 
 			found_diff = 1;
 			// We should be able to figure auto resolve from checktxt
-			flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
+			flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded.c_str());
 			if (flush) {
 				csync_info(1, "Sendind FLUSH {}:{} (won auto resolved)", peername, filename);
 				csync_flush(conn, key_enc, peername, filename_enc);
@@ -611,7 +605,7 @@ static int csync_update_file_dir(int conn, peername_p peername, filename_p filen
 	return *last_conn_status;
 }
 
-static int csync_create_directory(int conn, const char *key_enc, peername_p peername, filename_p filename,
+static int csync_create_directory(int conn, const std::string& key_enc, peername_p peername, filename_p filename,
 		filename_p filename_enc, const struct stat *st, const char *uid, const char *gid, int *last_conn_status) {
 	cmd_printf(conn, "MKDIR", key_enc, filename_enc, "-", st, uid, gid, NULL);
 	int rc = csync_update_file_dir(conn, peername, filename, last_conn_status);
@@ -684,7 +678,7 @@ static int csync_update_file_sig(int conn, peername_p myname, peername_p peernam
 	int peer_version = csync_get_checktxt_version(chk_peer);
 
 	int flag = IGNORE_LINK;
-	UrlDecoder UrlDecoder;
+	UrlDecoder url_decode;
 	std::string chk_peer_decoded = url_decode(chk_peer);
 	// TODO generate chk text that matches remote usage of uid/user and gid/gid
 	flag |= chk_peer_decoded.find(":user=") != std::string::npos ? SET_USER : 0;
@@ -725,14 +719,14 @@ static int csync_update_file_sig(int conn, peername_p myname, peername_p peernam
  If there are errors, we need to patch these files instead of linking
  */
 
-static int csync_update_hardlink(int conn, peername_p peername, const char *key_encoded,
+static int csync_update_hardlink(int conn, peername_p peername, const std::string& key_encoded,
 								 filename_p filename, const char *path_enc,
 								 filename_p newpath, const char *newpath_enc,
 								 int *last_conn_status) {
 	// TODO Check that the target matches the config
 	csync_info(1, "Hardlinking {} {} -> {}\n", peername, filename, newpath);
 	// Swap filename and newpatch
-	conn_printf(conn, "%s %s %s %s \n", HARDLINK_CMD, key_encoded, newpath_enc, path_enc);
+	conn_printf(conn, "%s %s %s %s \n", HARDLINK_CMD, key_encoded.c_str(), newpath_enc, path_enc);
 	if ((*last_conn_status = read_conn_status(conn, filename, peername))) {
 		csync_error(0, "Failed to hard link {} {} {}\n", peername, filename, newpath);
 		if (*last_conn_status == CONN_CLOSE)
@@ -743,7 +737,7 @@ static int csync_update_hardlink(int conn, peername_p peername, const char *key_
 }
 
 static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myname, peername_p peername,
-								   const char *key_encoded, filename_p filename, filename_p filename_enc, struct stat *st,
+								   const std::string& key_encoded, filename_p filename, filename_p filename_enc, struct stat *st,
 								   const char *uid, const char *gid, operation_t operation,
 								   const char *checktxt, const char *digest, int is_identical,
 								   int *last_conn_status) {
@@ -760,7 +754,8 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 			if (!key)
 				continue;
 
-			const char *path = filename_enc.c_str(), *other_enc = url_encode(prefixencode(other));
+			UrlEncoder url_encode;
+			const char *path = filename_enc.c_str(), *other_enc = url_encode(prefixencode(other)).c_str();
 			int rc;
 			rc = csync_update_file_sig_rs_diff(conn, myname, peername, key, other, other_enc,
 											   st, uid, gid,
@@ -796,23 +791,23 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 	return OK;
 }
 
-static int csync_update_file_send(int conn, const char *key_enc, peername_p peername, filename_p filename,
+static int csync_update_file_send(int conn, const std::string& key_enc, peername_p peername, filename_p filename,
         filename_p filename_enc, const struct stat *st, const char *uid, const char *gid, const char *digest,
         int *last_conn_status) {
 	// unused
 	(void) digest;
 
-	cmd_printf(conn, "CREATE", key_enc, filename_enc, "-", st, uid, gid, "-");
+	cmd_printf(conn, "CREATE", key_enc.c_str(), filename_enc, "-", st, uid, gid, "-");
 	return csync_send_reg_file(conn, peername, filename, last_conn_status);
 }
 
-static int csync_update_file_patch(int conn, const char *key_enc, peername_p peername, filename_p filename,
+static int csync_update_file_patch(int conn, const std::string& key_enc, peername_p peername, filename_p filename,
 		filename_p filename_enc, const struct stat *st, const char *uid, const char *gid, const char *digest,
 		int *last_conn_status) {
 	// unused
 	(void) digest;
 
-	cmd_printf(conn, "PATCH", key_enc, filename_enc, "-", st, uid, gid, "-");
+	cmd_printf(conn, "PATCH", key_enc.c_str(), filename_enc, "-", st, uid, gid, "-");
 	int rc = csync_update_reg_file(conn, peername, filename, last_conn_status);
 	return rc;
 }
@@ -838,9 +833,9 @@ static int csync_stat(filename_p filename, struct stat *st, char uid[MAX_UID_SIZ
 	return rc;
 }
 
-static int csync_update_file_settime(int conn, peername_p peername, const char *key_enc, filename_p filename,
+static int csync_update_file_settime(int conn, peername_p peername, const std::string& key_enc, filename_p filename,
 		filename_p filename_enc, const struct stat *st) {
-	conn_printf(conn, "SETTIME %s %s %zu\n", key_enc, filename_enc.c_str(), static_cast<long long>(st->st_mtime));
+	conn_printf(conn, "SETTIME %s %s %zu\n", key_enc.c_str(), filename_enc.c_str(), static_cast<long long>(st->st_mtime));
 	if (read_conn_status(conn, filename, peername))
 		return ERROR;
 	return OK;
@@ -858,7 +853,8 @@ int csync_update_directory(int conn, peername_p myname, peername_p peername, con
 		csync_info(4, "Skipping directory update {} on {} - not in my groups.\n", dirname, peername);
 		return OK;
 	}
-	const char *key_enc = url_encode(key);
+	UrlEncoder url_encode;
+	const char *key_enc = url_encode(key).c_str();
 	char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
 	int rc = csync_stat(dirname, &dir_st, uid, gid);
 	if (rc != 0) {
@@ -867,7 +863,7 @@ int csync_update_directory(int conn, peername_p myname, peername_p peername, con
 	}
 	int last_conn_status;
 	if (get_file_type(dir_st.st_mode) == DIR_TYPE) {
-		const char *dirname_enc = url_encode(prefixencode(dirname));
+		const char *dirname_enc = url_encode(prefixencode(dirname)).c_str();
 		if (force) {
 			csync_info(2, "creating directory {}\n", dirname);
 			cmd_printf(conn, "MKDIR", key_enc, dirname_enc, "-", &dir_st, uid, gid, NULL);
@@ -898,7 +894,7 @@ int csync_update_directory(int conn, peername_p myname, peername_p peername, con
 	return OK;
 }
 
-int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peername, const char *key_enc,
+int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peername, const std::string& key_enc,
 		filename_p filename, filename_p filename_enc, const struct stat *st, const char *uid, const char *gid,
 		const char *chk_local, const char *digest, int *last_conn_status, int log_level) {
 	// unused
@@ -979,6 +975,7 @@ static int csync_update_file_move(int conn, db_conn_p db, const char *myname, pe
 			rc = csync_update_file_mod(conn, db, myname, peername, filename, OP_MKDIR, NULL, checktxt, digest, force, dry_run);
 		}
 		else {
+			UrlEncoder url_encode;
 			rc = csync_update_file_patch(conn,  url_encode(key), peername, filename, url_encode(prefixencode(filename)),
 										 st, uid, gid, digest, last_conn_status);
 		}
@@ -994,13 +991,14 @@ static int csync_update_file_move(int conn, db_conn_p db, const char *myname, pe
 	return rc;
 }
 
-static int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname, peername_p peername, const char *key_enc,
+static int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname, peername_p peername,
+									   const std::string& key_enc,
 									   filename_p filename, filename_p filename_enc, filename_p other, struct stat *st,
 									   const char *uid, const char *gid, const
 									   char *digest, int *last_conn_status, int auto_resolve_run) {
 	csync_debug(1, "do hardlink check {} {} \n", filename, other);
-
-	const char *other_enc = url_encode(prefixencode(other));
+	UrlEncoder url_encode; 
+	const char *other_enc = url_encode(prefixencode(other)).c_str();
 	struct stat st_other;
 	int rc = stat(other.c_str(), &st_other);
 	if (rc == 0) {
@@ -1032,7 +1030,7 @@ static int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname
 	return rc;
 }
 
-static int csync_update_hardlinks(int conn, const char *key_enc, peername_p peername, filename_p filename,
+static int csync_update_hardlinks(int conn, const std::string& key_enc, peername_p peername, filename_p filename,
 								  filename_p filename_enc, struct stat *st, textlist_p tl) {
 	textlist_p ptr = tl;
 	int count = 0;
@@ -1043,8 +1041,9 @@ static int csync_update_hardlinks(int conn, const char *key_enc, peername_p peer
 		int rc = stat(other.c_str(), &st_other);
 		if (rc == 0) {
 			if (st->st_dev == st_other.st_dev && st->st_ino == st_other.st_ino) {
+				UrlEncoder url_encode;
 				int last_conn_status = 0;
-				const char *path = filename_enc.c_str(), *other_enc = url_encode(prefixencode(other));
+				const char *path = filename_enc.c_str(), *other_enc = url_encode(prefixencode(other)).c_str();
 				int rc_hl = csync_update_hardlink(conn, peername, key_enc, filename, path, other, other_enc,
 												  &last_conn_status);
 				if (rc_hl != OK) {
@@ -1065,7 +1064,8 @@ static int csync_update_hardlinks(int conn, const char *key_enc, peername_p peer
 	return OK;
 }
 
-static int csync_find_update_hardlink(int conn, db_conn_p db, const char *key_enc, const char *myname, peername_p peername,
+static int csync_find_update_hardlink(int conn, db_conn_p db, const std::string key_enc,
+									  const char *myname, peername_p peername,
 									  filename_p filename, filename_p filename_enc, const char *checktxt, const char *digest,
 									  struct stat *st, const char *uid, const char *gid,
 									  int auto_resolve_run) {
@@ -1145,8 +1145,10 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 
 	operation_str = csync_mode_op_str(st.st_mode, operation);
 	int not_done = 1;
-	const char *key_enc = url_encode(key);
-	const char *enc_tmp = url_encode(prefixencode(filename));
+	UrlEncoder url_encode;
+	const std::string key_enc = url_encode(key);
+	const char *key_enc_c = key_enc.c_str();
+	const std::string enc_tmp = url_encode(prefixencode(filename));
 	std::string filename_enc_str(enc_tmp);
 	const char *filename_enc = filename_enc_str.c_str();
 	int rc;
@@ -1360,15 +1362,15 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 			rc = csync_update_file_dir(conn, peername, filename, &last_conn_status);
 			break;
 		case CHR_TYPE:
-			conn_printf(conn, "MKCHR %s %s\n", key_enc, filename_enc);
+			conn_printf(conn, "MKCHR %s %s\n", key_enc_c, filename_enc);
 			rc = read_conn_status(conn, filename, peername);
 			break;
 		case BLK_TYPE:
-			conn_printf(conn, "MKBLK %s %s\n", key_enc, filename_enc);
+			conn_printf(conn, "MKBLK %s %s\n", key_enc_c, filename_enc);
 			rc = read_conn_status(conn, filename, peername);
 			break;
 		case FIFO_TYPE:
-			conn_printf(conn, "MKFIFO %s %s\n", key_enc, filename_enc);
+			conn_printf(conn, "MKFIFO %s %s\n", key_enc_c, filename_enc);
 			rc = read_conn_status(conn, filename, peername);
 			break;
 		case LINK_TYPE: {
@@ -1376,7 +1378,7 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 			int len = readlink(filename.c_str(), target, PATH_MAX);
 			if (len > 0) {
 				target[len] = 0;
-				conn_printf(conn, "MKLINK %s %s %s\n", key_enc, filename_enc, url_encode(prefixencode(target)));
+				conn_printf(conn, "MKLINK %s %s %s\n", key_enc_c, filename_enc, url_encode(prefixencode(target)).c_str());
 				rc = read_conn_status(conn, filename, peername);
 			} else {
 				csync_error(1, "File is a symlink but readlink() failed.\n");
@@ -1385,7 +1387,7 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 			break;
 		}
 		case SOCK_TYPE: {
-			conn_printf(conn, "MKSOCK %s %s\n", key_enc, filename_enc);
+			conn_printf(conn, "MKSOCK %s %s\n", key_enc_c, filename_enc);
 			rc = read_conn_status(conn, filename, peername);
 			break;
 		}
@@ -1429,7 +1431,7 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 				csync_debug(0, "csync_update_file_mod: Still dirty after autoresolve\n");
 				return rc;
 			}
-			auto_resolve_run = csync_check_auto_resolve(conn, peername, key_enc, filename, filename_enc,
+			auto_resolve_run = csync_check_auto_resolve(conn, peername, key_enc_c, filename, filename_enc,
 					last_conn_status, auto_resolve_run, 0);
 			if (!auto_resolve_run) {
 				csync_error_count--;
@@ -1681,7 +1683,8 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 		if (!key) {
 			csync_info(2, "Skipping file sync {} on {} - not in my groups.\n", filename, peername);
 		} else {
-			const char *key_enc = url_encode(key);
+			UrlEncoder url_encode;
+			std::string key_enc = url_encode(key);
 			filename_p filename_enc = url_encode(prefixencode(filename));
 			const char *chk_local = t->value2;
 			const char *digest = t->value3;
@@ -1690,7 +1693,8 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 			int rc_exist = csync_stat(filename, &st, uid, gid);
 			if (!rc_exist) {
 				int last_conn_status;
-				rc = csync_update_file_sig_rs_diff(conn, myname.c_str(), peername, key_enc, filename, filename_enc, &st,
+				rc = csync_update_file_sig_rs_diff(conn, myname.c_str(), peername, key_enc,
+												   filename, filename_enc, &st,
 												   uid, gid, chk_local, digest, &last_conn_status, 2);
 				if (rc == CONN_CLOSE) {
 					csync_error(0, "Error while sync_host {}:{}. Connection closed", peername, filename);
@@ -1765,8 +1769,9 @@ static int finish_close(int conn) {
 }
 ;
 
-static int csync_insynctest_file(int conn, const std::string& myname, peername_p peername, const char *key_enc,
+static int csync_insynctest_file(int conn, const std::string& myname, peername_p peername, const std::string& key_enc,
 								 filename_p filename, int *last_conn_status) {
+	UrlEncoder url_encode;
 	filename_p filename_enc = url_encode(prefixencode(filename));
 	struct stat st;
 	char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
@@ -1815,11 +1820,11 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p peername, filename_p 
 		csync_error(0, "ERROR: Connection to remote host `{}' failed.\n", peername);
 		return 0;
 	}
-
-	conn_printf(conn, "HELLO %s\n", url_encode(myname.c_str()));
+	UrlEncoder url_encode;
+	conn_printf(conn, "HELLO %s\n", url_encode(myname).c_str());
 	if (read_conn_status(conn, "<HELLO>",peername))
 		return finish_close(conn);
-	const char *key_enc = url_encode(g->key);
+	const char *key_enc = url_encode(g->key).c_str();
 
 	int rc = csync_insynctest_file(conn, myname, peername, key_enc, filename, &last_conn_status);
 
@@ -1949,10 +1954,10 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 		csync_error(0, "ERROR: Connection to remote host `{}' failed.\n", peername);
 		return 0;
 	}
-
-	conn_printf(conn, "HELLO %s\n", url_encode(myname.c_str()));
+	UrlEncoder url_encode;
+	conn_printf(conn, "HELLO %s\n", url_encode(myname).c_str());
 	read_conn_status(conn, "<HELLO>", peername);
-	const char *filename_enc = (filename != "" ?  url_encode(prefixencode(filename)) : "/");
+	const char *filename_enc = (filename != "" ?  url_encode(prefixencode(filename)).c_str() : "/");
 	found = 0;
 	for (g = csync_group; g && !found; g = g->next) {
 		if (!g->myname || myname != g->myname)
