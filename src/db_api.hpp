@@ -164,7 +164,7 @@ void db_set_logger(db_conn_p conn, void (*logger)(int priority, int lv, const ch
 int db_schema_version(db_conn_p db);
 int db_upgrade_to_schema(db_conn_p db, int version);
 const char* db_errmsg(db_conn_p conn);
-const char* db_escape(db_conn_p conn, const char *string);
-const char* db_escape(db_conn_p conn, filename_p string);
+//const char* db_escape(db_conn_p conn, const char *string);
+//const char* db_escape(db_conn_p conn, filename_p string);
 
 #endif

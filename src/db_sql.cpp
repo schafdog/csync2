@@ -11,7 +11,6 @@
 #include <time.h>
 #include "db_sql.hpp"
 #include "db.hpp"
-#include "ringbuffer.hpp"
 
 // C++20 std::format support
 #if __cplusplus >= 202002L && __has_include(<format>)
@@ -25,39 +24,6 @@ struct FreeDeleter {
         std::free(ptr);
     }
 };
-
-static char* db_my_escape(const char *string) {
-	if (string == NULL)
-		return NULL;
-	char *escaped = static_cast<char*>(malloc(strlen(string) * 2 + 1));
-	const char *p = string;
-	char *e = escaped;
-	while (*p != 0) {
-		switch (*p) {
-		case '\'':
-		case '\\':
-			*(e++) = '\'';
-			;
-			__attribute__ ((fallthrough));
-		default:
-			*(e++) = *(p++);
-		}
-		*e = 0;
-	};
-	return escaped;
-}
-;
-
-const char* DbSql::escape(const char *string) {
-	char *escaped = db_my_escape(string); // f.sqlite3_mprintf_fn("%q", string);
-	if (escaped)
-		ringbuffer_add(escaped, ::free);
-	return escaped;
-}
-
-const char* DbSql::escape(const std::string& string) {
-    return escape(string.c_str());
-}
 
 int DbSql::schema_version()
 {
@@ -124,7 +90,7 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 			else
 				db_flags |= IS_UPGRADE;
 		}
-		if (digest && strstr(checktxt.c_str(), "type=reg"))
+		if (!digest.has_value() && strstr(checktxt.c_str(), "type=reg"))
 		{
 			db_flags |= CALC_DIGEST;
 			db_flags |= IS_UPGRADE;
@@ -135,8 +101,10 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 			if (csync_cmpchecktxt(checktxt, checktxt_same_version))
 				db_flags |= IS_UPGRADE;
 		}
-		if (csync_cmpchecktxt(checktxt_same_version, checktxt_db.c_str()))
+		csync_debug(3, "File {} checktxt \n{}\n{}\n", filename, checktxt_same_version, checktxt_db);
+		if (csync_cmpchecktxt(checktxt_same_version, checktxt_db))
 		{
+		csync_debug(3, "File {} CHANGES \n{}\n{}\n", filename, checktxt_same_version, checktxt_db);
 			int file_mode = file_stat->st_mode & S_IFMT;
 			int flag = OP_MOD;
 			if (file_mode != (mode & S_IFMT))
