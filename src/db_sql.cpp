@@ -413,7 +413,7 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 	struct stat file_st;
 	int rc = stat(filename.c_str(), &file_st);
 	time_t mtime = time(NULL);
-	char *checktxt = "";
+	const char *checktxt = "";
 	char *device = NULL;
 	char *inode = NULL;
 	int mode = 0;
