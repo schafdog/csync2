@@ -13,7 +13,6 @@
 #include <time.h>
 #include "db_api.hpp"
 
-#include "database.hpp"
 #include "db_mysql.hpp"
 #include "db_postgres.hpp"
 #include "db_sqlite.hpp"

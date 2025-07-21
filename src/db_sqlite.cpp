@@ -18,7 +18,6 @@
  */
 
 #include "csync2.hpp"
-#include "database.hpp"
 #include "database_v2.hpp"
 #include "modern_logging.hpp"
 #include <memory>

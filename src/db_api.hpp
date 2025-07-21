@@ -8,7 +8,6 @@
 
 #include "csync2.hpp"
 #include "buffer.hpp"
-#include "database.hpp"
 #include "database_v2.hpp"
 #include "error.hpp"
 
