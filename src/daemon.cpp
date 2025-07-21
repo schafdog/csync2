@@ -103,7 +103,7 @@ extern int cfg_patch_mode;
 static int csync_set_backup_file_status(char *filename, int backupDirLength);
 static int csync_file_backup(filename_p filename, const char **cmd_error);
 
-static int daemon_remove_file(db_conn_p db, filename_p filename, BUF_P buffer) {
+static int daemon_remove_file(db_conn_p db, filename_p filename) {
 	const char *cmd_error = 0;
 	int rc = 0;
 	if (db) {
@@ -162,15 +162,13 @@ static int csync_rmdir_recursive(db_conn_p db, filename_p filename, peername_p s
 						if (peername != NULL && db != NULL)
 							rc_file = csync_daemon_check_dirty(db, fn, peername, A_DEL, 0, &cmd_error);
 						if (rc_file == 0) {
-							BUF_P buffer = buffer_init();
 							csync_info(1 + backup, "Removing file {}\n", fn);
 							if (backup) {
 								int rc = unlink(fn);
 								csync_info(1 + backup, "Removed file {} {}\n", fn, rc);
 							} else {
-								daemon_remove_file(db, fn, buffer);
+								daemon_remove_file(db, fn);
 							}
-							buffer_destroy(buffer);
 						} else {
 							csync_info(0, "File is dirty {}\n", fn);
 							if (tl != NULL)
@@ -1018,10 +1016,10 @@ static int csync_daemon_sig(int conn, const char *filename, const char *user_gro
 	if (strcmp("user/group", user_group) == 0)
 		flags |= SET_USER | SET_GROUP;
 	csync_debug(2, "Flags for gencheck: {} \n", flags);
-	const char *checktxt = csync_genchecktxt_version(&st, filename, flags, db->version);
+	std::string checktxt = csync_genchecktxt_version(&st, filename, flags, db->version);
 	char *digest /* db->get_digest(filename); */= NULL;
 	if (db->version == 1)
-		conn_printf(conn, "%s %s\n", checktxt, (digest ? digest : ""));
+		conn_printf(conn, "%s %s\n", checktxt.c_str(), (digest ? digest : ""));
 	else if (db->version == 2) {
 		conn_printf(conn, "%s\n", url_encode(checktxt), (digest ? digest : ""));
 	} else
