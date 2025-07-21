@@ -44,7 +44,7 @@
 #ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
-#include "version.hpp"
+#include "version.h"
 #include "redis.hpp"
 #include <vector>
 #include <memory>
