@@ -13,7 +13,7 @@ public:
     int exec(const char *sql) override;
     const char* errmsg() override;
     int upgrade_to_schema(int version) override;
-    int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+    int insert_update_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
                              const char *digest) override;
 };
 

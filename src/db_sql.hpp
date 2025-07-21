@@ -18,8 +18,8 @@ public:
     const char* escape(const char *string);
 
     int schema_version() override;
-    int check_file(filename_p str_filename, char **other, char *checktxt,
-                   struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no) override;
+    int check_file(filename_p str_filename, std::optional<std::string>& other, const std::string& checktxt,
+                   struct stat *file_stat, int *operation, std::optional<std::string>& digest, int ignore_flags, dev_t *old_no) override;
     int is_dirty(peername_p str_peername, filename_p str_filename, int *operation, int *mode) override;
     int list_dirty(const std::set<std::string> &active_peers, const char *realname, int recursive) override;
     textlist_p non_dirty_files_match(filename_p pattern) override;
@@ -51,21 +51,21 @@ public:
     textlist_p get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
                                          const std::set<std::string> &patlist,
                                          int (*get_dirty_by_peer)(filename_p str_filename, filename_p pattern, int recursive)) override;
-    textlist_p get_old_operation(const char *checktxt,
+    textlist_p get_old_operation(const std::string& checktxt,
                                    peername_p str_peername,
                                    filename_p str_filename,
-                                   const char *device, const char *ino, BUF_P buffer) override;
+                                   const char *device, const char *ino) override;
     int add_dirty(const char *file_new, int new_force,
                   const char *myhostname, peername_p str_peername,
-                  const char *op_str, const char *checktxt, const char *dev, const char *ino,
+                  const char *op_str, const std::string& checktxt, const char *dev, const char *ino,
                   const char *result_other,
                   operation_t op, int mode, int mtime) override;
     int update_dev_no(filename_p filename, int recursive, dev_t old_no, dev_t new_no) override;
-    long long update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+    long long update_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
                       const char *digest) override;
-    long long insert_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+    long long insert_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
                       const char *digest) override;
-    int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+    int insert_update_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
                              const char *digest) override;
     int check_delete(filename_p str_filename, int recursive, int init_run) override;
 
@@ -74,10 +74,10 @@ public:
     int remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile) override;
 
     int update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st) override;
-    textlist_p check_file_same_dev_inode(filename_p str_filename, const char *checktxt, const char *digest,
+    textlist_p check_file_same_dev_inode(filename_p str_filename, const std::string& checktxt, const char *digest,
                                            struct stat *st, peername_p str_peername) override;
     textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
-                                                 const char *checktxt, const char *digest, struct stat *st) override;
+                                                 const std::string& checktxt, const char *digest, struct stat *st) override;
     // unused:
     long long db_sql_move_file_to_dirty(const char *file, int recursive, const char *peername);
 };

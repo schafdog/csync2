@@ -11,7 +11,6 @@
 #include "database.hpp"
 #include "database_v2.hpp"
 #include "error.hpp"
-#include "database_api.hpp"
 
 #define DB_SQLITE2 1
 #define DB_SQLITE3 2
@@ -92,7 +91,7 @@ public:
         int (*filter_dirty)(filename_p filename, const char *localname, peername_p peername)) = 0;
     virtual textlist_p find_file(filename_p pattern, int (*filter_file)(filename_p filename)) = 0;
     virtual int add_dirty(const char *file_new, int csync_new_force, const char *myname, peername_p peername,
-                          const char *operation, const char *checktxt, const char *dev, const char *ino, const char *result_other,
+                          const char *operation, const std::string& checktxt, const char *dev, const char *ino, const char *result_other,
                           int op, int mode, int mtime) = 0;
 
     virtual int remove_dirty(peername_p peername, filename_p filename, int recursive) = 0;
@@ -104,19 +103,19 @@ public:
     virtual void clear_operation(const char *myname, peername_p peername,
                                  filename_p filename /*, int recursive */) = 0;
 
-    virtual textlist_p get_old_operation(const char *checktxt, peername_p peername, filename_p filename,
-                                         const char *device, const char *ino, BUF_P buffer) = 0;
+    virtual textlist_p get_old_operation(const std::string& checktxt, peername_p peername, filename_p filename,
+                                         const char *device, const char *ino) = 0;
 
     virtual textlist_p get_commands() = 0;
     virtual textlist_p get_command_filename(filename_p filename, const char *logfile) = 0;
     // virtual textlist_p get_hosts() = 0;
     virtual textlist_p get_hints() = 0;
 
-    virtual long long update_file(filename_p filename, const char *checktxt,
+    virtual long long update_file(filename_p filename, const std::string& checktxt,
                                   struct stat *file_stat, const char *digest) = 0;
-    virtual long long insert_file(filename_p filename, const char *checktxt,
+    virtual long long insert_file(filename_p filename, const std::string& checktxt,
                                   struct stat *file_stat, const char *digest) = 0;
-    virtual int insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+    virtual int insert_update_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
                                    const char *digest) = 0;
     virtual int update_dev_no(filename_p filename, int recursive, dev_t old_no, dev_t new_no) = 0;
     virtual int check_delete(filename_p filename, int recursive, int init_run) = 0;
@@ -125,13 +124,13 @@ public:
     virtual int add_action(filename_p filename, const std::string& prefix_command, const std::string &logfile) = 0;
     virtual int remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile) = 0;
 
-    virtual int check_file(filename_p filename, char **other, char *checktxt,
-                           struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int flags, dev_t *old_no) = 0;
+    virtual int check_file(filename_p filename, std::optional<std::string>& other, const std::string& checktxt,
+                           struct stat *file_stat, int *operation, std::optional<std::string> &digest, int flags, dev_t *old_no) = 0;
 
-    virtual textlist_p check_file_same_dev_inode(filename_p filename, const char *checktxt, const char *digest,
+    virtual textlist_p check_file_same_dev_inode(filename_p filename, const std::string& checktxt, const char *digest,
                                                  struct stat *st, peername_p peername) = 0;
     virtual textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
-                                                       const char *checktxt, const char *digest, struct stat *st) = 0;
+                                                       const std::string& checktxt, const char *digest, struct stat *st) = 0;
     virtual textlist_p non_dirty_files_match(filename_p pattern) = 0;
     virtual textlist_p get_dirty_hosts() = 0;
     virtual int dir_count(const char *dirname) = 0;

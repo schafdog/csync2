@@ -182,7 +182,7 @@ int DbMySql::exec(const char *sql) {
     return 0;
 }
 
-int DbMySql::insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+int DbMySql::insert_update_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
 		const char *digest) {
 	int count = conn_->execute_update("insert_update_file",
 			        "INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) "
