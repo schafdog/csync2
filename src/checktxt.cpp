@@ -63,32 +63,34 @@ std::string csync_genchecktxt(const struct stat *st, filename_p filename, int fl
 }
 
 std::string csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version) {
+    //return std::string(csync_genchecktxt_version_old(st, filename, flags, version));
    	if (!st)
 		return "---";
 
 	std::string result = "";
     result += "v" + std::to_string(version);
     result +=std::format(":mtime={}", flags & IGNORE_MTIME ? static_cast<long long>(0) : static_cast<long long>(st->st_mtime));
-    if (!csync_ignore_mod)
+    if (!csync_ignore_mod) {
         result +=std::format(":mode={}", static_cast<int>(st->st_mode));
-        char user[100];
-	int rc = uid_to_name(st->st_uid, user, 100, NULL);
+    }
+    char buffer[100];
+	int rc = uid_to_name(st->st_uid, buffer, 100, NULL);
 	if (!csync_ignore_uid) {
 		if (!rc && (flags & SET_USER)) {
-			result += std::format(":user={}", user);
+			result += std::format(":user={}", static_cast<char *>(buffer));
 		} else {
 			result += std::format(":uid={}", static_cast<int>(st->st_uid));
 		}
 	}
-	char *group = user;
-	rc = gid_to_name(st->st_gid, group, 100, NULL);
+	rc = gid_to_name(st->st_gid, buffer, 100, NULL);
 	if (!csync_ignore_gid) {
 		if (!rc && (flags & SET_GROUP)) {
-			result += std::format(":group={}", group);
+			result += std::format(":group={}", static_cast<char *>(buffer));
 		} else {
 			result += std::format(":gid={}", static_cast<int>(st->st_gid));
 		}
 	}
+
 	if (S_ISREG(st->st_mode)) {
 		result += std::format(":type=reg:size={}", static_cast<long long>(st->st_size));
 	}

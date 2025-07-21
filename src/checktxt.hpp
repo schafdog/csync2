@@ -24,6 +24,7 @@
 
 std::string csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
 std::string csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version);
+const char* csync_genchecktxt_version_old(const struct stat *st, filename_p filename, int flags, int version);
 int csync_cmpchecktxt(const char *a, const char *b);
 int csync_cmpchecktxt(const std::string& a, const std::string& b);
 int csync_cmpchecktxt_component(const char *a, const char *b, int flags);
