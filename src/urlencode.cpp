@@ -22,6 +22,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <cctype>
 #include "urlencode.hpp"
 
 #define RINGBUFF_LEN 10000
@@ -29,11 +33,62 @@
 static char *ringbuff[RINGBUFF_LEN];
 static int ringbuff_counter = 0;
 
-// perl -e 'printf("\\%03o", $_) for(1..040)' | fold -64; echo
-static char badchars[] = "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020"
-		"\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040"
-		"\177\"'%$:|";
+// Characters that need to be URL encoded
+static const std::string badchars = "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020"
+								   "\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040"
+								   "\177\"'%$:|";
 
+std::string& UrlEncoder::operator()(const std::string& input) {
+    std::ostringstream encoded;
+    encoded << std::hex << std::uppercase << std::setfill('0');
+
+    for (char c : input) {
+        if (badchars.find(c) != std::string::npos) {
+            encoded << '%' << std::setw(2) << static_cast<int>(static_cast<unsigned char>(c));
+        } else {
+            encoded << c;
+        }
+    }
+    encoded_strings.emplace_back(encoded.str());
+    return encoded_strings.back();
+}
+
+std::string&UrlEncoder::operator()(const char* input) {
+    if (!input) {
+        input = "";
+    }
+    return operator()(std::string(input));
+}
+
+std::string& UrlDecoder::operator()(const std::string& input) {
+    std::ostringstream decoded;
+
+    for (size_t i = 0; i < input.length(); ++i) {
+        if (input[i] == '%' && i + 2 < input.length() &&
+            std::isxdigit(input[i + 1]) && std::isxdigit(input[i + 2])) {
+
+            std::string hex = input.substr(i + 1, 2);
+            char decodedChar = static_cast<char>(std::stoul(hex, nullptr, 16));
+            decoded << decodedChar;
+            i += 2;
+        } else {
+            decoded << input[i];
+        }
+    }
+    decoded_strings.emplace_back(decoded.str());
+    return decoded_strings.back();
+}
+
+std::string& UrlDecoder::operator()(const char* input)  {
+    if (!input) {
+        return operator()(std::string(""));
+    }
+    return operator()(std::string(input));
+}
+
+UrlCodec url_codec;
+
+// Legacy C-style functions (deprecated) - maintain compatibility
 const char* url_encode(const char *in) {
 	char *out;
 	int i, j, k, len;
@@ -48,7 +103,7 @@ const char* url_encode(const char *in) {
 	out = static_cast<char*>(malloc(len + 1));
 
 	for (i = k = 0; in[i]; i++) {
-		for (j = 0; badchars[j]; j++)
+		for (j = 0; badchars.c_str()[j]; j++)
 			if (in[i] == badchars[j])
 				break;
 		if (badchars[j]) {
@@ -105,4 +160,3 @@ const char* url_decode(const char *in) {
 const char *url_decode(peername_p in) {
 	return url_decode(in.c_str());
 }
-

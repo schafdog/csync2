@@ -1247,8 +1247,10 @@ static int csync_start_server(int mode, int flags, int argc, char *argv[], int l
 			return handle_server_error(mode, conn);
 		}
 
-		if (para)
-			g_cfgname = strdup(url_decode(para));
+		if (para) {
+			std::string decoded = url_codec.decode(para);
+			g_cfgname = strdup(decoded.c_str());
+		}
 
 		if (csync_read_config(g_cfgname, conn, mode) == -1)
 			return handle_server_error(mode, conn);

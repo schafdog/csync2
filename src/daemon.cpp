@@ -752,8 +752,10 @@ static int setup_tag(const char *tag[32], char *line) {
 	if (!tag[0][0])
 		return 1;
 
-	for (i = 0; i < 32; i++)
-		tag[i] = strdup(url_decode(tag[i]));
+	for (i = 0; i < 32; i++) {
+	    UrlDecoder url_decode;
+	    tag[i] = strdup(url_decode(tag[i]).c_str());
+	}
 
 	return 0;
 }
