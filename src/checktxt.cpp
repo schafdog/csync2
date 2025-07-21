@@ -33,24 +33,90 @@
     #include <format>
 #endif
 
+class Checktxt {
+    std::string str;
+
+    public:
+    explicit Checktxt(std::string str) : str(str) {}
+    explicit Checktxt(const char *str) : str(str) {}
+    std::string value() const {
+        return str;
+    }
+};
+
+
 /*
  * this csync_genchecktxt() function might not be nice or
  * optimal - but it is hackish and easy to read at the same
  * time....  ;-)
  */
 
-#define xxprintf(...) \
-	{ \
-	int t = snprintf(NULL, 0 __VA_OPT__(, ) __VA_ARGS__);	\
+#define xxprintf(...)    \
+      { \
+      int t = snprintf(NULL, 0 __VA_OPT__(, ) __VA_ARGS__);	\
 	elements[elidx]=static_cast<char*>(alloca(t+1));		\
 	snprintf(elements[elidx], t+1  __VA_OPT__(, ) __VA_ARGS__);	\
 	len+=t; elidx++; }
 
-const char* csync_genchecktxt(const struct stat *st, filename_p filename, int flags) {
+std::string csync_genchecktxt(const struct stat *st, filename_p filename, int flags) {
 	return csync_genchecktxt_version(st, filename, flags, 1);
 }
 
-const char* csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version) {
+std::string csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version) {
+   	if (!st)
+		return "---";
+
+	std::string result = "";
+    result += "v" + std::to_string(version);
+    result +=std::format(":mtime={}", flags & IGNORE_MTIME ? static_cast<long long>(0) : static_cast<long long>(st->st_mtime));
+    if (!csync_ignore_mod)
+        result +=std::format(":mode={}", static_cast<int>(st->st_mode));
+        char user[100];
+	int rc = uid_to_name(st->st_uid, user, 100, NULL);
+	if (!csync_ignore_uid) {
+		if (!rc && (flags & SET_USER)) {
+			result += std::format(":user={}", user);
+		} else {
+			result += std::format(":uid={}", static_cast<int>(st->st_uid));
+		}
+	}
+	char *group = user;
+	rc = gid_to_name(st->st_gid, group, 100, NULL);
+	if (!csync_ignore_gid) {
+		if (!rc && (flags & SET_GROUP)) {
+			result += std::format(":group={}", group);
+		} else {
+			result += std::format(":gid={}", static_cast<int>(st->st_gid));
+		}
+	}
+	if (S_ISREG(st->st_mode)) {
+		result += std::format(":type=reg:size={}", static_cast<long long>(st->st_size));
+	}
+	if (S_ISDIR(st->st_mode))
+		result += ":type=dir";
+
+	if (S_ISCHR(st->st_mode))
+		result += std::format(":type=chr:dev={}", static_cast<int>(st->st_rdev));
+
+	if (S_ISBLK(st->st_mode))
+		result += std::format(":type=blk:dev={}", static_cast<int>(st->st_rdev));
+
+	if (S_ISFIFO(st->st_mode))
+		result += ":type=fifo";
+
+	if (S_ISLNK(st->st_mode)) {
+		char tmp[4096];
+		int r = readlink(filename.c_str(), tmp, 4095);
+		tmp[r >= 0 ? r : 0] = 0;
+		result += std::format(":type=lnk:target={}", (version == 1 ? url_encode(tmp) : tmp));
+	}
+
+	if (S_ISSOCK(st->st_mode))
+		result += ":type=sock";
+	return result;
+}
+
+const char* csync_genchecktxt_version_old(const struct stat *st, filename_p filename, int flags, int version) {
 	static char *buffer = 0;
 	char *elements[64];
 	int elidx = 0, len = 1;
@@ -138,6 +204,10 @@ const char* csync_genchecktxt_version(const struct stat *st, filename_p filename
 	buffer[i] = 0;
 
 	return buffer;
+}
+
+int csync_cmpchecktxt(const std::string& a, const std::string& b) {
+    return csync_cmpchecktxt(a.c_str(), b.c_str());
 }
 
 /* In future version of csync this might also convert

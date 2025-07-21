@@ -22,14 +22,14 @@
 #define CSYNC2_CHECKTXT_H 1
 #include <time.h>
 
-//extern const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
-extern const char *csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version);
-extern int csync_cmpchecktxt(const char *a, const char *b);
-extern int csync_cmpchecktxt_component(const char *a, const char *b, int flags);
+std::string csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
+std::string csync_genchecktxt_version(const struct stat *st, filename_p filename, int flags, int version);
+int csync_cmpchecktxt(const char *a, const char *b);
+int csync_cmpchecktxt(const std::string& a, const std::string& b);
+int csync_cmpchecktxt_component(const char *a, const char *b, int flags);
 int csync_get_checktxt_version(const char *value);
 time_t csync_checktxt_get_time(const char *checktxt);
 long long csync_checktxt_get_size(const char *checktxt);
 long long csync_checktxt_get_long_long(const char *checktxt, const char *token);
 /* checktxt.c  additional missing prototypes */
-extern const char *csync_genchecktxt(const struct stat *st, filename_p filename, int flags);
 #endif /* CSYNC2_CHECKTXT_H */
