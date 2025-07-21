@@ -28,6 +28,7 @@ const char *prefixencode(filename_p filename);
 // Modern C++ versions
 std::string prefixsubst_cpp(const char *in);
 std::string prefixencode_cpp(const char *filename);
+std::string prefixsubst_cpp(const std::string &in);
 
 /* prefixsubst.c */
 /* another ringbuffer here. so use it with care!! */
