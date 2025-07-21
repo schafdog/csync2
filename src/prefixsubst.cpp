@@ -32,21 +32,25 @@ std::string prefixsubst_cpp(const char *in) {
 	if (!in || *in != '%')
 		return std::string(in ? in : "");
 
-	pn = in + 1;
-	pn_len = strcspn(pn, "%");
+       pn = in + 1;
+       pn_len = strcspn(pn, "%");
 
-	path = pn + pn_len;
-	if (*path == '%')
-		path++;
+       path = pn + pn_len;
+       if (*path == '%')
+               path++;
 
-	for (p = csync_prefix; p; p = p->next) {
-		if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len) && p->path) {
-			return std::string(p->path) + std::string(path);
-		}
-	}
+       for (p = csync_prefix; p; p = p->next) {
+               if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len) && p->path) {
+                       return std::string(p->path) + std::string(path);
+               }
+       }
 
-	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname.c_str());
-	return std::string();
+       csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname.c_str());
+       return std::string();
+}
+
+std::string prefixsubst_cpp(const std::string &in) {
+    return prefixsubst_cpp(in.c_str());
 }
 
 #define RINGBUFF_LEN 100
@@ -91,7 +95,7 @@ const char *prefixsubst(filename_p filename) {
 // Modern C++ version that returns std::string
 std::string prefixencode_cpp(const char *filename) {
 	if (!filename) return std::string();
-	
+
 #ifdef __CYGWIN__
 	if (!strcmp(filename, "/")) {
 		filename = "/cygdrive";
