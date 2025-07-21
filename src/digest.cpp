@@ -45,6 +45,12 @@ void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *
 	}
 }
 
+void dsync_digest_hex(const std::string &md_value, std::string &digest_str) {
+	for (char character : md_value) {
+		digest_str += std::format("{:02x}", character);
+	}
+}
+
 int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, unsigned int size) {
 	int fileno = open(filename, O_RDONLY);
 	if (fileno < 0) {
@@ -85,16 +91,16 @@ int main(int argc, char *argv[])
     file = open(argv[2], O_RDONLY);
     if (file == -1)
       printf("Failed to open %s", argv[2]);
-  }  
+  }
   else
     file = STDIN_FILENO;
 
   int rc = dsync_digest(file, argv[1], md_value, &md_len);
-  if (rc) 
+  if (rc)
     printf("Failed to digest %s with %s", argv[2], argv[1]);
   else {
     //printf("Digest is (%u): ", total);
-    char hex_str[2*EVP_MAX_MD_SIZE+1]; 
+    char hex_str[2*EVP_MAX_MD_SIZE+1];
     dsync_digest_hex(md_value, md_len, hex_str);
     printf("%s\n", hex_str);
   }
