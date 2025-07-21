@@ -30,8 +30,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/.Trash/cur RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local/Maildir/.Trash/cur is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> peer:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: '' size: 0 rc: 0 (octet-stream)
@@ -48,8 +48,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/cur RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local/Maildir/cur is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> peer:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: '' size: 0 rc: 0 (octet-stream)

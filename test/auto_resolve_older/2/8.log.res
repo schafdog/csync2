@@ -30,8 +30,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local is different on peer (cktxt char #1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> peer:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: '' size: 0 rc: 0 (octet-stream)
@@ -48,8 +48,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/auto RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local/auto is different on peer (cktxt char #1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> peer:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: '' size: 0 rc: 0 (octet-stream)
@@ -66,8 +66,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/auto/older RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local/auto/older is different on peer (cktxt char #1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> peer:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 Auto resolve method OLDER 3 for peer:<TESTBASE>/test/local/auto/older 
 File peer:<TESTBASE>/test/local/auto/older: Won autoresolve OLDER (3)
 Send FLUSH peer:<TESTBASE>/test/local/auto/older (won auto resolved)
@@ -87,8 +87,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/auto/older/update_both RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=13'
 <TESTBASE>/test/local/auto/older/update_both is different on peer (cktxt char #1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=13
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=14
+>>> peer:	v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=13
+>>> LOCAL:	v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=14
 Auto resolve method OLDER 3 for peer:<TESTBASE>/test/local/auto/older/update_both 
 File peer:<TESTBASE>/test/local/auto/older/update_both: Won autoresolve OLDER (3)
 Send FLUSH peer:<TESTBASE>/test/local/auto/older/update_both (won auto resolved)

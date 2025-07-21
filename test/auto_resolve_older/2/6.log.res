@@ -27,8 +27,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/auto/older/update_both RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=11'
 <TESTBASE>/test/local/auto/older/update_both is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=11
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=14
+>>> peer:	v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=11
+>>> LOCAL:	v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=14
 Auto resolve method OLDER 3 for peer:<TESTBASE>/test/local/auto/older/update_both 
 File peer:<TESTBASE>/test/local/auto/older/update_both: Lost autoresolve OLDER (3)
 CONN peer > 'octet-stream 32'
