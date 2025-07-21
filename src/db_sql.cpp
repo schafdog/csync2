@@ -76,8 +76,8 @@ int DbSql::schema_version()
 	return version;
 }
 
-int DbSql::check_file(filename_p    filename, char **other, char *checktxt,
-					  struct stat *file_stat, BUF_P buffer, int *operation, char **digest, int ignore_flags, dev_t *old_no)
+int DbSql::check_file(filename_p filename, std::optional<std::string>& other, const std::string& checktxt,
+					  struct stat *file_stat, int *operation, std::optional<std::string>& digest, int ignore_flags, dev_t *old_no)
 {
     int db_flags = 0;
 	auto rs = conn_->execute_query("check_file",
@@ -93,11 +93,10 @@ int DbSql::check_file(filename_p    filename, char **other, char *checktxt,
 		{
 			csync_error(0, "Error extracting version from checktxt: {}", checktxt_db.c_str());
 		}
-		const char *checktxt_same_version = checktxt;
+		std::string checktxt_same_version = checktxt;
 		const std::string inode = rs->get_string(2);
 		const std::string device = rs->get_string(3);
-		const auto opt_digest = rs->get_string_optional(4);
-		*digest = opt_digest.has_value() ? buffer_strdup(buffer, opt_digest->c_str()) : NULL;
+		digest = rs->get_string_optional(4);
 		long mode = rs->get_long(5);
 		long size = rs->get_long(6);
 		long mtime = rs->get_long(7);
@@ -125,7 +124,7 @@ int DbSql::check_file(filename_p    filename, char **other, char *checktxt,
 			else
 				db_flags |= IS_UPGRADE;
 		}
-		if (!*digest && strstr(checktxt, "type=reg"))
+		if (digest && strstr(checktxt.c_str(), "type=reg"))
 		{
 			db_flags |= CALC_DIGEST;
 			db_flags |= IS_UPGRADE;
@@ -183,7 +182,7 @@ int DbSql::check_file(filename_p    filename, char **other, char *checktxt,
 			if (len > 0)
 			{
 				target[len] = 0;
-				*other = buffer_strdup(buffer, target);
+				other = std::make_optional<std::string>(target);
 			}
 			else
 				csync_error(0, "Failed to read link on {}\n", filename.c_str());
@@ -412,7 +411,7 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 	struct stat file_st;
 	int rc = stat(filename.c_str(), &file_st);
 	time_t mtime = time(NULL);
-	char *checktxt = NULL;
+	char *checktxt = "";
 	char *device = NULL;
 	char *inode = NULL;
 	int mode = 0;
@@ -814,13 +813,11 @@ static textlist_p db_sql_get_dirty_by_peer(DbApi *db, const char *myhostname, pe
     	return db->get_dirty_by_peer_match(myhostname, peername, 1, patlist, NULL);
 }
 
-textlist_p DbSql::get_old_operation(const char *checktxt,
+textlist_p DbSql::get_old_operation(const std::string& checktxt,
 							   peername_p str_peername,
 							   filename_p str_filename,
-							   const char *device, const char *ino, BUF_P buffer)
+							   const char *device, const char *ino)
 {
-	// unused
-	(void)buffer;
 	const char *peername = str_peername.c_str();
 	const char *filename = str_filename.c_str();
 
@@ -859,7 +856,7 @@ textlist_p DbSql::get_old_operation(const char *checktxt,
 
 int DbSql::add_dirty(const char *file_new, int new_force,
 					const char *myhostname, peername_p str_peername,
-					const char *op_str, const char *checktxt, const char *dev, const char *ino,
+					const char *op_str, const std::string& checktxt, const char *dev, const char *ino,
 					const char *result_other,
 					operation_t op, int mode, int mtime)
 {
@@ -911,7 +908,7 @@ int DbSql::update_dev_no(filename_p filename, int recursive, dev_t old_no, dev_t
     }
 }
 
-long long DbSql::update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+long long DbSql::update_file(filename_p filename, const std::string &checktxt, struct stat *file_stat,
                               const char *digest)
 {
     return conn_->execute_update("update_file",
@@ -922,7 +919,7 @@ long long DbSql::update_file(filename_p filename, const char *checktxt, struct s
                                   static_cast<long long>(file_stat->st_mtime), static_cast<long long>(file_stat->st_size), static_cast<int>(get_file_type(file_stat->st_mode)), filename);
 }
 
-long long DbSql::insert_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+long long DbSql::insert_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
                               const char *digest)
 {
     return conn_->execute_update("insert_file",
@@ -933,7 +930,7 @@ long long DbSql::insert_file(filename_p filename, const char *checktxt, struct s
                                   static_cast<long long>(file_stat->st_mtime), static_cast<long long>(file_stat->st_size), static_cast<int>(get_file_type(file_stat->st_mode)));
 }
 
-int DbSql::insert_update_file(filename_p filename, const char *checktxt, struct stat *file_stat,
+int DbSql::insert_update_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
 									 const char *digest)
 {
 	int count = update_file(filename, checktxt, file_stat, digest);
@@ -1115,7 +1112,7 @@ std::optional<std::string> create_optional(const char *filename)
 }
 
 
-textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const char *checktxt, const char *digest,
+textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const std::string& checktxt, const char *digest,
 							   struct stat *st, peername_p peername)
 {
 	(void)checktxt;
@@ -1182,7 +1179,7 @@ textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const char *che
 
 // Use by csync_check_move, which isn't called. Error in seconds SQL fixed
 textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
-										 const char *checktxt, const char *digest, struct stat *st)
+										 const std::string& checktxt, const char *digest, struct stat *st)
 {
 	// unused
 	(void)checktxt;
