@@ -21,12 +21,40 @@
 #include "csync2.hpp"
 #include <stdio.h>
 #include "utils.hpp"
+#include <string>
+
+// Modern C++ version that returns std::string
+std::string prefixsubst_cpp(const char *in) {
+	struct csync_prefix *p;
+	const char *pn, *path;
+	size_t pn_len;
+
+	if (!in || *in != '%')
+		return std::string(in ? in : "");
+
+	pn = in + 1;
+	pn_len = strcspn(pn, "%");
+
+	path = pn + pn_len;
+	if (*path == '%')
+		path++;
+
+	for (p = csync_prefix; p; p = p->next) {
+		if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len) && p->path) {
+			return std::string(p->path) + std::string(path);
+		}
+	}
+
+	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname.c_str());
+	return std::string();
+}
 
 #define RINGBUFF_LEN 100
 
 static char *ringbuff[RINGBUFF_LEN];
 static int ringbuff_counter = 0;
 
+// Legacy C-style version for backward compatibility
 const char* prefixsubst(const char *in) {
 	struct csync_prefix *p;
 	const char *pn, *path;
@@ -60,6 +88,39 @@ const char *prefixsubst(filename_p filename) {
 	return prefixsubst(filename.c_str());
 }
 
+// Modern C++ version that returns std::string
+std::string prefixencode_cpp(const char *filename) {
+	if (!filename) return std::string();
+	
+#ifdef __CYGWIN__
+	if (!strcmp(filename, "/")) {
+		filename = "/cygdrive";
+	}
+#endif
+	struct csync_prefix *p = csync_prefix;
+
+	/*
+	 * Canonicalized paths will always contain /
+	 * Prefixsubsted paths will probably contain %
+	 */
+	if (*filename == '/') {
+		while (p) {
+			if (p->path) {
+				int p_len = strlen(p->path);
+				int f_len = strlen(filename);
+
+				if (p_len <= f_len && !strncmp(p->path, filename, p_len)
+						&& (filename[p_len] == '/' || !filename[p_len])) {
+					return std::string("%") + std::string(p->name) + std::string("%") + std::string(filename + p_len);
+				}
+			}
+			p = p->next;
+		}
+	}
+	return std::string(filename);
+}
+
+// Legacy C-style version for backward compatibility
 const char* prefixencode(const char *filename) {
 #ifdef __CYGWIN__
 	if (!strcmp(filename, "/")) {

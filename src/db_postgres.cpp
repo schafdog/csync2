@@ -32,7 +32,6 @@
 #include "db_postgres.hpp"
 #include "dl.hpp"
 #include "db_sql.hpp"
-#include "ringbuffer.hpp"
 #include "utils.hpp"
 
 #ifdef HAVE_POSTGRESQL_LIBPQ_FE_H

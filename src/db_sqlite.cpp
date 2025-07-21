@@ -35,7 +35,6 @@
 #include "db_sqlite.hpp"
 #include "dl.hpp"
 #include "db_sql.hpp"
-#include "ringbuffer.hpp"
 #include "database_sqlite_v2.hpp"
 
 #ifndef HAVE_SQLITE3

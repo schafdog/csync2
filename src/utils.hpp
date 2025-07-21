@@ -25,6 +25,10 @@ char *getrealfn(filename_p filename);
 const char *prefixsubst(filename_p filename);
 const char *prefixencode(filename_p filename);
 
+// Modern C++ versions
+std::string prefixsubst_cpp(const char *in);
+std::string prefixencode_cpp(const char *filename);
+
 /* prefixsubst.c */
 /* another ringbuffer here. so use it with care!! */
 extern "C" {
