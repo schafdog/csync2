@@ -1,7 +1,6 @@
 /*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode:
  * t -*- */
 #include "check.hpp"
-#include "database_api.hpp"
 #include "database_v2.hpp"
 #include "db.hpp"
 #include "db_api.hpp"
