@@ -110,6 +110,7 @@ std::string csync_genchecktxt_version(const struct stat *st, filename_p filename
 		char tmp[4096];
 		int r = readlink(filename.c_str(), tmp, 4095);
 		tmp[r >= 0 ? r : 0] = 0;
+		UrlEncoder url_encode;
 		result += std::format(":type=lnk:target={}", (version == 1 ? url_encode(tmp) : tmp));
 	}
 
@@ -179,7 +180,8 @@ const char* csync_genchecktxt_version_old(const struct stat *st, filename_p file
 		char tmp[4096];
 		int r = readlink(filename.c_str(), tmp, 4095);
 		tmp[r >= 0 ? r : 0] = 0;
-		xxprintf(":type=lnk:target=%s", (version == 1 ? url_encode(tmp) : tmp));
+		UrlEncoder url_encode;
+		xxprintf(":type=lnk:target=%s", (version == 1 ? url_encode(tmp).c_str() : tmp));
 	}
 
 	if (S_ISSOCK(st->st_mode))

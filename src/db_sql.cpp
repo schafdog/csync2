@@ -313,15 +313,14 @@ int DbSql::upgrade_db()
 			prefix[0] = '%';
 			strcpy(prefix + 1, p->name);
 			strcpy(prefix + length - 2, "%");
-			char *prefix_encoded = strdup(url_encode(prefix));
-			const char *path_encoded = url_encode(p->path);
+			UrlEncoder url_encode;
+			const std::string prefix_encoded = url_encode(prefix);
+			const std::string path_encoded = url_encode(p->path);
 
 			csync_info(1, "Replace prefix {} with path {} ({})", prefix_encoded, p->path, path_encoded);
             conn_->execute_update("upgrade_db",
                                 "UPDATE file set filename=replace(filename,?, ?) WHERE filename like ?", prefix_encoded,
 				path_encoded, prefix_encoded);
-			free(prefix);
-			free(prefix_encoded);
 		}
 	}
 	exit(0);

@@ -984,13 +984,14 @@ static int response_ok_not_found(int conn) {
 static int csync_daemon_sig(int conn, const char *filename, const char *user_group, time_t ftime, long long size,
 							db_conn_p db, const char **cmd_error, int skip_rs_sig) {
 	csync_debug(3, "csync_daemon_sig: unused parameters: ftime {} size {}\n", ftime, size);
+	UrlEncoder url_encode;
 	struct stat st;
 	if (lstat_strict(filename, &st) != 0) {
 		char *path;
 		if ((path = csync_check_path(filename))) {
-			const char *otherfile = url_encode(prefixencode(path));
+			std::string otherfile = url_encode(prefixencode(path));
 			csync_error(1, "Path not found {}\n", path);
-			conn_printf(conn, PATH_NOT_FOUND "%s\n", otherfile);
+			conn_printf(conn, PATH_NOT_FOUND "%s\n", otherfile.c_str());
 			return NEXT_CMD;
 		}
 		if ( errno == ENOENT) {
@@ -1018,9 +1019,9 @@ static int csync_daemon_sig(int conn, const char *filename, const char *user_gro
 	if (db->version == 1)
 		conn_printf(conn, "%s %s\n", checktxt.c_str(), (digest ? digest : ""));
 	else if (db->version == 2) {
-		conn_printf(conn, "%s\n", url_encode(checktxt), (digest ? digest : ""));
+		conn_printf(conn, "%s\n", url_encode(checktxt).c_str(), (digest ? digest : ""));
 	} else
-		conn_printf(conn, "%s %s\n", url_encode(checktxt) /*, url_encode(digest) */);
+		conn_printf(conn, "%s %s\n", url_encode(checktxt).c_str() /*, url_encode(digest) */);
 
 	if (skip_rs_sig) {
 		return NEXT_CMD;
