@@ -167,7 +167,8 @@ static int connect_to_host(db_conn_p db, peername_p myhostname, peername_p std_p
       return -1;
 #endif
 	}
-	conn_printf(conn, "CONFIG %s\n", url_encode(g_cfgname));
+	UrlEncoder url_encode;
+	conn_printf(conn, "CONFIG %s\n", url_encode(g_cfgname).c_str());
 	if ((rc = read_conn_status(conn, "<CONFIG>", peername)) != OK) {
 		csync_error(0, "Config command failed.\n");
 		conn_close(conn);
@@ -182,7 +183,7 @@ static int connect_to_host(db_conn_p db, peername_p myhostname, peername_p std_p
 	}
 
 	if (g_active_grouplist) {
-		conn_printf(conn, "GROUP %s\n", url_encode(g_active_grouplist));
+		conn_printf(conn, "GROUP %s\n", url_encode(g_active_grouplist).c_str());
 		if ((rc = read_conn_status(conn, "<GROUP>", peername)) != OK) {
 			csync_error(0, "GROUP command failed.\n");
 			conn_close(conn);
@@ -227,8 +228,9 @@ static int get_master_slave_status(peername_p peername, filename_p filename) {
 }
 
 static int csync_update_file_mv(int conn, peername_p peername, const char *key, filename_p filename, const char *new_name) {
-	conn_printf(conn, "MV %s %s %s\n", url_encode(key), url_encode(prefixencode(filename)),
-			url_encode(prefixencode(new_name)));
+    UrlEncoder url_encode;
+	conn_printf(conn, "MV %s %s %s\n", url_encode(key).c_str(), url_encode(prefixencode(filename)).c_str(),
+			url_encode(prefixencode(new_name)).c_str());
 	return read_conn_status(conn, filename, peername);
 }
 
@@ -450,8 +452,9 @@ static int csync_update_file_del(int conn, db_conn_p db, peername_p peername, fi
 		csync_info(2, "Skipping deletion/move {} on {} - not in my groups.\n", filename, peername);
 		return SKIP;
 	}
-	const char *key_enc = url_encode(key);
-	const char *filename_enc = url_encode(prefixencode(filename));
+	UrlEncoder url_encode;
+	const char *key_enc = url_encode(key).c_str();
+	const char *filename_enc = url_encode(prefixencode(filename)).c_str();
 
 	// Run max twice.
 	while (1) {
@@ -623,9 +626,10 @@ static int csync_fix_path(int conn, peername_p myname, peername_p peername, file
 	char *local_file = strdup(filename.c_str());
 	int org_len = strlen(filename.c_str());
 	csync_info(1, "PATH MISSING: '{}'\n", buffer);
-	const char *path_not_found = prefixsubst(url_decode(buffer));
+	UrlDecoder url_decode;
+	std::string path_not_found = prefixsubst_cpp(url_decode(buffer));
 	csync_info(1, "PATH MISSING (decoded): '{}'\n", path_not_found);
-	int path_len = strlen(path_not_found);
+	int path_len = path_not_found.length();
 	while (1) {
 		char ch = local_file[path_len];
 		if (ch == '/') {
@@ -680,12 +684,11 @@ static int csync_update_file_sig(int conn, peername_p myname, peername_p peernam
 	int peer_version = csync_get_checktxt_version(chk_peer);
 
 	int flag = IGNORE_LINK;
-	const char *chk_peer_decoded = url_decode(chk_peer);
+	UrlDecoder UrlDecoder;
+	std::string chk_peer_decoded = url_decode(chk_peer);
 	// TODO generate chk text that matches remote usage of uid/user and gid/gid
-	const char *has_user = strstr(chk_peer_decoded, ":user=");
-	flag |= (has_user != NULL ? SET_USER : 0);
-	const char *has_group = strstr(chk_peer_decoded, ":group=");
-	flag |= (has_group != NULL ? SET_GROUP : 0);
+	flag |= chk_peer_decoded.find(":user=") != std::string::npos ? SET_USER : 0;
+	flag |= chk_peer_decoded.find(":group=") != std::string::npos ? SET_GROUP : 0;
 	/*
 	 if (st && !S_ISDIR(st->st_mode))
 	 flag |= IGNORE_MTIME;
@@ -698,18 +701,9 @@ static int csync_update_file_sig(int conn, peername_p myname, peername_p peernam
 	}
 	if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 		csync_info(log_level, "{} is different on peer (cktxt char #{}).\n", filename, i);
-		char *peer_log = NULL, *local_log = NULL;
-		if (csync_zero_mtime_debug) {
-			peer_log = filter_mtime_copy(chk_peer_decoded);
-			local_log = filter_mtime_copy(chk_local);
-		}
-		csync_info(log_level, ">>> {}:\t{}\n>>> {}:\t{}\n", peername, peer_log, "LOCAL", local_log);
-		if (csync_zero_mtime_debug) {
-			free(peer_log);
-			free(local_log);
-		}
+		csync_info(log_level, ">>> {}:\t{}\n>>> {}:\t{}\n", peername, chk_peer_decoded, "LOCAL", chk_local);
 		// We should be able to figure auto resolve from checktxt
-		int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
+		int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded.c_str());
 		if (flush) {
 			csync_info(1, "Send FLUSH {}:{} (won auto resolved)\n", peername, filename);
 		}
@@ -1879,15 +1873,10 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filenam
 	return finish_close(conn);
 }
 
-static int csync_insynctest_readline(int conn, char **file, char **checktxt) {
+static int csync_insynctest_readline(int conn, std::string &file, std::string &checktxt) {
 	char inbuf[2048], *tmp;
-
-	if (*file)
-		free(*file);
-	if (*checktxt)
-		free(*checktxt);
-	*file = *checktxt = 0;
-
+	file = "";
+	checktxt = "";
 	if (!conn_gets(conn, inbuf, 2048))
 		return 1;
 	if (inbuf[0] != 'v') {
@@ -1901,8 +1890,10 @@ static int csync_insynctest_readline(int conn, char **file, char **checktxt) {
 	}
 
 	tmp = strtok(inbuf, "\t");
-	if (tmp)
-		*checktxt = strdup(url_decode(tmp));
+	UrlDecoder url_decode;
+	if (tmp) {
+		checktxt = url_decode(tmp);
+	}
 	else {
 		csync_error_count++;
 		csync_error(0, "Format error in reply: \\t not found!\n");
@@ -1911,14 +1902,14 @@ static int csync_insynctest_readline(int conn, char **file, char **checktxt) {
 
 	tmp = strtok(0, "\n");
 	if (tmp)
-		*file = strdup(url_decode(tmp));
+		file = url_decode(tmp);
 	else {
 		csync_error_count++;
 		csync_error(0, "Format error in reply: \\n not found!\n");
 		return 1;
 	}
 
-	csync_info(3, "Fetched tuple from peer: {} [{}]\n", *file, *checktxt);
+	csync_info(3, "Fetched tuple from peer: {} [{}]\n", file, checktxt);
 
 	return 0;
 }
@@ -1930,7 +1921,6 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	textlist_p diff_list = 0, diff_ent;
 	const struct csync_group *g;
 	const struct csync_group_host *h;
-	char *r_file = 0, *r_checktxt = 0;
 	int remote_eof = 0;
 	int ret = 1;
 
@@ -1973,10 +1963,13 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	}
 	conn_printf(conn, "LIST %s %s %s %d \n", peername.c_str(), filename_enc, g->key, recursive);
 	int count_diff = 0;
+
 	if (!remote_eof) {
-		while (!csync_insynctest_readline(conn, &r_file, &r_checktxt)) {
+	    std::string r_file = "";
+	std::string r_checktxt = "";
+		while (!csync_insynctest_readline(conn, r_file, r_checktxt)) {
 			if (auto_diff)
-				textlist_add(&diff_list, r_file, 0);
+				textlist_add(&diff_list, r_file.c_str(), 0);
 			else {
 				textlist_p tl = db->list_file(r_file, myname.c_str(), peername, 0);
  				const char *chk_local = "---";
@@ -1987,15 +1980,7 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 				if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
 					csync_info(1, "D\t{}\t{}\t{}\n", myname, peername, r_file);
 					csync_debug(2, "'{}' is different:\n", filename);
-					char *local_copy = NULL;
-					if (csync_zero_mtime_debug) {
-						filter_mtime(r_checktxt);
-						local_copy = filter_mtime_copy(chk_local);
-					}
 					csync_debug(2, ">>> {} {}\n>>> {} {}\n", r_checktxt, peername, chk_local, myname);
-					if (local_copy) {
-						free(local_copy);
-					}
 					count_diff++;
 				} else
 					csync_info(1, "S\t{}\t{}\t{}\n", myname, peername, r_file);
@@ -2012,12 +1997,6 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 		}
 	}
 	csync_debug(3, "count_diff: {}", count_diff);
-
-	if (r_file)
-		free(r_file);
-	if (r_checktxt)
-		free(r_checktxt);
-
 	conn_printf(conn, "BYE\n");
 	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);

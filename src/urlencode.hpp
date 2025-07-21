@@ -21,9 +21,32 @@
 #ifndef CSYNC2_URLENCODE_H
 #define CSYNC2_URLENCODE_H 1
 
-/* only use this functions if you understood the sideeffects of the ringbuffer
- * used to allocate the return values.
- */
+#include <string>
+#include <memory>
+
+class UrlEncoder {
+    std::vector<std::string> encoded_strings;
+public:
+    std::string& operator()(const std::string& input);
+    std::string& operator()(const char* input);
+};
+
+class UrlDecoder {
+    std::vector<std::string> decoded_strings;
+public:
+    std::string& operator()(const std::string& input);
+    std::string& operator()(const char* input);
+};
+
+class UrlCodec {
+public:
+    UrlEncoder encode;
+    UrlDecoder decode;
+};
+
+extern UrlCodec url_codec;
+
+// Legacy C-style functions (deprecated)
 const char *url_encode(const char *in);
 const char *url_decode(const char *in);
 const char *url_encode(peername_p in);
