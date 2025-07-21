@@ -27,8 +27,8 @@ CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/auto/younger/local_oldest RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=13'
 <TESTBASE>/test/local/auto/younger/local_oldest is different on peer (cktxt char #1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=13
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=12
+>>> peer:	v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=13
+>>> LOCAL:	v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=12
 Auto resolve method YOUNGER 2 for peer:<TESTBASE>/test/local/auto/younger/local_oldest 
 File peer:<TESTBASE>/test/local/auto/younger/local_oldest: Lost autoresolve YOUNGER (2)
 CONN peer > 'octet-stream 32'

@@ -32,19 +32,19 @@ CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:s
 DbSql::list_file local <-> peer <TESTBASE>/test/peer/type_change/new_file 'N' all
 D	local	peer	<TESTBASE>/test/peer/type_change/new_file 'N' all
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 peer
+>>> v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 peer
 >>> --- local
 CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir	<TESTBASE>/test/peer/type_change'
 DbSql::list_file local <-> peer <TESTBASE>/test/peer/type_change
 D	local	peer	<TESTBASE>/test/peer/type_change
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir peer
+>>> v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir peer
 >>> --- local
 CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir	<TESTBASE>/test/peer'
 DbSql::list_file local <-> peer <TESTBASE>/test/peer
 D	local	peer	<TESTBASE>/test/peer
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir peer
+>>> v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir peer
 >>> --- local
 CONN peer > 'OK (cmd_finished).'
 End of query results: OK (cmd_finished).
