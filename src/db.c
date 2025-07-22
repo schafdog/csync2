@@ -165,12 +165,12 @@ void csync_db_close(db_conn_p db) {
 		SQL(db, "COMMIT (close)", "COMMIT ");
 		tqueries_counter = -10;
 	}
-	csync_info(4, "Closing db: %p\n", db);
+	csync_info(4, "Closing db %s \n", db ? "<PTR>" : "NULL");
 	db_conn_close(db);
-	csync_info(4, "Closed db: %p\n", db);
 	begin_commit_recursion--;
 	global_db = 0;
 	free(db);
+	db = NULL;
 }
 
 long csync_db_sql(db_conn_p db, const char *err, const char *fmt, ...) {

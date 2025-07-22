@@ -238,7 +238,7 @@ int csync_redis_unlock_status(filename_p filename, time_t lock_time, int status)
 }
 
 void csync_redis_close(void) {
-	csync_debug(4, "Redis closing: %p\n", redis_context);
+	csync_debug(4, "Redis closing.\n");
 	if (redis_context)
 		redisFree(redis_context);
 	redis_context = NULL;
