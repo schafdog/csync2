@@ -406,8 +406,7 @@ int csync_check_pure(filename_p filename) {
 		;
 	same_len = i + 1;
 
-	csync_info(3, "check_pure: filename: '{}' {}, cached path: '{}' {}, {}.\n",
-			filename.c_str(), dir_len, cached.path, cached.len, same_len);
+	csync_info(4, "check_pure: filename: '{}' {}, cached path: '{}' {}, {}.\n", filename, dir_len, cached.path, cached.len, same_len);
 	/* exact match? */
 	if (dir_len == same_len && same_len == cached.len)
 		return cached.has_symlink;
