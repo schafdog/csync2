@@ -20,6 +20,7 @@ config.status
 configure
 configure.lineno
 src/csync2
+src/test_database
 #csync2.sql
 depcomp
 compile
