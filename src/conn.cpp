@@ -535,7 +535,6 @@ ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	} else {
 		csync_error(0, "Failed to content-length: '{}'\n", buffer);
 	}
-	buffer[*size] = 0;
 	csync_debug(2, "Content length in buffer: '{}' size: {} rc: {} ({})\n", static_cast<char *>(buffer), *size, rc, typestr);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
