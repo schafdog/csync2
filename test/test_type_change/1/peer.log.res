@@ -59,7 +59,6 @@ Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer/type_change. RC: 1 0
@@ -88,7 +87,6 @@ Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
 Unlinking entry due to different type: 16384 32768 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Updated(mkdir) local:<TESTBASE>/test/peer/type_change  
 IDENT (cmd_finished).
@@ -128,7 +126,6 @@ Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer/type_change. RC: 1 0
@@ -156,7 +153,6 @@ Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
 Removing file <TESTBASE>/test/peer/type_change
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change from file db.
 Removing directory <TESTBASE>/test/peer 0

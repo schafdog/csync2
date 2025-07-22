@@ -106,7 +106,6 @@ Running check for <TESTBASE>/test/peer/usr/local/sbin/hej ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin/hej 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin/hej.
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 Updated(del) local:<TESTBASE>/test/peer/usr/local/sbin/hej  
 Command: local: SETTIME <TESTBASE>/test/peer/usr/local xxxxxxxx        
 Command: local: BYE          
