@@ -1,4 +1,4 @@
-Found my alias peer localhost 30861 
+Found my alias peer localhost 30861
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
@@ -58,7 +58,7 @@ Running check for <TESTBASE>/test/peer/type_change/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer/type_change): 1 1 
@@ -86,7 +86,7 @@ Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
 Unlinking entry due to different type: 16384 32768 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
 Updated(mkdir) local:<TESTBASE>/test/peer/type_change  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/type_change/new_file 'N' all user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -124,7 +124,7 @@ Running check for <TESTBASE>/test/peer/type_change/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer/type_change): 1 1 
@@ -151,7 +151,7 @@ Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
 Removing file <TESTBASE>/test/peer/type_change
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/type_change from file db.
 Removing directory <TESTBASE>/test/peer 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 1 1 
