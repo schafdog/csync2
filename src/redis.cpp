@@ -107,7 +107,7 @@ time_t csync_redis_get_custom(const char *key, const char *domain) {
 	std::string domain_key = build_key(key, domain);
 	const char *argv[] = { "GET", domain_key.c_str() };
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, 2, argv, NULL);
-	csync_debug(3, "Redis reply: GET '{}' -> {}\n", domain_key, redis_str(redis_reply));
+	csync_debug_c(3, "Redis reply: GET '%s' -> %s\n", domain_key.c_str(), redis_str(redis_reply));
 
 	if (redis_reply) {
 		if (redis_reply->str) {
