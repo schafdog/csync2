@@ -140,6 +140,7 @@ static void db_mysql_close(db_conn_p conn) {
 	if (!conn->private)
 		return;
 	f.mysql_close_fn(conn->private);
+	free(conn->private);
 	conn->private = 0;
 }
 
