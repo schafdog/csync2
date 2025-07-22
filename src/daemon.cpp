@@ -562,11 +562,11 @@ int csync_set_backup_file_status(char *filename, int backupDirLength) {
 		rc = lchown(filename, buf.st_uid, buf.st_gid);
 
 		// TODO set  priority depending on rc
-		csync_info(rc == 0 ? 4 : 0, "Changing owner of {} to user {} and group {}, rc= {} \n", filename, buf.st_uid,
+		csync_info((rc == 0 ? 4 : 0), "Changing owner of {} to user {} and group {}, rc= {} \n", filename, buf.st_uid,
 				buf.st_gid, rc);
 
 		rc = chmod(filename, buf.st_mode);
-		csync_info(rc == 0 ? 4 : 0, "Changing mode of {} to mode {}, rc= {} \n", filename, buf.st_mode, rc);
+		csync_info((rc == 0 ? 4 : 0), "Changing mode of {} to mode {}, rc= {} \n", filename, buf.st_mode, rc);
 
 	} else {
 		csync_error(2, "ERROR: getting mode and owner ship from {} \n", (filename + backupDirLength));
@@ -1000,6 +1000,7 @@ static int csync_daemon_sig(int conn, const char *filename, const char *user_gro
 			return ABORT_CMD;
 		}
 	} else if (csync_check_pure(filename)) {
+		csync_error(1, "check pure {} \n", filename);
 		return response_ok_not_found(conn);
 	}
 	// Found a file that we ca do a check text on
@@ -1573,6 +1574,7 @@ static int csync_daemon_dispatch(int conn, int conn_out, db_conn_p db, const cha
 			if (client_debug_level > csync_level_debug) {
 				csync_info(1, "Increasing {} DEBUG level to {}\n",(*peername) ? *peername : "(null)", params->first);
 				csync_level_debug = client_debug_level;
+				csync2::g_logger.setDebugLevel(client_debug_level);
 			}
 			break;
 		}
@@ -1615,8 +1617,8 @@ static void csync_end_command(int conn, filename_p std_filename, const char *tag
 			conn_printf(conn, "IDENT (cmd_finished).\n");
 			break;
 		default:
+			conn_printf(conn, "ERROR (Server error %d).\n", rc);
 			csync_fatal("Unknown return rc: {} {} {} Exiting!\n", rc, tag[0], filename ? filename : "<no file>");
-			conn_printf(conn, "ERROR (Server error).\n");
 		}
 	}
 	destroy_tag(tag);
@@ -1725,10 +1727,10 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 				rc = csync_daemon_dispatch(conn_in, conn_out, db, filename, cmd, &params, protocol_version, &peername,
 						&peeraddr, &otherfile, &cmd_error);
 			}
+			csync_info(3, "DEBUG daemon: {} rc={} '{}' '{}' '{}' \n", tag[0], rc,
+					   peername ? peername : "", filename ? filename : "", (otherfile ? otherfile : "-"));
 			if (rc == OK || rc == IDENTICAL) {
 				// check updates done
-				csync_info(3, "DEBUG daemon: check update rc={} '{}' '{}' '{}' \n", rc, peername ? peername : "", filename ? filename : "",
-						(otherfile ? otherfile : "-"));
 				csync_daemon_check_update(db, filename, otherfile, cmd, peername);
 			} else if (rc == NEXT_CMD) {
 				// Already send an reply
@@ -1739,6 +1741,9 @@ void csync_daemon_session(int conn_in, int conn_out, db_conn_p db, int protocol_
 				if (active_peer)
 					free(active_peer);
 				active_peer = 0;
+				if (peername) {
+					free(peername);
+				}
 				return;
 			}
 		}
