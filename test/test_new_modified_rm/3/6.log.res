@@ -70,14 +70,14 @@ SQL Query finished.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899535:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53089257 OR filename = '<TESTBASE>/test/local') AND peername = 'peer' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
 mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM peer:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 Found row: file '<TESTBASE>/test/local' clean_other: '(null)' result_other: '(null)' dirty: 0 operation 0 
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'peer'
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899535:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53089257 OR filename = '<TESTBASE>/test/local') AND peername = 'other' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
 mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
@@ -86,12 +86,12 @@ csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND 
 csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local'
 csync_file_args: '<TESTBASE>/test' flags 65 
 MODE 2
-Redis closing: 0x559726a754a0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x559726a75180
-Closed db: 0x559726a75180
-Closed db: 0x559726a75180
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

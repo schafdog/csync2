@@ -66,7 +66,7 @@ SQL Query finished.
 SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
 DIRTY LOOKUP: '<TESTBASE>/test/local/different' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/different v2:mtime=1736899544:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
+dirty: peer:<TESTBASE>/test/local/different v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -85,16 +85,16 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 check_pure: filename: '<TESTBASE>/test/local/different' 59, cached path: '(null)' 0, 0.
 Locking '<TESTBASE>/test/local/different'
-Redis reply: SET '<TESTBASE>/test/local/different' '1736899545' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/different 1736899545
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/different
 uid dennis gid schafroth
 Updating (NEW) 'peer:<TESTBASE>/test/local/different' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/different
-CONN peer < SIG %25test%25/different user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/different user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/different RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4'
 Flags for gencheck: 112 
 Continue to rs_check <TESTBASE>/test/local/different 0
 Csync2 / Librsync: csync_rs_check('<TESTBASE>/test/local/different', 1 [regular file])
@@ -113,8 +113,8 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?F: peer            <TESTBASE>/test/local/different
 END csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/different
-has links: file <TESTBASE>/test/local/different checktxt 'v2:mtime=1736899544:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 1 1
-CONN peer < PATCH %25test%25/different - 1234 1000 dennis schafroth 33188 - 4 
+has links: file <TESTBASE>/test/local/different checktxt 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4' 1 1
+CONN peer < PATCH %25test%25/different - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'File is also marked dirty here! (<TESTBASE>/test/peer/different)'
 While syncing file: <TESTBASE>/test/local/different
 ERROR from peer: File is also marked dirty here! (<TESTBASE>/test/peer/different) rc: -11 
@@ -138,12 +138,12 @@ CONN peer < BYE
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 4
-Redis closing: 0x55bafbf604a0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x55bafbf60180
-Closed db: 0x55bafbf60180
-Closed db: 0x55bafbf60180
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

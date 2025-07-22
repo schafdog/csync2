@@ -86,12 +86,12 @@ SQL Query finished.
 Removing <TESTBASE>/test/local/new_file from file db.
 csync2_db_SQL: DELETE FROM file WHERE  (filename = '<TESTBASE>/test/local/new_file' OR filename LIKE '<TESTBASE>/test/local/new_file/%')  AND  hostname = 'local'
 remove_old: end
-Redis closing: 0x55d6d79fd500
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x55d6d79fd1e0
-Closed db: 0x55d6d79fd1e0
-Closed db: 0x55d6d79fd1e0
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

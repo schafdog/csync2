@@ -95,12 +95,12 @@ SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELE
 dirty host other 
 SQL Query finished.
 MODE 65536
-Redis closing: 0x559501d734a0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x559501d73180
-Closed db: 0x559501d73180
-Closed db: 0x559501d73180
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

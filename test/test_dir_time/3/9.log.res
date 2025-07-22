@@ -74,12 +74,12 @@ SQL Query finished.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local/sbin
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local/sbin
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/usr/local/sbin' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899554:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090894 OR filename = '<TESTBASE>/test/local/usr/local/sbin') AND peername = 'peer' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local/usr/local/sbin') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/usr/local/sbin'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/usr/local/sbin', 0, 'local', 'peer', 'RM', 'v2:mtime=1736899554:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53090894, NULL, 64, 16877, 1, 1736899555)
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/usr/local/sbin', 0, 'local', 'peer', 'RM', 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', 2049, 53090894, NULL, 64, 16877, 1, 1736899555)
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/usr/local/sbin' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899554:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090894 OR filename = '<TESTBASE>/test/local/usr/local/sbin') AND peername = 'other' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local/usr/local/sbin') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
 mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local/sbin' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/usr/local/sbin deleted before syncing. Removing from dirty.
@@ -89,12 +89,12 @@ csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBA
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/usr/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899551:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090893 OR filename = '<TESTBASE>/test/local/usr/local') AND peername = 'peer' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local/usr/local') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/usr/local'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/usr/local', 0, 'local', 'peer', 'RM', 'v2:mtime=1736899551:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53090893, NULL, 64, 16877, 1, 1736899555)
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/usr/local', 0, 'local', 'peer', 'RM', 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', 2049, 53090893, NULL, 64, 16877, 1, 1736899555)
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/usr/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899551:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090893 OR filename = '<TESTBASE>/test/local/usr/local') AND peername = 'other' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local/usr/local') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
 mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/usr/local deleted before syncing. Removing from dirty.
@@ -104,12 +104,12 @@ csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBA
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/usr' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090892 OR filename = '<TESTBASE>/test/local/usr') AND peername = 'peer' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local/usr') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/usr'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/usr', 0, 'local', 'peer', 'RM', 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53090892, NULL, 64, 16877, 1, 1736899555)
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local/usr', 0, 'local', 'peer', 'RM', 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', 2049, 53090892, NULL, 64, 16877, 1, 1736899555)
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/usr' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090892 OR filename = '<TESTBASE>/test/local/usr') AND peername = 'other' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local/usr') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
 mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/usr deleted before syncing. Removing from dirty.
@@ -119,12 +119,12 @@ csync2_db_SQL: delete from file WHERE hostname = 'local' AND filename = '<TESTBA
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090891 OR filename = '<TESTBASE>/test/local') AND peername = 'peer' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local') AND peername = 'peer' ORDER BY timestamp 
 SQL Query finished.
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'peer'
-csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local', 0, 'local', 'peer', 'RM', 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53090891, NULL, 64, 16877, 1, 1736899555)
+csync2_db_SQL: INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) VALUES ('<TESTBASE>/test/local', 0, 'local', 'peer', 'RM', 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', 2049, 53090891, NULL, 64, 16877, 1, 1736899555)
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir' AND device = 2049 AND inode = 53090891 OR filename = '<TESTBASE>/test/local') AND peername = 'other' ORDER BY timestamp 
+SQL: SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = 'local' AND (checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' AND device = <DEV> AND inode = <INODE>  OR filename = '<TESTBASE>/test/local') AND peername = 'other' ORDER BY timestamp 
 SQL Query finished.
 mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
@@ -139,16 +139,16 @@ SQL Query finished.
 SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
 DIRTY LOOKUP: '<TESTBASE>/test/local/usr/local/sbin' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=1736899554:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 DIRTY LOOKUP: '<TESTBASE>/test/local/usr/local' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/usr/local v2:mtime=1736899551:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/usr/local v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 DIRTY LOOKUP: '<TESTBASE>/test/local/usr' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/usr v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/usr v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 DIRTY LOOKUP: '<TESTBASE>/test/local' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -171,12 +171,12 @@ Deleting peer:<TESTBASE>/test/local
 CONN peer < SIG %25test%25 
 CONN peer > 'OK (data_follows).'
 read_conn_status 'OK (data_follows).' 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 delete flags: 0
-csync_cmpchecktxt A: v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 csync_cmpchecktxt B: --- 
 <TESTBASE>/test/local is different on peer (cktxt char #1).
->>> PEER:  v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> PEER:  v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 >>> LOCAL: ---
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
@@ -209,12 +209,12 @@ CONN peer < BYE
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 65536
-Redis closing: 0x5607483014a0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x560748301180
-Closed db: 0x560748301180
-Closed db: 0x560748301180
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

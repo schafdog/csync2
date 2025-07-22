@@ -64,25 +64,25 @@ dirty host peer
 SQL Query finished.
 SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/was_hardlink 1 v2:mtime=1736295349:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/was_hardlink 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/hardlinked_6 1 v2:mtime=1736295349:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/hardlinked_6 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/hardlinked_5 1 v2:mtime=1736295344:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/hardlinked_5 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/hardlinked_4 1 v2:mtime=1736295344:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/hardlinked_4 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/hardlinked_3 1 v2:mtime=1736295344:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/hardlinked_3 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/hardlinked_2 1 v2:mtime=1736295344:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/hardlinked_2 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/new_file 1 v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/new_file 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new/hardlinked 1 v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+dirty: peer:<TESTBASE>/test/local/new/hardlinked 1 v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/new 1 v2:mtime=1736296279:mode=16877:user=dennis:group=schafroth:type=dir
+dirty: peer:<TESTBASE>/test/local/new 1 v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local 1 v2:mtime=1736296279:mode=16877:user=dennis:group=schafroth:type=dir
+dirty: peer:<TESTBASE>/test/local 1 v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -101,18 +101,18 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
 Locking '<TESTBASE>/test/local'
-Redis reply: SET '<TESTBASE>/test/local' '1736296298' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local 1736296298
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 uid dennis gid schafroth
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local RC 32
-has links: file <TESTBASE>/test/local checktxt 'v2:mtime=1736296279:mode=16877:user=dennis:group=schafroth:type=dir' 3 0
+has links: file <TESTBASE>/test/local checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 3 0
 MKDIR rc: 32
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 32.
@@ -126,18 +126,18 @@ Adding textlist_add_new: <TESTBASE>/test
 Skipping textlist_add_new: <TESTBASE>/test
 check_pure: filename: '<TESTBASE>/test/local/new' 59, cached path: '<TESTBASE>/test/' 53, 53.
 Locking '<TESTBASE>/test/local/new'
-Redis reply: SET '<TESTBASE>/test/local/new' '1736296298' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/new 1736296298
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new
 uid dennis gid schafroth
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/new' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/new
-CONN peer < SIG %25test%25/new user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/new user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new RC 32
-has links: file <TESTBASE>/test/local/new checktxt 'v2:mtime=1736296279:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+has links: file <TESTBASE>/test/local/new checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 2 0
 MKDIR rc: 32
-CONN peer < MKDIR %25test%25/new - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/new - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 32.
@@ -151,17 +151,17 @@ Adding textlist_add_new: <TESTBASE>/test/local
 Skipping textlist_add_new: <TESTBASE>/test/local
 check_pure: filename: '<TESTBASE>/test/local/new/hardlinked' 63, cached path: '<TESTBASE>/test/local/' 59, 59.
 Locking '<TESTBASE>/test/local/new/hardlinked'
-Redis reply: SET '<TESTBASE>/test/local/new/hardlinked' '1736296298' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/new/hardlinked 1736296298
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked
 uid dennis gid schafroth
 Updating (NEW) 'peer:<TESTBASE>/test/local/new/hardlinked' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/new/hardlinked
-CONN peer < SIG %25test%25/new/hardlinked user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/new/hardlinked user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new/hardlinked RC 32
-has links: file <TESTBASE>/test/local/new/hardlinked checktxt 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 2 1
-CONN peer < PATCH %25test%25/new/hardlinked - 1234 1000 dennis schafroth 33188 - 4 
+has links: file <TESTBASE>/test/local/new/hardlinked checktxt 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4' 2 1
+CONN peer < PATCH %25test%25/new/hardlinked - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (sending sig).'
 read_conn_status 'OK (sending sig).' 0
 Csync2 / Librsync: csync_rs_delta('<TESTBASE>/test/local/new/hardlinked')
@@ -191,17 +191,17 @@ Directory <TESTBASE>/test/local/new
 Adding textlist_add_new: <TESTBASE>/test/local/new
 check_pure: filename: '<TESTBASE>/test/local/new/new_file' 63, cached path: '<TESTBASE>/test/local/new/' 63, 63.
 Locking '<TESTBASE>/test/local/new/new_file'
-Redis reply: SET '<TESTBASE>/test/local/new/new_file' '1736296298' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/new/new_file 1736296298
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/new_file
 uid dennis gid schafroth
 Updating (MOD) 'peer:<TESTBASE>/test/local/new/new_file' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/new/new_file
-CONN peer < SIG %25test%25/new/new_file user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/new/new_file user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new/new_file RC 32
-has links: file <TESTBASE>/test/local/new/new_file checktxt 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 2 1
-CONN peer < PATCH %25test%25/new/new_file - 1234 1000 dennis schafroth 33188 - 4 
+has links: file <TESTBASE>/test/local/new/new_file checktxt 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4' 2 1
+CONN peer < PATCH %25test%25/new/new_file - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (sending sig).'
 read_conn_status 'OK (sending sig).' 0
 Csync2 / Librsync: csync_rs_delta('<TESTBASE>/test/local/new/new_file')
@@ -318,12 +318,12 @@ CONN peer < BYE
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 4
-Redis closing: 0x564f462bc470
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x564f462bc150
-Closed db: 0x564f462bc150
-Closed db: 0x564f462bc150
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

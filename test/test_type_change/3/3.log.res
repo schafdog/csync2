@@ -83,38 +83,38 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
 
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4	<TESTBASE>/test/peer/type_change/new_file 'N' all'
-Fetched tuple from peer: <TESTBASE>/test/peer/type_change/new_file 'N' all [v2:mtime=1736899564:mode=33188:user=dennis:group=schafroth:type=reg:size=4]
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4	<TESTBASE>/test/peer/type_change/new_file 'N' all'
+Fetched tuple from peer: <TESTBASE>/test/peer/type_change/new_file 'N' all [v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4]
 db_sql_list_file local <-> peer <TESTBASE>/test/peer/type_change/new_file 'N' all
 SQL: SELECT checktxt, filename FROM file WHERE  filename = '<TESTBASE>/test/peer/type_change/new_file ''N'' all'  AND  hostname = 'local' ORDER BY filename
 SQL Query finished.
-csync_cmpchecktxt A: v2:mtime=1736899564:mode=33188:user=dennis:group=schafroth:type=reg:size=4 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 
 csync_cmpchecktxt B: --- 
 D	local	peer	<TESTBASE>/test/peer/type_change/new_file 'N' all
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 peer
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	<TESTBASE>/test/peer/type_change'
-Fetched tuple from peer: <TESTBASE>/test/peer/type_change [v2:mtime=1736899564:mode=16877:user=dennis:group=schafroth:type=dir]
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir	<TESTBASE>/test/peer/type_change'
+Fetched tuple from peer: <TESTBASE>/test/peer/type_change [v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir]
 db_sql_list_file local <-> peer <TESTBASE>/test/peer/type_change
 SQL: SELECT checktxt, filename FROM file WHERE  filename = '<TESTBASE>/test/peer/type_change'  AND  hostname = 'local' ORDER BY filename
 SQL Query finished.
-csync_cmpchecktxt A: v2:mtime=1736899564:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 csync_cmpchecktxt B: --- 
 D	local	peer	<TESTBASE>/test/peer/type_change
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir peer
+>>> v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir peer
 >>> --- local
-CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir	<TESTBASE>/test/peer'
-Fetched tuple from peer: <TESTBASE>/test/peer [v2:mtime=1736899564:mode=16877:user=dennis:group=schafroth:type=dir]
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir	<TESTBASE>/test/peer'
+Fetched tuple from peer: <TESTBASE>/test/peer [v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir]
 db_sql_list_file local <-> peer <TESTBASE>/test/peer
 SQL: SELECT checktxt, filename FROM file WHERE  filename = '<TESTBASE>/test/peer'  AND  hostname = 'local' ORDER BY filename
 SQL Query finished.
-csync_cmpchecktxt A: v2:mtime=1736899564:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 csync_cmpchecktxt B: --- 
 D	local	peer	<TESTBASE>/test/peer
 '<TESTBASE>/test/local' is different:
->>> v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir peer
+>>> v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir peer
 >>> --- local
 CONN peer > 'OK (cmd_finished).'
 End of query results: OK (cmd_finished).count_diff: 3CONN peer < BYE
@@ -122,12 +122,12 @@ End of query results: OK (cmd_finished).count_diff: 3CONN peer < BYE
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 4096
-Redis closing: 0x55d8183b14a0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x55d8183b1180
-Closed db: 0x55d8183b1180
-Closed db: 0x55d8183b1180
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

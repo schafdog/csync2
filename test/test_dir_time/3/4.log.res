@@ -66,7 +66,7 @@ SQL Query finished.
 SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
 DIRTY LOOKUP: '<TESTBASE>/test/local/usr/local/sbin' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=1736899550:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -85,22 +85,22 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 check_pure: filename: '<TESTBASE>/test/local/usr/local/sbin' 69, cached path: '(null)' 0, 0.
 Locking '<TESTBASE>/test/local/usr/local/sbin'
-Redis reply: SET '<TESTBASE>/test/local/usr/local/sbin' '1736899550' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/usr/local/sbin 1736899550
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local/sbin
 uid dennis gid schafroth
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/usr/local/sbin' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/usr/local/sbin
-CONN peer < SIG %25test%25/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/usr/local/sbin user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/usr/local/sbin RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
-csync_cmpchecktxt A: v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736899550:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 <TESTBASE>/test/local/usr/local/sbin is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local/sbin
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local/sbin
 Continue to rs_check <TESTBASE>/test/local/usr/local/sbin 16
@@ -116,10 +116,10 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?M: peer            <TESTBASE>/test/local/usr/local/sbin
 END csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/usr/local/sbin
-has links: file <TESTBASE>/test/local/usr/local/sbin checktxt 'v2:mtime=1736899550:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+has links: file <TESTBASE>/test/local/usr/local/sbin checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 2 0
 MKDIR rc: 16
 Doing MOD 'peer:<TESTBASE>/test/local/usr/local/sbin' on DIFF_META
-CONN peer < MOD %25test%25/usr/local/sbin - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/usr/local/sbin - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 16.
@@ -142,12 +142,12 @@ CONN peer < BYE
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 4
-Redis closing: 0x5623987f64a0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x5623987f6180
-Closed db: 0x5623987f6180
-Closed db: 0x5623987f6180
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

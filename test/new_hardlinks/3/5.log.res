@@ -70,15 +70,15 @@ csync_check_dir: <TESTBASE>/test/local 197
 Checking <TESTBASE>/test/local/* ..
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new
 SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new' 
-csync_cmpchecktxt A: v2:mtime=1736296367:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736296315:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 <TESTBASE>/test/local/new has changed: 
-    v2:mtime=1736296367:mode=16877:user=dennis:group=schafroth:type=dir 
-DB: v2:mtime=1736296315:mode=16877:user=dennis:group=schafroth:type=dir MKDIR
+    v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+DB: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir MKDIR
 ignore flags: 197
 SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-csync2_db_SQL: UPDATE file set checktxt='v2:mtime=1736296367:mode=16877:user=dennis:group=schafroth:type=dir', device=2049, inode=56360962,                 digest='', mode=16877, mtime=1736296367, size=4096, type=1 where filename = '<TESTBASE>/test/local/new'
+csync2_db_SQL: UPDATE file set checktxt='v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', device=2049, inode=56360962,                 digest='', mode=16877, mtime=1736296367, size=4096, type=1 where filename = '<TESTBASE>/test/local/new'
 Inserted/updated <TESTBASE>/test/local/new rows matched: 0
 csync_check_dir: <TESTBASE>/test/local/new 197 
 Checking <TESTBASE>/test/local/new/* ..
@@ -97,7 +97,7 @@ Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked
 Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_2
 Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_3
 Adding textlist_add_new: <TESTBASE>/test/local/new/new_file
-4 files with same dev:inode (2049:56360963) as file: <TESTBASE>/test/local/new/hardlinked_5
+4 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_5
 SQL Query finished.
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
@@ -107,7 +107,7 @@ check same file (32) <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/l
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/local/new/hardlinked_5 
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_5 
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_5 
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new/hardlinked_5', 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 56360963, '32a0617aab4c9fe725f1b5bc441291180ad25b73', 33188, 4, 1736296279, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', device = 2049, inode = 56360963, digest = '32a0617aab4c9fe725f1b5bc441291180ad25b73', mode = 33188, size = 4, mtime = 1736296279, type = 2
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new/hardlinked_5', 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4', 2049, 56360963, '32a0617aab4c9fe725f1b5bc441291180ad25b73', 33188, 4, 1736296279, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4', device = 2049, inode = 56360963, digest = '32a0617aab4c9fe725f1b5bc441291180ad25b73', mode = 33188, size = 4, mtime = 1736296279, type = 2
 Inserted/updated <TESTBASE>/test/local/new/hardlinked_5 rows matched: 0
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_4
 SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/hardlinked_4' 
@@ -121,7 +121,7 @@ Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_2
 Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_3
 Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_5
 Adding textlist_add_new: <TESTBASE>/test/local/new/new_file
-5 files with same dev:inode (2049:56360963) as file: <TESTBASE>/test/local/new/hardlinked_4
+5 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_4
 SQL Query finished.
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
@@ -133,7 +133,7 @@ check same file (32) <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/l
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/local/new/hardlinked_4 
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_4 
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_4 
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new/hardlinked_4', 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 56360963, '32a0617aab4c9fe725f1b5bc441291180ad25b73', 33188, 4, 1736296279, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', device = 2049, inode = 56360963, digest = '32a0617aab4c9fe725f1b5bc441291180ad25b73', mode = 33188, size = 4, mtime = 1736296279, type = 2
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new/hardlinked_4', 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4', 2049, 56360963, '32a0617aab4c9fe725f1b5bc441291180ad25b73', 33188, 4, 1736296279, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4', device = 2049, inode = 56360963, digest = '32a0617aab4c9fe725f1b5bc441291180ad25b73', mode = 33188, size = 4, mtime = 1736296279, type = 2
 Inserted/updated <TESTBASE>/test/local/new/hardlinked_4 rows matched: 0
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_3
 SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/hardlinked_3' 
@@ -169,12 +169,12 @@ check_pure: filename: '<TESTBASE>/test/local/new/new_file' 63, cached path: '<TE
 SQL Query finished.
 csync_file_args: '<TESTBASE>/test' flags 69 
 MODE 2
-Redis closing: 0x555c5386c470
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x555c5386c150
-Closed db: 0x555c5386c150
-Closed db: 0x555c5386c150
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end

@@ -122,13 +122,13 @@ DAEMON is_ping: 0 fork: local . pid: -1
 HELLO from local. Response: OK
 CONN local < OK (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 csync_daemon_sig: unused parameters: ftime 1736899579 size 4096<2658706> CONN local < OK (not_found).
 
-CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
@@ -147,26 +147,26 @@ SQL Query finished.
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 mkdir <TESTBASE>/test/peer rc = 0 errno = 2 err = 
-setown <TESTBASE>/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
 DEBUG daemon: check update rc=1 'local' '<TESTBASE>/test/peer' '-' 
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/peer'  AND  myname = 'peer' AND peername like 'local'
 check_pure: filename: '<TESTBASE>/test/peer' 53, cached path: '(null)' 0, 0.
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('peer', '<TESTBASE>/test/peer', 'v2:mtime=1736899579:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53346949, NULL, 16877, 4096, 1736899579, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736899579:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53346949, digest = NULL, mode = 16877, size = 4096, mtime = 1736899579, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('peer', '<TESTBASE>/test/peer', 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', 2049, 53346949, NULL, 16877, 4096, 1736899579, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', device = 2049, inode = 53346949, digest = NULL, mode = 16877, size = 4096, mtime = 1736899579, type = 1
 Updated(mkdir) local:<TESTBASE>/test/peer  
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 IDENT (cmd_finished).
 CONN local < IDENT (cmd_finished).
 
-CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/ÆØÅ%20Café.utf8 user/group 1234 1000 dennis schafroth 33188 - 4 xxxxxxxxxx'
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/ÆØÅ%20Café.utf8 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 csync_daemon_sig: unused parameters: ftime 1736899579 size 4<2658706> CONN local < OK (not_found).
 
-CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/ÆØÅ%20Café.utf8 - 1234 1000 dennis schafroth 33188 - 4 xxxxxxxxxx'
+CONN local > 'PATCH 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/ÆØÅ%20Café.utf8 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
@@ -185,7 +185,7 @@ SQL Query finished.
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Locking '<TESTBASE>/test/peer/ÆØÅ Café.utf8'
-Redis reply: SET '<TESTBASE>/test/peer/ÆØÅ Café.utf8' '1736899579' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/peer/ÆØÅ Café.utf8 1736899579
 CONN local < OK 
 Csync2 / Librsync: csync_rs_sig('<TESTBASE>/test/peer/ÆØÅ Café.utf8')
@@ -206,12 +206,12 @@ Got 10 bytes, 0 bytes left ..
 Opening to be patched file on local host..
 Opening temp file for new data on local host..
 Locking 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/peer/.ÆØÅ Café.utf8.XXXXXX'
-Redis reply: SET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/peer/.ÆØÅ Café.utf8.XXXXXX' '1736899579' NX EX 600 -> OK
+Redis reply: SET '<MTIME>' NX EX 600 -> OK
 csync_redis_lock: OK <TESTBASE>/test/peer/.ÆØÅ Café.utf8.XXXXXX 1736899579
 Running rs_patch_file() from librsync..
 Renaming tmp file to orig. filename..
 Locking 'MOVED_TO:<TESTBASE>/test/peer/ÆØÅ Café.utf8'
-Redis reply: SET 'MOVED_TO:<TESTBASE>/test/peer/ÆØÅ Café.utf8' '1736899579' NX EX 300 -> OK
+Redis reply: SET '<MTIME>' NX EX 300 -> OK
 csync_redis_lock: OK <TESTBASE>/test/peer/ÆØÅ Café.utf8 1736899579
 File '<TESTBASE>/test/peer/ÆØÅ Café.utf8' has been patched successfully.
 Deleting key '<TESTBASE>/test/peer/ÆØÅ Café.utf8'
@@ -221,7 +221,7 @@ DEBUG daemon: check update rc=1 'local' '<TESTBASE>/test/peer/ÆØÅ Café.utf8'
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/peer/ÆØÅ Café.utf8'  AND  myname = 'peer' AND peername like 'local'
 check_pure: filename: '<TESTBASE>/test/peer/ÆØÅ Café.utf8' 58, cached path: '<TESTBASE>/test/' 53, 53.
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer/ÆØÅ Café.utf8
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('peer', '<TESTBASE>/test/peer/ÆØÅ Café.utf8', 'v2:mtime=1736899579:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 53346950, 'eeb4df3d04063049b45ea11a12354a37e8740687', 33188, 4, 1736899579, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736899579:mode=33188:user=dennis:group=schafroth:type=reg:size=4', device = 2049, inode = 53346950, digest = 'eeb4df3d04063049b45ea11a12354a37e8740687', mode = 33188, size = 4, mtime = 1736899579, type = 2
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('peer', '<TESTBASE>/test/peer/ÆØÅ Café.utf8', 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4', 2049, 53346950, 'eeb4df3d04063049b45ea11a12354a37e8740687', 33188, 4, 1736899579, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4', device = 2049, inode = 53346950, digest = 'eeb4df3d04063049b45ea11a12354a37e8740687', mode = 33188, size = 4, mtime = 1736899579, type = 2
 Updated(patch) local:<TESTBASE>/test/peer/ÆØÅ Café.utf8  
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 IDENT (cmd_finished).
@@ -236,20 +236,20 @@ DEBUG daemon: check update rc=0 'local' '<TESTBASE>/test/peer' '-'
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/peer'  AND  myname = 'peer' AND peername like 'local'
 check_pure: filename: '<TESTBASE>/test/peer' 53, cached path: '<TESTBASE>/test/peer/' 58, 53.
 daemon_file_update: UPDATE/INSERT into file filename: <TESTBASE>/test/peer
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('peer', '<TESTBASE>/test/peer', 'v2:mtime=1736899579:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53346949, NULL, 16877, 4096, 1736899579, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736899579:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53346949, digest = NULL, mode = 16877, size = 4096, mtime = 1736899579, type = 1
+csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('peer', '<TESTBASE>/test/peer', 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', 2049, 53346949, NULL, 16877, 4096, 1736899579, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir', device = 2049, inode = 53346949, digest = NULL, mode = 16877, size = 4096, mtime = 1736899579, type = 1
 CONN local < OK (cmd_finished).
 
 CONN local > 'BYE'
 CONN local < OK (cu_later).
 
 MODE 64
-Redis closing: 0x5621f7e0ffc0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x5621f7e0fca0
-Closed db: 0x5621f7e0fca0
-Closed db: 0x5621f7e0fca0
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end
 Connection closed. Pid 2658706 mode 64 
@@ -333,7 +333,7 @@ csync_daemon_sig: unused parameters: ftime 0 size 0<2658706> check_pure: filenam
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
-CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=4
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=4
 
 Csync2 / Librsync: csync_rs_sig('<TESTBASE>/test/peer/ÆØÅ Café.utf8')
 Opening basis_file and sig_file..
@@ -371,9 +371,9 @@ Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/ÆØÅ Café.utf8
 backup <TESTBASE>/test/peer/ÆØÅ Café.utf8 0 
 backupdir stat: /tmp/csync2/export 0 16877
-Changing owner of /tmp/csync2/export to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 backupdir stat: /tmp/csync2/export/home 0 16877
-Changing owner of /tmp/csync2/export/home to user 0 and group 0, rc= -1 
+Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 backupdir stat: /tmp/csync2/export/home/dennis 0 16877
 backupdir stat: /tmp/csync2/export/home/dennis/Projects 0 16877
 backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2 0 16877
@@ -391,7 +391,7 @@ Copying data from <TESTBASE>/test/peer/ÆØÅ Café.utf8 to backup file /tmp/csy
 csync_backup loop end
 csync_backup end
 Locking 'DELETE:<TESTBASE>/test/peer/ÆØÅ Café.utf8'
-Redis reply: SET 'DELETE:<TESTBASE>/test/peer/ÆØÅ Café.utf8' '1736899580' NX EX 300 -> OK
+Redis reply: SET '<MTIME>' NX EX 300 -> OK
 csync_redis_lock: OK <TESTBASE>/test/peer/ÆØÅ Café.utf8 1736899580
 DEBUG daemon: check update rc=0 'local' '<TESTBASE>/test/peer/ÆØÅ Café.utf8' '-' 
 csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/peer/ÆØÅ Café.utf8'  AND  myname = 'peer' AND peername like 'local'
@@ -404,13 +404,13 @@ CONN local > 'BYE'
 CONN local < OK (cu_later).
 
 MODE 64
-Redis closing: 0x5621f7e41d70
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x5621f7e41a50
-Closed db: 0x5621f7e41a50
-Closed db: 0x5621f7e41a50
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end
 Connection closed. Pid 2658706 mode 64 

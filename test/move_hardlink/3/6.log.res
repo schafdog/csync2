@@ -66,19 +66,19 @@ SQL Query finished.
 SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
 DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab v2:mtime=1736888507:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
+dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/cur/123,Sab' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/Maildir/cur/123,Sab v2:mtime=1736888507:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
+dirty: peer:<TESTBASE>/test/local/Maildir/cur/123,Sab v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/.Trash/cur' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur v2:mtime=1736888509:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/tmp' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=1736888508:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 DIRTY LOOKUP: '<TESTBASE>/test/local/Maildir/cur' ''
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/Maildir/cur v2:mtime=1736888508:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/cur v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 SQL Query finished.
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
@@ -97,22 +97,22 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 check_pure: filename: '<TESTBASE>/test/local/Maildir/cur' 67, cached path: '(null)' 0, 0.
 Locking '<TESTBASE>/test/local/Maildir/cur'
-Redis reply: SET '<TESTBASE>/test/local/Maildir/cur' '1736888510' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/Maildir/cur 1736888510
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur
 uid dennis gid schafroth
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/cur' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/cur
-CONN peer < SIG %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/cur RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
-csync_cmpchecktxt A: v2:mtime=1736888507:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736888508:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 <TESTBASE>/test/local/Maildir/cur is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur
 Continue to rs_check <TESTBASE>/test/local/Maildir/cur 16
@@ -128,10 +128,10 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?M: peer            <TESTBASE>/test/local/Maildir/cur
 END csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/cur
-has links: file <TESTBASE>/test/local/Maildir/cur checktxt 'v2:mtime=1736888508:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+has links: file <TESTBASE>/test/local/Maildir/cur checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 2 0
 MKDIR rc: 16
 Doing MOD 'peer:<TESTBASE>/test/local/Maildir/cur' on DIFF_META
-CONN peer < MOD %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/Maildir/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 16.
@@ -145,22 +145,22 @@ Adding textlist_add_new: <TESTBASE>/test/local/Maildir
 Skipping textlist_add_new: <TESTBASE>/test/local/Maildir
 check_pure: filename: '<TESTBASE>/test/local/Maildir/tmp' 67, cached path: '<TESTBASE>/test/local/Maildir/' 67, 67.
 Locking '<TESTBASE>/test/local/Maildir/tmp'
-Redis reply: SET '<TESTBASE>/test/local/Maildir/tmp' '1736888510' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/Maildir/tmp 1736888510
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/tmp
 uid dennis gid schafroth
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/tmp' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/tmp
-CONN peer < SIG %25test%25/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/tmp RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
-csync_cmpchecktxt A: v2:mtime=1736888507:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736888508:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 <TESTBASE>/test/local/Maildir/tmp is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/tmp
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/tmp
 Continue to rs_check <TESTBASE>/test/local/Maildir/tmp 16
@@ -176,10 +176,10 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?M: peer            <TESTBASE>/test/local/Maildir/tmp
 END csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/tmp
-has links: file <TESTBASE>/test/local/Maildir/tmp checktxt 'v2:mtime=1736888508:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+has links: file <TESTBASE>/test/local/Maildir/tmp checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 2 0
 MKDIR rc: 16
 Doing MOD 'peer:<TESTBASE>/test/local/Maildir/tmp' on DIFF_META
-CONN peer < MOD %25test%25/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/Maildir/tmp - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 16.
@@ -193,22 +193,22 @@ Skipping textlist_add_new: <TESTBASE>/test/local/Maildir
 Skipping textlist_add_new: <TESTBASE>/test/local/Maildir
 check_pure: filename: '<TESTBASE>/test/local/Maildir/.Trash/cur' 74, cached path: '<TESTBASE>/test/local/Maildir/' 67, 67.
 Locking '<TESTBASE>/test/local/Maildir/.Trash/cur'
-Redis reply: SET '<TESTBASE>/test/local/Maildir/.Trash/cur' '1736888510' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/Maildir/.Trash/cur 1736888510
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash/cur
 uid dennis gid schafroth
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/.Trash/cur
-CONN peer < SIG %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir/.Trash/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/.Trash/cur RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
-csync_cmpchecktxt A: v2:mtime=1736888507:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736888509:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 <TESTBASE>/test/local/Maildir/.Trash/cur is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash/cur
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash/cur
 Continue to rs_check <TESTBASE>/test/local/Maildir/.Trash/cur 16
@@ -224,10 +224,10 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?M: peer            <TESTBASE>/test/local/Maildir/.Trash/cur
 END csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/.Trash/cur
-has links: file <TESTBASE>/test/local/Maildir/.Trash/cur checktxt 'v2:mtime=1736888509:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+has links: file <TESTBASE>/test/local/Maildir/.Trash/cur checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 2 0
 MKDIR rc: 16
 Doing MOD 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' on DIFF_META
-CONN peer < MOD %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/Maildir/.Trash/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 16.
@@ -241,7 +241,7 @@ Adding textlist_add_new: <TESTBASE>/test/local/Maildir/.Trash
 Skipping textlist_add_new: <TESTBASE>/test/local/Maildir/.Trash
 check_pure: filename: '<TESTBASE>/test/local/Maildir/cur/123,Sab' 71, cached path: '<TESTBASE>/test/local/Maildir/.Trash/' 74, 67.
 Locking '<TESTBASE>/test/local/Maildir/cur/123,Sab'
-Redis reply: SET '<TESTBASE>/test/local/Maildir/cur/123,Sab' '1736888510' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/Maildir/cur/123,Sab 1736888510
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur/123,Sab
 uid dennis gid schafroth
@@ -264,28 +264,28 @@ Directory <TESTBASE>/test/local/Maildir/tmp
 Adding textlist_add_new: <TESTBASE>/test/local/Maildir/tmp
 check_pure: filename: '<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab' 78, cached path: '<TESTBASE>/test/local/Maildir/cur/' 71, 67.
 Locking '<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab'
-Redis reply: SET '<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab' '1736888510' NX EX 60 -> OK
+Redis reply: SET '<MTIME>' NX EX 60 -> OK
 csync_redis_lock: OK <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab 1736888510
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab
 uid dennis gid schafroth
 Updating (HARDLINK) 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab' '<TESTBASE>/test/local/Maildir/cur/123,Sab'
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab
-CONN peer < SIG %25test%25/Maildir/.Trash/cur/123,Sab user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/Maildir/.Trash/cur/123,Sab user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab RC 32
-has links: file <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab checktxt 'v2:mtime=1736888507:mode=33188:user=dennis:group=schafroth:type=reg:size=4' 2 1
+has links: file <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab checktxt 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4' 2 1
 do hardlink check <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab <TESTBASE>/test/local/Maildir/cur/123,Sab 
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/Maildir/cur/123,Sab
-CONN peer < SIG %25test%25/Maildir/cur/123,Sab user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/Maildir/cur/123,Sab user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/cur/123,Sab RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=0'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=<USER>%3Agroup=<GROUP>%3Atype=reg%3Asize=0'
 Flags for gencheck: 112 
-csync_cmpchecktxt A: v2:mtime=1736888507:mode=33188:user=dennis:group=schafroth:type=reg:size=0 
-csync_cmpchecktxt B: v2:mtime=1736888507:mode=33188:user=dennis:group=schafroth:type=reg:size=4 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 
 <TESTBASE>/test/local/Maildir/cur/123,Sab is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur/123,Sab
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/Maildir/cur/123,Sab
 Continue to rs_check <TESTBASE>/test/local/Maildir/cur/123,Sab 16
@@ -352,12 +352,12 @@ CONN peer < BYE
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 4
-Redis closing: 0x55886b7774a0
+Redis closing: <PTR>
 Redis closed.
 SQL: SELECT command, logfile FROM action
 SQL Query finished.
-Closing db: 0x55886b777180
-Closed db: 0x55886b777180
-Closed db: 0x55886b777180
+Closing db: <PTR>
+Closed db: <PTR>
+Closed db: <PTR>
 csync_config_destroy
 csync_config_destroy end
