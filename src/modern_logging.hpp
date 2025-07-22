@@ -97,7 +97,7 @@ public:
 
     /// Check if level should be logged
     bool should_log(LogLevel level, int debug_level = 0) const {
-        if (level <= LogLevel::Warning) return true;  // Always log warnings and above
+        //if (level <= LogLevel::Warning) return true;  // Always log warnings and above
         if (static_cast<int>(level) > static_cast<int>(min_level_)) return false;
         return debug_level <= debug_level_;
     }
@@ -287,7 +287,7 @@ extern "C" int csync_level_debug;
         csync2::g_logger.log(csync2::LogLevel::level, debug_level, __VA_ARGS__); } while(0)
 
 #define csync_debug_cpp(level, ...) \
-    do { if (level <= csync_level_debug) \
+    do { \
         csync2::g_logger.log(csync2::LogLevel::Debug, level, __VA_ARGS__); } while(0)
 
 #define csync_info_cpp(level, ...) \
