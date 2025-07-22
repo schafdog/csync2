@@ -1,12 +1,13 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861
-Binding to 30861 IPv2
+Found my alias peer localhost 30861 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -117,6 +118,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -157,9 +159,9 @@ New file: <TESTBASE>/test/peer/auto/older/update_both
 csync_check_file_same_dev_inode <TESTBASE>/test/peer/auto/older/update_both <TESTBASE>/test/peer/auto/older/update_both
 mark other operation: 'NEW' 'local:<TESTBASE>/test/peer/auto/older/update_both' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/peer/auto/older/update_both' '-'.
-Inserted/updated <TESTBASE>/test/peer/auto/older/update_both rows matched: 1
+Inserted/updated <TESTBASE>/test/peer/auto/older/update_both rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer/auto/older/update_both.
-daemon_check_dirty: <TESTBASE>/test/peer/auto/older/update_both is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/auto/older/update_both is clean
 daemon_check_dirty: peer operation  local <TESTBASE>/test/peer/auto/older/update_both NEW
 File <TESTBASE>/test/peer/auto/older/update_both is dirty here: NEW 2
 File local:<TESTBASE>/test/peer/auto/older/update_both is dirty here. Continuing.
@@ -195,6 +197,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -227,9 +230,9 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 daemon_check_dirty: <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
-Inserted/updated <TESTBASE>/test/peer rows matched: 1
+Inserted/updated <TESTBASE>/test/peer rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer.
-daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer is clean
 setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
@@ -255,9 +258,9 @@ Command: local: MOD <TESTBASE>/test/peer/auto - <UID> <GID> <USER> <GROUP> <BLKS
 daemon_check_dirty: <TESTBASE>/test/peer/auto
 Running check for <TESTBASE>/test/peer/auto ...
 Checking for modified files <TESTBASE>/test/peer/auto 
-Inserted/updated <TESTBASE>/test/peer/auto rows matched: 1
+Inserted/updated <TESTBASE>/test/peer/auto rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer/auto.
-daemon_check_dirty: <TESTBASE>/test/peer/auto is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/auto is clean
 setown <TESTBASE>/test/peer/auto rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer/auto rc = 0 time: 0 errno = 0 err = 
@@ -288,9 +291,9 @@ check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older won auto resolv
 daemon_check_dirty: <TESTBASE>/test/peer/auto/older
 Running check for <TESTBASE>/test/peer/auto/older ...
 Checking for modified files <TESTBASE>/test/peer/auto/older 
-Inserted/updated <TESTBASE>/test/peer/auto/older rows matched: 1
+Inserted/updated <TESTBASE>/test/peer/auto/older rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer/auto/older.
-daemon_check_dirty: <TESTBASE>/test/peer/auto/older is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/auto/older is clean
 daemon: Auto resolve method OLDER 3 for local:<TESTBASE>/test/peer/auto/older
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/older won auto resolved. clear dirty
@@ -328,9 +331,9 @@ Running check for <TESTBASE>/test/peer/auto/older/update_both ...
 Checking for modified files <TESTBASE>/test/peer/auto/older/update_both 
 mark other operation: 'MOD' 'local:<TESTBASE>/test/peer/auto/older/update_both' '-'.
 mark other operation: 'MOD' 'other:<TESTBASE>/test/peer/auto/older/update_both' '-'.
-Inserted/updated <TESTBASE>/test/peer/auto/older/update_both rows matched: 1
+Inserted/updated <TESTBASE>/test/peer/auto/older/update_both rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer/auto/older/update_both.
-daemon_check_dirty: <TESTBASE>/test/peer/auto/older/update_both is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/auto/older/update_both is clean
 Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve.
 daemon: Auto resolve method OLDER 3 for local:<TESTBASE>/test/peer/auto/older/update_both
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve
@@ -386,6 +389,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -434,20 +438,15 @@ check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.3
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/older/update_both' to '/tmp/csync2<TESTBASE>/test/peer/auto/older/update_both.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/auto/older/update_both'
 Removing <TESTBASE>/test/peer/auto/older/update_both from file db.
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/auto/older/update_both, param2: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/auto/older'
 Removing directory <TESTBASE>/test/peer/auto/older 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/auto/older, param2: <TESTBASE>/test/peer/auto/older/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/auto'
 Removing directory <TESTBASE>/test/peer/auto 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/auto, param2: <TESTBASE>/test/peer/auto/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
 Updated(del) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer DEL 1 
 IDENT (cmd_finished).
