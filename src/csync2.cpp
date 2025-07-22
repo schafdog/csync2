@@ -707,6 +707,7 @@ static int csync_read_config(const char *cfgname, int conn, int mode)
 	yyin = fopen(file_config, "r");
 	if (!yyin)
 		csync_fatal("Can not open config file `{}': {}", file_config, strerror(errno));
+	free(file_config);
 	yyparse();
 	fclose(yyin);
 	yylex_destroy();
