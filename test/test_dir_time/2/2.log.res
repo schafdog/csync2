@@ -34,13 +34,16 @@ Inserted/updated <TESTBASE>/test/local/usr/local/sbin rows matched: 0
 Checking <TESTBASE>/test/local/usr/local/sbin/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/usr/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/usr v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/usr/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/usr v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.x.x.x
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -51,31 +54,31 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local RC 32
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/usr' ''
-CONN peer < SIG %25test%25/usr user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/usr user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/usr RC 32
-CONN peer < MKDIR %25test%25/usr - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/usr - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/usr (0)
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/usr/local' ''
-CONN peer < SIG %25test%25/usr/local user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/usr/local user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/usr/local RC 32
-CONN peer < MKDIR %25test%25/usr/local - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/usr/local - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/usr/local (0)
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/usr/local/sbin' ''
-CONN peer < SIG %25test%25/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/usr/local/sbin user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/usr/local/sbin RC 32
-CONN peer < MKDIR %25test%25/usr/local/sbin - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/usr/local/sbin - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/usr/local/sbin (0)
 CONN peer < SETTIME %25test%25/usr/local 

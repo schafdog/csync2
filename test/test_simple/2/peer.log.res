@@ -1,12 +1,13 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861
-Binding to 30861 IPv2
+Found my alias peer localhost 30861 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -61,7 +62,7 @@ daemon CREATE <TESTBASE>/test/peer/.Test 1 0
 CONN local < OK 
 CONN local > 'octet-stream 0'
 Got octet-stream 0
-Content length in buffer: '' size: 0 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/.Test rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/.Test  
 Daemon end_command <TESTBASE>/test/peer/.Test CREATE 1 
@@ -85,7 +86,7 @@ daemon CREATE <TESTBASE>/test/peer/A 1 0
 CONN local < OK 
 CONN local > 'octet-stream 0'
 Got octet-stream 0
-Content length in buffer: '' size: 0 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/A rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/A  
 Daemon end_command <TESTBASE>/test/peer/A CREATE 1 
@@ -109,7 +110,7 @@ daemon CREATE <TESTBASE>/test/peer/new_file 'N' all 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/new_file 'N' all rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/new_file 'N' all  
 Daemon end_command <TESTBASE>/test/peer/new_file 'N' all CREATE 1 
@@ -133,6 +134,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -151,11 +153,11 @@ CONN local < OK (cmd_finished).
 CONN local > 'LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 '
 Command: local: LIST <TESTBASE>/test/peer 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1       
 peername: local file: <TESTBASE>/test/peer key: 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV recursive 1
-DbSql::list_file peer <-> local <TESTBASE>/test/peer
-DbSql::list_file  local:<TESTBASE>/test/peer
-DbSql::list_file  local:<TESTBASE>/test/peer
-DbSql::list_file  local:<TESTBASE>/test/peer
-DbSql::list_file  local:<TESTBASE>/test/peer
+db_sql_list_file peer <-> local <TESTBASE>/test/peer
+db_sql_list_file  local:<TESTBASE>/test/peer
+db_sql_list_file  local:<TESTBASE>/test/peer
+db_sql_list_file  local:<TESTBASE>/test/peer
+db_sql_list_file  local:<TESTBASE>/test/peer
 CONN local < v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4	<TESTBASE>/test/peer/new_file 
 CONN local < v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0	<TESTBASE>/test/peer/A
 
@@ -177,6 +179,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -222,40 +225,33 @@ Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all'
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/new_file 'N' all, param2: peer
 daemon_check_dirty: <TESTBASE>/test/peer/A
 Running check for <TESTBASE>/test/peer/A ...
 Checking for modified files <TESTBASE>/test/peer/A 
-Inserted/updated <TESTBASE>/test/peer/A rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer/A.
-daemon_check_dirty: <TESTBASE>/test/peer/A is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/A is clean
 Removing file <TESTBASE>/test/peer/A
 backup <TESTBASE>/test/peer/A 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/A.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/A'
 Removing <TESTBASE>/test/peer/A from file db.
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/A, param2: peer
 daemon_check_dirty: <TESTBASE>/test/peer/.Test
 Running check for <TESTBASE>/test/peer/.Test ...
 Checking for modified files <TESTBASE>/test/peer/.Test 
-Inserted/updated <TESTBASE>/test/peer/.Test rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer/.Test.
-daemon_check_dirty: <TESTBASE>/test/peer/.Test is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/.Test is clean
 Removing file <TESTBASE>/test/peer/.Test
 backup <TESTBASE>/test/peer/.Test 0 
 Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/.Test.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/.Test'
 Removing <TESTBASE>/test/peer/.Test from file db.
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/.Test, param2: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
 Updated(del) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer DEL 1 
 IDENT (cmd_finished).

@@ -1,12 +1,13 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861
-Binding to 30861 IPv2
+Found my alias peer localhost 30861 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -61,7 +62,7 @@ daemon CREATE <TESTBASE>/test/peer/ÆØÅ Café.utf8 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/ÆØÅ Café.utf8 rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/ÆØÅ Café.utf8  
 Daemon end_command <TESTBASE>/test/peer/ÆØÅ Café.utf8 CREATE 1 
@@ -85,6 +86,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -146,7 +148,6 @@ Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1
 check backup generation /tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/ÆØÅ Café.utf8'
 DEL local:<TESTBASE>/test/peer/ÆØÅ Café.utf8 rc: 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/ÆØÅ Café.utf8, param2: peer
 Updated(del) local:<TESTBASE>/test/peer/ÆØÅ Café.utf8  
 Daemon end_command <TESTBASE>/test/peer/ÆØÅ Café.utf8 DEL 0 
 CONN local < OK (cmd_finished).

@@ -1,12 +1,13 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861
-Binding to 30861 IPv2
+Found my alias peer localhost 30861 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -55,6 +56,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -105,9 +107,9 @@ New file: <TESTBASE>/test/peer/different
 csync_check_file_same_dev_inode <TESTBASE>/test/peer/different <TESTBASE>/test/peer/different
 mark other operation: 'NEW' 'local:<TESTBASE>/test/peer/different' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/peer/different' '-'.
-Inserted/updated <TESTBASE>/test/peer/different rows matched: 1
+Inserted/updated <TESTBASE>/test/peer/different rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer/different.
-daemon_check_dirty: <TESTBASE>/test/peer/different is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/different is clean
 daemon_check_dirty: peer operation  local <TESTBASE>/test/peer/different NEW
 File <TESTBASE>/test/peer/different is dirty here: NEW 2
 File local:<TESTBASE>/test/peer/different is dirty here. Continuing.
@@ -131,6 +133,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -190,6 +193,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -246,7 +250,7 @@ CONN local < octet-stream 32
 Signature has been sent to peer successfully.
 CONN local > 'octet-stream 10'
 Got octet-stream 10
-Content length in buffer: 'octet-stre' size: 10 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 10' size: 10 rc: 0 (octet-stream)
 Locking 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/peer/.different.XXXXXX'
 Locking 'MOVED_TO:<TESTBASE>/test/peer/different'
 settime <TESTBASE>/test/peer/different rc = 0 time: 0 errno = 0 err = 
@@ -272,6 +276,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -304,9 +309,9 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 daemon_check_dirty: <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
-Inserted/updated <TESTBASE>/test/peer rows matched: 1
+Inserted/updated <TESTBASE>/test/peer rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer.
-daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer is clean
 setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
 setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
 settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
@@ -336,9 +341,9 @@ New file: <TESTBASE>/test/peer/tmp
 csync_check_file_same_dev_inode <TESTBASE>/test/peer/tmp <TESTBASE>/test/peer/tmp
 mark other operation: 'MKDIR' 'local:<TESTBASE>/test/peer/tmp' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/peer/tmp' '-'.
-Inserted/updated <TESTBASE>/test/peer/tmp rows matched: 1
+Inserted/updated <TESTBASE>/test/peer/tmp rows matched: 0
 Checking for deleted files <TESTBASE>/test/peer/tmp.
-daemon_check_dirty: <TESTBASE>/test/peer/tmp is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer/tmp is clean
 daemon_check_dirty: peer operation  local <TESTBASE>/test/peer/tmp MKDIR
 Ignoring dirty directory <TESTBASE>/test/peer/tmp
 setown <TESTBASE>/test/peer/tmp rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
@@ -366,6 +371,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'

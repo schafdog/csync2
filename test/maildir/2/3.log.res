@@ -33,14 +33,14 @@ Checking <TESTBASE>/test/local/Maildir/.Trash/* ..
 Checking <TESTBASE>/test/local/Maildir/.Trash/cur/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764 v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=8 ''
-dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/Maildir/new v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764 v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=8 ''
+dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/new v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Using alternative port to localhost:30861 
 Connecting to localhost:30861 
-Using specific address 127.0.0.2
+Using specific address 127.x.x.x
 Connected to localhost:30861 
 CONN peer < CONFIG 
 
@@ -55,10 +55,10 @@ Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/new' ''
 CONN peer < SIG %25test%25/Maildir/new user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/new RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local/Maildir/new is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
@@ -72,10 +72,10 @@ Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/tmp' ''
 CONN peer < SIG %25test%25/Maildir/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/Maildir/tmp RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local/Maildir/tmp is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)

@@ -1,11 +1,9 @@
-----------------------------------------------------------------
  <TESTBASE>/test/local
  <TESTBASE>/test/local/usr
  <TESTBASE>/test/local/usr/local
  <TESTBASE>/test/local/usr/local/sbin
 (4 rows)
 
-----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
  peer     | <TESTBASE>/test/local                | MARK      |       |  0
  peer     | <TESTBASE>/test/local/usr            | MARK      |       |  0
  peer     | <TESTBASE>/test/local/usr/local      | MARK      |       |  0

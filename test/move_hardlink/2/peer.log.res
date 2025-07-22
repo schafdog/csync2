@@ -1,12 +1,13 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861
-Binding to 30861 IPv2
+Found my alias peer localhost 30861 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -171,7 +172,7 @@ daemon CREATE <TESTBASE>/test/peer/Maildir/tmp/123 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/Maildir/tmp/123 rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/Maildir/tmp/123  
 Daemon end_command <TESTBASE>/test/peer/Maildir/tmp/123 CREATE 1 
@@ -213,6 +214,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -313,8 +315,7 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/tmp/123 <TESTBASE>/test/peer/Maildir/cur/123,Sab        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/tmp/123 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/123,Sab 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/123,Sab'
-SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/tmp/123, param2: peer
+SQL MOVE: UPDATE file set filename = concat('<TESTBASE>/test/peer/Maildir/cur/123,Sab',substring(filename,<LEN>)) WHERE filename = '<TESTBASE>/test/peer/Maildir/tmp/123' or filename like '<TESTBASE>/test/peer/Maildir/tmp/123/%'
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/tmp/123 <TESTBASE>/test/peer/Maildir/cur/123,Sab 
 Daemon end_command <TESTBASE>/test/peer/Maildir/tmp/123 MV 0 
 CONN local < OK (cmd_finished).

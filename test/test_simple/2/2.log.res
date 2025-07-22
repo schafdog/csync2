@@ -31,13 +31,16 @@ mark other operation: 'NEW' 'other:<TESTBASE>/test/local/.Test' '-'.
 Inserted/updated <TESTBASE>/test/local/.Test rows matched: 0
 Checking for deleted files <TESTBASE>/test recursive.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/.Test v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 ''
-dirty: peer:<TESTBASE>/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
-dirty: peer:<TESTBASE>/test/local/A v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=0 ''
-dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
+dirty: peer:<TESTBASE>/test/local/A v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 ''
+dirty: peer:<TESTBASE>/test/local/.Test v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.x.x.x
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -48,17 +51,28 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local RC 32
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
+Updating (NEW) 'peer:<TESTBASE>/test/local/.Test' ''
+CONN peer < SIG %25test%25/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'OK (not_found).'
+update_file_sig <TESTBASE>/test/local/.Test RC 32
+CONN peer < CREATE %25test%25/.Test - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'OK (send data).'
+CREATE <TESTBASE>/test/local/.Test 0
+CONN peer < octet-stream 0
+
+CONN peer > 'IDENT (cmd_finished).'
+Clear dirty peer:<TESTBASE>/test/local/.Test (0)
 Updating (NEW) 'peer:<TESTBASE>/test/local/A' ''
-CONN peer < SIG %25test%25/A user/group 1234 1000 dennis schafroth 33188 - 0 
+CONN peer < SIG %25test%25/A user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/A RC 32
-CONN peer < CREATE %25test%25/A - 1234 1000 dennis schafroth 33188 - 0 
+CONN peer < CREATE %25test%25/A - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (send data).'
 CREATE <TESTBASE>/test/local/A 0
 CONN peer < octet-stream 0
@@ -66,27 +80,16 @@ CONN peer < octet-stream 0
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/A (0)
 Updating (NEW) 'peer:<TESTBASE>/test/local/new_file 'N' all' ''
-CONN peer < SIG %25test%25/new_file%20%27N%27%20all user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/new_file%20%27N%27%20all user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new_file 'N' all RC 32
-CONN peer < CREATE %25test%25/new_file%20%27N%27%20all - 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < CREATE %25test%25/new_file%20%27N%27%20all - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (send data).'
 CREATE <TESTBASE>/test/local/new_file 'N' all 4
 CONN peer < octet-stream 4
 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/new_file 'N' all (0)
-Updating (NEW) 'peer:<TESTBASE>/test/local/.Test' ''
-CONN peer < SIG %25test%25/.Test user/group 1234 1000 dennis schafroth 33188 - 0 
-CONN peer > 'OK (not_found).'
-update_file_sig <TESTBASE>/test/local/.Test RC 32
-CONN peer < CREATE %25test%25/.Test - 1234 1000 dennis schafroth 33188 - 0 
-CONN peer > 'OK (send data).'
-CREATE <TESTBASE>/test/local/.Test 0
-CONN peer < octet-stream 0
-
-CONN peer > 'IDENT (cmd_finished).'
-Clear dirty peer:<TESTBASE>/test/local/.Test (0)
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
 CONN peer < BYE

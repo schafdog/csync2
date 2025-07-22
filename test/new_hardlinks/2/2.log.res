@@ -27,11 +27,7 @@ mark other operation: 'NEW' 'other:<TESTBASE>/test/local/new/new_file' '-'.
 Inserted/updated <TESTBASE>/test/local/new/new_file rows matched: 0
 New file: <TESTBASE>/test/local/new/hardlinked
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked <TESTBASE>/test/local/new/hardlinked
-<<<<<<< HEAD
-1 files with same dev:inode (2049:0) as file: <TESTBASE>/test/local/new/hardlinked
-=======
 1 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked
->>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked 
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/new/hardlinked' '<TESTBASE>/test/local/new/new_file'.

@@ -22,12 +22,15 @@ mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
 mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/different v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
-dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/different v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.x.x.x
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -39,7 +42,7 @@ CONN peer < HELLO local
 CONN peer > 'OK (cmd_finished).'
 Dirty (missing) item <TESTBASE>/test/local RM  0
 Deleting peer:<TESTBASE>/test/local
-CONN peer < SIG %25test%25 
+CONN peer < STAT %25test%25 
 CONN peer > 'OK (not_found).'
 peer:<TESTBASE>/test/local is already up to date on peer.
 Clear dirty peer:<TESTBASE>/test/local (0)

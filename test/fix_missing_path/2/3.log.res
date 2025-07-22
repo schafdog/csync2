@@ -25,13 +25,13 @@ mark other operation: 'NEW' 'other:<TESTBASE>/test/local/recursive/1/2/3/4/5/fil
 Inserted/updated <TESTBASE>/test/local/recursive/1/2/3/4/5/file.c rows matched: 0
 Checking for deleted files <TESTBASE>/test recursive.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=11 ''
-dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5 v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=11 ''
+dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5 v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Using alternative port to localhost:30861 
 Connecting to localhost:30861 
-Using specific address 127.0.0.2
+Using specific address 127.x.x.x
 Connected to localhost:30861 
 CONN peer < CONFIG 
 
@@ -43,44 +43,45 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/recursive/1/2/3/4/5' ''
-CONN peer < SIG %25test%25/recursive/1/2/3/4/5 user/group 1234 1000 dennis schafroth 16877 - 4096 
-CONN peer > 'ERROR (Path not found): %25test%25'
+CONN peer < SIG %25test%25/recursive/1/2/3/4/5 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'ERROR (Path not found): <TESTBASE>/test'
 update_file_sig <TESTBASE>/test/local/recursive/1/2/3/4/5 RC -13
-PATH MISSING: '%25test%25'
-PATH MISSING (decoded): '<TESTBASE>/test/local'
+PATH MISSING: '<TESTBASE>/test'
+PATH MISSING (decoded): '<TESTBASE>/test'
+UPDATE_DIRECTORY: 0
 creating directory <TESTBASE>/test/local
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 UPDATE_DIRECTORY: 4
 creating directory <TESTBASE>/test/local/recursive
-CONN peer < MKDIR %25test%25/recursive - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/recursive - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 UPDATE_DIRECTORY: 4
 creating directory <TESTBASE>/test/local/recursive/1
-CONN peer < MKDIR %25test%25/recursive/1 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/recursive/1 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 UPDATE_DIRECTORY: 4
 creating directory <TESTBASE>/test/local/recursive/1/2
-CONN peer < MKDIR %25test%25/recursive/1/2 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/recursive/1/2 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 UPDATE_DIRECTORY: 4
 creating directory <TESTBASE>/test/local/recursive/1/2/3
-CONN peer < MKDIR %25test%25/recursive/1/2/3 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/recursive/1/2/3 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 UPDATE_DIRECTORY: 4
 creating directory <TESTBASE>/test/local/recursive/1/2/3/4
-CONN peer < MKDIR %25test%25/recursive/1/2/3/4 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/recursive/1/2/3/4 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 UPDATE_DIRECTORY: 4
 Fixed missing path for file <TESTBASE>/test/local/recursive/1/2/3/4/5
-CONN peer < MKDIR %25test%25/recursive/1/2/3/4/5 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/recursive/1/2/3/4/5 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/recursive/1/2/3/4/5 (0)
 Updating (NEW) 'peer:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c' ''
-CONN peer < SIG %25test%25/recursive/1/2/3/4/5/file.c user/group 1234 1000 dennis schafroth 33188 - 11 
+CONN peer < SIG %25test%25/recursive/1/2/3/4/5/file.c user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/recursive/1/2/3/4/5/file.c RC 32
-CONN peer < CREATE %25test%25/recursive/1/2/3/4/5/file.c - 1234 1000 dennis schafroth 33188 - 11 
+CONN peer < CREATE %25test%25/recursive/1/2/3/4/5/file.c - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (send data).'
 CREATE <TESTBASE>/test/local/recursive/1/2/3/4/5/file.c 11
 CONN peer < octet-stream 11

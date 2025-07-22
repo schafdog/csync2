@@ -51,16 +51,19 @@ Inserted/updated <TESTBASE>/test/local/Maildir/.Trash/cur rows matched: 0
 Checking <TESTBASE>/test/local/Maildir/.Trash/cur/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/Maildir/tmp/123 v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
-dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/Maildir/.Trash v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/Maildir/cur v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/Maildir v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/tmp/123 v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
+dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/cur v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir/.Trash v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/Maildir v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.x.x.x
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -71,52 +74,52 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local RC 32
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir' ''
-CONN peer < SIG %25test%25/Maildir user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/Maildir RC 32
-CONN peer < MKDIR %25test%25/Maildir - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/Maildir - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir (0)
-Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/cur' ''
-CONN peer < SIG %25test%25/Maildir/cur user/group 1234 1000 dennis schafroth 16877 - 4096 
-CONN peer > 'OK (not_found).'
-update_file_sig <TESTBASE>/test/local/Maildir/cur RC 32
-CONN peer < MKDIR %25test%25/Maildir/cur - 1234 1000 dennis schafroth 16877 - 4096 
-CONN peer > 'IDENT (cmd_finished).'
-Clear dirty peer:<TESTBASE>/test/local/Maildir/cur (0)
-Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/tmp' ''
-CONN peer < SIG %25test%25/Maildir/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 
-CONN peer > 'OK (not_found).'
-update_file_sig <TESTBASE>/test/local/Maildir/tmp RC 32
-CONN peer < MKDIR %25test%25/Maildir/tmp - 1234 1000 dennis schafroth 16877 - 4096 
-CONN peer > 'IDENT (cmd_finished).'
-Clear dirty peer:<TESTBASE>/test/local/Maildir/tmp (0)
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash' ''
-CONN peer < SIG %25test%25/Maildir/.Trash user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir/.Trash user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/Maildir/.Trash RC 32
-CONN peer < MKDIR %25test%25/Maildir/.Trash - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/Maildir/.Trash - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/.Trash (0)
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' ''
-CONN peer < SIG %25test%25/Maildir/.Trash/cur user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/Maildir/.Trash/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/Maildir/.Trash/cur RC 32
-CONN peer < MKDIR %25test%25/Maildir/.Trash/cur - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25/Maildir/.Trash/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/.Trash/cur (0)
+Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/cur' ''
+CONN peer < SIG %25test%25/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'OK (not_found).'
+update_file_sig <TESTBASE>/test/local/Maildir/cur RC 32
+CONN peer < MKDIR %25test%25/Maildir/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'IDENT (cmd_finished).'
+Clear dirty peer:<TESTBASE>/test/local/Maildir/cur (0)
+Updating (MKDIR) 'peer:<TESTBASE>/test/local/Maildir/tmp' ''
+CONN peer < SIG %25test%25/Maildir/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'OK (not_found).'
+update_file_sig <TESTBASE>/test/local/Maildir/tmp RC 32
+CONN peer < MKDIR %25test%25/Maildir/tmp - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
+CONN peer > 'IDENT (cmd_finished).'
+Clear dirty peer:<TESTBASE>/test/local/Maildir/tmp (0)
 Updating (NEW) 'peer:<TESTBASE>/test/local/Maildir/tmp/123' ''
-CONN peer < SIG %25test%25/Maildir/tmp/123 user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/Maildir/tmp/123 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/Maildir/tmp/123 RC 32
-CONN peer < CREATE %25test%25/Maildir/tmp/123 - 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < CREATE %25test%25/Maildir/tmp/123 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (send data).'
 CREATE <TESTBASE>/test/local/Maildir/tmp/123 4
 CONN peer < octet-stream 4

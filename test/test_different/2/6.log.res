@@ -23,11 +23,14 @@ Inserted/updated <TESTBASE>/test/local/tmp rows matched: 0
 Checking <TESTBASE>/test/local/tmp/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
+Using alternative port to localhost:30861 
 Connecting to localhost:30861 
+Using specific address 127.x.x.x
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -38,37 +41,37 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local is different on peer (cktxt char #1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            <TESTBASE>/test/local
-CONN peer < MOD %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/tmp' ''
-CONN peer < SIG %25test%25/tmp user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/tmp RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 <TESTBASE>/test/local/tmp is different on peer (cktxt char #1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
 Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local/tmp
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            <TESTBASE>/test/local/tmp
-CONN peer < MOD %25test%25/tmp - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/tmp - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/tmp (0)
 CONN peer < SETTIME %25test%25 

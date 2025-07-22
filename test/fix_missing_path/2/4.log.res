@@ -32,19 +32,19 @@ mark other operation: 'RM' 'other:<TESTBASE>/test/local/recursive' '-'.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=11 ''
-dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5 v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4 v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/recursive/1/2/3 v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/recursive/1/2 v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/recursive/1 v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local/recursive v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
+dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=11 ''
+dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4/5 v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/recursive/1/2/3/4 v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/recursive/1/2/3 v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/recursive/1/2 v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/recursive/1 v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local/recursive v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Using alternative port to localhost:30861 
 Connecting to localhost:30861 
-Using specific address 127.0.0.2
+Using specific address 127.x.x.x
 Connected to localhost:30861 
 CONN peer < CONFIG 
 
@@ -59,28 +59,26 @@ Dirty (missing) item <TESTBASE>/test/local RM  0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 delete flags: 0
 CONN peer < DEL %25test%25 
-CONN peer > 'OK (cmd_finished).'
-Clear dirty peer:<TESTBASE>/test/local (0)
-Dirty (missing) item <TESTBASE>/test/local/recursive RM  0
-Deleting peer:<TESTBASE>/test/local/recursive
-CONN peer < STAT %25test%25/recursive 
 CONN peer > 'IDENT (cmd_finished).'
-DELETE (<TESTBASE>/test/local/recursive) Last dir: <TESTBASE>/test/local/recursive/. rc: 4
+Clear dirty peer:<TESTBASE>/test/local (0)
+DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
+Dirty (missing) item <TESTBASE>/test/local/recursive RM  0
+Skipping matched file (<TESTBASE>/test/local/recursive) from deleted directory (<TESTBASE>/test/local/)
 Dirty (missing) item <TESTBASE>/test/local/recursive/1 RM  0
-Skipping matched file (<TESTBASE>/test/local/recursive/1) from deleted directory (<TESTBASE>/test/local/recursive/)
+Skipping matched file (<TESTBASE>/test/local/recursive/1) from deleted directory (<TESTBASE>/test/local/)
 Dirty (missing) item <TESTBASE>/test/local/recursive/1/2 RM  0
-Skipping matched file (<TESTBASE>/test/local/recursive/1/2) from deleted directory (<TESTBASE>/test/local/recursive/)
+Skipping matched file (<TESTBASE>/test/local/recursive/1/2) from deleted directory (<TESTBASE>/test/local/)
 Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3 RM  0
-Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3) from deleted directory (<TESTBASE>/test/local/recursive/)
+Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3) from deleted directory (<TESTBASE>/test/local/)
 Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4 RM  0
-Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4) from deleted directory (<TESTBASE>/test/local/recursive/)
+Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4) from deleted directory (<TESTBASE>/test/local/)
 Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4/5 RM  0
-Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4/5) from deleted directory (<TESTBASE>/test/local/recursive/)
+Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4/5) from deleted directory (<TESTBASE>/test/local/)
 Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4/5/file.c RM  0
-Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c) from deleted directory (<TESTBASE>/test/local/recursive/)
+Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 
-CONN peer > 'ERROR (Path not found): %25test%25'
+CONN peer > 'OK (cu_later).'

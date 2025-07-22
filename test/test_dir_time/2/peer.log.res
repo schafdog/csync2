@@ -1,12 +1,13 @@
 Config-File:   csync2_pgsql_peer.cfg
-Found my alias peer localhost 30861
-Binding to 30861 IPv2
+Found my alias peer localhost 30861 
+Binding to 30861 IPv2 
 CONN (null) > 'CONFIG '
 Config-File:   csync2_pgsql_peer.cfg
 My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -139,6 +140,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -198,6 +200,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -305,6 +308,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -376,7 +380,7 @@ daemon CREATE <TESTBASE>/test/peer/usr/local/sbin/hej 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/usr/local/sbin/hej rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/usr/local/sbin/hej  
 Daemon end_command <TESTBASE>/test/peer/usr/local/sbin/hej CREATE 1 
@@ -412,6 +416,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -473,7 +478,6 @@ Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1
 check backup generation /tmp/csync2<TESTBASE>/test/peer/usr/local/sbin/hej.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/usr/local/sbin/hej'
 DEL local:<TESTBASE>/test/peer/usr/local/sbin/hej rc: 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/usr/local/sbin/hej, param2: peer
 Updated(del) local:<TESTBASE>/test/peer/usr/local/sbin/hej  
 Daemon end_command <TESTBASE>/test/peer/usr/local/sbin/hej DEL 0 
 CONN local < OK (cmd_finished).
@@ -495,6 +499,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
+db_schema_version: 2
 CONN (null) < OK (cmd_finished).
 
 CONN (null) > 'DEBUG 2'
@@ -534,20 +539,15 @@ Removing <TESTBASE>/test/peer/usr/local/* ..
 Removing <TESTBASE>/test/peer/usr/local/sbin/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/usr/local/sbin'
 Removing directory <TESTBASE>/test/peer/usr/local/sbin 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/usr/local/sbin, param2: <TESTBASE>/test/peer/usr/local/sbin/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/usr/local'
 Removing directory <TESTBASE>/test/peer/usr/local 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/usr/local, param2: <TESTBASE>/test/peer/usr/local/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/usr'
 Removing directory <TESTBASE>/test/peer/usr 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/usr, param2: <TESTBASE>/test/peer/usr/%, param3: peer
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
 Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
-remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
 Updated(del) local:<TESTBASE>/test/peer  
 Daemon end_command <TESTBASE>/test/peer DEL 1 
 IDENT (cmd_finished).

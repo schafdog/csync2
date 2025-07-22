@@ -24,21 +24,15 @@ mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/new_file 'N' all' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/new_file 'N' all' '-'.
 Inserted/updated <TESTBASE>/test/local/new_file 'N' all rows matched: 0
 Checking for deleted files <TESTBASE>/test recursive.
-<<<<<<< HEAD
 csync_file_args: '<TESTBASE>/test' flags 65 
-dirty: peer:<TESTBASE>/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=41471:user=dennis:group=schafroth:type=lnk:target=new_file ''N'' all ''
-dirty: peer:<TESTBASE>/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=dennis:group=schafroth:type=reg:size=4 ''
-dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir ''
-=======
-dirty: peer:<TESTBASE>/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=41471:user=<USER>:group=<GROUP>:type=lnk:target=new_file 'N' all ''
+dirty: peer:<TESTBASE>/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=41471:user=<USER>:group=<GROUP>:type=lnk:target=new_file ''N'' all ''
 dirty: peer:<TESTBASE>/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
->>>>>>> 768622b8 (Filter dev:inode. Fix error code (wrong on macos))
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Using alternative port to localhost:30861 
 Connecting to localhost:30861 
-Using specific address 127.0.0.2
+Using specific address 127.x.x.x
 Connected to localhost:30861 
 CONN peer < CONFIG 
 
@@ -50,17 +44,17 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local RC 32
-CONN peer < MKDIR %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MKDIR %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 Updating (NEW) 'peer:<TESTBASE>/test/local/new_file 'N' all' ''
-CONN peer < SIG %25test%25/new_file%20%27N%27%20all user/group 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < SIG %25test%25/new_file%20%27N%27%20all user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new_file 'N' all RC 32
-CONN peer < CREATE %25test%25/new_file%20%27N%27%20all - 1234 1000 dennis schafroth 33188 - 4 
+CONN peer < CREATE %25test%25/new_file%20%27N%27%20all - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (send data).'
 CREATE <TESTBASE>/test/local/new_file 'N' all 4
 CONN peer < octet-stream 4
@@ -68,12 +62,12 @@ CONN peer < octet-stream 4
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/new_file 'N' all (0)
 Updating (LINK) 'peer:<TESTBASE>/test/local/new_file 'N' all.link' 'new_file 'N' all'
-CONN peer < SIG %25test%25/new_file%20%27N%27%20all.link user/group 1234 1000 dennis schafroth 41471 - 16 
+CONN peer < SIG %25test%25/new_file%20%27N%27%20all.link user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (not_found).'
 update_file_sig <TESTBASE>/test/local/new_file 'N' all.link RC 32
 CONN peer < MKLINK %25test%25/new_file%20%27N%27%20all.link 
 CONN peer > 'OK (cmd_finished).'
-CONN peer < SETOWN %25test%25/new_file%20%27N%27%20all.link user/group 1234 1000 dennis schafroth 41471 - 16 
+CONN peer < SETOWN %25test%25/new_file%20%27N%27%20all.link user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (cmd_finished).'
 Skipping setmod on link peer:<TESTBASE>/test/local/new_file 'N' all.link
 CONN peer < SETTIME %25test%25/new_file%20%27N%27%20all.link 
