@@ -95,7 +95,7 @@ static const char* build_key(const char *key, const char *domain, BUF_P buffer) 
 }
 
 static const char* redis_str(redisReply *reply) {
-	return reply ? reply->str : "<no response>";
+	return reply ? (reply->str ? reply->str : "NULL") : "<no response>";
 }
 
 time_t csync_redis_get_custom(const std::string& key, const std::string& domain) {
