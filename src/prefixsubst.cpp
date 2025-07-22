@@ -45,7 +45,7 @@ std::string prefixsubst_cpp(const char *in) {
                }
        }
 
-       csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname.c_str());
+       csync_fatal("Prefix '{:.{}}' is not defined for host '{}'.\n", pn, pn_len,  g_myhostname.c_str());
        return std::string();
 }
 
@@ -84,7 +84,7 @@ const char* prefixsubst(const char *in) {
 		}
 	}
 
-	csync_fatal("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname.c_str());
+	csync_fatal_c("Prefix '%.*s' is not defined for host '%s'.\n", pn_len, pn, g_myhostname.c_str());
 	return 0;
 }
 
