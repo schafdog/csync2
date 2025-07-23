@@ -44,7 +44,7 @@
 #ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
-#include "version.hpp"
+#include "version.h"
 #include "redis.hpp"
 #include <vector>
 #include <memory>
@@ -707,6 +707,7 @@ static int csync_read_config(const char *cfgname, int conn, int mode)
 	yyin = fopen(file_config, "r");
 	if (!yyin)
 		csync_fatal("Can not open config file `{}': {}", file_config, strerror(errno));
+	free(file_config);
 	yyparse();
 	fclose(yyin);
 	yylex_destroy();
@@ -1155,7 +1156,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	{
 		int run_time = time(NULL) - start_time;
 		if (csync_error_count > 0)
-			csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
+			csync_warn(1, "Finished with {} errors in {} seconds.\n", csync_error_count, run_time);
 		else
 			csync_info(1, "Finished succesfully in {} seconds.", run_time);
 	}
