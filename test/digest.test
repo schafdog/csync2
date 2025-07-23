@@ -1,0 +1,19 @@
+#
+#
+daemon d
+clean local
+clean peer
+FILENAME="no_permission"
+mkdir -p "test/$NAME"
+echo "far" > "test/$NAME/$FILENAME"
+./portable_touch.sh "test/$NAME/A"
+./portable_touch.sh "test/$NAME/.Test"
+chmod a-r "test/$NAME/$FILENAME"
+cmd c "New $NAME/$FILENAME"
+cmd M "New $NAME/$FILENAME"
+cmd x "New $NAME/$FILENAME"
+cmd T test/$NAME "List daemon"
+#rm -rf test/$NAME
+#sleep 2
+#cmd x "clean up"
+killdaemon
