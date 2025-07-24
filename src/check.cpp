@@ -685,6 +685,7 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 		if (csync_calc_digest(filename, new_digest)) {
 			csync_info(0, "csync_check_file_mod: calc_digest failed. Skipping {} {}",  filename, checktxt);
  			// breaks compare_mode. Better way?
+			buffer_destroy(buffer);
 			return 0;
 		}
 		digest = const_cast<char *>(new_digest.c_str());
