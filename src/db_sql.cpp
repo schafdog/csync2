@@ -62,16 +62,18 @@ const char* DbSql::escape(const std::string& string) {
 int DbSql::schema_version()
 {
 	int version = -1;
-	if (conn_->execute_update("schema_check_file",
-						 "update file set filename = NULL where filename = NULL ") >= 0)
-	{
-		version = 1;
-	}
-
-	if (conn_->execute_update("schema_host",
-					 "update host set host = NULL where host = NULL") >= 0)
-	{
-		version = 2;
+	try {
+		if (conn_->execute_update("schema_check_file",
+								  "update file set filename = NULL where filename = NULL ") >= 0)
+		{
+			version = 1;
+		}
+		if (conn_->execute_update("schema_host",
+								  "update host set host = NULL where host = NULL") >= 0)
+		{
+			version = 2;
+		}
+	} catch (exception e) {
 	}
 	return version;
 }

@@ -1119,6 +1119,8 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 	int last_conn_status = 0, auto_resolve_run = 0;
 	const char *operation_str = csync_operation_str(operation);
 	const char *key = csync_key(peername, filename);
+	std::string calc_digest;
+
 	if (!key) {
 		csync_info(2, "Skipping file update {} on {} - not in my groups.\n", filename, peername);
 		return OK;
@@ -1203,18 +1205,21 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 		csync_debug(3, "has links: file {} checktxt '{}' {} {}\n", filename, checktxt, st.st_nlink,
 				S_ISREG(st.st_mode));
 		if (operation == OP_MARK) {
+			if (!digest || digest[0] == 0) {
+				if (csync_calc_digest(filename, calc_digest)) {
+					csync_error(0, "csync_file_mod: OP_MARK calc_digest failed: {} {}",
+								filename, checktxt ? checktxt : "<no checktxt>");
+				} else {
+					digest = calc_digest.c_str();
+				}
+			};
 			int has_links = (st.st_nlink > 1 && S_ISREG(st.st_mode));
-			if (has_links) {
+			if (has_links && digest) {
 				if (!checktxt) {
 					checktxt = buffer_strdup(buffer,
 							csync_genchecktxt_version(&st, filename, SET_USER | SET_GROUP, db->version));
 				}
 
-				char *calc_digest = NULL;
-				if (!digest || digest[0] == 0) {
-					csync_calc_digest(filename.c_str(), buffer, &calc_digest);
-					digest = calc_digest;
-				};
 				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername,
 												filename, filename_enc,
 												checktxt, digest, &st, uid, gid, auto_resolve_run);
