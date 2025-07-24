@@ -1,4 +1,4 @@
-cmd T "List daemon" local peer test/local
+cmd T "5. List daemon" local peer test/local
 Config-File:   csync2_pgsql_local.cfg
 My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local

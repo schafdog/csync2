@@ -1,4 +1,4 @@
-cmd x "New local/no_permission" local peer test
+cmd x "4. New local/no_permission" local peer test
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.

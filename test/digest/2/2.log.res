@@ -1,4 +1,4 @@
-cmd x "New local/no_permission" local peer test
+cmd x "3. New local/no_permission" local peer test
 Config-File:   csync2_pgsql_local.cfg
 My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
