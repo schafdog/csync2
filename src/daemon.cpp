@@ -338,31 +338,33 @@ int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peern
 	return rc;
 }
 
+const char *to_db(std::string& value) {
+	if (value.size() > 0) {
+		return value.c_str();
+	}
+	return NULL;
+}
+
 static void daemon_file_update(db_conn_p db, filename_p filename, peername_p peername) {
 	struct stat st;
 	db->remove_dirty(peername, filename, 0);
 	if (lstat_strict(filename, &st) != 0 || csync_check_pure(filename)) {
 		db->remove_file(filename, 0);
 	} else {
-		char *digest = NULL;
-		const char *checktxt = csync_genchecktxt_version(&st, filename,
+		std::string digest;
+		std::string checktxt = csync_genchecktxt_version(&st, filename,
 		SET_USER | SET_GROUP, db->version);
 		if (S_ISREG(st.st_mode)) {
-			int size = 4 * DIGEST_MAX_SIZE + 1;
-			digest = static_cast<char*>(malloc(size));
-			int rc = dsync_digest_path_hex(filename, "sha1", digest, size);
+			digest.reserve(4 * DIGEST_MAX_SIZE + 1);
+			int rc = dsync_digest_path_hex(filename, "sha1", digest);
 			if (rc) {
 				csync_error(0, "ERROR: generating digest {} for '{}': {}", "sha1", filename, rc);
-				free(digest);
-				digest = NULL;
 			}
 		}
 		csync_debug(3, "daemon_file_update: UPDATE/INSERT into file filename: {}\n", filename);
-		int count = db->insert_update_file(filename, checktxt, &st, digest);
+		int count = db->insert_update_file(filename, checktxt.c_str(), &st, to_db(digest));
 		if (count < 0)
 			csync_warn(1, "Failed to update or insert {}: {}", filename, count);
-		if (digest)
-			free(digest);
 		csync_debug(3, "daemon_file_update DONE: UPDATE/INSERT into file filename: {}\n", filename);
 	}
 }

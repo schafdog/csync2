@@ -638,22 +638,19 @@ int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino,
 	}
 	return rc;
 }
+
 int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std::string& ino, struct stat *old_stat) {
     return compare_dev_inode(file_stat, dev.c_str(), ino.c_str(), old_stat);
 }
 
-int csync_calc_digest(const char *file, BUF_P buffer, char **digest) {
-	int size = 2 * DIGEST_MAX_SIZE + 1;
-	*digest = buffer_malloc(buffer, size);
-	int rc = dsync_digest_path_hex(file, "sha1", *digest, size);
+int csync_calc_digest(const std::string& file, std::string& digest)
+{
+	digest = ""; // std::string(size, ' ');
+	int rc = dsync_digest_path_hex(file, "sha1", digest);
 	if (rc) {
-		csync_error(0, "ERROR: generating digest: {} {}", *digest, rc);
-		// TODO ???
+		csync_error(0, "ERROR: generating digest for file: {} {}", file, rc);
 	}
 	return rc;
-}
-int csync_calc_digest(filename_p file, BUF_P buffer, char **digest) {
-	return csync_calc_digest(file.c_str(), buffer, digest);
 }
 
 static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *file_stat, int flags) {
@@ -666,6 +663,7 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	// Assume that this isn't a upgrade and thus same version
 	operation_t operation = 0;
 	char *other = 0;
+	std::string new_digest;
 	char *digest = NULL;
 	dev_t old_no;
 	time_t lock_time = csync_redis_get_custom(filename.c_str(), "CLOSE_WRITE,CLOSE");
@@ -681,10 +679,15 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	int is_upgrade = db_flags & IS_UPGRADE;
 	int dev_change = db_flags & DEV_CHANGE;
 
-	csync_info(3, "check_file: calc_digest: {} dirty: {} is_upgrade {} dev_change: {}\n",
+	csync_info(3, "csync_check_file_mod: calc_digest: {} dirty: {} is_upgrade {} dev_change: {}\n",
 			   calc_digest, is_dirty, is_upgrade, dev_change);
 	if (calc_digest) {
-		csync_calc_digest(filename.c_str(), buffer, &digest);
+		if (csync_calc_digest(filename, new_digest)) {
+			csync_info(0, "csync_check_file_mod: calc_digest failed. Skipping {} {}",  filename, checktxt);
+ 			// breaks compare_mode. Better way?
+			return 0;
+		}
+		digest = const_cast<char *>(new_digest.c_str());
 	}
 	if (csync_compare_mode) {
 		printf("%40s %s\n", digest ? digest : checktxt, filename.c_str());
