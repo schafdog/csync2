@@ -101,7 +101,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           2113a525ccc1fcabc8e82217ec462ddb7e1118e2-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
 Connecting to redis localhost:6379
@@ -127,7 +127,6 @@ Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
-csync_daemon_sig: unused parameters: ftime 1620424800 size 4096
 CONN local < OK (not_found).
 
 DEBUG daemon: SIG rc=2 'local' '<TESTBASE>/test/peer' '-' 
@@ -166,7 +165,6 @@ Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GRO
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto
-csync_daemon_sig: unused parameters: ftime 1620424800 size 4096
 CONN local < OK (not_found).
 
 DEBUG daemon: SIG rc=2 'local' '<TESTBASE>/test/peer/auto' '-' 
@@ -208,7 +206,6 @@ Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto/younger
 Match (+): <TESTBASE>/test/peer/auto/younger on <TESTBASE>/test/peer/auto/younger
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger
 daemon_check_auto_resolve: <TESTBASE>/test/peer/auto/younger failed stat
-csync_daemon_sig: unused parameters: ftime 1620424800 size 4096
 CONN local < OK (not_found).
 
 DEBUG daemon: SIG rc=2 'local' '<TESTBASE>/test/peer/auto/younger' '-' 
@@ -332,7 +329,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           2113a525ccc1fcabc8e82217ec462ddb7e1118e2-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
 Connecting to redis localhost:6379
@@ -361,7 +358,6 @@ Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto/younger/local_oldes
 Match (+): <TESTBASE>/test/peer/auto/younger on <TESTBASE>/test/peer/auto/younger/local_oldest
 daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younger/local_oldest
 daemon: Auto resolve local:<TESTBASE>/test/peer/auto/younger/local_oldest time: <NUM> <MTIME> size: 12 13 
-csync_daemon_sig: unused parameters: ftime 1620424800 size 12
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -503,7 +499,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           2113a525ccc1fcabc8e82217ec462ddb7e1118e2-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
 Connecting to redis localhost:6379
@@ -529,7 +525,6 @@ Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
-csync_daemon_sig: unused parameters: ftime 1625695200 size 4096
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -583,7 +578,6 @@ Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GRO
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto
-csync_daemon_sig: unused parameters: ftime 1625695200 size 4096
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -642,7 +636,6 @@ daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younge
 daemon: Auto resolve local:<TESTBASE>/test/peer/auto/younger time: <NUM> <MTIME> size: 4096 4096 
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolved. clear dirty
-csync_daemon_sig: unused parameters: ftime 1625695200 size 4096
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -703,7 +696,6 @@ daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younge
 daemon: Auto resolve local:<TESTBASE>/test/peer/auto/younger/local_oldest time: <NUM> <MTIME> size: 14 13 
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolved. clear dirty
-csync_daemon_sig: unused parameters: ftime 1625695200 size 14
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -752,28 +744,28 @@ daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won
 Match (+): <TESTBASE>/test/peer/auto/younger on <TESTBASE>/test/peer/auto/younger/local_oldest
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto/younger/local_oldest
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
-backupdir stat: /tmp/csync2/export -1 0
+backupdir stat: /tmp/csync2/export -1 No such file or directory
 mkdir /tmp/csync2/export 
-backupdir stat: /tmp/csync2/export/home -1 0
+backupdir stat: /tmp/csync2/export/home -1 No such file or directory
 mkdir /tmp/csync2/export/home 
 Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
-backupdir stat: /tmp/csync2/export/home/dennis -1 0
+backupdir stat: /tmp/csync2/export/home/dennis -1 No such file or directory
 mkdir /tmp/csync2/export/home/dennis 
-backupdir stat: /tmp/csync2/export/home/dennis/Projects -1 0
+backupdir stat: /tmp/csync2/export/home/dennis/Projects -1 No such file or directory
 mkdir /tmp/csync2/export/home/dennis/Projects 
-backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2 -1 0
+backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2 -1 No such file or directory
 mkdir /tmp/csync2/export/home/dennis/Projects/csync2 
-backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2/csync2 -1 0
+backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2/csync2 -1 No such file or directory
 mkdir /tmp/csync2/export/home/dennis/Projects/csync2/csync2 
-backupdir stat: /tmp/csync2<TESTBASE> -1 0
+backupdir stat: /tmp/csync2<TESTBASE> -1 No such file or directory
 mkdir /tmp/csync2<TESTBASE> 
-backupdir stat: /tmp/csync2<TESTBASE>/test -1 0
+backupdir stat: /tmp/csync2<TESTBASE>/test -1 No such file or directory
 mkdir /tmp/csync2<TESTBASE>/test 
-backupdir stat: /tmp/csync2<TESTBASE>/test/peer -1 0
+backupdir stat: /tmp/csync2<TESTBASE>/test/peer -1 No such file or directory
 mkdir /tmp/csync2<TESTBASE>/test/peer 
-backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto -1 0
+backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto -1 No such file or directory
 mkdir /tmp/csync2<TESTBASE>/test/peer/auto 
-backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto/younger -1 0
+backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto/younger -1 No such file or directory
 mkdir /tmp/csync2<TESTBASE>/test/peer/auto/younger 
 backup_rename FILE: /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest filename: <TESTBASE>/test/peer/auto/younger/local_oldest i: 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
@@ -918,7 +910,7 @@ My hostname is peer.
 Database File: pgsql://csync2:csync238@localhost/csync2_peer
 DB Version:    2
 IP Version:    IPv4
-GIT:           2113a525ccc1fcabc8e82217ec462ddb7e1118e2-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
 Connecting to redis localhost:6379
@@ -944,7 +936,6 @@ Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer
-csync_daemon_sig: unused parameters: ftime 0 size 0
 CONN local < OK (data_follows).
 
 Flags for gencheck: 48 
@@ -991,18 +982,18 @@ Removing file <TESTBASE>/test/peer/auto/younger/local_oldest
 Match (+): <TESTBASE>/test/peer/auto/younger on <TESTBASE>/test/peer/auto/younger/local_oldest
 Match (+): <TESTBASE>/test/peer on <TESTBASE>/test/peer/auto/younger/local_oldest
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
-backupdir stat: /tmp/csync2/export 0 17901
-backupdir stat: /tmp/csync2/export/home 0 16877
+backupdir stat: /tmp/csync2/export 0 
+backupdir stat: /tmp/csync2/export/home 0 
 Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
-backupdir stat: /tmp/csync2/export/home/dennis 0 16877
-backupdir stat: /tmp/csync2/export/home/dennis/Projects 0 16877
-backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2 0 16877
-backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2/csync2 0 16877
-backupdir stat: /tmp/csync2<TESTBASE> 0 16877
-backupdir stat: /tmp/csync2<TESTBASE>/test 0 16877
-backupdir stat: /tmp/csync2<TESTBASE>/test/peer 0 16877
-backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto 0 16877
-backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto/younger 0 16877
+backupdir stat: /tmp/csync2/export/home/dennis 0 
+backupdir stat: /tmp/csync2/export/home/dennis/Projects 0 
+backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2 0 
+backupdir stat: /tmp/csync2/export/home/dennis/Projects/csync2/csync2 0 
+backupdir stat: /tmp/csync2<TESTBASE> 0 
+backupdir stat: /tmp/csync2<TESTBASE>/test 0 
+backupdir stat: /tmp/csync2<TESTBASE>/test/peer 0 
+backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto 0 
+backupdir stat: /tmp/csync2<TESTBASE>/test/peer/auto/younger 0 
 backup_rename FILE: /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest filename: <TESTBASE>/test/peer/auto/younger/local_oldest i: 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.1'. rc = 0

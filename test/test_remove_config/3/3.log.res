@@ -1,7 +1,6 @@
 cmd R "check -R" local peer test
-csync_hostinfo (nil)
-standalone: 0 server_standalone > 0: 0
-Mode: 16384 Flags: 1 PID: 2657695
+csync_hostinfo 0x0
+standalone: 0 server_standalone > 0: false
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
@@ -50,16 +49,12 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           42ec618cadb2cff3bcf7925107f9c9ae320ed28c-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
-csync2_db_SQL: update file set filename = NULL where filename = NULL 
-csync2_db_SQL: update host set host = NULL where host = NULL
-db_schema_version: 2
 Connecting to redis localhost:6379
 MODE 16384
 remove_old: dirty
-SQL: SELECT filename, myname, peername FROM dirty where myname = 'local' AND peername not in (select host from host where status = 1) 
 Check 'local' with 'peer:<TESTBASE>/test/local' from dirty.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 Check 'local' with 'other:<TESTBASE>/test/local' from dirty.
@@ -72,26 +67,15 @@ Check 'local' with 'other:<TESTBASE>/test/local/new_file' from dirty.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file
 Match (-): <TESTBASE>/test/local/new_file on <TESTBASE>/test/local/new_file
 Remove 'other:<TESTBASE>/test/local/new_file' from dirty. No longer in configuration
-SQL Query finished.
 Removing <TESTBASE>/test/local/new_file (other) from dirty db.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file'  AND  myname = 'local' AND peername like 'other'
 Removing <TESTBASE>/test/local/new_file (peer) from dirty db.
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/new_file'  AND  myname = 'local' AND peername like 'peer'
 remove_old: file
-SQL: SELECT filename, mode FROM file where hostname = 'local' AND filename = '<TESTBASE>/test' or filename like '<TESTBASE>/test/%' 
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new_file
 Match (-): <TESTBASE>/test/local/new_file on <TESTBASE>/test/local/new_file
-SQL Query finished.
 Removing <TESTBASE>/test/local/new_file from file db.
-csync2_db_SQL: DELETE FROM file WHERE  (filename = '<TESTBASE>/test/local/new_file' OR filename LIKE '<TESTBASE>/test/local/new_file/%')  AND  hostname = 'local'
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local/new_file, param2: <TESTBASE>/test/local/new_file/%, param3: local
 remove_old: end
-Redis closing: 0x55d6d79fd500
 Redis closed.
-SQL: SELECT command, logfile FROM action
-SQL Query finished.
-Closing db: 0x55d6d79fd1e0
-Closed db: 0x55d6d79fd1e0
-Closed db: 0x55d6d79fd1e0
 csync_config_destroy
 csync_config_destroy end

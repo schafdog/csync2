@@ -1,7 +1,6 @@
 cmd x "clean" local peer test
-csync_hostinfo (nil)
-standalone: 0 server_standalone > 0: 0
-Mode: 65536 Flags: 1 PID: 2387842
+csync_hostinfo 0x0
+standalone: 0 server_standalone > 0: false
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
@@ -51,32 +50,19 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           09e7f4b9db150a32e5a70be67ab3aa9902c0692d-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
-csync2_db_SQL: update file set filename = NULL where filename = NULL 
-csync2_db_SQL: update host set host = NULL where host = NULL
-db_schema_version: 2
 Connecting to redis localhost:6379
+csync_file_args: '<TESTBASE>/test' flags 65 
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 csync_check_dir: <TESTBASE>/test 65 
 Checking <TESTBASE>/test/* ..
 Checking for deleted files <TESTBASE>/test recursive.
-file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
-SQL Query finished.
-csync_file_args: '<TESTBASE>/test' flags 65 
+File <TESTBASE>/test. Hostname: local 
 get dirty host
-SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername
-SQL Query finished.
 MODE 65536
-Redis closing: 0x55688e1e34a0
 Redis closed.
-SQL: SELECT command, logfile FROM action
-SQL Query finished.
-Closing db: 0x55688e1e3180
-Closed db: 0x55688e1e3180
-Closed db: 0x55688e1e3180
 csync_config_destroy
 csync_config_destroy end

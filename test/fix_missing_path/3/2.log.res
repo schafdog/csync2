@@ -1,6 +1,6 @@
 cmd cI "2. New local/recursive/.. -I" local peer test
-csync_hostinfo (nil)
-standalone: 0 server_standalone > 0: 0
+csync_hostinfo 0x0
+standalone: 0 server_standalone > 0: false
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
@@ -50,109 +50,95 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           518d46c56fc057db5d6ba8cd2c6115fe2c86aa78-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
-csync2_db_SQL: update file set filename = NULL where filename = NULL 
-csync2_db_SQL: update host set host = NULL where host = NULL
-db_schema_version: 2
 Connecting to redis localhost:6379
+csync_file_args: '<TESTBASE>/test' flags 69 
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 csync_check_dir: <TESTBASE>/test 69 
 Checking <TESTBASE>/test/* ..
+Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local' -> NULL
 New file: <TESTBASE>/test/local
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-INSERT/UPDATE: <TESTBASE>/test/local (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348043, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348043, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
-Inserted/updated <TESTBASE>/test/local rows matched: 0
+csync_check_file_same_dev_inode <TESTBASE>/test/local <TESTBASE>/test/local
+INSERT/UPDATE: <TESTBASE>/test/local NULL
+Inserted/updated <TESTBASE>/test/local rows matched: 1
 csync_check_dir: <TESTBASE>/test/local 197 
 Checking <TESTBASE>/test/local/* ..
+Calling check_mod on <TESTBASE>/test/local/recursive from <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/recursive' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/recursive' -> NULL
 New file: <TESTBASE>/test/local/recursive
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-INSERT/UPDATE: <TESTBASE>/test/local/recursive (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/recursive', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348044, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348044, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
-Inserted/updated <TESTBASE>/test/local/recursive rows matched: 0
+csync_check_file_same_dev_inode <TESTBASE>/test/local/recursive <TESTBASE>/test/local/recursive
+INSERT/UPDATE: <TESTBASE>/test/local/recursive NULL
+Inserted/updated <TESTBASE>/test/local/recursive rows matched: 1
 csync_check_dir: <TESTBASE>/test/local/recursive 197 
 Checking <TESTBASE>/test/local/recursive/* ..
+Calling check_mod on <TESTBASE>/test/local/recursive/1 from <TESTBASE>/test/local/recursive
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/recursive/1' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/recursive/1' -> NULL
 New file: <TESTBASE>/test/local/recursive/1
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-INSERT/UPDATE: <TESTBASE>/test/local/recursive/1 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/recursive/1', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348045, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348045, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
-Inserted/updated <TESTBASE>/test/local/recursive/1 rows matched: 0
+csync_check_file_same_dev_inode <TESTBASE>/test/local/recursive/1 <TESTBASE>/test/local/recursive/1
+INSERT/UPDATE: <TESTBASE>/test/local/recursive/1 NULL
+Inserted/updated <TESTBASE>/test/local/recursive/1 rows matched: 1
 csync_check_dir: <TESTBASE>/test/local/recursive/1 197 
 Checking <TESTBASE>/test/local/recursive/1/* ..
+Calling check_mod on <TESTBASE>/test/local/recursive/1/2 from <TESTBASE>/test/local/recursive/1
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/recursive/1/2' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/recursive/1/2' -> NULL
 New file: <TESTBASE>/test/local/recursive/1/2
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/recursive/1/2', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348046, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348046, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
-Inserted/updated <TESTBASE>/test/local/recursive/1/2 rows matched: 0
+csync_check_file_same_dev_inode <TESTBASE>/test/local/recursive/1/2 <TESTBASE>/test/local/recursive/1/2
+INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2 NULL
+Inserted/updated <TESTBASE>/test/local/recursive/1/2 rows matched: 1
 csync_check_dir: <TESTBASE>/test/local/recursive/1/2 197 
 Checking <TESTBASE>/test/local/recursive/1/2/* ..
+Calling check_mod on <TESTBASE>/test/local/recursive/1/2/3 from <TESTBASE>/test/local/recursive/1/2
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2/3
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/recursive/1/2/3' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/recursive/1/2/3' -> NULL
 New file: <TESTBASE>/test/local/recursive/1/2/3
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2/3 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/recursive/1/2/3', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348047, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348047, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
-Inserted/updated <TESTBASE>/test/local/recursive/1/2/3 rows matched: 0
+csync_check_file_same_dev_inode <TESTBASE>/test/local/recursive/1/2/3 <TESTBASE>/test/local/recursive/1/2/3
+INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2/3 NULL
+Inserted/updated <TESTBASE>/test/local/recursive/1/2/3 rows matched: 1
 csync_check_dir: <TESTBASE>/test/local/recursive/1/2/3 197 
 Checking <TESTBASE>/test/local/recursive/1/2/3/* ..
+Calling check_mod on <TESTBASE>/test/local/recursive/1/2/3/4 from <TESTBASE>/test/local/recursive/1/2/3
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2/3/4
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/recursive/1/2/3/4' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/recursive/1/2/3/4' -> NULL
 New file: <TESTBASE>/test/local/recursive/1/2/3/4
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2/3/4 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/recursive/1/2/3/4', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348048, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348048, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
-Inserted/updated <TESTBASE>/test/local/recursive/1/2/3/4 rows matched: 0
+csync_check_file_same_dev_inode <TESTBASE>/test/local/recursive/1/2/3/4 <TESTBASE>/test/local/recursive/1/2/3/4
+INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2/3/4 NULL
+Inserted/updated <TESTBASE>/test/local/recursive/1/2/3/4 rows matched: 1
 csync_check_dir: <TESTBASE>/test/local/recursive/1/2/3/4 197 
 Checking <TESTBASE>/test/local/recursive/1/2/3/4/* ..
+Calling check_mod on <TESTBASE>/test/local/recursive/1/2/3/4/5 from <TESTBASE>/test/local/recursive/1/2/3/4
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2/3/4/5
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/recursive/1/2/3/4/5' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/recursive/1/2/3/4/5' -> NULL
 New file: <TESTBASE>/test/local/recursive/1/2/3/4/5
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2/3/4/5 (null)
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/recursive/1/2/3/4/5', 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', 2049, 53348049, NULL, 16877, 4096, 1736955860, 1) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736955860:mode=16877:user=dennis:group=schafroth:type=dir', device = 2049, inode = 53348049, digest = NULL, mode = 16877, size = 4096, mtime = 1736955860, type = 1
-Inserted/updated <TESTBASE>/test/local/recursive/1/2/3/4/5 rows matched: 0
+csync_check_file_same_dev_inode <TESTBASE>/test/local/recursive/1/2/3/4/5 <TESTBASE>/test/local/recursive/1/2/3/4/5
+INSERT/UPDATE: <TESTBASE>/test/local/recursive/1/2/3/4/5 NULL
+Inserted/updated <TESTBASE>/test/local/recursive/1/2/3/4/5 rows matched: 1
 csync_check_dir: <TESTBASE>/test/local/recursive/1/2/3/4/5 197 
 Checking <TESTBASE>/test/local/recursive/1/2/3/4/5/* ..
 Checking for deleted files <TESTBASE>/test recursive.
-file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
+File <TESTBASE>/test. Hostname: local 
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
-check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive
-check_pure: filename: '<TESTBASE>/test/local/recursive' 59, cached path: '<TESTBASE>/test/' 53, 53.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1
-check_pure: filename: '<TESTBASE>/test/local/recursive/1' 69, cached path: '<TESTBASE>/test/local/' 59, 59.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2
-check_pure: filename: '<TESTBASE>/test/local/recursive/1/2' 71, cached path: '<TESTBASE>/test/local/recursive/' 69, 69.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2/3
-check_pure: filename: '<TESTBASE>/test/local/recursive/1/2/3' 73, cached path: '<TESTBASE>/test/local/recursive/1/' 71, 71.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2/3/4
-check_pure: filename: '<TESTBASE>/test/local/recursive/1/2/3/4' 75, cached path: '<TESTBASE>/test/local/recursive/1/2/' 73, 73.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/recursive/1/2/3/4/5
-check_pure: filename: '<TESTBASE>/test/local/recursive/1/2/3/4/5' 77, cached path: '<TESTBASE>/test/local/recursive/1/2/3/' 75, 75.
-SQL Query finished.
-csync_file_args: '<TESTBASE>/test' flags 69 
 MODE 2
 Redis closed.
-SQL: SELECT command, logfile FROM action
-SQL Query finished.
 csync_config_destroy
 csync_config_destroy end
