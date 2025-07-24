@@ -1209,15 +1209,15 @@ static int csync_update_file_mod_internal(int conn, db_conn_p db, const char *my
 					checktxt = buffer_strdup(buffer,
 							csync_genchecktxt_version(&st, filename, SET_USER | SET_GROUP, db->version));
 				}
-
-				char *calc_digest = NULL;
-				if (!digest || digest[0] == 0) {
-					csync_calc_digest(filename.c_str(), buffer, &calc_digest);
-					digest = calc_digest;
-				};
-				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername,
-												filename, filename_enc,
-												checktxt, digest, &st, uid, gid, auto_resolve_run);
+				if (digest || digest[0] != 0) {
+					rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername,
+													filename, filename_enc,
+													checktxt, digest, &st, uid, gid, auto_resolve_run);
+				} else {
+					csync_debug(1, "csync_update_file_mod(OP_MARK): skipping csync_find_update_hardlink:"
+								"no digest on file {} checktxt '{}'\n",
+								filename, checktxt);
+				}
 				if (rc == OK || rc == CONN_CLOSE) {
 					csync_info(2, "Returning after hard link check {}:{} {}\n", peername, filename, rc);
 					return rc;
