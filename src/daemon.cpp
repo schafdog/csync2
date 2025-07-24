@@ -468,7 +468,7 @@ int csync_file_backup(filename_p std_filename, const char **cmd_error) {
 
 					struct stat st;
 					rc = lstat(backup_filename, &st);
-					csync_info(3, "backupdir stat: {} {} {}\n", backup_filename, rc, st.st_mode);
+					csync_info(3, "backupdir stat: {} {} {}\n", backup_filename, rc, (rc == -1 ? strerror(errno) : ""));
 					if (rc == 0) {
 						if (!S_ISDIR(st.st_mode)) {
 							csync_info(3, "backup_rename PATH: {} filename: {} i: \n", backup_filename, filename, i);
@@ -983,7 +983,9 @@ static int response_ok_not_found(int conn) {
 
 static int csync_daemon_sig(int conn, const char *filename, const char *user_group, time_t ftime, long long size,
 							db_conn_p db, const char **cmd_error, int skip_rs_sig) {
-	csync_debug(3, "csync_daemon_sig: unused parameters: ftime {} size {}\n", ftime, size);
+	(void) ftime;
+	(void) size;
+	
 	struct stat st;
 	if (lstat_strict(filename, &st) != 0) {
 		char *path;
