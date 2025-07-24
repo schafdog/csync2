@@ -13,7 +13,7 @@ cmd x "New $NAME/$FILENAME"
 rm "test/$NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
 cmd T test/$NAME "List daemon"
-#rm -rf test/$NAME
-#sleep 2
-#cmd x "clean up"
+rm -rf test/$NAME
+sleep 2
+cmd x "clean up"
 killdaemon
