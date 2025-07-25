@@ -116,7 +116,9 @@ static void csync_run_single_command(db_conn_p db, const char *command,
 		execl("/bin/sh", "sh", "-c", real_command, NULL);
 		_exit(127);
 	}
-
+	free(command_clr);
+	free(logfile_clr);
+	free(real_command);
 	if (waitpid(pid, 0, 0) < 0)
 		csync_fatal("ERROR: Waitpid returned error {}.", strerror(errno));
 
