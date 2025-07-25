@@ -183,11 +183,11 @@ int DbPostgres::upgrade_to_schema(int new_version) {
 		"  forced    int         ,"
 		"  myname    varchar({}) ,"
 		"  peername  varchar({}) ,"
-		"  checktxt  varchar(255),"
-		"  digest    varchar(130),"
+		"  checktxt  varchar({}) ,"
+		"  digest    varchar({}) ,"
 		"  device    bigint      ,"
 		"  inode     bigint      ,"
-		"  operation varchar(100),"
+		"  operation varchar(20) ,"
 		"  op        int         ,"
 		"  other     varchar({}) ,"
 		"  mode      int         ,"
@@ -197,7 +197,7 @@ int DbPostgres::upgrade_to_schema(int new_version) {
 		"  timestamp timestamp   DEFAULT current_timestamp,"
 		"  UNIQUE (filename,peername,myname)"			");"
 		"CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
-		FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH));
+		FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, CHECKTXT_LENGTH+FILE_LENGTH, DIGEST_LENGTH, FILE_LENGTH));
 
 	conn_->query(std::format(
 	    "CREATE TABLE IF NOT EXISTS file ("
@@ -211,12 +211,12 @@ int DbPostgres::upgrade_to_schema(int new_version) {
         "  mode   int           ,"
         "  mtime  int           ,"
         "  type   int           ,"
-        "  digest varchar(130)  ,"
+        "  digest varchar({})   ,"
         "  timestamp timestamp   DEFAULT current_timestamp,"
         // "  UNIQUE (id),"
    	    "  UNIQUE (filename,hostname)"				 "); "
         "CREATE INDEX idx_file_device_inode ON file (device, inode); ",
-		FILE_LENGTH, FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50));
+		FILE_LENGTH, HOST_LENGTH, CHECKTXT_LENGTH+FILE_LENGTH, DIGEST_LENGTH));
 
 	conn_->query(std::format(
 	    "CREATE TABLE IF NOT EXISTS hint ("
