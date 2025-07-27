@@ -595,7 +595,7 @@ textlist_p DbSql::get_commands()
     auto resultset = stmt->execute_query();
     textlist_p tl = 0;
     while (resultset->next()) {
-        textlist_add2(&tl, resultset->get_string(1).c_str(), resultset->get_string(1).c_str(), 0);
+        textlist_add2(&tl, resultset->get_string(1).c_str(), resultset->get_string(2).c_str(), 0);
     }
 	return tl;
 }
