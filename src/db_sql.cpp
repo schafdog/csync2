@@ -1082,7 +1082,7 @@ int DbSql::remove_action_entry(filename_p filename, const std::string& command, 
 {
     std::string name_sql = "remove_action_entry";
     std::string sql = R"(DELETE FROM action
-                        WHERE command = ? and logfile = ? and filename = ?)";
+                        WHERE filename = ? and command = ? and logfile = ?)";
    	auto stmt = conn_->prepare(name_sql, sql);
 	stmt->bind(1, filename);
 	stmt->bind(2, command);
