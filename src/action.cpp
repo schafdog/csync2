@@ -66,8 +66,7 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	}
 }
 
-static void csync_run_single_command(db_conn_p db, const char *command,
-		const char *logfile) {
+static void csync_run_single_command(db_conn_p db, const char *command, const char *logfile) {
 	char *command_clr = strdup(command);
 	char *logfile_clr = strdup(logfile);
 	char *real_command, *mark;
