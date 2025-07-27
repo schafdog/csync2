@@ -130,7 +130,8 @@ void csync_run_commands(db_conn_p db) {
 	textlist_p tl = 0, t;
 
 	tl = db->get_commands();
-	for (t = tl; t != 0; t = t->next)
+	for (t = tl; t != 0; t = t->next) {
 		csync_run_single_command(db, t->value, t->value2);
+	}
 	textlist_free(tl);
 }
