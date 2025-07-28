@@ -26,7 +26,6 @@
 #include "db.hpp"
 #include "digest.hpp"
 #include "db_api.hpp"
-#include "buffer.hpp"
 #include "redis.hpp"
 
 // C++20 std::format support
@@ -246,7 +245,6 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 							 const std::set<std::string>& peerfilter, operation_t operation_org, const std::string& checktxt,
 							 const char *dev, const char *ino,
 							 std::optional<std::string>& org_other, int mode, int mtime) {
-	// Using std::string directly instead of buffer pattern
 	struct peer *pl = csync_find_peers(file.c_str(), thispeer);
 	int pl_idx;
 	operation_t operation = operation_org;
@@ -330,7 +328,6 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 		};
 	};
 	free(pl);
-	// No longer using buffer pattern
 }
 
 void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
@@ -670,7 +667,6 @@ std::optional<std::string> to_optional(const char* s) {
 }
 
 static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *file_stat, int flags) {
-    csync2::Buffer buffer;
 	long count = 0;
 	int init_run = flags & FLAG_INIT_RUN;
 	std::string checktxt = csync_genchecktxt_version(file_stat, filename.c_str(), SET_USER | SET_GROUP, db->version);

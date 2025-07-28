@@ -1109,7 +1109,6 @@ static int csync_find_update_hardlink(int conn, db_conn_p db, const std::string 
 static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
 		operation_t operation, const char *other, const char *checktxt, const char *digest, int force, int dry_run)
 {
-	csync2::Buffer buffer;
 	struct stat st;
 	char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
 	int last_conn_status = 0, auto_resolve_run = 0;
@@ -1213,8 +1212,10 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 			};
 			int has_links = (st.st_nlink > 1 && S_ISREG(st.st_mode));
 			if (has_links && digest) {
+				std::string str_checktxt;
 				if (!checktxt) {
-					checktxt = buffer.strdup(csync_genchecktxt_version(&st, filename, SET_USER | SET_GROUP, db->version));
+					str_checktxt = csync_genchecktxt_version(&st, filename, SET_USER | SET_GROUP, db->version);
+					checktxt = str_checktxt.c_str();
 				}
 
 				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername,

@@ -53,7 +53,6 @@
 #include "uidgid.hpp"
 #include "resolv.hpp"
 #include "redis.hpp"
-#include "buffer.hpp"
 
 #define OK        0
 #define IDENTICAL 1
