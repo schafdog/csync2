@@ -1,6 +1,6 @@
 /*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *  csync2 - cluster synchronization tool, 2nd generation
- *  LINBIT Information Technologies GmbH <http://www.linbit.com>
+ *  LINBIT Information Technologies GmbH <http://wwws.linbit.com>
  *  Copyright (C) 2004, 2005, 2006  Clifford Wolf <clifford@clifford.at>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -309,7 +309,7 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 
 						csync_info_c(3,
 								"Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %s operation %s \n",
-								file_new, clean_other, result_other, dirty,
+									 file_new.c_str(), clean_other.c_str(), result_other, dirty,
 								operation);
 					} else {
 						csync_error(0,
@@ -665,7 +665,6 @@ int csync_calc_digest(const std::string& file, std::string& digest)
 	return rc;
 }
 
-
 std::optional<std::string> to_optional(const char* s) {
     return s ? std::make_optional(std::string(s)) : std::nullopt;
 }
@@ -696,7 +695,9 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	csync_info(3, "csync_check_file_mod: calc_digest: {} dirty: {} is_upgrade {} dev_change: {}\n",
 			   calc_digest, is_dirty, is_upgrade, dev_change);
 	if (calc_digest) {
-		digest = std::make_optional(csync_calc_digest(filename));
+		std::string opt_digest;
+		csync_calc_digest(filename, opt_digest);
+		digest = std::make_optional(opt_digest);
 	}
 	if (csync_compare_mode) {
 	    std::string digest_str = (digest ? *digest : std::string(checktxt));

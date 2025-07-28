@@ -50,9 +50,15 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
+<<<<<<< HEAD
 GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
+=======
+GIT:           c150c89d8255014e65a1e0903401ab4fe3ff8a25-dirty
+Opening shared library libpq.dylib
+Reading symbols from shared library libpq.dylib
+>>>>>>> refs/remotes/origin/cpp-checktxt
 Connecting to redis localhost:6379
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 csync_file_args: '<TESTBASE>/test/local' flags 65 
@@ -118,6 +124,7 @@ Connected to localhost:30861
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
+<<<<<<< HEAD
 read_conn_status 'OK (cmd_finished).' 0
 CONN peer < DEBUG 3
 
@@ -162,3 +169,5 @@ MODE 65536
 Redis closed.
 csync_config_destroy
 csync_config_destroy end
+=======
+>>>>>>> refs/remotes/origin/cpp-checktxt

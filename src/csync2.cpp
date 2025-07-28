@@ -366,7 +366,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 		else
 		{
 			struct stat st;
-			const char *checktxt = NULL;
+			std::string checktxt = "";
 			int is_delete = strcmp(operation, "DELETE") == 0;
 			if (lstat_strict(file, &st) == 0)
 			{
@@ -379,7 +379,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 			}
 			csync_info(1, "monitor: unmatched '{}' '{}' {} at '{}'", operation, file, checktxt, time_str);
 			if (!is_delete && faccessat(0, file, R_OK,AT_SYMLINK_NOFOLLOW) != 0) {
-				csync_error(0, "monitor: ERROR: Cant read {} {}.\n", file, checktxt ? checktxt : "<No checktxt>");
+				csync_error(0, "monitor: ERROR: Cant read {} {}.\n", file, checktxt != "" ? checktxt : "<No checktxt>");
 				continue;
 			}
 			if (strcmp(operation, "CREATE") == 0)

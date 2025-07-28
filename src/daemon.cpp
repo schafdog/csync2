@@ -989,6 +989,7 @@ static int csync_daemon_sig(int conn, const char *filename, const char *user_gro
 	(void) size;
 	struct stat st;
 	if (lstat_strict(filename, &st) != 0) {
+		UrlEncoder url_encode;
 		char *path;
 		if ((path = csync_check_path(filename))) {
 			std::string otherfile = url_encode(prefixencode(path));
@@ -1019,6 +1020,7 @@ static int csync_daemon_sig(int conn, const char *filename, const char *user_gro
 	csync_debug(2, "Flags for gencheck: {} \n", flags);
 	std::string checktxt = csync_genchecktxt_version(&st, filename, flags, db->version);
 	char *digest /* db->get_digest(filename); */= NULL;
+	UrlEncoder url_encode;
 	if (db->version == 1)
 		conn_printf(conn, "%s %s\n", checktxt.c_str(), (digest ? digest : ""));
 	else if (db->version == 2) {
