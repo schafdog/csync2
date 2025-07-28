@@ -154,10 +154,8 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 		sprintf(time, "%d", expire);
 		argv[argc] = time;
 		argc++;
-
 	}
 	redis_reply = (redisReply*)redisCommandArgv(redis_context, argc, argv, NULL);
-
 	csync_debug(3, "Redis reply: SET '{}' '{}' {} {} {} -> {}\n", domain_key, value, nx ? "NX" : "",
 			expire > 0 ? "EX" : "", expire > 0 ? time : "", redis_str(redis_reply));
 
@@ -170,11 +168,12 @@ int csync_redis_set(const char *key, const char *domain, const char *value, int 
 		}
 		return -2;
 	}
-
+	int rc = 1;
 	if (!redis_reply->str || strcmp(redis_reply->str, "OK")) {
-		return -1;
+		rc = -1;
 	}
-	return 1;
+	freeReplyObject(redis_reply);
+	return rc;
 }
 
 extern int csync_zero_mtime_debug;
