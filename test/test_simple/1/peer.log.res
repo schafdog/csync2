@@ -58,19 +58,19 @@ Running check for <TESTBASE>/test/peer/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 Removing file <TESTBASE>/test/peer/new_file 'N' all
-Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
 Running check for <TESTBASE>/test/peer/A ...
 Checking for modified files <TESTBASE>/test/peer/A 
 Checking for deleted files <TESTBASE>/test/peer/A.
 Removing file <TESTBASE>/test/peer/A
-Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/A from file db.
 Running check for <TESTBASE>/test/peer/.Test ...
 Checking for modified files <TESTBASE>/test/peer/.Test 
 Checking for deleted files <TESTBASE>/test/peer/.Test.
 Removing file <TESTBASE>/test/peer/.Test
-Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/.Test from file db.
 Removing directory <TESTBASE>/test/peer 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 

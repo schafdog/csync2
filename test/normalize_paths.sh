@@ -34,6 +34,7 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "s|Redis closing: 0x.*|Redis closing: <PTR>|g" \
     -e "s| device = [^ ]* AND inode = [^ ]* | device = <DEV> AND inode = <INODE>  |g" \
     -e "s| to user [0-9]* and group [0-9]*, rc= -1| to user <UID> and group <GID>, rc= -1|g" \
+    -e "s|Changing owner of /tmp/csync2/[^ ]* to|Changing owner of /tmp/csync2/<BACKUP> to|g" \
     -e "/----------/d" \
     -e "/----------+/d" \
     -e "/Transfer starting:/d" \

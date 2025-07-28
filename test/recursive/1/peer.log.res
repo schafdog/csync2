@@ -105,7 +105,7 @@ Running check for <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c.
 Removing file <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c
-Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c from file db.
 Removing directory <TESTBASE>/test/peer/recursive/1/2/3/4/5 0
 Removing directory <TESTBASE>/test/peer/recursive/1/2/3/4 0

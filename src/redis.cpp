@@ -8,7 +8,6 @@
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #include "csync2.hpp"
 #include "redis.hpp"
-#include "buffer.hpp"
 
 // C++20 std::format support
 #if __cplusplus >= 202002L && __has_include(<format>)

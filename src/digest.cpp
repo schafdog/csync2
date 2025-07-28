@@ -84,29 +84,22 @@ int main(int argc, char *argv[])
   if (argc >= 2 && argv[2]) {
     file = open(argv[2], O_RDONLY);
     if (file == -1)
-<<<<<<< HEAD
-      printf("Failed to open %s", argv[2]);
-  }
-  else
-    file = STDIN_FILENO;
-=======
 	{
 		printf("Failed to open %s", argv[2]);
 	}
 	else
 		file = STDIN_FILENO;
->>>>>>> cpp-client-server
 
-  int rc = dsync_digest(file, argv[1], md_value, &md_len);
-  if (rc)
-    printf("Failed to digest %s with %s", argv[2], argv[1]);
-  else {
-    //printf("Digest is (%u): ", total);
-    char hex_str[2*EVP_MAX_MD_SIZE+1];
-    dsync_digest_hex(md_value, md_len, hex_str);
-    printf("%s\n", hex_str);
-  }
-  return 0;
+	int rc = dsync_digest(file, argv[1], md_value, &md_len);
+	if (rc)
+		printf("Failed to digest %s with %s", argv[2], argv[1]);
+	else {
+		//printf("Digest is (%u): ", total);
+		char hex_str[2*EVP_MAX_MD_SIZE+1];
+		dsync_digest_hex(md_value, md_len, hex_str);
+		printf("%s\n", hex_str);
+	}
+	return 0;
 }
 
 #endif
