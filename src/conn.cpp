@@ -602,6 +602,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 			csync_debug(3, "Read {} bytes from peer", n);
 			if (n <= 0) {
 				csync_debug(1, "Error receiving file chunk {} {} {}", n, chunk_size - bytes_received, CHUNK_SIZE);
+				free(*buffer);
 				return -1;
 			}
 			bytes_received += n;
