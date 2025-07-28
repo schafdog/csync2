@@ -695,9 +695,13 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	csync_info(3, "csync_check_file_mod: calc_digest: {} dirty: {} is_upgrade {} dev_change: {}\n",
 			   calc_digest, is_dirty, is_upgrade, dev_change);
 	if (calc_digest) {
-		std::string opt_digest;
-		csync_calc_digest(filename, opt_digest);
-		digest = std::make_optional(opt_digest);
+		std::string new_digest;
+		if (csync_calc_digest(filename, new_digest)) {
+			csync_info(0, "csync_check_file_mod: calc_digest failed. Skipping {} {}",  filename, checktxt);
+			// breaks compare_mode. Better way?
+			return 0;
+		}
+		digest = std::make_optional(new_digest);
 	}
 	if (csync_compare_mode) {
 	    std::string digest_str = (digest ? *digest : std::string(checktxt));
