@@ -21,7 +21,7 @@ int dsync_digest(int file, const char *digest_name, unsigned char *md_value, uns
 	md = EVP_get_digestbyname(digest_name);
 
 	if (!md) {
-		csync_error(0, "Unknown message digest %s\n", digest_name);
+		csync_error(0, "Unknown message digest {}\n", digest_name);
 		return 1;
 	}
 
@@ -39,9 +39,9 @@ int dsync_digest(int file, const char *digest_name, unsigned char *md_value, uns
 	return 0;
 }
 
-void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, char *digest_str) {
+void dsync_digest_hex(const unsigned char *md_value, unsigned int md_len, std::string& digest) {
 	for (unsigned int i = 0; i < md_len; i++) {
-		sprintf(digest_str + 2 * i, "%02x", md_value[i]);
+		digest += std::format("{:02x}", md_value[i]);
 	}
 }
 
@@ -51,10 +51,10 @@ void dsync_digest_hex(const std::string &md_value, std::string &digest_str) {
 	}
 }
 
-int dsync_digest_path_hex(const char *filename, const char *digest_name, char *digest_str, unsigned int size) {
-	int fileno = open(filename, O_RDONLY);
+int dsync_digest_path_hex(const std::string& filename, const char *digest_name, std::string& digest_str) {
+	int fileno = open(filename.c_str(), O_RDONLY);
 	if (fileno < 0) {
-		csync_error(0, "ERROR: Failed to open %s for digest: %d", filename, fileno);
+		csync_error(0, "ERROR: Failed to open {} for digest:{}", filename, fileno);
 		return fileno;
 	}
 	unsigned char md_value[EVP_MAX_MD_SIZE];
@@ -62,18 +62,12 @@ int dsync_digest_path_hex(const char *filename, const char *digest_name, char *d
 	int rc = dsync_digest(fileno, digest_name, md_value, &md_len);
 	close(fileno);
 	if (rc) {
-		csync_error(0, "ERROR: Failed to calc digest for %s: %d", filename, fileno);
+		csync_error(0, "ERROR: Failed to calc digest for {}: {}", filename, fileno);
 		return rc;
 	}
-	if (size < 2 * md_len + 1) {
-		csync_error(0, "ERROR: Cannot hex digest for %s. Size to small", filename, fileno);
-		return -1;
-	}
+	digest_str.reserve(2 * md_len + 1);
 	dsync_digest_hex(md_value, md_len, digest_str);
 	return 0;
-}
-int dsync_digest_path_hex(filename_p filename, const char *digest_name, char *digest_str, unsigned int size) {
-	return dsync_digest_path_hex(filename.c_str(), digest_name, digest_str, size);
 }
 
 #ifdef DIGEST_STANDALONE
@@ -90,10 +84,18 @@ int main(int argc, char *argv[])
   if (argc >= 2 && argv[2]) {
     file = open(argv[2], O_RDONLY);
     if (file == -1)
+<<<<<<< HEAD
       printf("Failed to open %s", argv[2]);
   }
   else
     file = STDIN_FILENO;
+=======
+	{
+		printf("Failed to open %s", argv[2]);
+	}
+	else
+		file = STDIN_FILENO;
+>>>>>>> cpp-client-server
 
   int rc = dsync_digest(file, argv[1], md_value, &md_len);
   if (rc)

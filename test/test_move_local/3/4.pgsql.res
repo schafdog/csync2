@@ -1,10 +1,8 @@
-----------------------------------------------------------------
  <TESTBASE>/test/local
  <TESTBASE>/test/local/newdir
  <TESTBASE>/test/local/newdir/C
 (3 rows)
 
-----------+----------------------------------------------------------------+-----------+----------------------------------------------------------------+----
  other    | <TESTBASE>/test/local          | MKDIR     |       |  1
  peer     | <TESTBASE>/test/local          | MKDIR     |       |  1
  other    | <TESTBASE>/test/local/newdir   | MKDIR     |       |  1

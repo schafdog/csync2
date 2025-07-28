@@ -1,7 +1,6 @@
 cmd u "New dir timestamp (update)" local peer test
-csync_hostinfo (nil)
-standalone: 0 server_standalone > 0: 0
-Mode: 4 Flags: 1 PID: 2656971
+csync_hostinfo 0x0
+standalone: 0 server_standalone > 0: false
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
@@ -51,35 +50,32 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           42ec618cadb2cff3bcf7925107f9c9ae320ed28c-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
-csync2_db_SQL: update file set filename = NULL where filename = NULL 
-csync2_db_SQL: update host set host = NULL where host = NULL
-db_schema_version: 2
 Connecting to redis localhost:6379
 get dirty host
-SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername
 dirty host other 
 dirty host peer 
-SQL Query finished.
-SQL: SELECT filename, operation, op, other, checktxt, digest, forced, (op & 639) as type FROM dirty WHERE   (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  peername = 'peer' AND myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) ORDER by type DESC, filename DESC
-DIRTY LOOKUP: '<TESTBASE>/test/local/usr/local/sbin' ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/usr/local/sbin' 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=1736899550:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '<TESTBASE>/test/local/usr/local' ''
+dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/usr/local' 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/usr/local v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '<TESTBASE>/test/local/usr' ''
+dirty: peer:<TESTBASE>/test/local/usr/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local/usr' 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local/usr v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir ''
-DIRTY LOOKUP: '<TESTBASE>/test/local' ''
+dirty: peer:<TESTBASE>/test/local/usr v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
+DIRTY LOOKUP: '<TESTBASE>/test/local' 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
 compare file with pattern <TESTBASE>/test
-dirty: peer:<TESTBASE>/test/local v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir ''
-SQL Query finished.
+dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 Got dirty files from host peer
 Connecting to host peer (PLAIN) ...
-Connecting to localhost:30861 
+Looking for alternative host:port for peer
+Using alternative port to localhost:30861 
+Connecting to localhost:30861 from local
+Using specific address 127.x.x.x
+Connected to localhost:30861 
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
@@ -92,18 +88,14 @@ CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
-check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
-Locking '<TESTBASE>/test/local'
-Redis reply: SET '<TESTBASE>/test/local' '1736899552' NX EX 60 -> OK
-csync_redis_lock: OK <TESTBASE>/test/local 1736899552
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 uid dennis gid schafroth
 Updating (MARK) 'peer:<TESTBASE>/test/local' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local
-CONN peer < SIG %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
 Continue to rs_check <TESTBASE>/test/local 0
 Csync2 / Librsync: csync_rs_check('<TESTBASE>/test/local', 0 [non-regular file])
@@ -117,26 +109,17 @@ File has been checked successfully (files are equal).
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?S: peer            <TESTBASE>/test/local
-has links: file <TESTBASE>/test/local checktxt 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir' 3 0
+has links: file <TESTBASE>/test/local checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 3 false
 Clear dirty peer:<TESTBASE>/test/local (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local'  AND  myname = 'local' AND peername like 'peer'
-Deleting key '<TESTBASE>/test/local'
-Redis Reply: DEL '<TESTBASE>/test/local' -> 1
-Directory <TESTBASE>/test
-Adding textlist_add_new: <TESTBASE>/test
-Skipping textlist_add_new: <TESTBASE>/test
-check_pure: filename: '<TESTBASE>/test/local/usr' 59, cached path: '<TESTBASE>/test/' 53, 53.
-Locking '<TESTBASE>/test/local/usr'
-Redis reply: SET '<TESTBASE>/test/local/usr' '1736899552' NX EX 60 -> OK
-csync_redis_lock: OK <TESTBASE>/test/local/usr 1736899552
+Directory time <TESTBASE>/test <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr
 uid dennis gid schafroth
 Updating (MARK) 'peer:<TESTBASE>/test/local/usr' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/usr
-CONN peer < SIG %25test%25/usr user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/usr user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/usr RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
 Continue to rs_check <TESTBASE>/test/local/usr 0
 Csync2 / Librsync: csync_rs_check('<TESTBASE>/test/local/usr', 0 [non-regular file])
@@ -150,32 +133,23 @@ File has been checked successfully (files are equal).
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?S: peer            <TESTBASE>/test/local/usr
-has links: file <TESTBASE>/test/local/usr checktxt 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir' 3 0
+has links: file <TESTBASE>/test/local/usr checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 3 false
 Clear dirty peer:<TESTBASE>/test/local/usr (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/usr'  AND  myname = 'local' AND peername like 'peer'
-Deleting key '<TESTBASE>/test/local/usr'
-Redis Reply: DEL '<TESTBASE>/test/local/usr' -> 1
-Directory <TESTBASE>/test/local
-Adding textlist_add_new: <TESTBASE>/test/local
-Skipping textlist_add_new: <TESTBASE>/test/local
-check_pure: filename: '<TESTBASE>/test/local/usr/local' 63, cached path: '<TESTBASE>/test/local/' 59, 59.
-Locking '<TESTBASE>/test/local/usr/local'
-Redis reply: SET '<TESTBASE>/test/local/usr/local' '1736899552' NX EX 60 -> OK
-csync_redis_lock: OK <TESTBASE>/test/local/usr/local 1736899552
+Directory time <TESTBASE>/test/local <TESTBASE>/test/local/usr
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local
 uid dennis gid schafroth
 Updating (MARK) 'peer:<TESTBASE>/test/local/usr/local' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/usr/local
-CONN peer < SIG %25test%25/usr/local user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/usr/local user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/usr/local RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
-csync_cmpchecktxt A: v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736899551:mode=16877:user=dennis:group=schafroth:type=dir 
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 <TESTBASE>/test/local/usr/local is different on peer (cktxt char #-1).
->>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
->>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=dennis:group=schafroth:type=dir
+>>> peer:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL:	v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local
 Continue to rs_check <TESTBASE>/test/local/usr/local 16
@@ -191,33 +165,24 @@ CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?M: peer            <TESTBASE>/test/local/usr/local
 END csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/usr/local
-has links: file <TESTBASE>/test/local/usr/local checktxt 'v2:mtime=1736899548:mode=16877:user=dennis:group=schafroth:type=dir' 3 0
+has links: file <TESTBASE>/test/local/usr/local checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 3 false
 MKDIR rc: 16
 Doing MOD 'peer:<TESTBASE>/test/local/usr/local' on DIFF_META
-CONN peer < MOD %25test%25/usr/local - 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < MOD %25test%25/usr/local - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'IDENT (cmd_finished).'
 read_conn_status 'IDENT (cmd_finished).' 4
 before setown/settime/setmod on OK. rc 4 sig_rc: 16.
 After setown/settime/setmod on OK. rc 4.
 Clear dirty peer:<TESTBASE>/test/local/usr/local (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/usr/local'  AND  myname = 'local' AND peername like 'peer'
-Deleting key '<TESTBASE>/test/local/usr/local'
-Redis Reply: DEL '<TESTBASE>/test/local/usr/local' -> 1
-Directory <TESTBASE>/test/local/usr
-Adding textlist_add_new: <TESTBASE>/test/local/usr
-Skipping textlist_add_new: <TESTBASE>/test/local/usr
-check_pure: filename: '<TESTBASE>/test/local/usr/local/sbin' 69, cached path: '<TESTBASE>/test/local/usr/' 63, 63.
-Locking '<TESTBASE>/test/local/usr/local/sbin'
-Redis reply: SET '<TESTBASE>/test/local/usr/local/sbin' '1736899552' NX EX 60 -> OK
-csync_redis_lock: OK <TESTBASE>/test/local/usr/local/sbin 1736899552
+Directory time <TESTBASE>/test/local/usr <TESTBASE>/test/local/usr/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local/sbin
 uid dennis gid schafroth
 Updating (MARK) 'peer:<TESTBASE>/test/local/usr/local/sbin' ''
 csync_update_file_sig_rs_diff peer:<TESTBASE>/test/local/usr/local/sbin
-CONN peer < SIG %25test%25/usr/local/sbin user/group 1234 1000 dennis schafroth 16877 - 4096 
+CONN peer < SIG %25test%25/usr/local/sbin user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> 
 CONN peer > 'OK (data_follows).'
 update_file_sig <TESTBASE>/test/local/usr/local/sbin RC 0
-CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=dennis%3Agroup=schafroth%3Atype=dir'
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 Flags for gencheck: 112 
 Continue to rs_check <TESTBASE>/test/local/usr/local/sbin 0
 Csync2 / Librsync: csync_rs_check('<TESTBASE>/test/local/usr/local/sbin', 0 [non-regular file])
@@ -231,43 +196,36 @@ File has been checked successfully (files are equal).
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
 ?S: peer            <TESTBASE>/test/local/usr/local/sbin
-has links: file <TESTBASE>/test/local/usr/local/sbin checktxt 'v2:mtime=1736899550:mode=16877:user=dennis:group=schafroth:type=dir' 2 0
+has links: file <TESTBASE>/test/local/usr/local/sbin checktxt 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir' 2 false
 Clear dirty peer:<TESTBASE>/test/local/usr/local/sbin (0)
-csync2_db_SQL: DELETE FROM dirty WHERE  filename = '<TESTBASE>/test/local/usr/local/sbin'  AND  myname = 'local' AND peername like 'peer'
-Deleting key '<TESTBASE>/test/local/usr/local/sbin'
-Redis Reply: DEL '<TESTBASE>/test/local/usr/local/sbin' -> 1
-Directory <TESTBASE>/test/local/usr/local
-Adding textlist_add_new: <TESTBASE>/test/local/usr/local
-Skipping textlist_add_new: <TESTBASE>/test/local/usr/local
+Directory time <TESTBASE>/test/local/usr/local <TESTBASE>/test/local/usr/local/sbin
+SETTIME peer:<TESTBASE>/test/local/usr/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr/local
 uid dennis gid schafroth
-update_directory: Setting directory time <TESTBASE>/test/local/usr/local 1736899551.
+update_directory: Setting directory time <TESTBASE>/test/local/usr/local 0.
 CONN peer < SETTIME %25test%25/usr/local 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
+SETTIME peer:<TESTBASE>/test/local/usr
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/usr
 uid dennis gid schafroth
-update_directory: Setting directory time <TESTBASE>/test/local/usr 1736899548.
+update_directory: Setting directory time <TESTBASE>/test/local/usr 0.
 CONN peer < SETTIME %25test%25/usr 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
+SETTIME peer:<TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 uid dennis gid schafroth
-update_directory: Setting directory time <TESTBASE>/test/local 1736899548.
+update_directory: Setting directory time <TESTBASE>/test/local 0.
 CONN peer < SETTIME %25test%25 
 CONN peer > 'OK (cmd_finished).'
 read_conn_status 'OK (cmd_finished).' 0
+SETTIME peer:<TESTBASE>/test
 CONN peer < BYE
 
 CONN peer > 'OK (cu_later).'
 read_conn_status 'OK (cu_later).' 0
 MODE 4
-Redis closing: 0x5572ce4754a0
 Redis closed.
-SQL: SELECT command, logfile FROM action
-SQL Query finished.
-Closing db: 0x5572ce475180
-Closed db: 0x5572ce475180
-Closed db: 0x5572ce475180
 csync_config_destroy
 csync_config_destroy end

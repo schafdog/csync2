@@ -1,0 +1,156 @@
+Config-File:   csync2_pgsql_peer.cfg
+Found my alias peer localhost 30861
+Binding to 30861 IPv2
+Csync2 daemon running. Waiting for connections.
+<2202090> New connection from 127.0.0.2:60009.
+CONN (null) > 'CONFIG '
+Config-File:   csync2_pgsql_peer.cfg
+My hostname is peer.
+Database File: pgsql://csync2:csync238@localhost/csync2_peer
+DB Version:    2
+IP Version:    IPv4
+CONN (null) < OK (cmd_finished).
+
+CONN (null) > 'DEBUG 2'
+Command: (null): DEBUG          
+DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
+CONN (null) < OK (cmd_finished).
+
+CONN (null) > 'HELLO local'
+Command: local HELLO
+DAEMON is_ping: 0 fork: local . pid: -1
+HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
+CONN local < OK (cmd_finished).
+
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local < OK (not_found).
+
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer 
+check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer' .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer is clean
+Locking 'CREATE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer'
+mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 errno = 2 err = 
+setown /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer MKDIR 1 
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+CONN local < OK (not_found).
+
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto 
+check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto' .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto is clean
+Locking 'CREATE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto'
+mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 errno = 2 err = 
+setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 0 errno = 0 err = 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto MKDIR 1 
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger user/group 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
+daemon_check_auto_resolve: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger failed stat
+CONN local < OK (not_found).
+
+CONN local > 'MKDIR 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxxxx'
+Command: local: MKDIR /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger - 1234 1000 dennis schafroth 16877 - 4096 xxxxxxxx
+daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
+daemon_check_auto_resolve: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger failed stat
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
+Running check for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger ...
+Checking for modified files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger 
+check_mod: No such file '/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger' .
+Checking for deleted files /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger.
+daemon_check_dirty: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger is clean
+daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger
+daemon_check_auto_resolve: /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger failed stat
+Locking 'CREATE,ISDIR:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger'
+mkdir /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 errno = 2 err = 
+setown /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 uid: 1234 gid: 1000 errno = 0 err = 
+setmod /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 mod: 16877 errno = 0 err = 
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger rc = 0 time: 0 errno = 0 err = 
+Updated(mkdir) local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger  
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger MKDIR 1 
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto xxxxxxxxxx'
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto xxxxxxxx        
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto rc = 0 time: 0 errno = 0 err = 
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto SETTIME 0 
+CONN local < OK (cmd_finished).
+
+CONN local > 'SETTIME 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 xxxxxxxxxx'
+Command: local: SETTIME /export/home/dennis/Projects/csync2/csync2/test/test/peer xxxxxxxx        
+settime /export/home/dennis/Projects/csync2/csync2/test/test/peer rc = 0 time: 0 errno = 0 err = 
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer SETTIME 0 
+CONN local < OK (cmd_finished).
+
+CONN local > 'BYE'
+Command: local: BYE          
+CONN local < OK (cu_later).
+
+goto nofork.
+Csync2 daemon running. Waiting for connections.
+<2202090> New connection from 127.0.0.2:53827.
+CONN (null) > 'CONFIG '
+Config-File:   csync2_pgsql_peer.cfg
+My hostname is peer.
+Database File: pgsql://csync2:csync238@localhost/csync2_peer
+DB Version:    2
+IP Version:    IPv4
+CONN (null) < OK (cmd_finished).
+
+CONN (null) > 'DEBUG 2'
+Command: (null): DEBUG          
+DEBUG from (null) 2
+Daemon end_command  DEBUG 0 
+CONN (null) < OK (cmd_finished).
+
+CONN (null) > 'HELLO local'
+Command: local HELLO
+DAEMON is_ping: 0 fork: local . pid: -1
+HELLO from local. Response: OK
+Daemon end_command  HELLO 3 
+CONN local < OK (cmd_finished).
+
+CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 12 xxxxxxxxxx'
+Command: local: SIG /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest user/group 1234 1000 dennis schafroth 33188 - 12 xxxxxxxx
+daemon: Auto resolve method YOUNGER 2 for local:/export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest
+CONN local < OK (data_follows).
+
+Flags for gencheck: 48 
+CONN local < v2%3Amtime=xxxxxxxxxx%3Amode=33188%3Auser=dennis%3Agroup=schafroth%3Atype=reg%3Asize=13
+
+Sending sig_file for /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest to peer.
+CONN local < octet-stream 32
+
+Signature has been sent to peer successfully.
+Daemon end_command /export/home/dennis/Projects/csync2/csync2/test/test/peer/auto/younger/local_oldest SIG 0 
+CONN local < OK (cmd_finished).
+
+CONN local > ''
+CONN local closed without BYE
+goto nofork.

@@ -66,8 +66,7 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	}
 }
 
-static void csync_run_single_command(db_conn_p db, const char *command,
-		const char *logfile) {
+static void csync_run_single_command(db_conn_p db, const char *command, const char *logfile) {
 	char *command_clr = strdup(command);
 	char *logfile_clr = strdup(logfile);
 	char *real_command, *mark;
@@ -116,7 +115,9 @@ static void csync_run_single_command(db_conn_p db, const char *command,
 		execl("/bin/sh", "sh", "-c", real_command, NULL);
 		_exit(127);
 	}
-
+	free(command_clr);
+	free(logfile_clr);
+	free(real_command);
 	if (waitpid(pid, 0, 0) < 0)
 		csync_fatal("ERROR: Waitpid returned error {}.", strerror(errno));
 
@@ -129,7 +130,8 @@ void csync_run_commands(db_conn_p db) {
 	textlist_p tl = 0, t;
 
 	tl = db->get_commands();
-	for (t = tl; t != 0; t = t->next)
+	for (t = tl; t != 0; t = t->next) {
 		csync_run_single_command(db, t->value, t->value2);
+	}
 	textlist_free(tl);
 }

@@ -1,4 +1,4 @@
-Found my alias peer localhost 30861 
+Found my alias peer localhost 30861
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
@@ -83,7 +83,7 @@ Checking for modified files <TESTBASE>/test/peer/auto/younger/local_oldest
 Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolved. clear dirty
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
 Updated(patch) local:<TESTBASE>/test/peer/auto/younger/local_oldest  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer/auto/younger xxxxxxxx        
@@ -108,7 +108,7 @@ Running check for <TESTBASE>/test/peer/auto/younger/local_oldest ...
 Checking for modified files <TESTBASE>/test/peer/auto/younger/local_oldest 
 Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
 Removing file <TESTBASE>/test/peer/auto/younger/local_oldest
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/auto/younger/local_oldest from file db.
 Removing directory <TESTBASE>/test/peer/auto/younger 0
 Removing directory <TESTBASE>/test/peer/auto 0

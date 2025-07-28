@@ -415,8 +415,7 @@ int csync_check_pure(filename_p filename) {
 		;
 	same_len = i + 1;
 
-	csync_info(3, "check_pure: filename: '{}' {}, cached path: '{}' {}, {}.\n",
-			filename.c_str(), dir_len, cached.path, cached.len, same_len);
+	csync_info(4, "check_pure: filename: '{}' {}, cached path: '{}' {}, {}.\n", filename, dir_len, cached.path, cached.len, same_len);
 	/* exact match? */
 	if (dir_len == same_len && same_len == cached.len)
 		return cached.has_symlink;
@@ -649,34 +648,19 @@ int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino,
 	}
 	return rc;
 }
+
 int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std::string& ino, struct stat *old_stat) {
     return compare_dev_inode(file_stat, dev.c_str(), ino.c_str(), old_stat);
 }
 
-std::string csync_calc_digest(const std::string file)
+int csync_calc_digest(const std::string& file, std::string& digest)
 {
-    constexpr int size = 2 * DIGEST_MAX_SIZE + 1;
-    std::string digest(size, '\0');
-   	int rc = dsync_digest_path_hex(file.c_str(), "sha1", digest.data(), size);
-    if (rc) {
-		csync_error(0, "ERROR: generating digest: {} {}", digest, rc);
-		// TODO ???
-	}
-	return digest;
-}
-
-int csync_calc_digest(const char *file, csync2::Buffer& buffer, char **digest) {
-	int size = 2 * DIGEST_MAX_SIZE + 1;
-	*digest = buffer.malloc(size);
-	int rc = dsync_digest_path_hex(file, "sha1", *digest, size);
+	digest = ""; // std::string(size, ' ');
+	int rc = dsync_digest_path_hex(file, "sha1", digest);
 	if (rc) {
-		csync_error(0, "ERROR: generating digest: {} {}", *digest, rc);
-		// TODO ???
+		csync_error(0, "ERROR: generating digest for file: {} {}", file, rc);
 	}
 	return rc;
-}
-int csync_calc_digest(filename_p file, csync2::Buffer& buffer, char **digest) {
-	return csync_calc_digest(file.c_str(), buffer, digest);
 }
 
 std::optional<std::string> to_optional(const char* s) {
@@ -691,7 +675,7 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	// Assume that this isn't a upgrade and thus same version
 	operation_t operation = 0;
 	auto other = to_optional(NULL);
-
+	std::string new_digest;
 	dev_t old_no;
 	time_t lock_time = csync_redis_get_custom(filename.c_str(), "CLOSE_WRITE,CLOSE");
 	if (lock_time > 0) {
@@ -707,10 +691,15 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	int is_upgrade = db_flags & IS_UPGRADE;
 	int dev_change = db_flags & DEV_CHANGE;
 
-	csync_info(3, "check_file: calc_digest: {} dirty: {} is_upgrade {} dev_change: {}\n",
+	csync_info(3, "csync_check_file_mod: calc_digest: {} dirty: {} is_upgrade {} dev_change: {}\n",
 			   calc_digest, is_dirty, is_upgrade, dev_change);
 	if (calc_digest) {
-		digest = std::make_optional(csync_calc_digest(filename));
+		if (csync_calc_digest(filename, new_digest)) {
+			csync_info(0, "csync_check_file_mod: calc_digest failed. Skipping {} {}",  filename, checktxt);
+ 			// breaks compare_mode. Better way?
+			return 0;
+		}
+		digest = const_cast<char *>(new_digest.c_str());
 	}
 	if (csync_compare_mode) {
 	    std::string digest_str = (digest ? *digest : std::string(checktxt));

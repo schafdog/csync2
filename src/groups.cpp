@@ -174,7 +174,7 @@ struct peer* csync_find_peers(peername_p file, peername_p thispeer) {
 		while (h) {
 			int i = 0;
 			while (plist && plist[i].peername)
-				if (!strcmp(plist[i++].peername, h->hostname))
+				if (!strcmp(plist[i++].peername, h->hostname)) // Already in plist
 					goto next_host;
 			plist = static_cast<struct peer*>(realloc(plist, sizeof(struct peer) * (++pl_size + 1)));
 			plist[pl_size - 1].peername = h->hostname;

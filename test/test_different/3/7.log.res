@@ -1,7 +1,6 @@
 cmd x "Peer touch (both dirty)" local peer test
-csync_hostinfo (nil)
-standalone: 0 server_standalone > 0: 0
-Mode: 65536 Flags: 1 PID: 2656663
+csync_hostinfo 0x0
+standalone: 0 server_standalone > 0: false
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
@@ -51,56 +50,41 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           42ec618cadb2cff3bcf7925107f9c9ae320ed28c-dirty
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
-csync2_db_SQL: update file set filename = NULL where filename = NULL 
-csync2_db_SQL: update host set host = NULL where host = NULL
-db_schema_version: 2
 Connecting to redis localhost:6379
+csync_file_args: '<TESTBASE>/test' flags 65 
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 csync_check_dir: <TESTBASE>/test 65 
 Checking <TESTBASE>/test/* ..
+Calling check_mod on <TESTBASE>/test/peer from <TESTBASE>/test
 No match. Don't check at all: <TESTBASE>/test/peer
+Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
 csync_check_dir: <TESTBASE>/test/local 193 
 Checking <TESTBASE>/test/local/* ..
+Calling check_mod on <TESTBASE>/test/local/tmp from <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/tmp
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/tmp' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/tmp' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
 csync_check_dir: <TESTBASE>/test/local/tmp 193 
 Checking <TESTBASE>/test/local/tmp/* ..
+Calling check_mod on <TESTBASE>/test/local/different from <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/different
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/different' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/different' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
 Checking for deleted files <TESTBASE>/test recursive.
-file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
+File <TESTBASE>/test. Hostname: local 
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
-check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/different
-check_pure: filename: '<TESTBASE>/test/local/different' 59, cached path: '<TESTBASE>/test/' 53, 53.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/tmp
-check_pure: filename: '<TESTBASE>/test/local/tmp' 59, cached path: '<TESTBASE>/test/local/' 59, 59.
-SQL Query finished.
-csync_file_args: '<TESTBASE>/test' flags 65 
 get dirty host
-SQL: SELECT peername FROM dirty WHERE myname = 'local' AND peername NOT IN (SELECT host FROM host WHERE status = 1) GROUP BY peername
 dirty host other 
-SQL Query finished.
 MODE 65536
-Redis closing: 0x559501d734a0
 Redis closed.
-SQL: SELECT command, logfile FROM action
-SQL Query finished.
-Closing db: 0x559501d73180
-Closed db: 0x559501d73180
-Closed db: 0x559501d73180
 csync_config_destroy
 csync_config_destroy end

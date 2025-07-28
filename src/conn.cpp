@@ -535,7 +535,6 @@ ssize_t conn_read_get_content_length(int fd, size_t *size, int *type) {
 	} else {
 		csync_error(0, "Failed to content-length: '{}'\n", buffer);
 	}
-	buffer[*size] = 0;
 	csync_debug(2, "Content length in buffer: '{}' size: {} rc: {} ({})\n", static_cast<char *>(buffer), *size, rc, typestr);
 	if (!strcmp(buffer, "ERROR\n")) {
 		errno = EIO;
@@ -603,6 +602,7 @@ ssize_t conn_read_chunk(int sockfd, char **buffer, size_t *size) {
 			csync_debug(3, "Read {} bytes from peer", n);
 			if (n <= 0) {
 				csync_debug(1, "Error receiving file chunk {} {} {}", n, chunk_size - bytes_received, CHUNK_SIZE);
+				free(*buffer);
 				return -1;
 			}
 			bytes_received += n;

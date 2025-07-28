@@ -50,9 +50,15 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
+<<<<<<< HEAD
 GIT:           c150c89d8255014e65a1e0903401ab4fe3ff8a25-dirty
 Opening shared library libpq.dylib
 Reading symbols from shared library libpq.dylib
+=======
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
+Opening shared library libpq.so
+Reading symbols from shared library libpq.so
+>>>>>>> cpp-client-server
 Connecting to redis localhost:6379
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 csync_file_args: '<TESTBASE>/test/local' flags 65 
@@ -118,3 +124,50 @@ Connected to localhost:30861
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
+<<<<<<< HEAD
+=======
+read_conn_status 'OK (cmd_finished).' 0
+CONN peer < DEBUG 3
+
+CONN peer > 'OK (cmd_finished).'
+read_conn_status 'OK (cmd_finished).' 0
+CONN peer < HELLO local
+
+CONN peer > 'OK (cmd_finished).'
+read_conn_status 'OK (cmd_finished).' 0
+Dirty (missing) item <TESTBASE>/test/local RM  0
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Deleting peer:<TESTBASE>/test/local
+CONN peer < STAT %25test%25 
+CONN peer > 'OK (data_follows).'
+read_conn_status 'OK (data_follows).' 0
+CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
+delete flags: 0
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: --- 
+<TESTBASE>/test/local is different on peer (cktxt char #1).
+>>> PEER:  v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir
+>>> LOCAL: ---
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
+CONN peer < DEL %25test%25 
+CONN peer > 'IDENT (cmd_finished).'
+read_conn_status 'IDENT (cmd_finished).' 4
+Clear dirty peer:<TESTBASE>/test/local (0)
+remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
+DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
+Dirty (missing) item <TESTBASE>/test/local/.Test RM  0
+Skipping matched file (<TESTBASE>/test/local/.Test) from deleted directory (<TESTBASE>/test/local/)
+Dirty (missing) item <TESTBASE>/test/local/A RM  0
+Skipping matched file (<TESTBASE>/test/local/A) from deleted directory (<TESTBASE>/test/local/)
+Dirty (missing) item <TESTBASE>/test/local/new_file 'N' all RM  0
+Skipping matched file (<TESTBASE>/test/local/new_file 'N' all) from deleted directory (<TESTBASE>/test/local/)
+CONN peer < BYE
+
+CONN peer > 'OK (cu_later).'
+read_conn_status 'OK (cu_later).' 0
+MODE 65536
+Redis closed.
+csync_config_destroy
+csync_config_destroy end
+>>>>>>> cpp-client-server

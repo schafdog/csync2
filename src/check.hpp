@@ -74,7 +74,7 @@ typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st
 int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
 int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std::string& ino, struct stat *old_stat);
 
-int csync_calc_digest(const char *file, csync2::Buffer& buffer, char **digest);
+int csync_calc_digest(const std::string& file, std::string& digest);
 
 /* Peer list functions */
 void parse_peerlist(const char *peerlist);

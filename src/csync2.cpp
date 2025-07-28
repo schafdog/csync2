@@ -44,7 +44,6 @@
 #ifdef HAVE_LIBSYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
-#include "version.h"
 #include "redis.hpp"
 #include <vector>
 #include <memory>
@@ -60,6 +59,7 @@
 #include "daemon.hpp"
 #include "action.hpp"
 #include "checktxt.hpp"
+#include "main.h"
 
 #ifdef REAL_DBDIR
 #undef DBDIR
@@ -91,23 +91,10 @@ int protocol_version;
 
 char *log_file = 0;
 
-static void csync_version(void)
-{
-	printf("\n" PACKAGE_STRING " - cluster synchronization tool, 2nd generation\n"
-		   "LINBIT Information Technologies GmbH <http://www.linbit.com>\n"
-		   "Copyright (C) 2004, 2005  Clifford Wolf <clifford@clifford.at>\n"
-		   "Copyright (C) 2010  Dennis Schafroth <dennis@schafroth.com>\n"
-		   "Copyright (C) 2010  Johannes Thoma <johannes.thoma@gmx.at>\n"
-		   "\n"
-#ifdef CSYNC_GIT_VERSION
-		   "git: " CSYNC_GIT_VERSION "\n"
-#endif
-	);
-}
 
 static void help(const char *cmd)
 {
-	csync_version();
+	csync2_version();
 	printf("\n"
 		   "This program is free software under the terms of the GNU GPL.\n"
 		   "\n"
@@ -706,6 +693,7 @@ static int csync_read_config(const char *cfgname, int conn, int mode)
 	yyin = fopen(file_config, "r");
 	if (!yyin)
 		csync_fatal("Can not open config file `{}': {}", file_config, strerror(errno));
+	free(file_config);
 	yyparse();
 	fclose(yyin);
 	yylex_destroy();
@@ -791,7 +779,7 @@ int csync2_main(int argc, char **argv)
 		switch (opt)
 		{
 		case 'V':
-			csync_version();
+			csync2_version();
 			exit(0);
 			break;
 		case '1':
@@ -1152,7 +1140,7 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 	{
 		int run_time = time(NULL) - start_time;
 		if (csync_error_count > 0)
-			csync_warn(1, "Finished with %d errors in %d seconds.\n", csync_error_count, run_time);
+			csync_warn(1, "Finished with {} errors in {} seconds.\n", csync_error_count, run_time);
 		else
 			csync_info(1, "Finished succesfully in {} seconds.", run_time);
 	}
@@ -1280,7 +1268,7 @@ static int csync_start_server(int mode, int flags, int argc, char *argv[], int l
 		csync_info(2, "Database File: {}", csync_database);
 		csync_info(2, "DB Version:    {}", g_db_version);
 		csync_info(2, "IP Version:    {}", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
-		csync_info(3, "GIT:           {}", CSYNC_GIT_VERSION);
+		csync_info(3, "GIT:           {}", csync2_git_version());
 
 		int found = 0;
 		const struct csync_group *g;
@@ -1364,7 +1352,7 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	csync_info(2, "Database File: {}", csync_database);
 	csync_info(2, "DB Version:    {}", g_db_version);
 	csync_info(2, "IP Version:    {}", (g_ip_version == AF_INET6 ? "IPv6" : "IPv4"));
-	csync_info(3, "GIT:           {}", CSYNC_GIT_VERSION);
+	csync_info(3, "GIT:           {}", csync2_git_version());
 
 	{
 		int found = 0;

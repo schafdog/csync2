@@ -26,6 +26,8 @@
 
 #define FILE_LENGTH 500
 #define HOST_LENGTH  50
+#define CHECKTXT_LENGTH 100
+#define DIGEST_LENGTH 100
 
 #ifdef __DARWIN_C_LEVEL
 #define SO_FILE_EXT ".dylib"

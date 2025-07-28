@@ -1115,6 +1115,8 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 	int last_conn_status = 0, auto_resolve_run = 0;
 	const char *operation_str = csync_operation_str(operation);
 	const char *key = csync_key(peername, filename);
+	std::string calc_digest;
+
 	if (!key) {
 		csync_info(2, "Skipping file update {} on {} - not in my groups.\n", filename, peername);
 		return OK;
@@ -1154,7 +1156,7 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 		csync_info(1, "Updating ({}) '{}:{}' '{}'\n", operation_str, peername, filename, (other ? other : ""));
 
 		if (lstat_strict(filename, &st) != 0 || (faccessat(0, filename.c_str(), R_OK,AT_SYMLINK_NOFOLLOW) != 0)) {
-			csync_error(0, "ERROR: Cant stat or read {}.\n", filename);
+			csync_error(0, "ERROR: Cant stat or read {} {}.\n", filename, checktxt ? checktxt : "<No checktxt>");
 			csync_error_count++;
 			return ERROR;
 		}
@@ -1201,17 +1203,20 @@ static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, pee
 		csync_debug(3, "has links: file {} checktxt '{}' {} {}\n", filename, checktxt, st.st_nlink,
 				S_ISREG(st.st_mode));
 		if (operation == OP_MARK) {
+			if (!digest || digest[0] == 0) {
+				if (csync_calc_digest(filename, calc_digest)) {
+					csync_error(0, "csync_file_mod: OP_MARK calc_digest failed: {} {}",
+								filename, checktxt ? checktxt : "<no checktxt>");
+				} else {
+					digest = calc_digest.c_str();
+				}
+			};
 			int has_links = (st.st_nlink > 1 && S_ISREG(st.st_mode));
-			if (has_links) {
+			if (has_links && digest) {
 				if (!checktxt) {
 					checktxt = buffer.strdup(csync_genchecktxt_version(&st, filename, SET_USER | SET_GROUP, db->version));
 				}
 
-				char *calc_digest = NULL;
-				if (!digest || digest[0] == 0) {
-					csync_calc_digest(filename.c_str(), buffer, &calc_digest);
-					digest = calc_digest;
-				};
 				rc = csync_find_update_hardlink(conn, db, key_enc, myname, peername,
 												filename, filename_enc,
 												checktxt, digest, &st, uid, gid, auto_resolve_run);
@@ -1785,10 +1790,7 @@ static int csync_insynctest_file(int conn, const std::string& myname, peername_p
 	return rc;
 }
 
-int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filename_p str_filename, int ip_version) {
-	const char *peername = str_peername.c_str();
-	const char *filename = str_filename.c_str();
-
+int csync_diff(db_conn_p db, peername_p myname, peername_p peername, filename_p filename, int ip_version) {
 	FILE *p;
 	void (*old_sigpipe_handler)(int);
 	const struct csync_group *g = 0;
@@ -1839,9 +1841,9 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filenam
 		return finish_close(conn);
 	}
 
-	conn_printf(conn, "TYPE %s %s\n", key_enc, filename);
+	conn_printf(conn, "TYPE %s %s\n", key_enc, filename.c_str());
 
-	if (read_conn_status(conn, "<TYPE>", peername))
+	if (read_conn_status(conn, "<TYPE>", peername.c_str()))
 		return finish_close(conn);
 
 	/* FIXME
@@ -1851,11 +1853,11 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filenam
 
 	/* avoid unwanted side effects due to special chars in filenames,
 	 * pass them in the environment */
-	snprintf(buffer, 512, "%s:%s", myname.c_str(), filename);
+	snprintf(buffer, 512, "%s:%s", myname.c_str(), filename.c_str());
 	setenv("my_label", buffer, 1);
-	snprintf(buffer, 512, "%s:%s", peername, filename);
+	snprintf(buffer, 512, "%s:%s", peername.c_str(), filename.c_str());
 	setenv("peer_label", buffer, 1);
-	snprintf(buffer, 512, "%s", filename);
+	snprintf(buffer, 512, "%s", filename.c_str());
 	setenv("diff_file", buffer, 1);
 	/* XXX no error check on setenv
 	 * (could be insufficient space in environment) */
@@ -2032,7 +2034,7 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, cons
 	int ret = 1;
 	if (auto_diff && filename != "") {
 		int pl_idx;
-		struct peer *pl = csync_find_peers(filename.c_str(), 0);
+		struct peer *pl = csync_find_peers(filename, "");
 		for (pl_idx = 0; pl && pl[pl_idx].peername; pl_idx++) {
 			std::string peername(pl[pl_idx].peername);
 			if (peer_in(active_peers, peername)) {

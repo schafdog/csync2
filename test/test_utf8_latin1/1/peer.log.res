@@ -1,4 +1,4 @@
-Found my alias peer localhost 30861 
+Found my alias peer localhost 30861
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
@@ -35,7 +35,7 @@ Command: local: DEL <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Running check for <TESTBASE>/test/peer/ÆØÅ Café.utf8 ...
 Checking for modified files <TESTBASE>/test/peer/ÆØÅ Café.utf8 
 Checking for deleted files <TESTBASE>/test/peer/ÆØÅ Café.utf8.
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/export/home to user <UID> and group <GID>, rc= -1 
 Updated(del) local:<TESTBASE>/test/peer/ÆØÅ Café.utf8  
 Command: local: BYE          
 goto nofork.

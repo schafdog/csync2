@@ -1,7 +1,6 @@
 cmd cI "5 more files hardlinked (mark)" local peer test
-csync_hostinfo (nil)
-standalone: 0 server_standalone > 0: 0
-Mode: 2 Flags: 5 PID: 2800955
+csync_hostinfo 0x0
+standalone: 0 server_standalone > 0: false
 Config-File:   csync2_pgsql_local.cfg
 Prefix 'test' is set to '<TESTBASE>/test/local'.
 New host alias: local: localhost 30860
@@ -14,6 +13,7 @@ New group:host:pattern test other %test%
 New group:host:pattern test other %test%/autoresolve
 New group:host:pattern test other *~
 New group:host:pattern test other *.o
+New group:host:pattern test other .*.XXXXXX
 New group: first
 New group:host: first peer
 New group:host: first other
@@ -47,58 +47,55 @@ New group:host: test_action peer
 New group:host: test_action other
 New group:host:pattern test_action other %test%/action
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2
+Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
-GIT:           4e39c9f1a4ba8dd4471035859699f313dee4972c
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
 Opening shared library libpq.so
 Reading symbols from shared library libpq.so
-csync2_db_SQL: update file set filename = NULL where filename = NULL 
-csync2_db_SQL: update host set host = NULL where host = NULL
-db_schema_version: 2
 Connecting to redis localhost:6379
+csync_file_args: '<TESTBASE>/test' flags 69 
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 csync_check_dir: <TESTBASE>/test 69 
 Checking <TESTBASE>/test/* ..
+Calling check_mod on <TESTBASE>/test/peer from <TESTBASE>/test
 No match. Don't check at all: <TESTBASE>/test/peer
+Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
 csync_check_dir: <TESTBASE>/test/local 197 
 Checking <TESTBASE>/test/local/* ..
+Calling check_mod on <TESTBASE>/test/local/new from <TESTBASE>/test/local
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new' 
-csync_cmpchecktxt A: v2:mtime=1736296367:mode=16877:user=dennis:group=schafroth:type=dir 
-csync_cmpchecktxt B: v2:mtime=1736296315:mode=16877:user=dennis:group=schafroth:type=dir 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new' -> NULL
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
 <TESTBASE>/test/local/new has changed: 
-    v2:mtime=1736296367:mode=16877:user=dennis:group=schafroth:type=dir 
-DB: v2:mtime=1736296315:mode=16877:user=dennis:group=schafroth:type=dir MKDIR
+    v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+DB: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir MKDIR
 ignore flags: 197
-SQL Query finished.
 check_file: calc_digest: 0 dirty: 2 is_upgrade 0 dev_change: 0
-csync2_db_SQL: UPDATE file set checktxt='v2:mtime=1736296367:mode=16877:user=dennis:group=schafroth:type=dir', device=2049, inode=56360962,                 digest='', mode=16877, mtime=1736296367, size=4096, type=1 where filename = '<TESTBASE>/test/local/new'
-Inserted/updated <TESTBASE>/test/local/new rows matched: 0
+INSERT/UPDATE: <TESTBASE>/test/local/new 
+Inserted/updated <TESTBASE>/test/local/new rows matched: 1
 csync_check_dir: <TESTBASE>/test/local/new 197 
 Checking <TESTBASE>/test/local/new/* ..
+Calling check_mod on <TESTBASE>/test/local/new/new_file from <TESTBASE>/test/local/new
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/new_file
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/new_file' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new/new_file' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
+Calling check_mod on <TESTBASE>/test/local/new/hardlinked_5 from <TESTBASE>/test/local/new
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_5
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/hardlinked_5' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new/hardlinked_5' -> NULL
 New file: <TESTBASE>/test/local/new/hardlinked_5
-SQL Query finished.
 check_file: calc_digest: 4 dirty: 2 is_upgrade 0 dev_change: 0
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked_5 <TESTBASE>/test/local/new/hardlinked_5
-SQL:  SELECT filename, checktxt, digest FROM file WHERE  hostname = 'local'  AND device = 2049  AND inode = 56360963  AND filename != '<TESTBASE>/test/local/new/hardlinked_5' 
-Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked
-Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_2
-Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_3
-Adding textlist_add_new: <TESTBASE>/test/local/new/new_file
-4 files with same dev:inode (2049:56360963) as file: <TESTBASE>/test/local/new/hardlinked_5
-SQL Query finished.
+Adding textlist_add_new: %s
+Adding textlist_add_new: %s
+Adding textlist_add_new: %s
+Adding textlist_add_new: %s
+4 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_5
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_5 
 check same file (32) <TESTBASE>/test/local/new/hardlinked_3 -> <TESTBASE>/test/local/new/hardlinked_5 
@@ -107,22 +104,20 @@ check same file (32) <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/l
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/local/new/hardlinked_5 
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_5 
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_5 
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new/hardlinked_5', 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 56360963, '32a0617aab4c9fe725f1b5bc441291180ad25b73', 33188, 4, 1736296279, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', device = 2049, inode = 56360963, digest = '32a0617aab4c9fe725f1b5bc441291180ad25b73', mode = 33188, size = 4, mtime = 1736296279, type = 2
-Inserted/updated <TESTBASE>/test/local/new/hardlinked_5 rows matched: 0
+INSERT/UPDATE: <TESTBASE>/test/local/new/hardlinked_5 32a0617aab4c9fe725f1b5bc441291180ad25b73
+Inserted/updated <TESTBASE>/test/local/new/hardlinked_5 rows matched: 1
+Calling check_mod on <TESTBASE>/test/local/new/hardlinked_4 from <TESTBASE>/test/local/new
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_4
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/hardlinked_4' 
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new/hardlinked_4' -> NULL
 New file: <TESTBASE>/test/local/new/hardlinked_4
-SQL Query finished.
 check_file: calc_digest: 4 dirty: 2 is_upgrade 0 dev_change: 0
 csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked_4 <TESTBASE>/test/local/new/hardlinked_4
-SQL:  SELECT filename, checktxt, digest FROM file WHERE  hostname = 'local'  AND device = 2049  AND inode = 56360963  AND filename != '<TESTBASE>/test/local/new/hardlinked_4' 
-Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked
-Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_2
-Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_3
-Adding textlist_add_new: <TESTBASE>/test/local/new/hardlinked_5
-Adding textlist_add_new: <TESTBASE>/test/local/new/new_file
-5 files with same dev:inode (2049:56360963) as file: <TESTBASE>/test/local/new/hardlinked_4
-SQL Query finished.
+Adding textlist_add_new: %s
+Adding textlist_add_new: %s
+Adding textlist_add_new: %s
+Adding textlist_add_new: %s
+Adding textlist_add_new: %s
+5 files with same dev:inode (x:y) as file: <TESTBASE>/test/local/new/hardlinked_4
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked_4 
 check same file (32) <TESTBASE>/test/local/new/hardlinked_5 -> <TESTBASE>/test/local/new/hardlinked_4 
@@ -133,48 +128,31 @@ check same file (32) <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/l
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked_2 -> <TESTBASE>/test/local/new/hardlinked_4 
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_4 
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_4 
-csync2_db_SQL: INSERT INTO file (hostname, filename, checktxt, device, inode, digest, mode, size, mtime, type) VALUES ('local', '<TESTBASE>/test/local/new/hardlinked_4', 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', 2049, 56360963, '32a0617aab4c9fe725f1b5bc441291180ad25b73', 33188, 4, 1736296279, 2) ON CONFLICT (filename, hostname) DO UPDATE SET checktxt = 'v2:mtime=1736296279:mode=33188:user=dennis:group=schafroth:type=reg:size=4', device = 2049, inode = 56360963, digest = '32a0617aab4c9fe725f1b5bc441291180ad25b73', mode = 33188, size = 4, mtime = 1736296279, type = 2
-Inserted/updated <TESTBASE>/test/local/new/hardlinked_4 rows matched: 0
+INSERT/UPDATE: <TESTBASE>/test/local/new/hardlinked_4 32a0617aab4c9fe725f1b5bc441291180ad25b73
+Inserted/updated <TESTBASE>/test/local/new/hardlinked_4 rows matched: 1
+Calling check_mod on <TESTBASE>/test/local/new/hardlinked_3 from <TESTBASE>/test/local/new
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_3
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/hardlinked_3' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new/hardlinked_3' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
+Calling check_mod on <TESTBASE>/test/local/new/hardlinked_2 from <TESTBASE>/test/local/new
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_2
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/hardlinked_2' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new/hardlinked_2' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
+Calling check_mod on <TESTBASE>/test/local/new/hardlinked from <TESTBASE>/test/local/new
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked
-SQL: SELECT checktxt, inode, device, digest, mode, size, mtime FROM file WHERE hostname = 'local' AND filename = '<TESTBASE>/test/local/new/hardlinked' 
-SQL Query finished.
+Redis reply: GET 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/local/new/hardlinked' -> NULL
 check_file: calc_digest: 0 dirty: 0 is_upgrade 0 dev_change: 0
 Checking for deleted files <TESTBASE>/test recursive.
-file <TESTBASE>/test encoded <TESTBASE>/test. Hostname: local 
-SQL: SELECT filename, checktxt, device, inode, mode FROM file WHERE  (filename = '<TESTBASE>/test' OR filename LIKE '<TESTBASE>/test/%')  AND  hostname = 'local' ORDER BY filename
+File <TESTBASE>/test. Hostname: local 
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
-check_pure: filename: '<TESTBASE>/test/local' 53, cached path: '(null)' 0, 0.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new
-check_pure: filename: '<TESTBASE>/test/local/new' 59, cached path: '<TESTBASE>/test/' 53, 53.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked
-check_pure: filename: '<TESTBASE>/test/local/new/hardlinked' 63, cached path: '<TESTBASE>/test/local/' 59, 59.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_2
-check_pure: filename: '<TESTBASE>/test/local/new/hardlinked_2' 63, cached path: '<TESTBASE>/test/local/new/' 63, 63.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_3
-check_pure: filename: '<TESTBASE>/test/local/new/hardlinked_3' 63, cached path: '<TESTBASE>/test/local/new/' 63, 63.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_4
-check_pure: filename: '<TESTBASE>/test/local/new/hardlinked_4' 63, cached path: '<TESTBASE>/test/local/new/' 63, 63.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/hardlinked_5
-check_pure: filename: '<TESTBASE>/test/local/new/hardlinked_5' 63, cached path: '<TESTBASE>/test/local/new/' 63, 63.
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local/new/new_file
-check_pure: filename: '<TESTBASE>/test/local/new/new_file' 63, cached path: '<TESTBASE>/test/local/new/' 63, 63.
-SQL Query finished.
-csync_file_args: '<TESTBASE>/test' flags 69 
 MODE 2
-Redis closing: 0x555c5386c470
 Redis closed.
-SQL: SELECT command, logfile FROM action
-SQL Query finished.
-Closing db: 0x555c5386c150
-Closed db: 0x555c5386c150
-Closed db: 0x555c5386c150
 csync_config_destroy
 csync_config_destroy end

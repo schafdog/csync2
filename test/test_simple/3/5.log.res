@@ -50,9 +50,15 @@ My hostname is local.
 Database File: pgsql://csync2:csync238@localhost/csync2_local
 DB Version:    2
 IP Version:    IPv4
+<<<<<<< HEAD
 GIT:           c150c89d8255014e65a1e0903401ab4fe3ff8a25-dirty
 Opening shared library libpq.dylib
 Reading symbols from shared library libpq.dylib
+=======
+GIT:           14407d2a82844ea3e9d2807313d34f7947c7fc2e-dirty
+Opening shared library libpq.so
+Reading symbols from shared library libpq.so
+>>>>>>> cpp-client-server
 Connecting to redis localhost:6379
 Match (+): <TESTBASE>/test/local on <TESTBASE>/test/local
 csync_insynctest_all: flags 1 
@@ -72,3 +78,64 @@ Connected to localhost:30861
 CONN peer < CONFIG 
 
 CONN peer > 'OK (cmd_finished).'
+<<<<<<< HEAD
+=======
+read_conn_status 'OK (cmd_finished).' 0
+CONN peer < DEBUG 3
+
+CONN peer > 'OK (cmd_finished).'
+read_conn_status 'OK (cmd_finished).' 0
+CONN peer < HELLO local
+
+CONN peer > 'OK (cmd_finished).'
+read_conn_status 'OK (cmd_finished).' 0
+CONN peer < LIST peer %25test%25 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV 1 
+
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4	<TESTBASE>/test/peer/new_file 'N' all'
+Fetched tuple from peer: <TESTBASE>/test/peer/new_file 'N' all [v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4]
+DbSql::list_file local <-> peer <TESTBASE>/test/peer/new_file 'N' all
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 
+csync_cmpchecktxt B: --- 
+D	local	peer	<TESTBASE>/test/peer/new_file 'N' all
+'<TESTBASE>/test/local' is different:
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 peer
+>>> --- local
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0	<TESTBASE>/test/peer/A'
+Fetched tuple from peer: <TESTBASE>/test/peer/A [v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0]
+DbSql::list_file local <-> peer <TESTBASE>/test/peer/A
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 
+csync_cmpchecktxt B: --- 
+D	local	peer	<TESTBASE>/test/peer/A
+'<TESTBASE>/test/local' is different:
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 peer
+>>> --- local
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0	<TESTBASE>/test/peer/.Test'
+Fetched tuple from peer: <TESTBASE>/test/peer/.Test [v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0]
+DbSql::list_file local <-> peer <TESTBASE>/test/peer/.Test
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 
+csync_cmpchecktxt B: --- 
+D	local	peer	<TESTBASE>/test/peer/.Test
+'<TESTBASE>/test/local' is different:
+>>> v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 peer
+>>> --- local
+CONN peer > 'v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir	<TESTBASE>/test/peer'
+Fetched tuple from peer: <TESTBASE>/test/peer [v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir]
+DbSql::list_file local <-> peer <TESTBASE>/test/peer
+csync_cmpchecktxt A: v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir 
+csync_cmpchecktxt B: --- 
+D	local	peer	<TESTBASE>/test/peer
+'<TESTBASE>/test/local' is different:
+>>> v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir peer
+>>> --- local
+CONN peer > 'OK (cmd_finished).'
+End of query results: OK (cmd_finished).
+count_diff: 4
+CONN peer < BYE
+
+CONN peer > 'OK (cu_later).'
+read_conn_status 'OK (cu_later).' 0
+MODE 4096
+Redis closed.
+csync_config_destroy
+csync_config_destroy end
+>>>>>>> cpp-client-server

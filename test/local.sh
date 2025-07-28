@@ -147,6 +147,7 @@ function daemon {
     if [ "$DNAME" == "" ] ; then
 	DNAME=local
     fi
+    killdaemon
     if [ "$DAEMON" == "NO" ] ; then
 	echo "daemon start disabled";
 	echo "${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG"
