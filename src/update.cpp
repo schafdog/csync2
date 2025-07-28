@@ -697,16 +697,7 @@ static int csync_update_file_sig(int conn, peername_p myname, peername_p peernam
 
 	if ((i = csync_cmpchecktxt(chk_peer_decoded, chk_local))) {
 		csync_info(log_level, "{} is different on peer (cktxt char #{}).\n", filename, i);
-		char *peer_log = NULL, *local_log = NULL;
-		if (csync_zero_mtime_debug) {
-			peer_log = filter_mtime_copy(chk_peer_decoded);
-			local_log = filter_mtime_copy(chk_local);
-		}
-		csync_info(log_level, ">>> {}:\t{}\n>>> {}:\t{}\n", peername, peer_log, "LOCAL", local_log);
-		if (csync_zero_mtime_debug) {
-			free(peer_log);
-			free(local_log);
-		}
+		csync_info(log_level, ">>> {}:\t{}\n>>> {}:\t{}\n", peername, chk_peer_decoded, "LOCAL", chk_local);
 		// We should be able to figure auto resolve from checktxt
 		int flush = check_auto_resolve_peer(peername, filename, chk_local, chk_peer_decoded);
 		if (flush) {
@@ -1801,10 +1792,7 @@ static int csync_insynctest_file(int conn, const std::string& myname, peername_p
 	return rc;
 }
 
-int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filename_p str_filename, int ip_version) {
-	const char *peername = str_peername.c_str();
-	const char *filename = str_filename.c_str();
-
+int csync_diff(db_conn_p db, peername_p myname, peername_p peername, filename_p filename, int ip_version) {
 	FILE *p;
 	void (*old_sigpipe_handler)(int);
 	const struct csync_group *g = 0;
@@ -1855,9 +1843,9 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filenam
 		return finish_close(conn);
 	}
 
-	conn_printf(conn, "TYPE %s %s\n", key_enc, filename);
+	conn_printf(conn, "TYPE %s %s\n", key_enc, filename.c_str());
 
-	if (read_conn_status(conn, "<TYPE>", peername))
+	if (read_conn_status(conn, "<TYPE>", peername.c_str()))
 		return finish_close(conn);
 
 	/* FIXME
@@ -1867,11 +1855,11 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p str_peername, filenam
 
 	/* avoid unwanted side effects due to special chars in filenames,
 	 * pass them in the environment */
-	snprintf(buffer, 512, "%s:%s", myname.c_str(), filename);
+	snprintf(buffer, 512, "%s:%s", myname.c_str(), filename.c_str());
 	setenv("my_label", buffer, 1);
-	snprintf(buffer, 512, "%s:%s", peername, filename);
+	snprintf(buffer, 512, "%s:%s", peername.c_str(), filename.c_str());
 	setenv("peer_label", buffer, 1);
-	snprintf(buffer, 512, "%s", filename);
+	snprintf(buffer, 512, "%s", filename.c_str());
 	setenv("diff_file", buffer, 1);
 	/* XXX no error check on setenv
 	 * (could be insufficient space in environment) */
@@ -2063,7 +2051,7 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, cons
 	int ret = 1;
 	if (auto_diff && filename != "") {
 		int pl_idx;
-		struct peer *pl = csync_find_peers(filename.c_str(), 0);
+		struct peer *pl = csync_find_peers(filename, "");
 		for (pl_idx = 0; pl && pl[pl_idx].peername; pl_idx++) {
 			std::string peername(pl[pl_idx].peername);
 			if (peer_in(active_peers, peername)) {

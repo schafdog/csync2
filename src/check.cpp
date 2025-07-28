@@ -299,8 +299,8 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 						dirty = (t->value4 != NULL);
 						operation = t->intvalue;
 						textlist_free(t);
-						csync_info(3,
-								"Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d \n",
+						csync_info_c(3,
+								"Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %s operation %s \n",
 								file_new, clean_other, result_other, dirty,
 								operation);
 					} else {
