@@ -223,8 +223,6 @@ std::string  check_string(const char *str);
 
 #include "groups.hpp"
 
-int csync2_main(int argc, char **argv);
-
 /* cfgfile_parser_processed.y - additional missing prototypes */
 #ifdef __cplusplus
 extern "C" {
