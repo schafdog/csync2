@@ -61,21 +61,21 @@ const char* DbSql::escape(const std::string& string) {
 
 int DbSql::schema_version()
 {
-	int version = -1;
+	int get_version = -1;
 	try {
 		if (conn_->execute_update("schema_check_file",
 								  "update file set filename = NULL where filename = NULL ") >= 0)
 		{
-			version = 1;
+			get_version = 1;
 		}
 		if (conn_->execute_update("schema_host",
 								  "update host set host = NULL where host = NULL") >= 0)
 		{
-			version = 2;
+			get_version = 2;
 		}
-	} catch (exception e) {
+	} catch (DatabaseError& e) {
 	}
-	return version;
+	return get_version;
 }
 
 int DbSql::check_file(filename_p    filename, char **other, char *checktxt,
@@ -657,7 +657,7 @@ int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
 		rec_filename += filename + "/%";
 	}
 	std::string where_part = csync_generate_recursive_sql_placeholder(recursive, 1);
-	std::string remove_dirty_sql("DELETE FROM dirty WHERE myname = ? AND peername = ? ");
+	std::string remove_dirty_sql("DELETE FROM dirty WHERE myname = ? AND peername LIKE ? ");
 	remove_dirty_sql += where_part;
 	csync_info(3, "remove_dirty_sql '{}' '{}' '{}' '{}' '{}'",
 			   remove_dirty_sql, g_myhostname, peername, filename, rec_filename);
@@ -1005,15 +1005,14 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 	std::string SQL_SELECT = "SELECT filename, checktxt, device, inode, mode FROM file WHERE hostname = ? ";
 	SQL_SELECT += where_rec + " ORDER BY filename";
 	std::string named_statement = "check_delete_select";
-	std::string rec_filename; 
+	std::string rec_filename = "";
 	if (recursive) {
 	    named_statement += "_recursive";
 		rec_filename = filename + "/%";
 	}
-	csync_debug(3, "check_delete: prepare {} SQL: {} {} {} {} \n",
-				named_statement, SQL_SELECT, g_myhostname, filename, rec_filename);
+	csync_debug(3, "check_delete: prepare {} SQL: {}\n", named_statement, SQL_SELECT);
 	auto stmt = conn_->prepare(named_statement, SQL_SELECT);
-	csync_debug(3, "check_delete prepared SQL: {} {} {} {} \n", named_statement, SQL_SELECT)
+	csync_debug(3, "check_delete prepared SQL: {} {} \n", named_statement, SQL_SELECT);
 	stmt->bind(1, g_myhostname);
 	stmt->bind(2, filename);
 	if (recursive) {
@@ -1059,11 +1058,10 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 			count_deletes++;
 		}
 		std::string delete_file = "delete_file";
-		std::string delete_file_sql "delete from file WHERE hostname = ? AND filename = ?";
-		csync_debug(3, "check_delete: execute_update {} {} {} {}\n" delete_file, delete_file_sql,  g_myhostname, t->value);
-		conn_->execute_update(delete_file, g_myhostname, t->value);
-		csync_debug(3, "check_delete: executed {} {}\n" delete_file, delete_file_sql);
-		
+		std::string delete_file_sql = "delete from file WHERE hostname = ? AND filename = ?";
+		csync_debug(3, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,  g_myhostname, t->value);
+		conn_->execute_update(delete_file, delete_file_sql, g_myhostname, t->value);
+		csync_debug(3, "check_delete: executed {} {}\n", delete_file, delete_file_sql);
 	}
 
 	textlist_free(tl);
