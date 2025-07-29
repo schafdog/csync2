@@ -304,7 +304,6 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 									 "Found row: file '{}' clean_other: '{}' result_other: '{}' dirty: {} operation {}\n",
 									 file_new, clean_other, result_other, dirty, operation);
 						textlist_free(t);
->>>>>>> cpp-client-server
 					} else {
 						csync_error(0,
 								"ERROR: check_old_operation MUST always return row\n");

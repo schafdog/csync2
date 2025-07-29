@@ -842,7 +842,7 @@ int DbSql::add_dirty(const char *file_new, int new_force,
 	std::string sql_name = "add_dirty";
 	csync_info(3, "add_dirty_sql '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}'",
 			   add_dirty_sql, file_new, new_force, myhostname, str_peername,
-			   null(op_str), null(checktxt), null(dev), null(ino), null(result_other), op, mode, get_file_type(mode), mtime);
+			   null(op_str), checktxt, null(dev), null(ino), null(result_other), op, mode, get_file_type(mode), mtime);
 
 	auto stmt = conn_->prepare(sql_name, add_dirty_sql);
 	csync_info(3, "add_dirty_sql prepared {}\n", add_dirty_sql);
