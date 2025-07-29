@@ -27,21 +27,21 @@ struct FreeDeleter {
 
 int DbSql::schema_version()
 {
-	int version = -1;
+	int get_version = -1;
 	try {
 		if (conn_->execute_update("schema_check_file",
 								  "update file set filename = NULL where filename = NULL ") >= 0)
 		{
-			version = 1;
+			get_version = 1;
 		}
 		if (conn_->execute_update("schema_host",
 								  "update host set host = NULL where host = NULL") >= 0)
 		{
-			version = 2;
+			get_version = 2;
 		}
-	} catch (exception e) {
+	} catch (DatabaseError& e) {
 	}
-	return version;
+	return get_version;
 }
 
 int DbSql::check_file(filename_p filename, std::optional<std::string>& other, const std::string& checktxt,
@@ -617,27 +617,29 @@ long long DbSql::remove_hint(filename_p filename, int recursive)
 int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
 {
 	std::string name_sql = "remove_dirty";
+	std::string	rec_filename;
 	if (recursive) {
 		name_sql += "_recursive";
+		rec_filename += filename + "/%";
 	}
 	std::string where_part = csync_generate_recursive_sql_placeholder(recursive, 1);
-	std::string remove_dirty_sql("DELETE FROM dirty WHERE myname = ? AND peername like ? ");
+	std::string remove_dirty_sql("DELETE FROM dirty WHERE myname = ? AND peername LIKE ? ");
 	remove_dirty_sql += where_part;
-
-	std::string	recursive_str(filename);
-	recursive_str += "/%";
-	std::string output = std::format("remove_dirty_sql {} {} {} {} ",
-							 g_myhostname.c_str(), peername, filename, recursive_str);
-	//cout << output << endl;
+	csync_info(3, "remove_dirty_sql '{}' '{}' '{}' '{}' '{}'",
+			   remove_dirty_sql, g_myhostname, peername, filename, rec_filename);
 	auto stmt = conn_->prepare(name_sql, remove_dirty_sql);
+	csync_info(3, "remove_dirty_sql prepared '{}' '{}' '{}' '{}' '{}'",
+			   remove_dirty_sql, g_myhostname, peername, filename, rec_filename);
 	stmt->bind(1, g_myhostname);
 	stmt->bind(2, peername);
 	stmt->bind(3, filename);
 	if (recursive) {
-		stmt->bind(4, recursive_str);
+		stmt->bind(4, rec_filename);
 	}
 	// std::cout << std::format("{} {} {} {} {}", remove_dirty_sql, file_enc,  g_myhostname, peername, recursive_str);
-	return stmt->execute_update();
+	int rc =  stmt->execute_update();
+	csync_info(3, "remove_dirty_sql execute done");
+	return rc;
 }
 
 textlist_p DbSql::find_dirty(
@@ -823,15 +825,27 @@ textlist_p DbSql::get_old_operation(const std::string& checktxt,
 	return tl;
 }
 
+const char *null(const char *value) {
+	return value != NULL ? value : "NULL";
+}
+
 int DbSql::add_dirty(const char *file_new, int new_force,
 					const char *myhostname, peername_p str_peername,
 					const char *op_str, const std::string& checktxt, const char *dev, const char *ino,
 					const char *result_other,
 					operation_t op, int mode, int mtime)
 {
-    auto stmt = conn_->prepare("add_dirty",
-                               "INSERT INTO dirty (filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) "
-                               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	std::string add_dirty_sql =
+		"INSERT INTO dirty "
+		"(filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) "
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	std::string sql_name = "add_dirty";
+	csync_info(3, "add_dirty_sql '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}'",
+			   add_dirty_sql, file_new, new_force, myhostname, str_peername,
+			   null(op_str), null(checktxt), null(dev), null(ino), null(result_other), op, mode, get_file_type(mode), mtime);
+
+	auto stmt = conn_->prepare(sql_name, add_dirty_sql);
+	csync_info(3, "add_dirty_sql prepared {}\n", add_dirty_sql);
     stmt->bind(1, file_new);
     stmt->bind(2, new_force);
     stmt->bind(3, myhostname);
@@ -850,14 +864,18 @@ int DbSql::add_dirty(const char *file_new, int new_force,
     } else {
         stmt->bind_null(8);
     }
-
-    stmt->bind(9, result_other);
+	if (result_other)
+		stmt->bind(9, result_other);
+	else
+		stmt->bind_null(9);
     stmt->bind(10, static_cast<int>(op));
     stmt->bind(11, mode);
     stmt->bind(12, get_file_type(mode));
     stmt->bind(13, mtime);
 
-	return stmt->execute_update();
+	int rc = stmt->execute_update();
+	csync_info(3, "add_dirty_sql executed {}\n", add_dirty_sql);
+	return rc;
 };
 
 dev_t fstat_dev(struct stat *file_stat)
@@ -947,21 +965,26 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
     struct stat st;
         csync_info(1, "Checking for deleted files {}{}\n", filename, (recursive ? " recursive." : "."));
 	std::string where_rec = csync_generate_recursive_sql_placeholder(recursive, 1);
-	csync_debug(3, "File {}. Hostname: {} \n", filename, g_myhostname);
+
 	std::string SQL_SELECT = "SELECT filename, checktxt, device, inode, mode FROM file WHERE hostname = ? ";
 	SQL_SELECT += where_rec + " ORDER BY filename";
-	//csync_debug(1, "check_delete SQL: {} \n", SQL_SELECT.c_str());
-	std::string named_statement = "check_delete";
+	std::string named_statement = "check_delete_select";
+	std::string rec_filename = "";
 	if (recursive) {
 	    named_statement += "_recursive";
+		rec_filename = filename + "/%";
 	}
+	csync_debug(3, "check_delete: prepare {} SQL: {}\n", named_statement, SQL_SELECT);
 	auto stmt = conn_->prepare(named_statement, SQL_SELECT);
+	csync_debug(3, "check_delete prepared SQL: {} {} \n", named_statement, SQL_SELECT);
 	stmt->bind(1, g_myhostname);
 	stmt->bind(2, filename);
 	if (recursive) {
-	    stmt->bind(3, filename + "/%");
+	    stmt->bind(3, rec_filename);
 	}
 
+	csync_debug(3, "check_delete execute SQL: {} {} {} {} {} \n",
+				named_statement, SQL_SELECT, g_myhostname, filename, rec_filename);
 	auto rs = stmt->execute_query();
 
 	char *last_dir_deleted = NULL;
@@ -998,8 +1021,11 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 			csync_mark(this, t->value, "", peerlist, OP_RM, t->value2, t->value3, t->value4, t->intvalue, now);
 			count_deletes++;
 		}
-        conn_->execute_update("check_delete",
-                            "delete from file WHERE hostname = ? AND filename = ?", g_myhostname, t->value);
+		std::string delete_file = "delete_file";
+		std::string delete_file_sql = "delete from file WHERE hostname = ? AND filename = ?";
+		csync_debug(3, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,  g_myhostname, t->value);
+		conn_->execute_update(delete_file, delete_file_sql, g_myhostname, t->value);
+		csync_debug(3, "check_delete: executed {} {}\n", delete_file, delete_file_sql);
 	}
 
 	textlist_free(tl);

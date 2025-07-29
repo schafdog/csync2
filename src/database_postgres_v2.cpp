@@ -90,7 +90,7 @@ static void pg_exec(PGconn* conn, const char* sql, std::shared_ptr<PostgresAPI> 
     if (api->PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::string error = api->PQerrorMessage(conn);
         api->PQclear(res);
-        throw DatabaseError("PostgreSQL command failed: " + error);
+        throw DatabaseError("PostgreSQL exec (" + std::string(sql) + ") failed: " + error);
     }
     api->PQclear(res);
 }
@@ -101,7 +101,7 @@ PostgresConnection::PostgresConnection(const std::string& conn_string) {
     if (pg_api_->PQstatus(conn_) != CONNECTION_OK) {
         std::string error = pg_api_->PQerrorMessage(conn_);
         pg_api_->PQfinish(conn_);
-        throw DatabaseError("PostgreSQL connection failed: " + error);
+        throw DatabaseError("PostgreSQL connection (" + conn_string + ") failed: " + error);
     }
 }
 
@@ -262,7 +262,7 @@ long long PostgresPreparedStatement::execute_update() {
     if (api_->PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::string error = api_->PQerrorMessage(conn_);
         api_->PQclear(res);
-        throw DatabaseError("PQexecPrepared update failed: " + error);
+        throw DatabaseError("PQexecPrepared update (" + name_ + ") failed: " + error);
     }
 
     long long affected_rows = 0;
