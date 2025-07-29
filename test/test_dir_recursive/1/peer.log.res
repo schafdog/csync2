@@ -410,8 +410,8 @@ Running check for <TESTBASE>/test/peer/c/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/f1.txt.
 Removing file <TESTBASE>/test/peer/c/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/c/3/* ..
 Running check for <TESTBASE>/test/peer/c/3/ignored~ ...
@@ -423,8 +423,8 @@ Running check for <TESTBASE>/test/peer/c/3/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/3/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/3/f1.txt.
 Removing file <TESTBASE>/test/peer/c/3/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/3/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/c/3/f/* ..
 Running check for <TESTBASE>/test/peer/c/3/f/ignored.o ...
@@ -436,8 +436,8 @@ Running check for <TESTBASE>/test/peer/c/3/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/3/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/3/f/f1.txt.
 Removing file <TESTBASE>/test/peer/c/3/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/3/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/3/f 0
 Removing  <TESTBASE>/test/peer/c/3/e/* ..
@@ -450,8 +450,8 @@ Running check for <TESTBASE>/test/peer/c/3/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/3/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/3/e/f1.txt.
 Removing file <TESTBASE>/test/peer/c/3/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/3/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/3/e 0
 Removing  <TESTBASE>/test/peer/c/3/d/* ..
@@ -464,8 +464,8 @@ Running check for <TESTBASE>/test/peer/c/3/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/3/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/3/d/f1.txt.
 Removing file <TESTBASE>/test/peer/c/3/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/3/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/3/d 0
 Removing directory <TESTBASE>/test/peer/c/3 0
@@ -479,8 +479,8 @@ Running check for <TESTBASE>/test/peer/c/2/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/2/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/2/f1.txt.
 Removing file <TESTBASE>/test/peer/c/2/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/2/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/c/2/f/* ..
 Running check for <TESTBASE>/test/peer/c/2/f/ignored.o ...
@@ -492,8 +492,8 @@ Running check for <TESTBASE>/test/peer/c/2/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/2/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/2/f/f1.txt.
 Removing file <TESTBASE>/test/peer/c/2/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/2/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/2/f 0
 Removing  <TESTBASE>/test/peer/c/2/e/* ..
@@ -506,8 +506,8 @@ Running check for <TESTBASE>/test/peer/c/2/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/2/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/2/e/f1.txt.
 Removing file <TESTBASE>/test/peer/c/2/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/2/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/2/e 0
 Removing  <TESTBASE>/test/peer/c/2/d/* ..
@@ -520,8 +520,8 @@ Running check for <TESTBASE>/test/peer/c/2/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/2/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/2/d/f1.txt.
 Removing file <TESTBASE>/test/peer/c/2/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/2/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/2/d 0
 Removing directory <TESTBASE>/test/peer/c/2 0
@@ -535,8 +535,8 @@ Running check for <TESTBASE>/test/peer/c/1/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/1/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/1/f1.txt.
 Removing file <TESTBASE>/test/peer/c/1/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/1/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/c/1/f/* ..
 Running check for <TESTBASE>/test/peer/c/1/f/ignored.o ...
@@ -548,8 +548,8 @@ Running check for <TESTBASE>/test/peer/c/1/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/1/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/1/f/f1.txt.
 Removing file <TESTBASE>/test/peer/c/1/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/1/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/1/f 0
 Removing  <TESTBASE>/test/peer/c/1/e/* ..
@@ -562,8 +562,8 @@ Running check for <TESTBASE>/test/peer/c/1/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/1/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/1/e/f1.txt.
 Removing file <TESTBASE>/test/peer/c/1/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/1/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/1/e 0
 Removing  <TESTBASE>/test/peer/c/1/d/* ..
@@ -576,8 +576,8 @@ Running check for <TESTBASE>/test/peer/c/1/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/c/1/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/c/1/d/f1.txt.
 Removing file <TESTBASE>/test/peer/c/1/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/c/1/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/c/1/d 0
 Removing directory <TESTBASE>/test/peer/c/1 0
@@ -587,8 +587,8 @@ Running check for <TESTBASE>/test/peer/b/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/f1.txt.
 Removing file <TESTBASE>/test/peer/b/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/b/3/* ..
 Running check for <TESTBASE>/test/peer/b/3/ignored~ ...
@@ -600,8 +600,8 @@ Running check for <TESTBASE>/test/peer/b/3/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/3/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/3/f1.txt.
 Removing file <TESTBASE>/test/peer/b/3/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/3/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/b/3/f/* ..
 Running check for <TESTBASE>/test/peer/b/3/f/ignored.o ...
@@ -613,8 +613,8 @@ Running check for <TESTBASE>/test/peer/b/3/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/3/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/3/f/f1.txt.
 Removing file <TESTBASE>/test/peer/b/3/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/3/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/3/f 0
 Removing  <TESTBASE>/test/peer/b/3/e/* ..
@@ -627,8 +627,8 @@ Running check for <TESTBASE>/test/peer/b/3/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/3/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/3/e/f1.txt.
 Removing file <TESTBASE>/test/peer/b/3/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/3/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/3/e 0
 Removing  <TESTBASE>/test/peer/b/3/d/* ..
@@ -641,8 +641,8 @@ Running check for <TESTBASE>/test/peer/b/3/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/3/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/3/d/f1.txt.
 Removing file <TESTBASE>/test/peer/b/3/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/3/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/3/d 0
 Removing directory <TESTBASE>/test/peer/b/3 0
@@ -656,8 +656,8 @@ Running check for <TESTBASE>/test/peer/b/2/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/2/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/2/f1.txt.
 Removing file <TESTBASE>/test/peer/b/2/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/2/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/b/2/f/* ..
 Running check for <TESTBASE>/test/peer/b/2/f/ignored.o ...
@@ -669,8 +669,8 @@ Running check for <TESTBASE>/test/peer/b/2/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/2/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/2/f/f1.txt.
 Removing file <TESTBASE>/test/peer/b/2/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/2/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/2/f 0
 Removing  <TESTBASE>/test/peer/b/2/e/* ..
@@ -683,8 +683,8 @@ Running check for <TESTBASE>/test/peer/b/2/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/2/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/2/e/f1.txt.
 Removing file <TESTBASE>/test/peer/b/2/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/2/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/2/e 0
 Removing  <TESTBASE>/test/peer/b/2/d/* ..
@@ -697,8 +697,8 @@ Running check for <TESTBASE>/test/peer/b/2/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/2/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/2/d/f1.txt.
 Removing file <TESTBASE>/test/peer/b/2/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/2/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/2/d 0
 Removing directory <TESTBASE>/test/peer/b/2 0
@@ -712,8 +712,8 @@ Running check for <TESTBASE>/test/peer/b/1/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/1/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/1/f1.txt.
 Removing file <TESTBASE>/test/peer/b/1/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/1/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/b/1/f/* ..
 Running check for <TESTBASE>/test/peer/b/1/f/ignored.o ...
@@ -725,8 +725,8 @@ Running check for <TESTBASE>/test/peer/b/1/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/1/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/1/f/f1.txt.
 Removing file <TESTBASE>/test/peer/b/1/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/1/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/1/f 0
 Removing  <TESTBASE>/test/peer/b/1/e/* ..
@@ -739,8 +739,8 @@ Running check for <TESTBASE>/test/peer/b/1/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/1/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/1/e/f1.txt.
 Removing file <TESTBASE>/test/peer/b/1/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/1/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/1/e 0
 Removing  <TESTBASE>/test/peer/b/1/d/* ..
@@ -753,8 +753,8 @@ Running check for <TESTBASE>/test/peer/b/1/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/b/1/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/b/1/d/f1.txt.
 Removing file <TESTBASE>/test/peer/b/1/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/b/1/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/b/1/d 0
 Removing directory <TESTBASE>/test/peer/b/1 0
@@ -764,8 +764,8 @@ Running check for <TESTBASE>/test/peer/a/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/f1.txt.
 Removing file <TESTBASE>/test/peer/a/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/a/3/* ..
 Running check for <TESTBASE>/test/peer/a/3/ignored~ ...
@@ -777,8 +777,8 @@ Running check for <TESTBASE>/test/peer/a/3/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/3/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/3/f1.txt.
 Removing file <TESTBASE>/test/peer/a/3/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/3/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/a/3/f/* ..
 Running check for <TESTBASE>/test/peer/a/3/f/ignored.o ...
@@ -790,8 +790,8 @@ Running check for <TESTBASE>/test/peer/a/3/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/3/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/3/f/f1.txt.
 Removing file <TESTBASE>/test/peer/a/3/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/3/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/3/f 0
 Removing  <TESTBASE>/test/peer/a/3/e/* ..
@@ -804,8 +804,8 @@ Running check for <TESTBASE>/test/peer/a/3/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/3/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/3/e/f1.txt.
 Removing file <TESTBASE>/test/peer/a/3/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/3/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/3/e 0
 Removing  <TESTBASE>/test/peer/a/3/d/* ..
@@ -818,8 +818,8 @@ Running check for <TESTBASE>/test/peer/a/3/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/3/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/3/d/f1.txt.
 Removing file <TESTBASE>/test/peer/a/3/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/3/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/3/d 0
 Removing directory <TESTBASE>/test/peer/a/3 0
@@ -833,8 +833,8 @@ Running check for <TESTBASE>/test/peer/a/2/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/2/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/2/f1.txt.
 Removing file <TESTBASE>/test/peer/a/2/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/2/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/a/2/f/* ..
 Running check for <TESTBASE>/test/peer/a/2/f/ignored.o ...
@@ -846,8 +846,8 @@ Running check for <TESTBASE>/test/peer/a/2/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/2/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/2/f/f1.txt.
 Removing file <TESTBASE>/test/peer/a/2/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/2/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/2/f 0
 Removing  <TESTBASE>/test/peer/a/2/e/* ..
@@ -860,8 +860,8 @@ Running check for <TESTBASE>/test/peer/a/2/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/2/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/2/e/f1.txt.
 Removing file <TESTBASE>/test/peer/a/2/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/2/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/2/e 0
 Removing  <TESTBASE>/test/peer/a/2/d/* ..
@@ -874,8 +874,8 @@ Running check for <TESTBASE>/test/peer/a/2/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/2/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/2/d/f1.txt.
 Removing file <TESTBASE>/test/peer/a/2/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/2/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/2/d 0
 Removing directory <TESTBASE>/test/peer/a/2 0
@@ -889,8 +889,8 @@ Running check for <TESTBASE>/test/peer/a/1/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/1/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/1/f1.txt.
 Removing file <TESTBASE>/test/peer/a/1/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/1/f1.txt from file db.
 Removing  <TESTBASE>/test/peer/a/1/f/* ..
 Running check for <TESTBASE>/test/peer/a/1/f/ignored.o ...
@@ -902,8 +902,8 @@ Running check for <TESTBASE>/test/peer/a/1/f/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/1/f/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/1/f/f1.txt.
 Removing file <TESTBASE>/test/peer/a/1/f/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/1/f/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/1/f 0
 Removing  <TESTBASE>/test/peer/a/1/e/* ..
@@ -916,8 +916,8 @@ Running check for <TESTBASE>/test/peer/a/1/e/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/1/e/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/1/e/f1.txt.
 Removing file <TESTBASE>/test/peer/a/1/e/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/1/e/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/1/e 0
 Removing  <TESTBASE>/test/peer/a/1/d/* ..
@@ -930,8 +930,8 @@ Running check for <TESTBASE>/test/peer/a/1/d/f1.txt ...
 Checking for modified files <TESTBASE>/test/peer/a/1/d/f1.txt 
 Checking for deleted files <TESTBASE>/test/peer/a/1/d/f1.txt.
 Removing file <TESTBASE>/test/peer/a/1/d/f1.txt
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Removing <TESTBASE>/test/peer/a/1/d/f1.txt from file db.
 Removing directory <TESTBASE>/test/peer/a/1/d 0
 Removing directory <TESTBASE>/test/peer/a/1 0

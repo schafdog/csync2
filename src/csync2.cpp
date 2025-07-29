@@ -366,27 +366,35 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 		}
 		else
 		{
-			csync_info(1, "monitor: unmatched '{}' '{}' at '{}'", operation, file, time_str);
+			struct stat st;
+			const char *checktxt = NULL;
+			int is_delete = strcmp(operation, "DELETE") == 0;
+			if (lstat_strict(file, &st) == 0)
+			{
+				checktxt = csync_genchecktxt_version( &st, file, SET_USER | SET_GROUP, db->version);
+			}
+			else if (!is_delete)
+			{
+				csync_error(1, "monitor: failed stat '{}' '{}' at '{}'. Skipping.\n", operation, file, time_str);
+				continue;
+			}
+			csync_info(1, "monitor: unmatched '{}' '{}' {} at '{}'", operation, file, checktxt, time_str);
+			if (!is_delete && faccessat(0, file, R_OK,AT_SYMLINK_NOFOLLOW) != 0) {
+				csync_error(0, "monitor: ERROR: Cant read {} {}.\n", file, checktxt ? checktxt : "<No checktxt>");
+				continue;
+			}
 			if (strcmp(operation, "CREATE") == 0)
 			{
-				struct stat st;
-				if (lstat_strict(file, &st) == 0)
+				if (st.st_nlink > 1 && S_ISREG(st.st_mode))
 				{
-					if (st.st_nlink > 1 && S_ISREG(st.st_mode))
-					{
-						csync_info(2, "monitor: hardlink '{}' '{}' at '{}'", operation, file, time_str);
-						const struct csync_group *g = NULL;
-						int count_dirty;
-						csync_check_mod(db, file, flags, &count_dirty, &g);
-					}
-					else
-					{
-						csync_info(2, "monitor: skipping '{}' '{}' at '{}'", operation, file, time_str);
-					}
+					csync_info(2, "monitor: hardlink '{}' '{}' at '{}'", operation, file, time_str);
+					const struct csync_group *g = NULL;
+					int count_dirty;
+					csync_check_mod(db, file, flags, &count_dirty, &g);
 				}
 				else
 				{
-					csync_error(1, "monitor: failed stat '{}' '{}' at '{}' \n", operation, file, time_str);
+					csync_info(2, "monitor: skipping '{}' '{}' at '{}'", operation, file, time_str);
 				}
 			}
 			else if (strcmp(operation, "DELETE") == 0)
