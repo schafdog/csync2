@@ -1338,6 +1338,13 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	if (csync_read_config(g_cfgname, 0, mode) == -1)
 		return -1;
 
+	if (csync_syslog)
+	{
+		csync2::g_logger.configure(csync2::LogLevel::Debug, csync_level_debug, csync2::Logger::Output::Syslog);
+		csync2::g_logger.set_timestamps(false);
+		csync_openlog(csync_facility);
+	}
+
 	// Move configuration versions into place, if configured
 	if (cfg_db_version != -1)
 	{
