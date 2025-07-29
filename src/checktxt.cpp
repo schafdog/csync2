@@ -34,13 +34,13 @@
 #endif
 
 class Checktxt {
-    std::string str;
+    std::string str_;
 
     public:
-    explicit Checktxt(std::string str) : str(str) {}
-    explicit Checktxt(const char *str) : str(str) {}
+    explicit Checktxt(std::string str) : str_(str) {}
+    explicit Checktxt(const char *str) : str_(str) {}
     std::string value() const {
-        return str;
+        return str_;
     }
 };
 
