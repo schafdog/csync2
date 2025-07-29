@@ -11,8 +11,11 @@ echo "far" > "test/$NAME/$FILENAME"
 cmd c "New $NAME/$FILENAME"
 cmd M "New $NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
-cmd T test/$NAME "List daemon" 
-rm -rf test/$NAME
+cmd T test/$NAME "List daemon"
+./portable_touch.sh "test/$NAME/mark"
+cmd m "test/$NAME/mark (mark)"
+cmd u "test/$NAME/mark (sync)"
 sleep 2
+rm -rf test/$NAME
 cmd x "clean up"
 killdaemon

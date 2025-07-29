@@ -46,6 +46,22 @@ goto nofork.
 Command: (null): DEBUG          
 Command: local HELLO
 HELLO from local. Response: OK
+Command: local: SIG <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Running check for <TESTBASE>/test/peer ...
+Checking for modified files <TESTBASE>/test/peer 
+Checking for deleted files <TESTBASE>/test/peer.
+Updated(mod) local:<TESTBASE>/test/peer  
+IDENT (cmd_finished).
+Command: local: SIG <TESTBASE>/test/peer/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/A user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: SIG <TESTBASE>/test/peer/new_file 'N' all user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
+Command: local: BYE          
+goto nofork.
+Command: (null): DEBUG          
+Command: local HELLO
+HELLO from local. Response: OK
 Command: local: STAT <TESTBASE>/test/peer user/group <UID> <GID> <USER> <GROUP>    
 Command: local: DEL <TESTBASE>/test/peer         
 Running check for <TESTBASE>/test/peer ...
