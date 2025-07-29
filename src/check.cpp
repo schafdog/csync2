@@ -277,12 +277,8 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 			char *clean_other = NULL;
 			const char *result_other = other;
 			char *file_new = buffer_strdup(buffer, file);
-			/* We dont currently have a checktxt when marking files. */
-			/* Disable for now: files part of MV gets deleted  if a file is deleted after check and before update in same run,
-			 and thus leaking other side */
-			if (1 && checktxt) {
-				textlist_p tl = db->get_old_operation( checktxt, peername,
-						file, dev, ino, buffer);
+			if (checktxt) {
+				textlist_p tl = db->get_old_operation( checktxt, peername, file, dev, ino, buffer);
 				if (tl) {
 					textlist_p t = check_old_operation(file.c_str(), operation, mode,
 							(rc_file ? NULL : &st_file), other, tl->value, // old filename
@@ -298,11 +294,10 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 						result_other = buffer_strdup(buffer, t->value3);
 						dirty = (t->value4 != NULL);
 						operation = t->intvalue;
-						textlist_free(t);
 						csync_info_c(3,
-								"Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %s operation %s \n",
-								file_new, clean_other, result_other, dirty,
-								operation);
+									 "Found row: file '%s' clean_other: '%s' result_other: '%s' dirty: %d operation %d\n",
+									 file_new, clean_other, result_other, dirty, operation);
+						textlist_free(t);
 					} else {
 						csync_error(0,
 								"ERROR: check_old_operation MUST always return row\n");
