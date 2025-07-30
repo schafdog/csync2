@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <sqlite3.h>
 #include <optional>
+#include "modern_logging.hpp"
+#include "error.hpp"
 
 // Define function pointer types for the SQLite C API.
 using sqlite3_open_t = decltype(&sqlite3_open);
@@ -196,6 +198,7 @@ class SQLitePreparedStatement : public PreparedStatement {
 public:
     SQLitePreparedStatement(sqlite3* db, const std::string& sql, std::shared_ptr<SQLiteAPI> api)
         : db_(db), stmt_(nullptr), api_(api) {
+        csync_debug_c(3, "SQLITE prepare %p %s\n", db, sql.c_str());
         int rc = api_->sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt_, nullptr);
         if (rc != SQLITE_OK) {
             throw DatabaseError("Failed to prepare statement: " + std::string(api_->sqlite3_errmsg(db)));
@@ -264,6 +267,7 @@ private:
 
 SQLiteConnection::SQLiteConnection(const std::string& db_path) : db_(nullptr) {
     sqlite_api_ = std::make_shared<SQLiteAPI>();
+    csync_debug(1, "SQLite open: {}\n", db_path);
     int rc = sqlite_api_->sqlite3_open(db_path.c_str(), &db_);
     if (rc != SQLITE_OK) {
         throw DatabaseError("Cannot open database: " + std::string(sqlite_api_->sqlite3_errmsg(db_)));
