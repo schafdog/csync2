@@ -3,6 +3,7 @@
  */
 #ifndef ERROR_H
 #define ERROR_H
+#include <syslog.h>
 
 /* error.c */
 void csync_printtime(void);
