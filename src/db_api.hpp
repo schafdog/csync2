@@ -120,7 +120,8 @@ public:
     virtual int move_file(filename_p oldfile, filename_p newfile) = 0;
     virtual int update_dirty_hardlinks(peername_p peername, filename_p newfile, struct stat *st) = 0;
     // virtual long get_affected_rows() = 0;
-
+	virtual std::string getIntType() { return ""; };
+	virtual std::string getTextType() { return ""; };
     int version;
     long affected_rows;
     void *private_data_deprecated;
@@ -128,6 +129,7 @@ public:
 };
 
 DbApi *db_create_api(const char *conn_str);
+DbApi *db_create_api(std::unique_ptr<DatabaseConnection>& conn);
 
 // For compatibility
 typedef DbApi* db_conn_p;

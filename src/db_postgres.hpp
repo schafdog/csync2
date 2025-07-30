@@ -2,6 +2,7 @@
 #ifndef DB_POSTGRES_H
 #define DB_POSTGRES_H
 
+#include <string>
 #include "db_sql.hpp"
 
 class DbPostgres : public DbSql {
@@ -15,6 +16,9 @@ public:
     int upgrade_to_schema(int version) override;
     int insert_update_file(filename_p filename, const std::string& checktxt, struct stat *file_stat,
                              const char *digest) override;
+    std::string getIntType()  override { return "::int"; };
+	std::string getTextType() override { return "::text"; };
+
 };
 
 int db_postgres_open(const char *file, db_conn_p *conn_p);
