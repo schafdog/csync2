@@ -39,22 +39,6 @@
 struct textlist;
 typedef struct textlist *textlist_p;
 
-class DbApi;
-class DbStmt {
-public:
-	DbStmt(DbApi *db) : db_(db) {}
-    virtual ~DbStmt() = default;
-    virtual const char* get_column_text(int column) = 0;
-    virtual const char* get_column_blob(int column) = 0;
-    virtual int get_column_int(int column) = 0;
-    virtual int next() = 0;
-    virtual int close() = 0;
-    virtual long get_affected_rows() = 0;
-    virtual DbApi* getDB() { return db_; };
-protected:
-    DbApi *db_ = NULL;
-};
-
 class DbApi {
 public:
     DbApi() = default;
@@ -147,20 +131,10 @@ DbApi *db_create_api(const char *conn_str);
 
 // For compatibility
 typedef DbApi* db_conn_p;
-typedef DbStmt* db_stmt_p;
 
 int db_open(const char *file, int type, db_conn_p *db);
 void db_close(void);
 void db_conn_close(db_conn_p conn);
-
-int db_exec2(db_conn_p conn, const char *exec, void (*callback)(void*, int, int), void *data, const char **err);
-
-int db_prepare_stmt(db_conn_p conn, const char *statement, db_stmt_p *stmt, const char **value);
-
-const char* db_stmt_get_column_text(db_stmt_p stmt, int column);
-int db_stmt_get_column_int(db_stmt_p stmt, int column);
-int db_stmt_next(db_stmt_p stmt);
-int db_stmt_close(db_stmt_p stmt);
 
 void db_set_logger(db_conn_p conn, void (*logger)(int priority, int lv, const char *fmt, ...));
 int db_schema_version(db_conn_p db);
