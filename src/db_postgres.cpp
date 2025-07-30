@@ -195,7 +195,7 @@ int DbPostgres::upgrade_to_schema(int new_version) {
 		"  file_id   bigint      ,"
 		"  timestamp timestamp   DEFAULT current_timestamp,"
 		"  UNIQUE (filename,peername,myname)"			");"
-		"CREATE INDEX idx_dirty_device_inode on dirty (device, inode);",
+		"CREATE INDEX IF NOT EXISTS idx_dirty_device_inode on dirty (device, inode);",
 		FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, CHECKTXT_LENGTH+FILE_LENGTH, DIGEST_LENGTH, FILE_LENGTH));
 
 	conn_->query(std::format(
@@ -214,13 +214,13 @@ int DbPostgres::upgrade_to_schema(int new_version) {
         "  timestamp timestamp   DEFAULT current_timestamp,"
         // "  UNIQUE (id),"
    	    "  UNIQUE (filename,hostname)"				 "); "
-        "CREATE INDEX idx_file_device_inode ON file (device, inode); ",
+        "CREATE INDEX IF NOT EXISTS idx_file_device_inode ON file (device, inode); ",
 		FILE_LENGTH, HOST_LENGTH, CHECKTXT_LENGTH+FILE_LENGTH, DIGEST_LENGTH));
 
 	conn_->query(std::format(
 	    "CREATE TABLE IF NOT EXISTS hint ("
-		"  filename varchar({})   ,"
-		"  recursive int          ,"
+		"  filename varchar({})    ,"
+		"  is_recursive int        ,"
 		"  UNIQUE (filename)       "
 		");",
 		FILE_LENGTH));
