@@ -125,51 +125,66 @@ int DbSqlite::exec(const char *sql) {
 }
 
 int DbSqlite::upgrade_to_schema(int new_version) {
-	if (version < 0)
+	if (new_version < 0)
 		return DB_OK;
 
-	if (version > 0)
+	if (new_version > 2)
 		return DB_ERROR;
 
-	csync_info(2, "Upgrading database schema to version {}.", new_version);
+	csync_info(1, "Upgrading database schema to version {}.", new_version);
 
-	conn_->execute_update("Creating file table",
-	        "CREATE TABLE file ("
-			"  filename TEXT NOT NULL, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
-			"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-			"\tUNIQUE (hostname, filename), "
-			"       ON CONFLICT REPLACE); "
-			"       CREATE INDEX idx_file_device_inode on file (device, inode);");
-
-	conn_->execute_update("Creating dirty table",
-			"CREATE TABLE dirty ("
-					"filename, forced, myname, peername, checktxt, op, operation, device, inode, other, digest, mode, mtime, type, "
-					"       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
-					"UNIQUE (filename, peername), "
-					"KEY (device, inode), "
-					"       ON CONFLICT IGNORE); "
-					"CREATE INDEX idx_dirty_device_inode on file (device, inode);");
-	conn_->execute_update("Creating hint table",
-	        "CREATE TABLE hint ("
-			" filename, recursive,"
-			" UNIQUE ( filename, recursive ) ON CONFLICT IGNORE)");
-
-	conn_->execute_update("Creating action table",
-	        "CREATE TABLE action ("
+	std::string sql =
+			"CREATE TABLE IF NOT EXISTS action ("
 			" filename, command, logfile, "
 			" UNIQUE ( filename, command ) ON CONFLICT IGNORE"
-			")");
+			")";
 
-	conn_->execute_update("Creating host table",
-	        "CREATE TABLE host ("
-			" hostname, status, "
-			" UNIQUE ( hostname ) ON CONFLICT IGNORE)");
+	csync_debug(1, "Creating action table {} \n", sql);
+	conn_->query(sql);
 
-	conn_->execute_update("Creating x509_cert table",
-	        "CREATE TABLE x509_cert ("
+	sql =
+	        "CREATE TABLE IF NOT EXISTS file ("
+			"  filename TEXT NOT NULL, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
+			"  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
+			" UNIQUE (hostname, filename) "
+			"       ON CONFLICT REPLACE); "
+			"CREATE INDEX idx_file_device_inode on file (device, inode);";
+
+	csync_debug(1, "Creating file table {} \n", sql);
+	conn_->query(sql);
+
+	sql =	"CREATE TABLE IF NOT EXISTS dirty ("
+			"  filename, forced, myname, peername, checktxt, op, operation,"
+			"  device, inode, other, digest, mode, mtime, type, "
+			"  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
+			"  UNIQUE (filename, peername));"
+			// "  KEY (device, inode) "
+			// "  ON CONFLICT IGNORE); "
+			"CREATE INDEX idx_dirty_device_inode on file (device, inode);";
+
+	csync_debug(1, "Creating dirty table {} \n", sql);
+	conn_->query(sql);
+
+	sql =   "CREATE TABLE IF NOT EXISTS hint ("
+			" filename, is_recursive,"
+			" UNIQUE ( filename, is_recursive ) ON CONFLICT IGNORE)";
+
+	csync_debug(1, "Creating hint table {} \n", sql);
+	conn_->query(sql);
+
+	sql =   "CREATE TABLE IF NOT EXISTS host ("
+			" host, status, "
+			" UNIQUE ( host ) ON CONFLICT IGNORE)";
+
+	csync_debug(1, "Creating host table {} \n", sql);
+	conn_->query(sql);
+
+	sql =	"CREATE TABLE IF NOT EXISTS x509_cert ("
 			" peername, certdata, "
-			" UNIQUE ( peername ) ON CONFLICT IGNORE)");
+			" UNIQUE ( peername ) ON CONFLICT IGNORE)";
 
+	csync_debug(1, "Creating x509_cert table {} \n", sql);
+	conn_->query(sql);
 	return DB_OK;
 }
 

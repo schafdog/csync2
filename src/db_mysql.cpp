@@ -201,79 +201,87 @@ int DbMySql::insert_update_file(filename_p filename, const std::string& checktxt
 int DbMySql::upgrade_to_schema(int new_version) {
 	csync_debug(2, "Upgrading database schema to version {}.", new_version);
 
-	/* We want proper logging, so use the csync sql function instead
-	 * of that from the database layer.
-	 */
-	conn_->execute_update("Creating host table",
-	        "CREATE TABLE `host` ("
-			"  `host` varchar(%u) DEFAULT NULL,"
+	std::string sql = std::format(
+	        "CREATE TABLE IF NOT EXISTS `host` ("
+			"  `host` varchar({}) DEFAULT NULL,"
 			"  `status`  int,"
 			"  KEY `host` (`host`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", HOST_LENGTH);
+	csync_debug(1, "Creating host table: {}\n", sql);
+	conn_->query(sql);
 
-	conn_->execute_query("Creating action table",
-	        "CREATE TABLE `action` ("
-			"  `filename` varchar(%u) DEFAULT NULL,"
+	sql = std::format(
+	        "CREATE TABLE IF NOT EXISTS `action` ("
+			"  `filename` varchar({}) DEFAULT NULL,"
 			"  `command`  text,"
 			"  `logfile` text,"
-			"  KEY `filename` (`filename`(%u),`command`(%u)) "
+			"  KEY `filename` (`filename`({}),`command`({})) "
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
-	conn_->execute_update("Creating dirty table",
-	                "CREATE TABLE `dirty` ("
+	csync_debug(1, "Creating action table: {}\n", sql);
+	conn_->query(sql);
+	sql = std::format(
+	                "CREATE TABLE IF NOT EXISTS `dirty` ("
              		//"  id        bigint       AUTO_INCREMENT,"
-					"  filename  varchar(%u)  DEFAULT NULL,"
+					"  filename  varchar({})  DEFAULT NULL,"
 					"  forced    int \t       DEFAULT NULL,"
-					"  myname    varchar(%u)  DEFAULT NULL,"
-					"  peername  varchar(%u)  DEFAULT NULL,"
+					"  myname    varchar({})  DEFAULT NULL,"
+					"  peername  varchar({})  DEFAULT NULL,"
 					"  operation varchar(20)  DEFAULT NULL,"
 					"  op        int          DEFAULT NULL,"
-					"  checktxt  varchar(%u)  DEFAULT NULL,"
+					"  checktxt  varchar({})  DEFAULT NULL,"
 					"  device    bigint       DEFAULT NULL,"
 					"  inode     bigint       DEFAULT NULL,"
-					"  other     varchar(%u)  DEFAULT NULL,"
+					"  other     varchar({})  DEFAULT NULL,"
 					"  file_id   bigint       DEFAULT NULL,"
 					"  digest    varchar(70)  DEFAULT NULL,"
 					"  mode      int\t        DEFAULT NULL,"
 					"  mtime     int          DEFAULT NULL,"
 					"  type      int          DEFAULT NULL,"
 					"  `timestamp` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-					"  UNIQUE KEY `filename_peername_myname` (`filename`(%u),`peername`,`myname`), "
+					"  UNIQUE KEY `filename_peername_myname` (`filename`({}),`peername`,`myname`), "
 					"  KEY `idx_file_dev_inode` (`device`,`inode`) "
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
-	FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH, FILE_LENGTH);
+					FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH + 1000, FILE_LENGTH, FILE_LENGTH);
+	csync_debug(1, "Creating table dirty: {}\n", sql);
+	conn_->query(sql);
 
-	conn_->execute_update("Creating file table", "CREATE TABLE `file` ("
+	sql = std::format("CREATE TABLE IF NOT EXISTS `file` ("
 //		 "  `id`       bigint AUTO_INCREMENT,"
 			//		"  `parent`   bigint DEFAULT NULL,"
-					"  filename varchar(%u)  DEFAULT NULL,"
-					"  hostname varchar(%u)  DEFAULT NULL,"
-					"  checktxt varchar(%u)  DEFAULT NULL,"
-					"  device   bigint \t  DEFAULT NULL,"
-					"  inode    bigint \t  DEFAULT NULL,"
-					"  size     bigint \t  DEFAULT NULL,"
-					"  mode     int    \t  DEFAULT NULL,"
-					"  mtime    int    \t  DEFAULT NULL,"
-					"  type     int    \t  DEFAULT NULL,"
+					"  filename varchar({})  DEFAULT NULL,"
+					"  hostname varchar({})  DEFAULT NULL,"
+					"  checktxt varchar({})  DEFAULT NULL,"
+					"  device   bigint       DEFAULT NULL,"
+					"  inode    bigint       DEFAULT NULL,"
+					"  size     bigint       DEFAULT NULL,"
+					"  mode     int          DEFAULT NULL,"
+					"  mtime    int          DEFAULT NULL,"
+					"  type     int          DEFAULT NULL,"
 					"  digest   varchar(70)  DEFAULT NULL,"
 					"  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-					"  UNIQUE KEY `hostname_filename` (`hostname` , `filename` (%u)), "
+					"  UNIQUE KEY `hostname_filename` (`hostname` , `filename` ({})), "
 					"  KEY `idx_file_dev_inode` (`device`,`inode`) "
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
-	FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 50, FILE_LENGTH);
+					FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 100, FILE_LENGTH);
+	csync_debug(1, "Creating table file: {}\n", sql);
+	conn_->query(sql);
 
-	conn_->execute_update("Creating hint table",
-	        "  CREATE TABLE `hint` ("
-			"  `filename` varchar(%u) DEFAULT NULL,"
-			"  `recursive` int(11)    DEFAULT NULL"
+	sql =   std::format("  CREATE TABLE IF NOT EXISTS `hint` ("
+			"  `filename` varchar({})    DEFAULT NULL,"
+			"  `is_recursive` int(11)    DEFAULT NULL"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
-	FILE_LENGTH);
+			FILE_LENGTH);
+	csync_debug(1, "Creating table hint: {}\n", sql);
+	conn_->query(sql);
 
-conn_->execute_query("Creating x509_cert table",
-           	"CREATE TABLE `x509_cert` ("
+	sql = std::format(
+           	"CREATE TABLE IF NOT EXISTS `x509_cert` ("
 			"  `peername` varchar(50)  DEFAULT NULL,"
 			"  `certdata` text DEFAULT NULL,"
 			"  UNIQUE KEY `peername` (`peername`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
+	csync_debug(1, "Creating table x509_cert: {}\n", sql);
+	conn_->query(sql);
 
 	return DB_OK;
 }
