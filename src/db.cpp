@@ -70,7 +70,7 @@ db_conn_p csync_db_open(const char *file) {
 	int rc = db_open(file, db_type, &db);
 	global_db = db;
 	if (rc != DB_OK || db == NULL)
-		csync_fatal("Can't open database: %s\n", file);
+		csync_fatal("Can't open database: {}\n", file);
 
 	db_set_logger(db, csync_log_c);
 
