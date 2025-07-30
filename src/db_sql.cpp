@@ -334,7 +334,7 @@ textlist_p DbSql::get_hints()
 	textlist_p tl = NULL;
     try {
         auto rs = conn_->execute_query("get_hints",
-                                     "SELECT filename, recursive FROM hint");
+                                     "SELECT filename, is_recursive FROM hint");
 
         while (rs->next()) {
             std::string filename = rs->get_string(1);
@@ -445,7 +445,7 @@ void DbSql::list_hint()
 {
 	try {
 		auto rs = conn_->execute_query("DB Dump - Hint",
-					   "SELECT recursive, filename FROM hint ORDER BY filename");
+					   "SELECT is_recursive, filename FROM hint ORDER BY filename");
 		while (rs->next()) {
 			printf("%s\t%s\n", rs->get_string(1).c_str(), rs->get_string(2).c_str());
 		}
@@ -526,8 +526,8 @@ textlist_p DbSql::list_file(filename_p str_filename, const char *myhostname, pee
 int DbSql::move_file(filename_p filename, filename_p newname)
 {
 	const std::string update_sql_format =
-		"UPDATE file set filename = concat(?::text,substring(filename,?)) "
-		"WHERE (filename = ? or filename like ?) ";
+		std::format("UPDATE file set filename = concat(?{},substring(filename,?)) "
+		"WHERE (filename = ? or filename like ?) ", getTextType());
 	csync_debug(1, "SQL MOVE: {}\n", update_sql_format);
 	std::string recursive = filename + "/%";
 	conn_->execute_update("move_file", update_sql_format, newname, static_cast<long long>(filename.size() + 1), filename, recursive);
@@ -605,13 +605,13 @@ int DbSql::dir_count(const char *dirname)
 long long DbSql::add_hint(filename_p filename, int recursive)
 {
     return conn_->execute_update("add_hint",
-                                  "INSERT INTO hint (filename, recursive) VALUES (?,?) ON CONFLICT DO NOTHING",
+                                  "INSERT INTO hint (filename, is_recursive) VALUES (?,?)",
                                   filename, recursive);
 }
 
 long long DbSql::remove_hint(filename_p filename, int recursive)
 {
-    return conn_->execute_update("remove_hint", "DELETE FROM hint WHERE filename = ? AND recursive = ?", filename, recursive);
+    return conn_->execute_update("remove_hint", "DELETE FROM hint WHERE filename = ? AND is_recursive = ? ", filename, recursive);
 };
 
 int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
@@ -734,12 +734,12 @@ textlist_p DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p str
 
 	textlist_p tl = NULL;
 	std::string named_statement = "get_dirty_by_peer_match";
-	std::string SQL_SELECT =
-	        "SELECT filename, operation, op, other, checktxt, digest, forced, (op & ?::int) as type "
+	std::string SQL_SELECT = std::format(
+	        "SELECT filename, operation, op, other, checktxt, digest, forced, (op & ?{}) as type "
 			"FROM dirty WHERE "
 			"peername = ? AND myname = ? "
 			"AND peername NOT IN (SELECT host FROM host WHERE status = 1) "
-			"ORDER by type DESC, filename DESC";
+			"ORDER by type DESC, filename DESC", getIntType());
 	auto rs = conn_->execute_query(named_statement, SQL_SELECT, OP_FILTER, peername, myhostname);
 	while (rs->next())
 	{
@@ -1046,15 +1046,13 @@ int DbSql::add_action(filename_p filename, const std::string& prefix_cmd, const 
 {
     std::string name_sql = "add_action";
     std::string sql = R"(INSERT INTO action (filename, command, logfile)
-                         VALUES (?, ?, ?)
-                         ON CONFLICT (filename,command)
-                         DO UPDATE SET command=?, logfile=?)";
+                         VALUES (?, ?, ?))";
    	auto stmt = conn_->prepare(name_sql, sql);
 	stmt->bind(1, filename);
 	stmt->bind(2, prefix_cmd);
 	stmt->bind(3, logfile);
-	stmt->bind(4, prefix_cmd);
-	stmt->bind(5, logfile);
+	// stmt->bind(4, prefix_cmd);
+	// stmt->bind(5, logfile);
 	return stmt->execute_update();
 }
 
