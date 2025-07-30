@@ -9,11 +9,9 @@
 #include <memory>
 #include "textlist.hpp"
 using namespace std;
+
 void test_database(const std::string &conn_str) {
   std::cout << "--- Testing Database: " << conn_str << " --- " << std::endl;
-  // Change this connection string to match your PostgreSQL server
-  // configuration.
-  // ----------------------
 
   try {
     // 1. Connect
@@ -93,16 +91,20 @@ int print_textlist(textlist_p tl) {
 void test_db_api(const std::string &conn_str) {
     std::cout << "--- Testing API: " << conn_str << " --- " << std::endl;
     try {
-        DbApi *api = csync_db_open(conn_str.c_str());
-        api->upgrade_to_schema(2);
+        auto conn = create_connection(conn_str);
+        DbApi *api = db_create_api(conn);
+        //DbApi *api = csync_db_open(conn_str.c_str());
 
         // Initial cleanup for all tables
-        api->conn_->query("DROP TABLE IF EXISTS file;");
-        api->conn_->query("DROP TABLE IF EXISTS hint;");
-        api->conn_->query("DROP TABLE IF EXISTS dirty;");
+        api->conn_->begin_transaction();
         api->conn_->query("DROP TABLE IF EXISTS action;");
+        api->conn_->query("DROP TABLE IF EXISTS hint;");
         api->conn_->query("DROP TABLE IF EXISTS host;");
-
+        api->conn_->query("DROP TABLE IF EXISTS dirty;");
+        api->conn_->query("DROP TABLE IF EXISTS file;");
+        api->conn_->query("DROP TABLE IF EXISTS x509_cert;");
+		api->conn_->commit();
+        
         // Recreate tables (assuming upgrade_to_schema handles this, or add explicit CREATE TABLE statements if needed)
         // For now, relying on upgrade_to_schema to recreate them if they don't exist.
         api->upgrade_to_schema(2);
@@ -121,6 +123,7 @@ void test_db_api(const std::string &conn_str) {
         filestat.st_dev = 67890;
         // BUG 1
         g_myhostname = hostname;
+        std::cout << "remove_dirty (recursive)" << std::endl;
         int count = api->remove_dirty(peername, filename, 0);
         std::cout << "remove_dirty count (recursive): " << count << std::endl;
         count = api->remove_dirty(peername, filename, 1);
@@ -161,6 +164,7 @@ void test_db_api(const std::string &conn_str) {
         std::cout << "Directory count: " << count << std::endl;
 
         // Clean up hint table before test
+        std::cout << "remove hint" << std::endl;
         api->remove_hint("/", 1);
 
         long long add_hint_count = api->add_hint(filename, 1);
@@ -195,30 +199,45 @@ void test_db_api(const std::string &conn_str) {
         const char *digest = "digest";
         tl = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
         cout << "check_file_same_dev_inode count " << print_textlist(tl) << std::endl;
-        tl = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
-        cout << "check_file_same_dev_inode count " << print_textlist(tl) << std::endl;
 
-        api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
+		tl = api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
+        cout << "check_dirty_same_dev_inode count " << print_textlist(tl) << std::endl;
         api->clear_operation(hostname, peername, filename);
+        cout << "check_delete next" << std::endl;
         api->check_delete(filename, 1, 0);
+        cout << "update_dev_no next" << std::endl;
         api->update_dev_no(filename, 1, 123, 456);
+        cout << "force" << std::endl;
         api->force(filename, 1);
+        cout << "move_file" << std::endl;
         api->move_file(filename, "/some/other/path");
         int operation, mode;
+        cout << "is_dirty" << std::endl;
         api->is_dirty(peername, filename, &operation, &mode);
+        cout << "get_dirty_hosts" << std::endl;
         api->get_dirty_hosts();
+        cout << "get_hints" << std::endl;
         api->get_hints();
+        cout << "list_dirty" << std::endl;
         api->list_dirty(std::set<std::string>{hostname}, filename, 1);
+        cout << "list_file" << std::endl;
         api->list_file(filename, hostname, peername, 1);
+        cout << "list_files" << std::endl;
         api->list_files(filename);
+        cout << "list_hints" << std::endl;
         api->list_hint();
-        api->list_sync(hostname, peername);
+        cout << "list_sync" << std::endl;
+		api->list_sync(hostname, peername);
+        cout << "mark" << std::endl;
         api->mark(std::set<std::string>{peername}, filename, 1);
+        cout << "non_dirty_files_match" << std::endl;
         api->non_dirty_files_match(filename);
 
         //api->upgrade_db();
         // clean up
+        cout << "remove_dirty recursive" << std::endl;
         api->remove_dirty(peername, "/", 1);
+        cout << "remove_file recursive" << std::endl;
         api->remove_file("/", 1);
 
     } catch (const std::exception &e) {
@@ -227,7 +246,7 @@ void test_db_api(const std::string &conn_str) {
                     "connection string is correct."
                     << std::endl;
     }
-    std::cout << "--- PostgreSQL Test Finished ---\n" << std::endl;
+    std::cout << "--- Test " << conn_str << " Finished ---\n" << std::endl;
 }
 
 static const char *csync_decode_v2(const char *value)
