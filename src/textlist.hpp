@@ -94,10 +94,11 @@ static inline void textlist_add5(struct textlist **listhandle, const std::string
     textlist_add5(listhandle, item.c_str(), item2.c_str(), item3.c_str(), item4.c_str(), item5.c_str(), intitem, operation);
 }
 
-static inline void textlist_add4(struct textlist **listhandle, const std::string& item, const std::string& item2, const std::string& item3,
-                				 const std::string& item4, int intitem)
+static inline void textlist_add4(struct textlist **listhandle,
+				       const std::string& item, const char *item2, const char *item3,
+				       const char *item4, int intitem)
 {
-    textlist_add5(listhandle, item.c_str(), item2.c_str(), item3.c_str(), item4.c_str(), 0, intitem, 0);
+    textlist_add5(listhandle, item.c_str(), item2, item3, item4, 0, intitem, 0);
 }
 
 static inline void textlist_add4(struct textlist **listhandle, const char *item, const char *item2, const char *item3,
@@ -160,7 +161,7 @@ static inline void textlist_add2(struct textlist **listhandle, const char *item,
 
 static inline void textlist_add2(struct textlist **listhandle, filename_p item, filename_p item2, int intitem)
 {
-  textlist_add4(listhandle, item, item2, 0, 0, intitem);
+    textlist_add4(listhandle, item, item2.c_str(), 0, 0, intitem);
 }
 
 
