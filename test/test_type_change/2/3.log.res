@@ -1,7 +1,7 @@
 cmd T "3 List daemon" local peer test/local
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_insynctest_all: get all groups 
