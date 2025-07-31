@@ -12,6 +12,7 @@
 #include "db_sql.hpp"
 #include "db.hpp"
 
+
 // C++20 std::format support
 #if __cplusplus >= 202002L && __has_include(<format>)
     #include <format>
@@ -175,13 +176,7 @@ int DbSql::is_dirty(peername_p str_peername, filename_p str_filename, int *opera
 
         if (rs->next()) {
             rc = 1;
-            auto op_str = rs->get_string_optional(1);
-            if (op_str.has_value() && !op_str->empty()) {
-                *operation = atoi(op_str->c_str());
-            } else {
-                *operation = 0;
-            }
-
+            *operation = rs->get_long(1);
             auto mode_str = rs->get_string_optional(2);
             if (mode_str.has_value() && !mode_str->empty()) {
                 *mode = atoi(mode_str->c_str());
@@ -225,8 +220,8 @@ int DbSql::list_dirty(const std::set<std::string> &active_peers, const char *rea
             std::string peername = rs->get_string(3);
             std::string filename = rs->get_string(4);
             std::string op_str = rs->get_string(5);
-            auto op = rs->get_string_optional(6);
-            auto type = rs->get_string_optional(7);
+            auto op = rs->get_int(6);
+            auto type = rs->get_int(7);
 
             if (csync_find_next(0, filename.c_str(), 0))
             {
@@ -235,9 +230,9 @@ int DbSql::list_dirty(const std::set<std::string> &active_peers, const char *rea
                     int force = 0;
                     if (force_str.has_value() && !force_str->empty())
                         force = atoi(force_str->c_str());
-                    printf("%s%s\t%s\t%s\t%s\t%s\t%s\n",
+                    printf("%s%s\t%s\t%s\t%s\t%d\t%d\n",
                            (force ? "F " : "  "), op_str.c_str(),
-                           myname.c_str(), peername.c_str(), filename.c_str(), (op.has_value() ? op->c_str() : "NULL"), (type.has_value() ? type->c_str() : "NULL"));
+                           myname.c_str(), peername.c_str(), filename.c_str(), op, type);
                     retval++;
                 }
             }
@@ -378,17 +373,22 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 		return; // Skipping
 
 	struct stat file_st;
-	int rc = stat(filename.c_str(), &file_st);
 	time_t mtime = time(NULL);
 	const char *checktxt = "";
-	char *device = NULL;
-	char *inode = NULL;
+	const char *device = NULL;
+	const char *inode = NULL;
 	int mode = 0;
+	std::string dev_str, inode_str;
+	int rc = lstat(filename.c_str(), &file_st);
 	if (!rc)
 	{
 		mtime = file_st.st_mtime;
 		mode = file_st.st_mode;
-		// calc checktxt, device, inode
+		dev_str = std::format("{}", file_st.st_dev);
+		device = dev_str.c_str();
+		inode_str = std::format("{}", file_st.st_ino);
+		inode = inode_str.c_str();
+		// calc checktxt, digest
 	}
 	// Duplicate mark
 	csync_mark(this, filename, "", active_peerlist, OP_MARK, checktxt, device, inode, mode, mtime);
@@ -401,7 +401,7 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 		std::string sql = "SELECT filename, mode, checktxt, digest, device, inode, mtime FROM file "
                           "WHERE hostname = ? ";
         sql += where_rec + "ORDER BY filename DESC";
-
+		csync_debug(3,"DbSql::mark {}", sql);
 		auto rs  = conn_->execute_query("mark_recursive", sql, g_myhostname, filename, filename + "/%");
 
 		while (rs->next())
@@ -410,8 +410,9 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 			int db_mode = rs->get_string_optional(2).has_value() ? atoi(rs->get_string_optional(2)->c_str()) : 0;
 			const std::string db_checktxt = rs->get_string(3);
 			// const char *digest   = rs->get_string(4);
-			const std::string db_device = rs->get_string(5);
-			const std::string db_inode = rs->get_string(6);
+			const std::string db_device = std::format("{}", rs->get_long(5));
+			const std::string db_inode  = std::format("{}", rs->get_long(6));
+			csync_debug(3, "DbSql::mark DB dev inode {} {}\n" , db_device, db_inode);
 			const std::string db_mtime_str = rs->get_string(7);
 			int db_mtime = atoi(db_mtime_str.c_str());
 			textlist_add5(&tl, db_filename, db_checktxt, db_device, db_inode, db_mtime_str, db_mode, db_mtime);
@@ -434,6 +435,7 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 				db_mode = file_st.st_mode;
 				db_mtime = file_st.st_mtime;
 			}
+			csync_debug(3, "DbSql::mark DB dev inode {} {}\n" , db_device, db_inode);
 			csync_mark(this, db_filename, "", active_peerlist, OP_MARK, db_checktxt, db_device, db_inode, db_mode, db_mtime);
 			tl = tl->next;
 		}
@@ -528,7 +530,7 @@ int DbSql::move_file(filename_p filename, filename_p newname)
 	const std::string update_sql_format =
 		std::format("UPDATE file set filename = concat(?{},substring(filename,?)) "
 		"WHERE (filename = ? or filename like ?) ", getTextType());
-	csync_debug(1, "SQL MOVE: {}\n", update_sql_format);
+	csync_debug(3, "SQL MOVE: {}\n", update_sql_format);
 	std::string recursive = filename + "/%";
 	conn_->execute_update("move_file", update_sql_format, newname, static_cast<long long>(filename.size() + 1), filename, recursive);
 	return 0;
@@ -643,14 +645,15 @@ int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
 }
 
 textlist_p DbSql::find_dirty(
-							int (*filter)(filename_p str_filename, const char *localname, peername_p str_peername))
+							int (*filter)(filename_p str_filename, peername_p localname, peername_p str_peername))
 {
 	textlist_p tl = 0;
 
     try {
         auto rs = conn_->execute_query("find_dirty",
-                                     "SELECT filename, myname, peername FROM dirty where myname = ? "
-                                     "AND peername not in (select host from host where status = 1) ",
+									   "SELECT filename, myname, peername FROM dirty where myname = ? "
+									   "AND peername not in (select host from host where status = 1) "
+									   "ORDER by filename, peername",
                                      g_myhostname);
 
         while (rs->next()) {
@@ -658,9 +661,10 @@ textlist_p DbSql::find_dirty(
             std::string localname_str = rs->get_string(2);
             std::string peername_str = rs->get_string(3);
             csync_info(2, "Check '{}' with '{}:{}' from dirty.\n", localname_str, peername_str, filename_str);
-            if (!filter(filename_str.c_str(), localname_str.c_str(), peername_str.c_str()))
+            if (!filter(filename_str, localname_str, peername_str))
             {
-                csync_info(1, "Remove '{}:{}' from dirty. No longer in configuration\n", peername_str, filename_str);
+                csync_info(1, "Remove '{}:{}' from dirty. No longer in configuration\n",
+						   peername_str, filename_str);
                 textlist_add2(&tl, filename_str.c_str(), peername_str.c_str(), 0);
             }
         }
@@ -810,15 +814,14 @@ textlist_p DbSql::get_old_operation(const std::string& checktxt,
 		const auto old_other = rs->get_string_optional(3);
 		const auto old_checktxt = rs->get_string_optional(4);
 		const auto old_digest = rs->get_string_optional(5);
-		const auto opt_op = rs->get_string_optional(6);
-		operation_t op = opt_op.has_value() ? atoi(opt_op->c_str()) : 0;
+		const auto op = rs->get_int(6);
 		if (op != old_operation)
-			csync_warn(0, "WARN: operation changed: {}({}) => {}({})\n",
+			csync_warn(0, "WARN: operation - op mismatch: {}({}) <> {}({})\n",
 			           rs->get_string(1).c_str(), old_operation, csync_operation_str(op), op);
-		textlist_add4(&tl, old_filename,
-		              old_other.has_value() ? *old_other : NULL,
-		              old_checktxt.has_value() ? *old_checktxt : NULL,
-		              old_digest.has_value() ? *old_digest : NULL,
+		textlist_add4(&tl, old_filename.c_str(),
+		              old_other.has_value()    ? (*old_other).c_str() : NULL,
+		              old_checktxt.has_value() ? (*old_checktxt).c_str() : NULL,
+		              old_digest.has_value()   ? (*old_digest).c_str() : NULL,
 					  old_operation);
 		break;
 	}
@@ -826,7 +829,20 @@ textlist_p DbSql::get_old_operation(const std::string& checktxt,
 }
 
 const char *null(const char *value) {
-	return value != NULL ? value : "NULL";
+	return value != NULL && value[0] != 0 ? value : "NULL";
+}
+
+int parse_long_long(const char *no_str, long long& no_ref, const char *field) {
+	try {
+		if (no_str) {
+			no_ref = std::stoll(no_str);
+			return 1;
+		}
+		return 0;
+	} catch (const exception& e) {
+		csync_debug(1, "Failed to parse {}: '{}'", field, no_str);
+		return 0;
+	}
 }
 
 int DbSql::add_dirty(const char *file_new, int new_force,
@@ -842,7 +858,7 @@ int DbSql::add_dirty(const char *file_new, int new_force,
 	std::string sql_name = "add_dirty";
 	csync_info(3, "add_dirty_sql '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}'",
 			   add_dirty_sql, file_new, new_force, myhostname, str_peername,
-			   null(op_str), checktxt, null(dev), null(ino), null(result_other), op, mode, get_file_type(mode), mtime);
+			   null(op_str), checktxt, dev, ino, null(result_other), op, mode, get_file_type(mode), mtime);
 
 	auto stmt = conn_->prepare(sql_name, add_dirty_sql);
 	csync_info(3, "add_dirty_sql prepared {}\n", add_dirty_sql);
@@ -852,19 +868,19 @@ int DbSql::add_dirty(const char *file_new, int new_force,
     stmt->bind(4, str_peername);
     stmt->bind(5, op_str);
     stmt->bind(6, checktxt);
-
-    if (dev) {
-        stmt->bind(7, std::stoll(dev));
+	long long number;
+    if (parse_long_long(dev, number, "dev")) {
+			stmt->bind(7, number);
     } else {
         stmt->bind_null(7);
     }
 
-    if (ino) {
+	if (parse_long_long(ino, number, "ino")) {
         stmt->bind(8, std::stoll(ino));
     } else {
         stmt->bind_null(8);
     }
-	if (result_other)
+	if (result_other && result_other[0] != 0)
 		stmt->bind(9, result_other);
 	else
 		stmt->bind_null(9);
@@ -992,8 +1008,8 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 	{
 		const std::string db_filename = rs->get_string(1);
 		const std::string checktxt = rs->get_string(2);
-		const std::string device = rs->get_string(3);
-		const std::string inode = rs->get_string(4);
+		const std::string device = std::format("{}", rs->get_long(3));
+		const std::string inode = std::format("{}", rs->get_long(4));
 		const auto mode = rs->get_string_optional(5);
 		int mode_int = mode.has_value() ? atoi(mode->c_str()) : 0;
 		const struct csync_group *g = NULL;
@@ -1017,7 +1033,8 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 		if (!init_run)
 		{
 			std::set<string> peerlist;
-			// csync_debug(0, "check_dirty (rm): before mark (all) \n");
+			csync_debug_c(3, "check_dirty (rm): before mark (all) %s %s %s %s %d\n",
+						  t->value, t->value2, t->value3, t->value4, t->intvalue);
 			csync_mark(this, t->value, "", peerlist, OP_RM, t->value2, t->value3, t->value4, t->intvalue, now);
 			count_deletes++;
 		}

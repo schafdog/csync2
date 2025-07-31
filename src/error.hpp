@@ -3,6 +3,7 @@
  */
 #ifndef ERROR_HPP
 #define ERROR_HPP
+#include "modern_logging.hpp"
 
 /* error.cpp */
 #define csync_crit(level, fmt, ...)   csync_crit_cpp(level, fmt __VA_OPT__(, ) __VA_ARGS__)
