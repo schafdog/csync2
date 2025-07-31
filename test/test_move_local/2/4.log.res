@@ -1,7 +1,7 @@
 cmd c "move B newdir/C => new newdir/C" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -10,10 +10,10 @@ Checking recursive for modified files <TESTBASE>/test
 Checking <TESTBASE>/test/* ..
 Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
 mark operation NEW -> MOD => NEW peer:<TESTBASE>/test/local (not synced) .
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
@@ -32,10 +32,10 @@ check same file (64) <TESTBASE>/test/local/B -> <TESTBASE>/test/local/newdir/C
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/local/B, param2: local
 Found MOVE <TESTBASE>/test/local/B -> <TESTBASE>/test/local/newdir/C 
 mark other operation: 'MV' 'peer:<TESTBASE>/test/local/newdir/C' '<TESTBASE>/test/local/B'.
-mark other: MV(16) Old operation: NEW(2) '<TESTBASE>/test/local/B' ''
+check_old_operation: MV(16) Old operation: NEW(2) '<TESTBASE>/test/local/B' '(null)'
 mark operation NEW->MV => NEW peer '<TESTBASE>/test/local/newdir/C' '<TESTBASE>/test/local/B' '<TESTBASE>/test/local/B'.
 mark other operation: 'MV' 'other:<TESTBASE>/test/local/newdir/C' '<TESTBASE>/test/local/B'.
-mark other: MV(16) Old operation: NEW(2) '<TESTBASE>/test/local/B' ''
+check_old_operation: MV(16) Old operation: NEW(2) '<TESTBASE>/test/local/B' '(null)'
 mark operation NEW->MV => NEW other '<TESTBASE>/test/local/newdir/C' '<TESTBASE>/test/local/B' '<TESTBASE>/test/local/B'.
 Inserted/updated <TESTBASE>/test/local/newdir/C rows matched: 1
 Checking for deleted files <TESTBASE>/test recursive.
