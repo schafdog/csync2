@@ -46,7 +46,8 @@ int DbSql::schema_version()
 }
 
 int DbSql::check_file(filename_p filename, std::optional<std::string>& other, const std::string& checktxt,
-					  struct stat *file_stat, int *operation, std::optional<std::string>& digest, int ignore_flags, dev_t *old_no)
+					  struct stat *file_stat, int *operation, std::optional<std::string>& digest, int ignore_flags,
+					  dev_t *old_no)
 {
     int db_flags = 0;
 	auto rs = conn_->execute_query("check_file",
@@ -63,8 +64,8 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 			csync_error(0, "Error extracting version from checktxt: {}", checktxt_db.c_str());
 		}
 		std::string checktxt_same_version = checktxt;
-		const std::string inode = rs->get_string(2);
-		const std::string device = rs->get_string(3);
+		const std::string inode = std::format("{}", rs->get_long(2));
+		const std::string device = std::format("{}", rs->get_long(3));
 		digest = rs->get_string_optional(4);
 		long mode = rs->get_long(5);
 		long size = rs->get_long(6);
@@ -81,7 +82,7 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 		int dev_inode;
 		if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
 		{
-			csync_info(3, "File {} has changed device:inode {}:{} -> {}:{} {:o} \n",
+			csync_info(1, "File {} has changed device:inode {}:{} -> {}:{} {:o} \n",
 					   filename.c_str(), device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
 
 			if (dev_inode == DEV_CHANGED)
@@ -379,7 +380,8 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 	const char *inode = NULL;
 	int mode = 0;
 	std::string dev_str, inode_str;
-	int rc = lstat(filename.c_str(), &file_st);
+	// Bug?
+	int rc = stat(filename.c_str(), &file_st);
 	if (!rc)
 	{
 		mtime = file_st.st_mtime;
@@ -1010,8 +1012,7 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 		const std::string checktxt = rs->get_string(2);
 		const std::string device = std::format("{}", rs->get_long(3));
 		const std::string inode = std::format("{}", rs->get_long(4));
-		const auto mode = rs->get_string_optional(5);
-		int mode_int = mode.has_value() ? atoi(mode->c_str()) : 0;
+		auto mode_int = rs->get_long(5);
 		const struct csync_group *g = NULL;
 		if (!csync_match_file(db_filename, 0, &g))
 			continue;
