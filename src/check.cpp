@@ -286,11 +286,13 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 				textlist_p tl = db->get_old_operation(checktxt_c, peername, file, dev, ino);
 				if (tl) {
 					textlist_p t = check_old_operation(file.c_str(), operation, mode,
-							(rc_file ? NULL : &st_file), other, tl->value, // old filename
-							tl->value2,   // old other
-							tl->intvalue, // operation
-							tl->value3,   // checktxt
-							peername);
+													   (rc_file ? NULL : &st_file),
+													   other,
+													   tl->value, // old filename
+													   tl->value2,   // old other
+													   tl->intvalue, // operation
+													   tl->value3,   // checktxt
+													   peername);
 					textlist_free(tl);
 
 					if (t) {
