@@ -1,7 +1,7 @@
 cmd x "9 clean (older)" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -13,19 +13,19 @@ No match. Don't check at all: <TESTBASE>/test/peer
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/auto/older/update_both' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/auto/older/update_both' '-'.
-mark other: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/auto/older/update_both' ''
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/auto/older/update_both' '(null)'
 mark operation NEW -> RM other:<TESTBASE>/test/local/auto/older/update_both deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/auto/older' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/auto/older' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto/older' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto/older' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/auto/older deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/auto' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/auto' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/auto deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/auto/older/update_both v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=14 ''
 dirty: peer:<TESTBASE>/test/local/auto/older v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
@@ -47,7 +47,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM  0
+Dirty (missing) item <TESTBASE>/test/local RM NULL 0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -58,11 +58,11 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/auto RM  0
+Dirty (missing) item <TESTBASE>/test/local/auto RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/auto) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/auto/older RM  0
+Dirty (missing) item <TESTBASE>/test/local/auto/older RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/auto/older) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/auto/older/update_both RM  0
+Dirty (missing) item <TESTBASE>/test/local/auto/older/update_both RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/auto/older/update_both) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 

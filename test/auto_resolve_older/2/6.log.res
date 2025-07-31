@@ -1,7 +1,7 @@
 cmd u "6 Fail to autoresolve (not older)" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 dirty: peer:<TESTBASE>/test/local/auto/older/update_both v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=14 ''
