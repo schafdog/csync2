@@ -1575,7 +1575,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 			last_tn = &(t->next);
 		} else {
 			/* File not found */
-			csync_debug(2, "Dirty (missing) item {} {} {} {}\n", filename, op_str, other, forced);
+			csync_debug(2, "Dirty (missing) item {} {} {} {}\n", filename, op_str, other ? other : "NULL", forced);
 			if (t->operation != OP_RM && t->operation != OP_MARK) {
 				csync_warn(1, "Unable to {} {}:{}. File has disappeared since check.\n", csync_operation_str(operation),
 						   peername.c_str(), filename.c_str());
@@ -2099,12 +2099,12 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, cons
 	return ret;
 }
 
-static int filter_missing_dirty(filename_p filename, const char *localname, peername_p peername) {
+static int filter_missing_dirty(filename_p filename, peername_p localname, peername_p peername) {
 	const struct csync_group *g = 0;
 	const struct csync_group_host *h;
 	int found = 0;
 	while (!found && (g = csync_find_next(g, filename.c_str(), 0)) != 0) {
-		if (!strcmp(g->myname, localname))
+		if (localname == g->myname)
 			for (h = g->host; h; h = h->next) {
 				if (peername == h->hostname) {
 					found = 1;
