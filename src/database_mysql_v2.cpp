@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 #include <mysql/mysql.h>
+#include "error.hpp"
 
 // Define function pointer types for the MySQL C API.
 using mysql_init_t = decltype(&mysql_init);
@@ -23,6 +24,7 @@ using mysql_stmt_affected_rows_t = decltype(&mysql_stmt_affected_rows);
 using mysql_stmt_store_result_t = decltype(&mysql_stmt_store_result);
 using mysql_stmt_result_metadata_t = decltype(&mysql_stmt_result_metadata);
 using mysql_num_fields_t = decltype(&mysql_num_fields);
+using mysql_fetch_fields_t = decltype(&mysql_fetch_fields);
 using mysql_fetch_field_direct_t = decltype(&mysql_fetch_field_direct);
 using mysql_stmt_bind_result_t = decltype(&mysql_stmt_bind_result);
 using mysql_stmt_fetch_t = decltype(&mysql_stmt_fetch);
@@ -56,6 +58,7 @@ struct MySQLAPI {
     mysql_stmt_store_result_t mysql_stmt_store_result;
     mysql_stmt_result_metadata_t mysql_stmt_result_metadata;
     mysql_num_fields_t mysql_num_fields;
+    mysql_fetch_fields_t mysql_fetch_fields;
     mysql_fetch_field_direct_t mysql_fetch_field_direct;
     mysql_stmt_bind_result_t mysql_stmt_bind_result;
     mysql_stmt_fetch_t mysql_stmt_fetch;
@@ -92,6 +95,7 @@ struct MySQLAPI {
         mysql_stmt_store_result = reinterpret_cast<mysql_stmt_store_result_t>(dlsym(handle_, "mysql_stmt_store_result"));
         mysql_stmt_result_metadata = reinterpret_cast<mysql_stmt_result_metadata_t>(dlsym(handle_, "mysql_stmt_result_metadata"));
         mysql_num_fields = reinterpret_cast<mysql_num_fields_t>(dlsym(handle_, "mysql_num_fields"));
+        mysql_fetch_fields = reinterpret_cast<mysql_fetch_fields_t>(dlsym(handle_, "mysql_fetch_fields"));
         mysql_fetch_field_direct = reinterpret_cast<mysql_fetch_field_direct_t>(dlsym(handle_, "mysql_fetch_field_direct"));
         mysql_stmt_bind_result = reinterpret_cast<mysql_stmt_bind_result_t>(dlsym(handle_, "mysql_stmt_bind_result"));
         mysql_stmt_fetch = reinterpret_cast<mysql_stmt_fetch_t>(dlsym(handle_, "mysql_stmt_fetch"));
@@ -317,6 +321,7 @@ void MySQLResultSet::bind_results() {
     result_buffers_.resize(num_fields);
     is_null_.resize(num_fields);
     length_.resize(num_fields);
+//    MYSQL_FIELD *fields = api_->mysql_fetch_fields(meta_result_);
 
     for (unsigned int i = 0; i < num_fields; ++i) {
         MYSQL_FIELD* field = api_->mysql_fetch_field_direct(meta_result_, i);
@@ -324,8 +329,8 @@ void MySQLResultSet::bind_results() {
         results_[i].buffer_type = field->type;
         results_[i].is_null = &is_null_[i];
         results_[i].length = &length_[i];
-
-        size_t buffer_size = (field->max_length > 0) ? field->max_length : 32;
+	csync_debug_c(3, "bind_result field: %s %d %d %d\n", field->name, field->type, field->max_length, field->length);
+        size_t buffer_size = (field->max_length > 0) ? field->max_length : field->length;
         result_buffers_[i].resize(buffer_size);
         results_[i].buffer = result_buffers_[i].data();
         results_[i].buffer_length = result_buffers_[i].size();
@@ -345,7 +350,9 @@ bool MySQLResultSet::next() {
     if (rc == MYSQL_NO_DATA) {
         return false;
     }
-    throw DatabaseError("mysql_stmt_fetch failed: " + std::string(api_->mysql_stmt_error(stmt_)));
+	std::string error = std::format("mysql_stmt_fetch 2 failed: {} '{}'", rc, std::string(api_->mysql_stmt_error(stmt_)));
+	// csync_debug(1, "MYSQL error: ", error);
+    throw DatabaseError(error);
 }
 
 int MySQLResultSet::get_int(int index) const {
