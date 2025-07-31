@@ -177,8 +177,18 @@ PostgresPreparedStatement::PostgresPreparedStatement(PGconn* conn, const std::st
 	// std::cout << "SQL: " << converted_sql << " PARAMS: " << param_count << std::endl;
 }
 
-std::string PostgresPreparedStatement::convert_sql_placeholders(const std::string& sql) {
-	std::string converted_sql;
+void replace_all(std::string& str, const std::string& from, const std::string& to) {
+    if (from.empty()) return; // Avoid infinite loop
+    size_t pos = 0;
+    while ((pos = str.find(from, pos)) != std::string::npos) {
+        str.replace(pos, from.length(), to);
+        pos += to.length(); // Advance past the inserted replacement
+    }
+}
+
+std::string PostgresPreparedStatement::convert_sql_placeholders(const std::string& sql_const) {
+	std::string converted_sql, sql = sql_const;
+	replace_all(sql, "{}", "?");
 	converted_sql.reserve(sql.length());
 	int param_index = 1;
 	for (char c : sql) {
