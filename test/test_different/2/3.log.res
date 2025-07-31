@@ -13,7 +13,7 @@ No match. Don't check at all: <TESTBASE>/test/peer
 Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
