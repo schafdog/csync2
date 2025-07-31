@@ -33,6 +33,18 @@
 
 namespace csync2 {
 
+
+    inline const char* safe_str(const char* s) {
+	return s ? s : "(null)";
+    }
+
+    // Sanitization: wrap const char* to check for null
+    inline const char* sanitize(const char* s) { return safe_str(s); }
+
+    // Fallback: leave other types unchanged
+    template <typename T>
+    constexpr T&& sanitize(T&& val) { return std::forward<T>(val); }
+
 /// Log levels matching syslog priorities
 enum class LogLevel : int {
     Emergency = LOG_EMERG,   // 0
@@ -44,6 +56,7 @@ enum class LogLevel : int {
     Info      = LOG_INFO,    // 6
     Debug     = LOG_DEBUG    // 7
 };
+
 
 /// Modern C++ Logger class
 class Logger {
@@ -117,7 +130,13 @@ public:
         if (!should_log(level, debug_level)) return;
 
 #if CSYNC_HAS_STD_FORMAT
-        std::string message = std::vformat(format_str, std::make_format_args(args...));
+        auto sanitized = std::make_tuple(sanitize(std::forward<Args>(args))...);
+        std::string message = std::apply(
+            [&](auto&&... sa) {
+                return std::vformat(format_str, std::make_format_args(sa...));
+            },
+            sanitized
+        );
         write_log(level, message);
 #elif CSYNC_HAS_FMT_FORMAT
         std::string message = fmt::vformat(format_str, fmt::make_format_args(args...));
@@ -169,7 +188,15 @@ private:
         } else {
 #if CSYNC_HAS_STD_FORMAT
             // Use C++20 std::vformat for runtime format strings
-            return std::vformat(format, std::make_format_args(args...));
+	    auto sanitized = std::make_tuple(sanitize(std::forward<Args>(args))...);
+	    std::string message = std::apply(
+		[&](auto&&... sa) {
+		    return std::vformat(format, std::make_format_args(sa...));
+		},
+		sanitized
+		);
+
+	    return message;
 #elif CSYNC_HAS_FMT_FORMAT
             // Use fmt library if available
             return fmt::vformat(format, fmt::make_format_args(args...));
