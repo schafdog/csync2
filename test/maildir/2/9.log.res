@@ -1,7 +1,7 @@
 cmd x "9 Remove files. Removed from other" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -21,7 +21,7 @@ Checking <TESTBASE>/test/local/Maildir/new/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/cur from <TESTBASE>/test/local/Maildir
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/cur' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/cur' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' '(null)'
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/cur (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/cur rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/cur/* ..
@@ -30,19 +30,19 @@ Checking <TESTBASE>/test/local/Maildir/.Trash/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/.Trash/cur from <TESTBASE>/test/local/Maildir/.Trash
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash/cur' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash/cur' '(null)'
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/.Trash/cur (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/.Trash/cur rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/.Trash/cur/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' '-'.
-mark other: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' ''
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' '(null)'
 mark operation NEW -> RM other:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' '-'.
-mark other: RM(64) Old operation: RM(64) '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' ''
+check_old_operation: RM(64) Old operation: RM(64) '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' '(null)'
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' '-'.
-mark other: RM(64) Old operation: HARDLINK(32) '<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
+check_old_operation: RM(64) Old operation: HARDLINK(32) '<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S' '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
 mark operation HARDLINK -> RM other:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=8 ''
 dirty: peer:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=8 ''
@@ -100,7 +100,7 @@ CONN peer < MOD %25test%25/Maildir/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/cur (0)
 Directory time <TESTBASE>/test/local/Maildir <TESTBASE>/test/local/Maildir/cur
-Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S RM NULL 0
 Deleting peer:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S
 CONN peer < STAT %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S 
 CONN peer > 'OK (data_follows).'
@@ -109,7 +109,7 @@ delete flags: 0
 CONN peer < DEL %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S 
 CONN peer > 'OK (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S (0)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST RM NULL 0
 Deleting peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 CONN peer < STAT %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST 
 CONN peer > 'OK (data_follows).'

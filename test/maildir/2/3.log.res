@@ -1,7 +1,7 @@
 cmd x "New Maildir/new/1434.M21,S=6631,W=6764 with transit in tmp " local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -17,14 +17,14 @@ Checking <TESTBASE>/test/local/Maildir/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/tmp from <TESTBASE>/test/local/Maildir
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/tmp' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/tmp' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/tmp' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/tmp' '(null)'
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/tmp (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/tmp rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/tmp/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/new from <TESTBASE>/test/local/Maildir
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/new' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/new' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/new' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/new' '(null)'
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/new (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/new rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/new/* ..

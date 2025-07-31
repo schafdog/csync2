@@ -1,7 +1,7 @@
 cmd x "clean up" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -13,31 +13,31 @@ No match. Don't check at all: <TESTBASE>/test/peer
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/tmp' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/tmp' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/tmp' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/tmp' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/tmp deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/new' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/new' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/new' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/new' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/new deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/cur' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/cur' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/cur deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash/cur' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash/cur' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/.Trash/cur deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir/.Trash' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir/.Trash' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir/.Trash deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/Maildir' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/Maildir' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/Maildir deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/Maildir/tmp v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 dirty: peer:<TESTBASE>/test/local/Maildir/new v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
@@ -62,7 +62,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM  0
+Dirty (missing) item <TESTBASE>/test/local RM NULL 0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -73,17 +73,17 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/Maildir RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/.Trash) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/.Trash/cur) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/cur RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/cur RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/cur) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/new RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/new RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/new) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/tmp RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/tmp RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/tmp) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 
