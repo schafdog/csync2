@@ -1,8 +1,8 @@
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 Found my alias peer localhost 30861
 Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -134,7 +134,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -193,7 +193,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -300,7 +300,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -407,7 +407,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -490,7 +490,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -544,7 +544,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR file
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
