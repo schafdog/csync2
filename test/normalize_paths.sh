@@ -40,4 +40,11 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "/Transfer starting:/d" \
     -e "/total size is.*speedup/d" \
     -e "s|:mode=[^:]*:user=<USER>:group=<GROUP>:type=lnk:|:mode=<LINK>:user=<USER>:group=<GROUP>:type=lnk:|g" \
-    -e "s|mtime=[0-9]*:|mtime=<MTIME>|g"
+    -e "s|mtime=[0-9]*:|mtime=<MTIME>|g" \
+    -e "s|Config-File:   csync2_.*_.*.cfg|Config-File:   csync2_<DB>_<PEER>.cfg|g" \
+    -e "s|Database File: .*|Database File: <CONN_STR>|g" \
+    -e "s| device:inode [0-9]*:[0-9]* -> [0-9]*:[0-9]* | device:inode <DEV>:<INODE> -> <DEV>:<INDE> |g"
+
+
+
+
