@@ -1,7 +1,7 @@
 cmd x "4 more files hardlinked (x)" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -15,7 +15,7 @@ Checking <TESTBASE>/test/local/* ..
 Calling check_mod on <TESTBASE>/test/local/new from <TESTBASE>/test/local
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/new' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/new' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/new' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/new' '(null)'
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/new (not synced) .
 Inserted/updated <TESTBASE>/test/local/new rows matched: 1
 Checking <TESTBASE>/test/local/new/* ..
@@ -30,7 +30,7 @@ check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/loc
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_3 
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/new/hardlinked_3' '<TESTBASE>/test/local/new/hardlinked'.
 mark other operation: 'HARDLINK' 'other:<TESTBASE>/test/local/new/hardlinked_3' '<TESTBASE>/test/local/new/hardlinked'.
-mark other: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' ''
+check_old_operation: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' '(null)'
 Inserted/updated <TESTBASE>/test/local/new/hardlinked_3 rows matched: 1
 Calling check_mod on <TESTBASE>/test/local/new/hardlinked_2 from <TESTBASE>/test/local/new
 New file: <TESTBASE>/test/local/new/hardlinked_2
@@ -43,9 +43,9 @@ Found HARDLINK <TESTBASE>/test/local/new/hardlinked_3 -> <TESTBASE>/test/local/n
 check same file (32) <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_2 
 Found HARDLINK <TESTBASE>/test/local/new/hardlinked -> <TESTBASE>/test/local/new/hardlinked_2 
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/new/hardlinked_2' '<TESTBASE>/test/local/new/hardlinked'.
-mark other: HARDLINK(32) Old operation: HARDLINK(32) '<TESTBASE>/test/local/new/hardlinked_3' '<TESTBASE>/test/local/new/hardlinked'
+check_old_operation: HARDLINK(32) Old operation: HARDLINK(32) '<TESTBASE>/test/local/new/hardlinked_3' '<TESTBASE>/test/local/new/hardlinked'
 mark other operation: 'HARDLINK' 'other:<TESTBASE>/test/local/new/hardlinked_2' '<TESTBASE>/test/local/new/hardlinked'.
-mark other: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' ''
+check_old_operation: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' '(null)'
 Inserted/updated <TESTBASE>/test/local/new/hardlinked_2 rows matched: 1
 Calling check_mod on <TESTBASE>/test/local/new/hardlinked from <TESTBASE>/test/local/new
 Checking for deleted files <TESTBASE>/test recursive.

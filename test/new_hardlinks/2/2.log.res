@@ -1,7 +1,7 @@
 cmd c "2 two new files hardlinked (check)" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -35,8 +35,8 @@ csync_check_file_same_dev_inode <TESTBASE>/test/local/new/hardlinked <TESTBASE>/
 check same file (32) <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked 
 Found HARDLINK <TESTBASE>/test/local/new/new_file -> <TESTBASE>/test/local/new/hardlinked 
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/new/hardlinked' '<TESTBASE>/test/local/new/new_file'.
-mark other: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' ''
+check_old_operation: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' '(null)'
 mark other operation: 'HARDLINK' 'other:<TESTBASE>/test/local/new/hardlinked' '<TESTBASE>/test/local/new/new_file'.
-mark other: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' ''
+check_old_operation: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/new/new_file' '(null)'
 Inserted/updated <TESTBASE>/test/local/new/hardlinked rows matched: 1
 Checking for deleted files <TESTBASE>/test recursive.

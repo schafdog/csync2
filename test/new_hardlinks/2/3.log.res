@@ -1,7 +1,7 @@
 cmd u "3 two new files hardlinked (update)" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 dirty: peer:<TESTBASE>/test/local/new/hardlinked v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
@@ -50,7 +50,7 @@ CREATE <TESTBASE>/test/local/new/new_file 4
 CONN peer < octet-stream 4
 
 CONN peer > 'IDENT (cmd_finished).'
-PATCH hardlink: checking dirty hardlinks: peer:<TESTBASE>/test/local/new/new_file 0 0 v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 
+PATCH hardlink: checking dirty hardlinks: peer:<TESTBASE>/test/local/new/new_file 0 0 v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 (null)
 Clear dirty peer:<TESTBASE>/test/local/new/new_file (0)
 Directory time <TESTBASE>/test/local/new <TESTBASE>/test/local/new/new_file
 Updating (HARDLINK) 'peer:<TESTBASE>/test/local/new/hardlinked' '<TESTBASE>/test/local/new/new_file'
