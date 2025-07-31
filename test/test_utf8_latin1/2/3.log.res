@@ -1,7 +1,7 @@
 cmd x "New local/ÆØÅ Café with utf8 and latin1 (removed)" local peer test
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
@@ -13,14 +13,14 @@ No match. Don't check at all: <TESTBASE>/test/peer
 Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
-mark other: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/ÆØÅ Café.utf8' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/ÆØÅ Café.utf8' '-'.
-mark other: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/ÆØÅ Café.utf8' ''
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/ÆØÅ Café.utf8' '(null)'
 mark operation NEW -> RM other:<TESTBASE>/test/local/ÆØÅ Café.utf8 deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/ÆØÅ Café.utf8 v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
@@ -58,7 +58,7 @@ CONN peer < MOD %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE>
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 Directory time <TESTBASE>/test <TESTBASE>/test/local
-Dirty (missing) item <TESTBASE>/test/local/ÆØÅ Café.utf8 RM  0
+Dirty (missing) item <TESTBASE>/test/local/ÆØÅ Café.utf8 RM NULL 0
 Deleting peer:<TESTBASE>/test/local/ÆØÅ Café.utf8
 CONN peer < STAT %25test%25/ÆØÅ%20Café.utf8 
 CONN peer > 'OK (data_follows).'
