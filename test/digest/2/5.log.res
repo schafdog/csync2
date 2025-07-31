@@ -1,7 +1,7 @@
 cmd x "clean up" local peer test/local
-Config-File:   csync2_pgsql_local.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test/local' flags 65 
@@ -11,15 +11,15 @@ check_mod: No such file '<TESTBASE>/test/local' .
 Checking for deleted files <TESTBASE>/test/local recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/A' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/A' '-'.
-mark other: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/A' ''
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/A' ''
 mark operation NEW -> RM other:<TESTBASE>/test/local/A deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/.Test' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/.Test' '-'.
-mark other: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/.Test' ''
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/.Test' ''
 mark operation NEW -> RM other:<TESTBASE>/test/local/.Test deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-mark other: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/A v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 ''
 dirty: peer:<TESTBASE>/test/local/.Test v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=0 ''

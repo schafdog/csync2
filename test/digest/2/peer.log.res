@@ -1,10 +1,10 @@
-Config-File:   csync2_pgsql_peer.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 Found my alias peer localhost 30861
 Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
-Config-File:   csync2_pgsql_peer.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
-Database File: pgsql://csync2:csync238@localhost/csync2_peer
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 CONN (null) < OK (cmd_finished).
@@ -104,9 +104,9 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-Config-File:   csync2_pgsql_peer.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
-Database File: pgsql://csync2:csync238@localhost/csync2_peer
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 CONN (null) < OK (cmd_finished).
@@ -157,9 +157,9 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-Config-File:   csync2_pgsql_peer.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
-Database File: pgsql://csync2:csync238@localhost/csync2_peer
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 CONN (null) < OK (cmd_finished).
@@ -199,9 +199,9 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-Config-File:   csync2_pgsql_peer.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
-Database File: pgsql://csync2:csync238@localhost/csync2_peer
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 CONN (null) < OK (cmd_finished).

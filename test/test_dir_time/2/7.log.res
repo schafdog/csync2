@@ -17,14 +17,14 @@ Checking <TESTBASE>/test/local/usr/* ..
 Calling check_mod on <TESTBASE>/test/local/usr/local from <TESTBASE>/test/local/usr
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/usr/local' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/usr/local' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/usr/local (not synced) .
 Inserted/updated <TESTBASE>/test/local/usr/local rows matched: 1
 Checking <TESTBASE>/test/local/usr/local/* ..
 Calling check_mod on <TESTBASE>/test/local/usr/local/sbin from <TESTBASE>/test/local/usr/local
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/usr/local/sbin' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/usr/local/sbin' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local/sbin' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local/sbin' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/usr/local/sbin (not synced) .
 Inserted/updated <TESTBASE>/test/local/usr/local/sbin rows matched: 1
 Checking <TESTBASE>/test/local/usr/local/sbin/* ..

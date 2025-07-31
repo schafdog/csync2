@@ -9,7 +9,7 @@ Running recursive check for <TESTBASE>/test/local ...
 Checking recursive for modified files <TESTBASE>/test/local 
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
@@ -18,13 +18,13 @@ File <TESTBASE>/test/local/type_change has changed device:inode <DEV>:<INODE> ->
 File <TESTBASE>/test/local/type_change has changed mode 16384 => 32768 
 mark other operation: 'MOD' 'peer:<TESTBASE>/test/local/type_change' '-'.
 mark other operation: 'MOD' 'other:<TESTBASE>/test/local/type_change' '-'.
-check_old_operation: MOD(258) Old operation: MOD(1) '<TESTBASE>/test/local/type_change' '(null)'
+check_old_operation: MOD(258) Old operation: MOD(1) '<TESTBASE>/test/local/type_change' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/type_change (not synced) .
 Inserted/updated <TESTBASE>/test/local/type_change rows matched: 1
 Checking for deleted files <TESTBASE>/test/local recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
-check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/type_change/new_file 'N' all' '(null)'
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/type_change/new_file 'N' all' ''
 mark operation NEW -> RM other:<TESTBASE>/test/local/type_change/new_file 'N' all deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/type_change/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 dirty: peer:<TESTBASE>/test/local/type_change v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=11 ''
@@ -89,7 +89,7 @@ CONN peer < octet-stream 17
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/type_change (0)
 Directory time <TESTBASE>/test/local <TESTBASE>/test/local/type_change
-Dirty (missing) item <TESTBASE>/test/local/type_change/new_file 'N' all RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/type_change/new_file 'N' all RM  0
 Deleting peer:<TESTBASE>/test/local/type_change/new_file 'N' all
 CONN peer < STAT %25test%25/type_change/new_file%20%27N%27%20all 
 CONN peer > 'ERROR (Path not found): %25test%25/type_change'

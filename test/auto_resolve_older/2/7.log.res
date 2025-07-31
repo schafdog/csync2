@@ -13,30 +13,30 @@ No match. Don't check at all: <TESTBASE>/test/peer
 Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
 Calling check_mod on <TESTBASE>/test/local/auto from <TESTBASE>/test/local
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/auto' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/auto' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/auto (not synced) .
 Inserted/updated <TESTBASE>/test/local/auto rows matched: 1
 Checking <TESTBASE>/test/local/auto/* ..
 Calling check_mod on <TESTBASE>/test/local/auto/older from <TESTBASE>/test/local/auto
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/auto/older' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/auto/older' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto/older' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/auto/older' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/auto/older (not synced) .
 Inserted/updated <TESTBASE>/test/local/auto/older rows matched: 1
 Checking <TESTBASE>/test/local/auto/older/* ..
 Calling check_mod on <TESTBASE>/test/local/auto/older/update_both from <TESTBASE>/test/local/auto/older
 mark other operation: 'MOD' 'peer:<TESTBASE>/test/local/auto/older/update_both' '-'.
-check_old_operation: MOD(130) Old operation: NEW(2) '<TESTBASE>/test/local/auto/older/update_both' '(null)'
+check_old_operation: MOD(130) Old operation: NEW(2) '<TESTBASE>/test/local/auto/older/update_both' ''
 mark operation NEW -> MOD => NEW peer:<TESTBASE>/test/local/auto/older/update_both (not synced) .
 mark other operation: 'MOD' 'other:<TESTBASE>/test/local/auto/older/update_both' '-'.
-check_old_operation: MOD(130) Old operation: NEW(2) '<TESTBASE>/test/local/auto/older/update_both' '(null)'
+check_old_operation: MOD(130) Old operation: NEW(2) '<TESTBASE>/test/local/auto/older/update_both' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/auto/older/update_both (not synced) .
 Inserted/updated <TESTBASE>/test/local/auto/older/update_both rows matched: 1
 Checking for deleted files <TESTBASE>/test recursive.

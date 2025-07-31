@@ -13,19 +13,19 @@ No match. Don't check at all: <TESTBASE>/test/peer
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/usr/local/sbin' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/usr/local/sbin' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local/sbin' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local/sbin' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/usr/local/sbin deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/usr/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/usr/local' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/usr/local deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/usr' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/usr' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/usr deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
 dirty: peer:<TESTBASE>/test/local/usr/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
@@ -47,7 +47,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local RM  0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -58,11 +58,11 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/usr RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/usr RM  0
 Skipping matched file (<TESTBASE>/test/local/usr) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/usr/local RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/usr/local RM  0
 Skipping matched file (<TESTBASE>/test/local/usr/local) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin RM  0
 Skipping matched file (<TESTBASE>/test/local/usr/local/sbin) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 

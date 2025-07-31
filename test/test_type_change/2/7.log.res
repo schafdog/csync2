@@ -11,11 +11,11 @@ check_mod: No such file '<TESTBASE>/test/local' .
 Checking for deleted files <TESTBASE>/test/local recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/type_change' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/type_change' '-'.
-check_old_operation: RM(64) Old operation: MOD(1) '<TESTBASE>/test/local/type_change' '(null)'
+check_old_operation: RM(64) Old operation: MOD(1) '<TESTBASE>/test/local/type_change' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/type_change deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/type_change v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=11 ''
 dirty: peer:<TESTBASE>/test/local v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
@@ -35,7 +35,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local RM  0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -46,7 +46,7 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/type_change RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/type_change RM  0
 Skipping matched file (<TESTBASE>/test/local/type_change) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 

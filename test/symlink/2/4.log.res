@@ -17,7 +17,7 @@ check_old_operation: RM(64) Old operation: LINK(2) '<TESTBASE>/test/local/new_fi
 mark operation NEW -> RM other:<TESTBASE>/test/local/new_file 'N' all.link deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/new_file 'N' all' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/new_file 'N' all' '-'.
-check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/new_file 'N' all' '(null)'
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/new_file 'N' all' ''
 mark operation NEW -> RM other:<TESTBASE>/test/local/new_file 'N' all deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/bad.link' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/bad.link' '-'.
@@ -25,7 +25,7 @@ check_old_operation: RM(64) Old operation: LINK(2) '<TESTBASE>/test/local/bad.li
 mark operation NEW -> RM other:<TESTBASE>/test/local/bad.link deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/new_file 'N' all.link v2:mtime=xxxxxxxxxx:mode=<LINK>:user=<USER>:group=<GROUP>:type=lnk:target=new_file 'N' all ''
 dirty: peer:<TESTBASE>/test/local/new_file 'N' all v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
@@ -47,7 +47,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local RM  0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -58,11 +58,11 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/bad.link RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/bad.link RM  0
 Skipping matched file (<TESTBASE>/test/local/bad.link) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/new_file 'N' all RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/new_file 'N' all RM  0
 Skipping matched file (<TESTBASE>/test/local/new_file 'N' all) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/new_file 'N' all.link RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/new_file 'N' all.link RM  0
 Skipping matched file (<TESTBASE>/test/local/new_file 'N' all.link) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 

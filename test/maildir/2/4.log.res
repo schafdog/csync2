@@ -19,14 +19,14 @@ Checking <TESTBASE>/test/local/Maildir/tmp/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/new from <TESTBASE>/test/local/Maildir
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/new' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/new' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/new' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/new' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/new (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/new rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/new/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/cur from <TESTBASE>/test/local/Maildir
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/cur' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/cur' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/cur (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/cur rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/cur/* ..
@@ -39,7 +39,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1
 Found MOVE <TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764 -> <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 mark other operation: 'MV' 'peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,' '<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764'.
 mark other operation: 'MV' 'other:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,' '<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764'.
-check_old_operation: MV(16) Old operation: NEW(2) '<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764' '(null)'
+check_old_operation: MV(16) Old operation: NEW(2) '<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764' ''
 mark operation NEW->MV => NEW other '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,' '<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764' '<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764'.
 Inserted/updated <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, rows matched: 1
 Calling check_mod on <TESTBASE>/test/local/Maildir/.Trash from <TESTBASE>/test/local/Maildir

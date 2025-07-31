@@ -19,14 +19,14 @@ Checking <TESTBASE>/test/local/usr/local/* ..
 Calling check_mod on <TESTBASE>/test/local/usr/local/sbin from <TESTBASE>/test/local/usr/local
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/usr/local/sbin' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/usr/local/sbin' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local/sbin' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/usr/local/sbin' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/usr/local/sbin (not synced) .
 Inserted/updated <TESTBASE>/test/local/usr/local/sbin rows matched: 1
 Checking <TESTBASE>/test/local/usr/local/sbin/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/usr/local/sbin/hej' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/usr/local/sbin/hej' '-'.
-check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/usr/local/sbin/hej' '(null)'
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/usr/local/sbin/hej' ''
 mark operation NEW -> RM other:<TESTBASE>/test/local/usr/local/sbin/hej deleted before syncing. Removing from dirty.
 dirty: peer:<TESTBASE>/test/local/usr/local/sbin/hej v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 ''
 dirty: peer:<TESTBASE>/test/local/usr/local/sbin v2:mtime=xxxxxxxxxx:mode=16877:user=<USER>:group=<GROUP>:type=dir ''
@@ -64,7 +64,7 @@ CONN peer < MOD %25test%25/usr/local/sbin - <UID> <GID> <USER> <GROUP> <BLKSIZE>
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/usr/local/sbin (0)
 Directory time <TESTBASE>/test/local/usr/local <TESTBASE>/test/local/usr/local/sbin
-Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin/hej RM NULL 0
+Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin/hej RM  0
 Deleting peer:<TESTBASE>/test/local/usr/local/sbin/hej
 CONN peer < STAT %25test%25/usr/local/sbin/hej 
 CONN peer > 'OK (data_follows).'

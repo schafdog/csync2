@@ -9,7 +9,7 @@ Running recursive check for <TESTBASE>/test/local ...
 Checking recursive for modified files <TESTBASE>/test/local 
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
@@ -18,7 +18,7 @@ File <TESTBASE>/test/local/type_change has changed device:inode <DEV>:<INODE> ->
 File <TESTBASE>/test/local/type_change has changed mode 32768 => 16384 
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/type_change' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/type_change' '-'.
-check_old_operation: MOD_DIR(257) Old operation: MKDIR(1) '<TESTBASE>/test/local/type_change' '(null)'
+check_old_operation: MOD_DIR(257) Old operation: MKDIR(1) '<TESTBASE>/test/local/type_change' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/type_change (not synced) .
 Inserted/updated <TESTBASE>/test/local/type_change rows matched: 1
 Checking <TESTBASE>/test/local/type_change/* ..

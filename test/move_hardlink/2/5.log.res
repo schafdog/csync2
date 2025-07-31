@@ -24,7 +24,7 @@ Checking <TESTBASE>/test/local/Maildir/.Trash/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/.Trash/cur from <TESTBASE>/test/local/Maildir/.Trash
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
-check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash/cur' '(null)'
+check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/.Trash/cur' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/.Trash/cur (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/.Trash/cur rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/.Trash/cur/* ..
@@ -37,6 +37,6 @@ Found HARDLINK <TESTBASE>/test/local/Maildir/cur/123,Sab -> <TESTBASE>/test/loca
 mark other operation: 'HARDLINK' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab' '<TESTBASE>/test/local/Maildir/cur/123,Sab'.
 check_old_operation: HARDLINK(32) Old operation: MV(16) '<TESTBASE>/test/local/Maildir/cur/123,Sab' '<TESTBASE>/test/local/Maildir/tmp/123'
 mark other operation: 'HARDLINK' 'other:<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab' '<TESTBASE>/test/local/Maildir/cur/123,Sab'.
-check_old_operation: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/Maildir/cur/123,Sab' '(null)'
+check_old_operation: HARDLINK(32) Old operation: NEW(2) '<TESTBASE>/test/local/Maildir/cur/123,Sab' ''
 Inserted/updated <TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab rows matched: 1
 Checking for deleted files <TESTBASE>/test recursive.

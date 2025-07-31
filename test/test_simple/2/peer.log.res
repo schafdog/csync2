@@ -1,8 +1,8 @@
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 Found my alias peer localhost 30861
 Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -128,7 +128,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -172,7 +172,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -203,21 +203,6 @@ CONN local < octet-stream 0
 
 Daemon end_command <TESTBASE>/test/peer SIG 0 
 CONN local < OK (cmd_finished).
-
-CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
-Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
-daemon_check_dirty: <TESTBASE>/test/peer
-Running check for <TESTBASE>/test/peer ...
-Checking for modified files <TESTBASE>/test/peer 
-Checking for deleted files <TESTBASE>/test/peer.
-daemon_check_dirty: <TESTBASE>/test/peer is clean
-setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
-setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
-settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
-Updated(mod) local:<TESTBASE>/test/peer  
-Daemon end_command <TESTBASE>/test/peer MOD 1 
-IDENT (cmd_finished).
-CONN local < IDENT (cmd_finished).
 
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
 Command: local: SIG <TESTBASE>/test/peer/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -273,7 +258,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -353,7 +338,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer

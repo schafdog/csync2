@@ -50,7 +50,7 @@ CREATE <TESTBASE>/test/local/new/new_file 4
 CONN peer < octet-stream 4
 
 CONN peer > 'IDENT (cmd_finished).'
-PATCH hardlink: checking dirty hardlinks: peer:<TESTBASE>/test/local/new/new_file 0 0 v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 (null)
+PATCH hardlink: checking dirty hardlinks: peer:<TESTBASE>/test/local/new/new_file 0 0 v2:mtime=xxxxxxxxxx:mode=33188:user=<USER>:group=<GROUP>:type=reg:size=4 
 Clear dirty peer:<TESTBASE>/test/local/new/new_file (0)
 Directory time <TESTBASE>/test/local/new <TESTBASE>/test/local/new/new_file
 Updating (HARDLINK) 'peer:<TESTBASE>/test/local/new/hardlinked' '<TESTBASE>/test/local/new/new_file'

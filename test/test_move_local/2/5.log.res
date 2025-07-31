@@ -10,20 +10,20 @@ Checking recursive for modified files <TESTBASE>/test
 Checking <TESTBASE>/test/* ..
 Checking for deleted files <TESTBASE>/test recursive.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/newdir/C' '-'.
-check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/newdir/C' '(null)'
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/newdir/C' ''
 mark operation NEW -> RM peer:<TESTBASE>/test/local/newdir/C deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/newdir/C' '-'.
-check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/newdir/C' '(null)'
+check_old_operation: RM(64) Old operation: NEW(2) '<TESTBASE>/test/local/newdir/C' ''
 mark operation NEW -> RM other:<TESTBASE>/test/local/newdir/C deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/newdir' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/newdir' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/newdir' ''
 mark operation MKDIR -> RM peer:<TESTBASE>/test/local/newdir deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/newdir' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/newdir' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local/newdir' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/newdir deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM peer:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' '(null)'
+check_old_operation: RM(64) Old operation: MKDIR(1) '<TESTBASE>/test/local' ''
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
