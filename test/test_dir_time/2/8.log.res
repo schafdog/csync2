@@ -1,7 +1,7 @@
 cmd x "New file deleted" local peer test
-Config-File:   csync2_pgsql_local.cfg
+   Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is local.
-Database File: pgsql://csync2:csync238@localhost/csync2_local
+Database File: <CONN_STR>
 DB Version:    2
 IP Version:    IPv4
 csync_file_args: '<TESTBASE>/test' flags 65 
