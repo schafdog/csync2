@@ -376,7 +376,7 @@ daemon CREATE <TESTBASE>/test/peer/usr/local/sbin/hej 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/usr/local/sbin/hej rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/usr/local/sbin/hej  
 Daemon end_command <TESTBASE>/test/peer/usr/local/sbin/hej CREATE 1 
@@ -469,7 +469,7 @@ Checking for modified files <TESTBASE>/test/peer/usr/local/sbin/hej
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin/hej.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local/sbin/hej is clean
 backup <TESTBASE>/test/peer/usr/local/sbin/hej 0 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/usr/local/sbin/hej.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/usr/local/sbin/hej'
 DEL local:<TESTBASE>/test/peer/usr/local/sbin/hej rc: 0

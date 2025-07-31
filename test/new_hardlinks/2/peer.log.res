@@ -83,7 +83,7 @@ daemon CREATE <TESTBASE>/test/peer/new/new_file 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/new/new_file rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/new/new_file  
 Daemon end_command <TESTBASE>/test/peer/new/new_file CREATE 1 
@@ -571,7 +571,7 @@ daemon CREATE <TESTBASE>/test/peer/new/was_hardlink 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/new/was_hardlink rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/new/was_hardlink  
 Daemon end_command <TESTBASE>/test/peer/new/was_hardlink CREATE 1 

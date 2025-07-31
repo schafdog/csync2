@@ -49,7 +49,7 @@ update_file_sig <TESTBASE>/test/local RC 0
 CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3Atype=dir'
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
-Content length in buffer: '' size: 0 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local
 CONN peer > 'OK (cmd_finished).'
 ?S: peer            <TESTBASE>/test/local

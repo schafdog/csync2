@@ -171,7 +171,7 @@ daemon CREATE <TESTBASE>/test/peer/Maildir/tmp/123 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/Maildir/tmp/123 rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/Maildir/tmp/123  
 Daemon end_command <TESTBASE>/test/peer/Maildir/tmp/123 CREATE 1 
@@ -313,7 +313,6 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/tmp/123 <TESTBASE>/test/peer/Maildir/cur/123,Sab        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/tmp/123 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/123,Sab 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/123,Sab'
-SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/tmp/123, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/tmp/123 <TESTBASE>/test/peer/Maildir/cur/123,Sab 
 Daemon end_command <TESTBASE>/test/peer/Maildir/tmp/123 MV 0 

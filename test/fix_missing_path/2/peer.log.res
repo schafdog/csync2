@@ -169,7 +169,7 @@ daemon CREATE <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c 1 0
 CONN local < OK 
 CONN local > 'octet-stream 11'
 Got octet-stream 11
-Content length in buffer: 'octet-strea' size: 11 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 11' size: 11 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c  
 Daemon end_command <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c CREATE 1 
@@ -247,7 +247,7 @@ Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c is clean
 Removing file <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c
 backup <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c 0 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c'
 Removing <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c from file db.

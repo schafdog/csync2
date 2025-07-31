@@ -237,7 +237,7 @@ Checking for modified files <TESTBASE>/test/peer/different
 Checking for deleted files <TESTBASE>/test/peer/different.
 daemon_check_dirty: <TESTBASE>/test/peer/different is clean
 backup <TESTBASE>/test/peer/different 0 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/different.3 due  3 
 CONN local < OK 
 Sending sig_file for <TESTBASE>/test/peer/different to peer.
@@ -246,7 +246,7 @@ CONN local < octet-stream 32
 Signature has been sent to peer successfully.
 CONN local > 'octet-stream 10'
 Got octet-stream 10
-Content length in buffer: 'octet-stre' size: 10 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 10' size: 10 rc: 0 (octet-stream)
 Locking 'CLOSE_WRITE,CLOSE:<TESTBASE>/test/peer/.different.XXXXXX'
 Locking 'MOVED_TO:<TESTBASE>/test/peer/different'
 settime <TESTBASE>/test/peer/different rc = 0 time: 0 errno = 0 err = 

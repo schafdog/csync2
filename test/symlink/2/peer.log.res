@@ -61,7 +61,7 @@ daemon CREATE <TESTBASE>/test/peer/new_file 'N' all 1 0
 CONN local < OK 
 CONN local > 'octet-stream 4'
 Got octet-stream 4
-Content length in buffer: 'octe' size: 4 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 4' size: 4 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/new_file 'N' all rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/new_file 'N' all  
 Daemon end_command <TESTBASE>/test/peer/new_file 'N' all CREATE 1 
@@ -253,7 +253,7 @@ Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.link.
 daemon_check_dirty: <TESTBASE>/test/peer/new_file 'N' all.link is clean
 Removing file <TESTBASE>/test/peer/new_file 'N' all.link
 backup <TESTBASE>/test/peer/new_file 'N' all.link 0 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.link.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all.link'
 Removing <TESTBASE>/test/peer/new_file 'N' all.link from file db.
@@ -265,7 +265,7 @@ Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 daemon_check_dirty: <TESTBASE>/test/peer/new_file 'N' all is clean
 Removing file <TESTBASE>/test/peer/new_file 'N' all
 backup <TESTBASE>/test/peer/new_file 'N' all 0 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all'
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.

@@ -50,7 +50,7 @@ CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3A
 >>> LOCAL:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
-Content length in buffer: '' size: 0 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            <TESTBASE>/test/local

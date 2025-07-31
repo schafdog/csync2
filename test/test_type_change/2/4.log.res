@@ -54,7 +54,7 @@ CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3A
 >>> LOCAL:	v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
-Content length in buffer: '' size: 0 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local
 CONN peer > 'OK (cmd_finished).'
 ?M: peer            <TESTBASE>/test/local
@@ -72,7 +72,7 @@ CONN peer > 'v2%3Amtime=xxxxxxxxxx%3Amode=16877%3Auser=<USER>%3Agroup=<GROUP>%3A
 >>> LOCAL:	v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=9
 CONN peer > 'octet-stream 0'
 Got octet-stream 0
-Content length in buffer: '' size: 0 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 0' size: 0 rc: 0 (octet-stream)
 rs_check: Signature size differs: local=32, peer=0
 rs_check: Receiving signature 0 bytes for <TESTBASE>/test/local/type_change
 File is different on peer (rsync sig).
@@ -82,7 +82,7 @@ CONN peer < PATCH %25test%25/type_change - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 CONN peer > 'OK (sending sig).'
 CONN peer > 'octet-stream 12'
 Got octet-stream 12
-Content length in buffer: 'octet-stream' size: 12 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 12' size: 12 rc: 0 (octet-stream)
 CONN peer < octet-stream 15
 
 CONN peer > 'IDENT (cmd_finished).'

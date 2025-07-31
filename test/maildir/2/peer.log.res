@@ -291,7 +291,7 @@ daemon CREATE <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 1 0
 CONN local < OK 
 CONN local > 'octet-stream 8'
 Got octet-stream 8
-Content length in buffer: 'octet-st' size: 8 rc: 0 (octet-stream)
+Content length in buffer: 'octet-stream 8' size: 8 rc: 0 (octet-stream)
 settime <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 rc = 0 time: 0 errno = 0 err = 
 Updated(create) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
 Daemon end_command <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 CREATE 1 
@@ -394,7 +394,6 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,'
-SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 Daemon end_command <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 MV 0 
@@ -475,7 +474,6 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S'
-SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, MV 0 
@@ -577,7 +575,6 @@ CONN local > 'MV 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLA
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 1
 Locking 'MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
-SQL MOVE: UPDATE file set filename = concat(?::text,substring(filename,?)) WHERE (filename = ? or filename like ?) 
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S, param2: peer
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Daemon end_command <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S MV 0 
@@ -733,7 +730,7 @@ Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S is clean
 backup <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 0 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S'
 DEL local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S rc: 0
@@ -757,7 +754,7 @@ Checking for modified files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST is clean
 backup <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 0 
-Changing owner of /tmp/csync2/<PATH> to user <UID> and group <GID>, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
 DEL local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST rc: 0
