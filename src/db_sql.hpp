@@ -39,7 +39,7 @@ public:
     int remove_dirty(peername_p peername, filename_p filename, int recursive) override;
     int remove_dirty_new(peername_p peername, filename_p filename, int recursive);
     textlist_p find_dirty(
-        int (*filter)(filename_p str_filename, const char *localname, peername_p str_peername)) override;
+        int (*filter)(filename_p str_filename, peername_p localname, peername_p str_peername)) override;
     textlist_p find_file(filename_p str_pattern, int (*filter_file)(filename_p filename)) override;
     long long remove_file(filename_p str_filename, int recursive) override;
     long long delete_file(filename_p str_filename, int recursive) override;
