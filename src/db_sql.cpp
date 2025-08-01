@@ -178,12 +178,8 @@ int DbSql::is_dirty(peername_p str_peername, filename_p str_filename, int *opera
         if (rs->next()) {
             rc = 1;
             *operation = rs->get_long(1);
-            auto mode_str = rs->get_string_optional(2);
-            if (mode_str.has_value() && !mode_str->empty()) {
-                *mode = atoi(mode_str->c_str());
-            } else {
-                *mode = 0;
-            }
+            *mode = rs->get_int(2);
+
             csync_info(3, "DbSql::is_dirty {}:{} {} {}\n", str_filename, str_peername, *operation, *mode);
         }
     } catch (const DatabaseError& e) {
@@ -757,10 +753,9 @@ textlist_p DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p str
 		// For some reason it is '' in the tests using postgres but correctly null on mysql
 		// But seems to work (sometime) on db csync2. Doesnt make sense
 		auto digest = rs->get_string_optional(6);
-		const auto forced_str = rs->get_string_optional(7);
-		csync_debug(3, "DIRTY LOOKUP: '{}' '{}'\n", db_filename, checktxt);
-		int forced = forced_str.has_value() ? atoi(forced_str->c_str()) : 0;
+		const auto forced = rs->get_int(7);
 		int found = 0;
+		csync_debug(3, "DIRTY LOOKUP: '{}' '{}' forced: '{}'\n", db_filename, checktxt, forced);
 		for (std::string pattern : patlist)
 		{
 			csync_debug(3, "compare file with pattern {}\n", pattern);
