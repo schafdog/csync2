@@ -1,1 +1,1 @@
-./local.sh sort_order.test 
+./local.sh sort_order.sh.test

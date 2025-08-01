@@ -1,1 +1,1 @@
-./local.sh test_delete_both.test 
+./local.sh delete_both.sh.test

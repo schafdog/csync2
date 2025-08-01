@@ -1,3 +1,1 @@
-#/bin/bash
-./local.sh fix_missing_path.test
-
+./local.sh fix_missing_path.sh.test

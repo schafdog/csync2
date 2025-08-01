@@ -93,7 +93,8 @@ function cmd {
 	echo $PROG ${OPTS} "${TESTPATH}"
         ASAN_OPTIONS=${ASAN_OPTIONS} $PROG ${OPTS} "${TESTPATH}" 2>&1 | \
 	    grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log.raw
-	cat ${TESTNAME}/${LEVEL}/${COUNT}.log.raw |./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.log
+	cat ${TESTNAME}/${LEVEL}/${COUNT}.log.raw | ./normalize_logs.sh | \
+	    ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.log
 	if [ "$KEEP_RAW" != "YES" ] ; then
 	    rm ${TESTNAME}/${LEVEL}/${COUNT}.log.raw
 	fi
@@ -102,10 +103,13 @@ function cmd {
        testing ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
     # CL="COLLATE \"C\""
-    echo "select filename from file where hostname = 'local' order by filename $CL; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename $CL, peername $CL ;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
+    echo "select filename from file where hostname = 'local' order by filename $CL; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename $CL, peername $CL ;" | \
+	./connect_${DATABASE}.sh local | \
+	./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
     testing ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
-	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
+	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ | \
+	    ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
 	testing ${TESTNAME}/${LEVEL}/${COUNT}.rsync
     else
 	if [ "$CMD" == "c" ] ; then
@@ -247,14 +251,14 @@ echo "DAEMON:"
 # Process the raw daemon log and apply normalization
 if [ -f ${TESTNAME}/${LEVEL}/peer.log.raw ]; then
     cat ${TESTNAME}/${LEVEL}/peer.log.raw | sed "s/<[0-9]*> //" | grep -a -v connection \
-	| ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log
+	| ./normalize_logs.sh > ${TESTNAME}/${LEVEL}/peer.log
     if [ "$KEEP_RAW" != "YES" ] ; then
 	rm ${TESTNAME}/${LEVEL}/peer.log.raw
     fi
     # Remove the raw log file after processing
 else
     # Fallback to existing log file if raw doesn't exist
-    cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/peer.log.tmp
+    cat ${TESTNAME}/${LEVEL}/peer.log | sed "s/<[0-9]*> //" | grep -a -v connection | ./normalize_logs.sh > ${TESTNAME}/${LEVEL}/peer.log.tmp
     mv ${TESTNAME}/${LEVEL}/peer.log.tmp ${TESTNAME}/${LEVEL}/peer.log
 fi
 testing ${TESTNAME}/${LEVEL}/peer.log

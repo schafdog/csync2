@@ -1,1 +1,1 @@
-./local.sh digest.test
+./local.sh digest.sh.test

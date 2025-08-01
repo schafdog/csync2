@@ -1,1 +1,1 @@
-./local.sh test_compare.test 
+./local.sh compare.sh.test

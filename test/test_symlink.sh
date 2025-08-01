@@ -1,1 +1,1 @@
-./local.sh symlink.test 
+./local.sh symlink.sh.test

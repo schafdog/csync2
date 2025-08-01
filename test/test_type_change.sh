@@ -1,1 +1,1 @@
-./local.sh test_type_change.test 
+./local.sh type_change.sh.test

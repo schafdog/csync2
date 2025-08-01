@@ -1,1 +1,1 @@
-./local.sh test_ping.test 
+./local.sh ping.sh.test
