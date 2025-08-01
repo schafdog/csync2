@@ -1,4 +1,0 @@
-touch test/local/delete_before_sync
-check "Remove before sync (test only works in c mode)"
-rm test/local/delete_before_sync
-check "Remove before sync. Dirty removed (test only works in c mode)"
