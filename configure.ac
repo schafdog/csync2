@@ -33,8 +33,18 @@ AC_CONFIG_HEADERS(src/config.h)
 # test "$sysconfdir" = '${prefix}/etc' && sysconfdir=/etc
 
 # Checks for programs.
+# Save user-provided CXXFLAGS before AC_PROG_CXX sets defaults
+USER_CXXFLAGS="$CXXFLAGS"
 AC_PROG_CXX
 AC_PROG_INSTALL
+
+# Standard from AC_PROG_CXX is -g -O2 which is appended last and destroy the target setting
+CXXFLAGS=""
+CFLAGS=""
+# Restore user CXXFLAGS if provided, otherwise let autotools defaults stand
+if test -n "$USER_CXXFLAGS"; then
+    CXXFLAGS="$USER_CXXFLAGS"
+fi
 
 # Set C++ standard (prefer C++20, fallback to C++17)
 AC_LANG_PUSH([C++])
