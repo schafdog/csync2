@@ -289,6 +289,8 @@ int DbMySql::upgrade_to_schema(int new_version) {
 DbMySql::DbMySql() {}
 
 DbMySql::~DbMySql() {
+	delete conn_;
+	
     if (dl_handle) {
         dlclose(dl_handle);
         dl_handle = NULL;
