@@ -1,1 +1,1 @@
-./local.sh younger_auto_resolve.test 
+./local.sh younger_auto_resolve.sh.test

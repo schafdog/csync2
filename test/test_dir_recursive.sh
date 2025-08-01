@@ -1,1 +1,1 @@
-./local.sh test_dir_recursive.test
+./local.sh dir_recursive.sh.test

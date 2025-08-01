@@ -1,1 +1,1 @@
-./local.sh test_big.test
+./local.sh big.sh.test

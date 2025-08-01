@@ -1,1 +1,1 @@
-./local.sh mv_dir.test 
+./local.sh mv_dir.sh.test

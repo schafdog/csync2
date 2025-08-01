@@ -1,1 +1,1 @@
-./local.sh test_dir_time.test 
+./local.sh dir_time.sh.test
