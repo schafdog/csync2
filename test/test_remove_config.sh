@@ -1,1 +1,1 @@
-./local.sh test_remove_config.test 
+./local.sh remove_config.test 
