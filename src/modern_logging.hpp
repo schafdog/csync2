@@ -35,7 +35,7 @@ namespace csync2 {
 
 
     inline const char* safe_str(const char* s) {
-	return s ? s : "(null)";
+	return s ? s : ""; // For now do as postgres does. Restore C style (null) 
     }
 
     // Sanitization: wrap const char* to check for null
