@@ -35,6 +35,23 @@ AC_CONFIG_HEADERS(src/config.h)
 # Checks for programs.
 # Save user-provided CXXFLAGS before AC_PROG_CXX sets defaults
 USER_CXXFLAGS="$CXXFLAGS"
+
+# Prefer clang over gcc for C++ compilation
+AC_MSG_CHECKING([for preferred C++ compiler])
+if test -z "$CXX"; then
+    # Check for clang++ first, then fall back to g++
+    AC_PATH_PROGS([CXX], [clang++ g++])
+    if test "$CXX" = "clang++"; then
+        AC_MSG_RESULT([using clang++])
+    elif test "$CXX" = "g++"; then
+        AC_MSG_RESULT([using g++ (clang++ not found)])
+    else
+        AC_MSG_RESULT([no suitable compiler found])
+    fi
+else
+    AC_MSG_RESULT([using user-specified: $CXX])
+fi
+
 AC_PROG_CXX
 AC_PROG_INSTALL
 
