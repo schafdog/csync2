@@ -1,0 +1,1 @@
+./local.sh ping.test
