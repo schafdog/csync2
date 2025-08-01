@@ -175,7 +175,7 @@ debug: clean
 # Debug build without AddressSanitizer (for use with other tools like Valgrind)
 debug-simple: clean
 	@echo "Building with debug symbols only..."
-	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG" BUILD_LDFLAGS=""
+	@$(MAKE) BUILD_CXXFLAGS="-g -O0 -DDEBUG -fno-inline -fno-omit-frame-pointer"  BUILD_LDFLAGS=""
 
 # Profile-guided optimization build
 profile: clean
