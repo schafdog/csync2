@@ -105,7 +105,7 @@ function cmd {
     echo "select filename from file where hostname = 'local' order by filename $CL; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename $CL, peername $CL ;" | ./connect_${DATABASE}.sh local | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
     testing ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE}
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
-	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental"  > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
+	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ |grep -a -v "building file list ... done" | grep -a -v "bytes/sec" |grep -a -v "(DRY RUN)" |grep -a -v "sending incremental" | ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
 	testing ${TESTNAME}/${LEVEL}/${COUNT}.rsync
     else
 	if [ "$CMD" == "c" ] ; then
