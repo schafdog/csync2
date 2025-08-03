@@ -14,7 +14,9 @@ case "$DATABASE" in
         # Remove SQLite table borders and normalize spacing
         sed -e 's/^| *//' \
             -e 's/ *|$//' \
-            -e 's/ *| */\t/g'
+            -e 's/ *| */\t/g' \
+            -e 's/\t\t/\t-\t/g' \
+            -e 's/\t$/\t-/'
         ;;
     "pgsql")
         # Remove PostgreSQL row count lines and normalize spacing  
@@ -24,14 +26,15 @@ case "$DATABASE" in
             -e 's/\t *$//' \
             -e 's/^$//' \
             -e '/^$/d' \
-            -e 's/\t\t*/\t/g'
+            -e 's/\t\t/\t-\t/g' \
+            -e 's/\t$/\t-/'
         ;;
     "mysql")
         # MySQL uses same format as SQLite - remove table borders and normalize spacing
         sed -e 's/^| *//' \
             -e 's/ *|$//' \
             -e 's/ *| */\t/g' \
-            -e 's/NULL//g'
+            -e 's/NULL/-/g'
         ;;
     *)
         # Default case - pass through unchanged
