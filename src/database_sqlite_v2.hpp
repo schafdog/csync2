@@ -17,43 +17,43 @@ struct SQLiteAPI;
 
 class SQLiteConnection : public DatabaseConnection {
 public:
-  SQLiteConnection(const std::string& db_path);
-  SQLiteConnection(sqlite3* db)  : db_(db) {};
-  ~SQLiteConnection() override;
-  std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
-  std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) override;
+    SQLiteConnection(const std::string& db_path);
+    SQLiteConnection(sqlite3* db); 
+    ~SQLiteConnection() override;
+    std::unique_ptr<PreparedStatement> prepare(const std::string& sql) override;
+    std::shared_ptr<PreparedStatement> prepare(const std::string& name, const std::string& sql) override;
 
-  void begin_transaction() override {
-    query(begin_str);
-  }
+    void begin_transaction() override {
+	query(begin_str);
+    }
 
-  void commit() override {
-    query(commit_str);
-  }
+    void commit() override {
+	query(commit_str);
+    }
 
-  void rollback() override {
-    query(rollback_str);
-  }
+    void rollback() override {
+	query(rollback_str);
+    }
 
-  void query(const std::string& sql) override;
+    void query(const std::string& sql) override;
 
-  DBType getType() override { return DBType::SQLite; };
+    DBType getType() override { return DBType::SQLite; };
 
-  void *get_private_data() override { return db_; };
+    void *get_private_data() override { return db_; };
 
-  template<typename... Args>
-  std::unique_ptr<ResultSet> execute_query(const std::string& name, const std::string& sql, Args... args);
+    template<typename... Args>
+    std::unique_ptr<ResultSet> execute_query(const std::string& name, const std::string& sql, Args... args);
 
-  template<typename... Args>
-  long long execute_update(const std::string& name, const std::string& sql, Args... args);
+    template<typename... Args>
+    long long execute_update(const std::string& name, const std::string& sql, Args... args);
 private:
-  sqlite3* db_;
-  std::shared_ptr<SQLiteAPI> sqlite_api_; // Holds the loaded library and function pointers.
-  std::map<std::string, std::shared_ptr<PreparedStatement>> named_statements_;
+    sqlite3* db_;
+    std::shared_ptr<SQLiteAPI> sqlite_api_; // Holds the loaded library and function pointers.
+    std::map<std::string, std::shared_ptr<PreparedStatement>> named_statements_;
 
-  const std::string begin_str = "BEGIN TRANSACTION;";
-  const std::string commit_str = "COMMIT;";
-  const std::string rollback_str = "ROLLBACK;";
+    const std::string begin_str = "BEGIN TRANSACTION;";
+    const std::string commit_str = "COMMIT;";
+    const std::string rollback_str = "ROLLBACK;";
 };
 
 #endif
