@@ -36,6 +36,21 @@ jobs:
         ports:
           - 6379:6379
 
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: csync238
+          MARIADB_USER: csync2
+          MARIADB_PASSWORD: csync238
+          MARIADB_DATABASE: csync2_test
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 3306:3306
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -74,7 +89,8 @@ jobs:
           libhiredis-dev \
           libssl-dev \
           librsync-dev \
-          redis-tools
+          redis-tools \
+          mariadb-client
 
     - name: Setup PostgreSQL for csync2
       env:
@@ -127,6 +143,46 @@ jobs:
         # Test connection as csync2 user
         PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
           SELECT current_user, current_database(), version();
+        "
+
+    - name: Setup MariaDB for csync2
+      run: |
+        echo "=== Setting up MariaDB for csync2 ==="
+
+        # Wait for MariaDB to be ready
+        until mariadb -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+          echo "Waiting for MariaDB..."
+          sleep 2
+        done
+
+        # Create csync2 databases
+        echo "Creating csync2_local database..."
+        mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+
+        echo "Creating csync2_peer database..."
+        mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+
+        # Grant permissions
+        echo "Granting permissions..."
+        mariadb -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';"
+        mariadb -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';"
+        mariadb -h localhost -u root -pcsync238 -e "FLUSH PRIVILEGES;"
+
+    - name: Verify MariaDB setup
+      run: |
+        echo "=== Verifying MariaDB setup ==="
+        
+        # Check database setup
+        mariadb -h localhost -u root -pcsync238 -e "
+          SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME 
+          FROM information_schema.SCHEMATA 
+          WHERE SCHEMA_NAME LIKE 'csync2_%' 
+          ORDER BY SCHEMA_NAME;
+        "
+        
+        # Test connection as csync2 user
+        mariadb -h localhost -u csync2 -pcsync238 -D csync2_local -e "
+          SELECT USER(), DATABASE(), VERSION();
         "
 
     - name: Setup and test Redis
@@ -362,6 +418,21 @@ jobs:
         ports:
           - 6379:6379
 
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: csync238
+          MARIADB_USER: csync2
+          MARIADB_PASSWORD: csync238
+          MARIADB_DATABASE: csync2_test
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 3306:3306
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -374,7 +445,7 @@ jobs:
         
         # Install minimal dependencies
         sudo apt-get update
-        sudo apt-get install -y postgresql-client redis-tools
+        sudo apt-get install -y postgresql-client redis-tools mariadb-client
 
         # Test PostgreSQL connection
         until pg_isready -h localhost -p 5432 -U postgres; do
@@ -388,9 +459,18 @@ jobs:
           sleep 2
         done
 
+        # Test MariaDB connection
+        until mariadb -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+          echo "Waiting for MariaDB..."
+          sleep 2
+        done
+
         # Test basic functionality
         psql -h localhost -U postgres -c "SELECT version();"
         echo "PostgreSQL connection successful on ${{ matrix.os }}"
 
         redis-cli -h localhost -p 6379 info server | head -5
         echo "Redis connection successful on ${{ matrix.os }}"
+
+        mariadb -h localhost -u root -pcsync238 -e "SELECT VERSION();"
+        echo "MariaDB connection successful on ${{ matrix.os }}"
