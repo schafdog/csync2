@@ -35,7 +35,7 @@ function testing {
     OLD_RESULT=${RESULT}.res
     if [ -f ${OLD_RESULT} ] ; then
 	
-	diff -w $RESULT $OLD_RESULT > ${RESULT}.diff
+	diff -bw $RESULT $OLD_RESULT > ${RESULT}.diff
 	rc=$?
 	RES=$((RES+rc))
 	cat ${RESULT}.diff
