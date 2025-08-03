@@ -1,3 +1,4 @@
+
 #include "database_sqlite_v2.hpp"
 #include <dlfcn.h>
 #include <iostream>
@@ -123,7 +124,8 @@ public:
 
     ~SQLiteResultSet() override {
         if (stmt_) {
-            api_->sqlite3_finalize(stmt_);
+	    api_->sqlite3_reset(stmt_);
+	    api_->sqlite3_clear_bindings(stmt_);
         }
     }
 
@@ -139,7 +141,8 @@ public:
         if (rc == SQLITE_DONE) {
             return false;
         }
-        throw DatabaseError("Failed to step through result set: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+        throw DatabaseError("Failed to step through result set: rc=" + std::to_string(rc) + " " 
+			    + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
     }
 
     int get_int(int index) const override {
@@ -198,9 +201,10 @@ class SQLitePreparedStatement : public PreparedStatement {
 public:
     SQLitePreparedStatement(sqlite3* db, const std::string& sql, std::shared_ptr<SQLiteAPI> api)
         : db_(db), stmt_(nullptr), api_(api) {
-        csync_debug_c(3, "SQLITE prepare %p %s\n", db, sql.c_str());
-        int rc = api_->sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt_, nullptr);
-        if (rc != SQLITE_OK) {
+	const char *errmsg = nullptr;
+        int rc = api_->sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt_, &errmsg);
+        csync_debug_c(3, "SQLITE prepare %p %s %d errmsg %s\n", db, sql.c_str(), rc, errmsg);
+	if (rc != SQLITE_OK) {
             throw DatabaseError("Failed to prepare statement: " + std::string(api_->sqlite3_errmsg(db)));
         }
     }
@@ -212,40 +216,61 @@ public:
     }
 
     void bind(int index, int value) override {
-        api_->sqlite3_bind_int(stmt_, index, value);
+        int rc = api_->sqlite3_bind_int(stmt_, index, value);
+        if (rc != SQLITE_OK) {
+            throw DatabaseError("Failed to bind int: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+        }
     }
 
     void bind(int index, long value) override {
-        api_->sqlite3_bind_int64(stmt_, index, value);
+        int rc = api_->sqlite3_bind_int64(stmt_, index, value);
+        if (rc != SQLITE_OK) {
+            throw DatabaseError("Failed to bind long: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+        }
     }
 
     void bind(int index, long long value) override {
-        api_->sqlite3_bind_int64(stmt_, index, value);
+        int rc = api_->sqlite3_bind_int64(stmt_, index, value);
+        if (rc != SQLITE_OK) {
+            throw DatabaseError("Failed to bind long long: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+        }
     }
 
     void bind(int index, double value) override {
-        api_->sqlite3_bind_double(stmt_, index, value);
+        int rc = api_->sqlite3_bind_double(stmt_, index, value);
+        if (rc != SQLITE_OK) {
+            throw DatabaseError("Failed to bind double: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+        }
     }
 
     void bind(int index, const std::string& value) override {
-        api_->sqlite3_bind_text(stmt_, index, value.c_str(), -1, SQLITE_TRANSIENT);
+        int rc = api_->sqlite3_bind_text(stmt_, index, value.c_str(), -1, SQLITE_TRANSIENT);
+        if (rc != SQLITE_OK) {
+            throw DatabaseError("Failed to bind string: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+        }
     }
 
     void bind(int index, const char* value) override {
+        int rc;
         if (value) {
-            api_->sqlite3_bind_text(stmt_, index, value, -1, SQLITE_TRANSIENT);
+            rc = api_->sqlite3_bind_text(stmt_, index, value, -1, SQLITE_TRANSIENT);
+            if (rc != SQLITE_OK) {
+                throw DatabaseError("Failed to bind char*: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+            }
         } else {
             bind_null(index);
         }
     }
 
     void bind_null(int index) override {
-        api_->sqlite3_bind_null(stmt_, index);
+        int rc = api_->sqlite3_bind_null(stmt_, index);
+        if (rc != SQLITE_OK) {
+            throw DatabaseError("Failed to bind null: " + std::string(api_->sqlite3_errmsg(api_->sqlite3_db_handle(stmt_))));
+        }
     }
 
     std::unique_ptr<ResultSet> execute_query() override {
         std::unique_ptr<ResultSet> rs = std::make_unique<SQLiteResultSet>(stmt_, api_);
-        stmt_ = nullptr;
         return rs;
     }
 
@@ -254,9 +279,10 @@ public:
         if (rc != SQLITE_DONE) {
             throw DatabaseError("Failed to execute update: " + std::string(api_->sqlite3_errmsg(db_)));
         }
+	rc = api_->sqlite3_changes(api_->sqlite3_db_handle(stmt_));
         api_->sqlite3_reset(stmt_);
         api_->sqlite3_clear_bindings(stmt_);
-        return api_->sqlite3_changes(db_);
+        return rc;
     }
 
 private:
@@ -267,11 +293,15 @@ private:
 
 SQLiteConnection::SQLiteConnection(const std::string& db_path) : db_(nullptr) {
     sqlite_api_ = std::make_shared<SQLiteAPI>();
-    csync_debug(1, "SQLite open: {}\n", db_path);
+    csync_debug(1, "SQLite open: %s\n", db_path.c_str());
     int rc = sqlite_api_->sqlite3_open(db_path.c_str(), &db_);
     if (rc != SQLITE_OK) {
         throw DatabaseError("Cannot open database: " + std::string(sqlite_api_->sqlite3_errmsg(db_)));
     }
+}
+
+SQLiteConnection::SQLiteConnection(sqlite3 *db) : db_(db) {
+    sqlite_api_ = std::make_shared<SQLiteAPI>();
 }
 
 SQLiteConnection::~SQLiteConnection() {
@@ -283,6 +313,7 @@ SQLiteConnection::~SQLiteConnection() {
 void SQLiteConnection::query(const std::string& sql) {
     char* err_msg = nullptr;
     int rc = sqlite_api_->sqlite3_exec(db_, sql.c_str(), 0, 0, &err_msg);
+    csync_debug_c(2, "SQLite query %s rc %d err %s\n", sql.c_str(), rc, err_msg ? err_msg : "");
     if (rc != SQLITE_OK) {
         std::string msg = "SQL error: " + std::string(err_msg);
         sqlite_api_->sqlite3_free(err_msg);
