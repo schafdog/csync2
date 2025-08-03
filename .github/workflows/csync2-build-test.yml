@@ -2,9 +2,9 @@ name: Csync2 Build and Test
 
 on:
   push:
-    branches: [ main, master, cpp-std-string-type ]
+    branches: [ main, master, cpp-conversion ]
   pull_request:
-    branches: [ main, master, cpp-std-string-type ]
+    branches: [ main, master, cpp-conversion ]
   workflow_dispatch:
 
 jobs:
