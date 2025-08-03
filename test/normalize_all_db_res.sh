@@ -3,7 +3,7 @@ if [ "$LEVEL" == "" ] ; then
     echo no level given
     exit
 fi
-DB=$1
+DB=$2
 if [ "$DB" == "" ] ; then
     echo Assuming mysql format
     DB=mysql
@@ -11,11 +11,10 @@ fi
 RES=$3
 if [ "$RES" == "" ] ; then
     RES=$DB
-    echo Assuming mysql files    
+    echo Assuming $DB files
 fi
-
-for d in eval */$LEVEL/*.mysql.res ; do
-    echo $d
-    cat $d | ./db_filter.sh $DB > $d.raw
-    mv $d.raw $d
+pattern="*/$LEVEL/*.${RES}.res"
+for d in $pattern ; do
+    echo "cat $d | ./db_filter.sh $DB > $d.raw" 
+    echo "mv $d.raw $d"
 done
