@@ -7,16 +7,16 @@
 <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 <TESTBASE>/test/local/Maildir/new
 <TESTBASE>/test/local/Maildir/tmp
-other	<TESTBASE>/test/local	MKDIR	NULL	1
-other	<TESTBASE>/test/local/Maildir	MKDIR	NULL	1
-other	<TESTBASE>/test/local/Maildir/.Trash	MKDIR	NULL	1
-other	<TESTBASE>/test/local/Maildir/.Trash/cur	MKDIR	NULL	1
-other	<TESTBASE>/test/local/Maildir/cur	MKDIR	NULL	1
-other	<TESTBASE>/test/local/Maildir/new	MKDIR	NULL	1
-other	<TESTBASE>/test/local/Maildir/tmp	MKDIR	NULL	1
-other	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	NEW	NULL	2
-peer	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	MV	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S	NULL	16
-other	<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S	HARDLINK	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	NULL	32
-peer	<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S	HARDLINK	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	NULL	32
-peer	<TESTBASE>/test/local/Maildir/.Trash/cur	MKDIR	NULL	129
-peer	<TESTBASE>/test/local/Maildir/cur	MKDIR	NULL	129
+other	<TESTBASE>/test/local	MKDIR	-	1
+other	<TESTBASE>/test/local/Maildir	MKDIR	-	1
+other	<TESTBASE>/test/local/Maildir/.Trash	MKDIR	-	1
+other	<TESTBASE>/test/local/Maildir/.Trash/cur	MKDIR	-	1
+other	<TESTBASE>/test/local/Maildir/cur	MKDIR	-	1
+other	<TESTBASE>/test/local/Maildir/new	MKDIR	-	1
+other	<TESTBASE>/test/local/Maildir/tmp	MKDIR	-	1
+other	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	NEW	-	2
+peer	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	MV	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S	16
+other	<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S	HARDLINK	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	32
+peer	<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S	HARDLINK	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	32
+peer	<TESTBASE>/test/local/Maildir/.Trash/cur	MKDIR	-	129
+peer	<TESTBASE>/test/local/Maildir/cur	MKDIR	-	129
