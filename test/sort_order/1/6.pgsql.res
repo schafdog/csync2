@@ -1,20 +1,16 @@
- <TESTBASE>/test/local
- <TESTBASE>/test/local/usr
- <TESTBASE>/test/local/usr/local
- <TESTBASE>/test/local/usr/local/abc
- <TESTBASE>/test/local/usr/local/def
- <TESTBASE>/test/local/usr/local/def/hej
- <TESTBASE>/test/local/usr/local/sbin
-(7 rows)
-
- other    | <TESTBASE>/test/local                    | MKDIR     |             |   1
- other    | <TESTBASE>/test/local/usr                | MKDIR     |             |   1
- other    | <TESTBASE>/test/local/usr/local          | MKDIR     |             |   1
- other    | <TESTBASE>/test/local/usr/local/abc      | MKDIR     |             |   1
- other    | <TESTBASE>/test/local/usr/local/def      | MKDIR     |             |   1
- other    | <TESTBASE>/test/local/usr/local/sbin     | MKDIR     |             |   1
- other    | <TESTBASE>/test/local/usr/local/def/hej  | NEW       | ../sbin/hej |   2
- peer     | <TESTBASE>/test/local/usr/local/sbin/hej | RM        |             |  64
- peer     | <TESTBASE>/test/local/usr/local/sbin     | MKDIR     |             | 129
-(9 rows)
-
+<TESTBASE>/test/local
+<TESTBASE>/test/local/usr
+<TESTBASE>/test/local/usr/local
+<TESTBASE>/test/local/usr/local/abc
+<TESTBASE>/test/local/usr/local/def
+<TESTBASE>/test/local/usr/local/def/hej
+<TESTBASE>/test/local/usr/local/sbin
+other	<TESTBASE>/test/local	MKDIR	NULL	1
+other	<TESTBASE>/test/local/usr	MKDIR	NULL	1
+other	<TESTBASE>/test/local/usr/local	MKDIR	NULL	1
+other	<TESTBASE>/test/local/usr/local/abc	MKDIR	NULL	1
+other	<TESTBASE>/test/local/usr/local/def	MKDIR	NULL	1
+other	<TESTBASE>/test/local/usr/local/sbin	MKDIR	NULL	1
+other	<TESTBASE>/test/local/usr/local/def/hej	NEW	../sbin/hej	NULL	2
+peer	<TESTBASE>/test/local/usr/local/sbin/hej	RM	NULL	64
+peer	<TESTBASE>/test/local/usr/local/sbin	MKDIR	NULL	129

@@ -1,8 +1,4 @@
- <TESTBASE>/test/local
- <TESTBASE>/test/local/ÆØÅ Café.utf8
-(2 rows)
-
- other    | <TESTBASE>/test/local               | MKDIR     |       |  1
- other    | <TESTBASE>/test/local/ÆØÅ Café.utf8 | NEW       |       |  2
-(2 rows)
-
+<TESTBASE>/test/local
+<TESTBASE>/test/local/ÆØÅ Café.utf8
+other	<TESTBASE>/test/local	MKDIR	NULL	1
+other	<TESTBASE>/test/local/ÆØÅ Café.utf8	NEW	NULL	2

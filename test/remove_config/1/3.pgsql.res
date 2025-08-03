@@ -1,7 +1,3 @@
- <TESTBASE>/test/local
-(1 row)
-
- other    | <TESTBASE>/test/local | MKDIR     |       |  1
- peer     | <TESTBASE>/test/local | MKDIR     |       |  1
-(2 rows)
-
+<TESTBASE>/test/local
+other	<TESTBASE>/test/local	MKDIR	NULL	1
+peer	<TESTBASE>/test/local	MKDIR	NULL	1
