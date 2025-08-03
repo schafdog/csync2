@@ -18,6 +18,7 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "s|$TESTDIR|<TESTBASE>|g" \
     -e "s|/export/home/dennis/Projects/csync2/csync2/test/test|<TESTBASE>/test|g" \
     -e "s|/export/home/dennis/Projects/csync2/csync2/test|<TESTBASE>|g" \
+    -e "/created directory/d" \
     -e "/Transfer starting:/d" \
     -e "/total size is.*speedup/d" \
     -e "/building file list/d" \
