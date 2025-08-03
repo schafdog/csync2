@@ -103,10 +103,11 @@ function cmd {
        testing ${TESTNAME}/${LEVEL}/${COUNT}.log
     fi
     # CL="COLLATE \"C\""
+    mkdir -p ${TESTNAME}/${LEVEL}/${DATABASE}
     echo "select filename from file where hostname = 'local' order by filename $CL; select peername,filename,operation,other,op from dirty where myname = 'local' order by op, filename $CL, peername $CL ;" | \
 	./connect_${DATABASE}.sh local | \
-	./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
-    testing ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE}
+	./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${DATABASE}/${COUNT}.db 2> /dev/null
+    testing ${TESTNAME}/${LEVEL}/${DATABASE}/${COUNT}.db
     if [ -d "test/local" ] && [ "$CMD" != "c" ] ; then 
 	rsync --delete -O -nHav test/local/ ${REMOTE}`pwd`/test/peer/ | \
 	    ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.rsync
@@ -128,7 +129,8 @@ function clean {
     if [ "$1" == "" ] ; then
 	CNAME=local
     fi
-    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${COUNT}.${DATABASE} 2> /dev/null
+    mkdir -p ${TESTNAME}/${LEVEL}/${DATABASE}
+    echo "delete from dirty where myname like '%' ; delete from file where hostname like '%'; " | ./connect_${DATABASE}.sh $CNAME | ./db_filter.sh ${DATABASE} > ${TESTNAME}/${LEVEL}/${DATABASE}/${COUNT}.db 2> /dev/null
     rm -f csync_$CNAME.log ${DATABASE}_$CNAME.log
     rm -rf test/$CNAME
     let COUNT=$COUNT+1
