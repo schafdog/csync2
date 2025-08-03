@@ -1,0 +1,425 @@
+@startuml csync2_class_diagram
+!theme plain
+title Csync2 - Cluster Synchronization Tool - Class Diagram
+
+' Database Layer (V2 - Modern C++)
+package "Database Layer V2" {
+    abstract class DatabaseConnection {
+        +get_private_data() : void*
+        +{abstract} prepare(sql: string) : unique_ptr<PreparedStatement>
+        +{abstract} prepare(name: string, sql: string) : shared_ptr<PreparedStatement>
+        +{abstract} begin_transaction() : void
+        +{abstract} commit() : void
+        +{abstract} rollback() : void
+        +{abstract} query(sql: string) : void
+        +{abstract} getType() : DBType
+        +execute_query<Args>(name: string, sql: string, args...) : unique_ptr<ResultSet>
+        +execute_update<Args>(name: string, sql: string, args...) : long long
+    }
+
+    abstract class PreparedStatement {
+        +{abstract} bind(index: int, value: int) : void
+        +{abstract} bind(index: int, value: long long) : void
+        +{abstract} bind(index: int, value: double) : void
+        +{abstract} bind(index: int, value: string) : void
+        +{abstract} bind_null(index: int) : void
+        +{abstract} execute_query() : unique_ptr<ResultSet>
+        +{abstract} execute_update() : long long
+    }
+
+    abstract class ResultSet {
+        +{abstract} rows() : int
+        +{abstract} next() : bool
+        +{abstract} get_int(index: int) : int
+        +{abstract} get_long(index: int) : long long
+        +{abstract} get_double(index: int) : double
+        +{abstract} get_string(index: int) : string
+        +{abstract} get_string_optional(index: int) : optional<string>
+    }
+
+    enum DBType {
+        SQLite
+        MySQL
+        PostgreSQL
+    }
+
+    class DatabaseError extends RuntimeError {
+    }
+}
+
+' Database Implementation Classes
+package "Database Implementations" {
+    class SQLiteConnection extends DatabaseConnection {
+    }
+    
+    class MySQLConnection extends DatabaseConnection {
+    }
+    
+    class PostgreSQLConnection extends DatabaseConnection {
+    }
+}
+
+' Legacy Database API Layer
+package "Database API (Legacy)" {
+    abstract class DbApi {
+        +version : int
+        +affected_rows : long
+        +private_data_deprecated : void*
+        +conn_ : DatabaseConnection*
+        
+        +{abstract} exec(sql: string) : int
+        +{abstract} errmsg() : string
+        +{abstract} mark(active_peers: set<string>, realname: filename_p, recursive: int) : void
+        +{abstract} upgrade_to_schema(version: int) : int
+        +{abstract} schema_version() : int
+        +{abstract} list_dirty(active_peers: set<string>, realname: string, recursive: int) : int
+        +{abstract} list_hint() : void
+        +{abstract} list_files(filename: filename_p) : void
+        +{abstract} list_file(filename: filename_p, myname: string, peername: peername_p, recursive: int) : textlist_p
+        +{abstract} is_dirty(filename: filename_p, peername: peername_p, operation: int*, mode: int*) : int
+        +{abstract} force(realname: string, recursive: int) : void
+        +{abstract} upgrade_db() : int
+        +{abstract} add_hint(filename: filename_p, recursive: int) : long long
+        +{abstract} remove_hint(filename: filename_p, recursive: int) : long long
+        +{abstract} remove_file(filename: filename_p, recursive: int) : long long
+        +{abstract} delete_file(filename: filename_p, recursive: int) : long long
+        +{abstract} find_dirty(filter: function) : textlist_p
+        +{abstract} find_file(pattern: filename_p, filter: function) : textlist_p
+        +{abstract} add_dirty(...) : int
+        +{abstract} remove_dirty(peername: peername_p, filename: filename_p, recursive: int) : int
+        +{abstract} get_dirty_by_peer_match(...) : textlist_p
+        +{abstract} clear_operation(myname: string, peername: peername_p, filename: filename_p) : void
+        +{abstract} get_old_operation(...) : textlist_p
+        +{abstract} get_commands() : textlist_p 
+        +{abstract} get_command_filename(filename: filename_p, logfile: string) : textlist_p
+        +{abstract} get_hints() : textlist_p
+        +{abstract} update_file(...) : long long
+        +{abstract} insert_file(...) : long long
+        +{abstract} insert_update_file(...) : int
+        +{abstract} update_dev_no(...) : int
+        +{abstract} check_delete(...) : int
+        +{abstract} del_action(...) : int
+        +{abstract} add_action(...) : int
+        +{abstract} remove_action_entry(...) : int
+        +{abstract} check_file(...) : int
+        +{abstract} check_file_same_dev_inode(...) : textlist_p
+        +{abstract} check_dirty_file_same_dev_inode(...) : textlist_p
+        +{abstract} non_dirty_files_match(pattern: filename_p) : textlist_p
+        +{abstract} get_dirty_hosts() : textlist_p
+        +{abstract} dir_count(dirname: string) : int
+        +{abstract} move_file(oldfile: filename_p, newfile: filename_p) : int
+        +{abstract} update_dirty_hardlinks(...) : int
+    }
+
+    abstract class DbStmt {
+        #db_ : DbApi*
+        +{abstract} get_column_text(column: int) : string
+        +{abstract} get_column_blob(column: int) : string
+        +{abstract} get_column_int(column: int) : int
+        +{abstract} next() : int
+        +{abstract} close() : int
+        +{abstract} get_affected_rows() : long
+        +getDB() : DbApi*
+    }
+}
+
+' Core Data Models
+package "Data Models" {
+    class FileRecord {
+        -identity_ : Identity
+        -file_type_ : FileType
+        -metadata_ : Metadata
+        -extended_attributes_ : optional<vector<string>>
+        
+        +filename() : string
+        +device_id() : dev_t
+        +inode_number() : ino_t
+        +user_id() : uid_t
+        +group_id() : gid_t
+        +modification_time() : time_t
+        +file_size() : size_t
+        +checksum() : string
+        +detect_changes(other: FileRecord) : FileChangeType
+        +serialize_to_database(db: db_conn_p) : void
+        +deserialize_from_database(db: db_conn_p, filename: string) : FileRecord
+        +calculate_checksum() : string
+        +is_valid() : bool
+        +to_string() : string
+        +log_details() : void
+    }
+
+    class Identity {
+        +filename : string
+        +device_id : dev_t
+        +inode_number : ino_t
+    }
+
+    class Metadata {
+        +user_id : uid_t
+        +group_id : gid_t
+        +mode : mode_t
+        +modification_time : time_t
+        +file_size : size_t
+        +symlink_target : string
+        +checksum : string
+    }
+
+    enum FileOperation {
+        None = 0
+        Create = 1
+        Modify = 2
+        Delete = 4
+        Move = 8
+        Hardlink = 16
+        MakeDirectory = 32
+        RemoveDirectory = 64
+    }
+
+    enum FileStatus {
+        Clean
+        Dirty
+        Conflict
+        Ignored
+    }
+
+    enum FileType {
+        None
+        NotFound
+        Regular
+        Directory
+        SymLink
+        BlockDevice
+        CharacterDevice
+        Socket
+        Fifo
+        Unknown
+    }
+
+    enum FileChangeType {
+        NoChange
+        MetadataChanged
+        ContentChanged
+        PermissionChanged
+    }
+}
+
+' Configuration and Groups
+package "Configuration" {
+    struct csync_group {
+        +myname : string
+        +peername : string
+    }
+
+    struct peer {
+        +myname : string
+        +peername : string
+    }
+
+    struct file_info {
+        +filename : filename_p
+        +filename_enc : filename_p
+        +operation : string
+        +key_enc : string
+        +stat : stat*
+        +rc_stat : int
+    }
+}
+
+' Network and Connection Management
+package "Network Layer" {
+    class ConnectionManager {
+        +conn_open(myhostname: peername_p, peername: peername_p, ip_version: int) : int
+        +conn_set(infd: int, outfd: int) : int
+        +conn_activate_ssl(server_role: int, in: int, out: int) : int
+        +conn_check_peer_cert(conn: DatabaseConnection*, peername: peername_p, callfatal: int) : int
+        +conn_close(conn: int) : int
+        +conn_read(fd: int, buf: char*, count: size_t) : ssize_t
+        +conn_write(fd: int, buf: char*, count: size_t) : ssize_t
+        +conn_printf(fd: int, fmt: string, ...) : void
+        +conn_fgets(fd: int, s: char*, size: int) : int
+        +conn_gets(fd: int, s: char*, size: size_t) : size_t
+        +conn_read_chunk(fd: int, buffer: char**, n_bytes: size_t*) : ssize_t
+        +conn_write_chunk(fd: int, buffer: char*, n_bytes: size_t) : int
+        +conn_read_file_chunked(sockfd: int, file: FILE*) : int
+        +conn_send_file_chunked(sockfd: int, file: FILE*, size: size_t) : int
+    }
+}
+
+' Synchronization Engine
+package "Sync Engine" {
+    class CheckManager {
+        +csync_hint(db: db_conn_p, file: string, recursive: int) : void
+        +csync_check(db: db_conn_p, filename: filename_p, flags: int) : void
+        +csync_check_single(db: db_conn_p, filename: filename_p, flags: int, g: csync_group**) : int
+        +csync_check_del(db: db_conn_p, filename: filename_p, flags: int) : int
+        +csync_check_mod(db: db_conn_p, file: peername_p, flags: int, count_dirty: int*, g: csync_group**) : int
+        +csync_check_dir(db: db_conn_p, file: peername_p, flags: int) : int
+        +csync_mark(db: db_conn_p, file: filename_p, thispeer: peername_p, peerfilter: set<string>, op: operation_t, checktxt: string, dev: string, ino: string, mode: int, mtime: int) : void
+        +csync_mark_hardlinks(db: db_conn_p, filename: filename_p, st: stat*, tl: textlist*) : textlist*
+        +csync_check_path(filename: filename_p) : char*
+        +csync_check_pure(filename: filename_p) : int
+        +csync_check_move(db: db_conn_p, peername: peername_p, filename: filename_p, checktxt: string, digest: string, st: stat*) : textlist*
+        +csync_check_link_move(db: db_conn_p, peername: peername_p, filename: filename_p, checktxt: string, op: operation_t, digest: string, st: stat*) : textlist*
+        +compare_dev_inode(file_stat: stat*, dev: string, ino: string, old_stat: stat*) : int
+        +csync_calc_digest(file: string, digest: string&) : int
+        +parse_peerlist(peerlist: string) : void
+        +match_peer(active_peers: set<string>, peer: string) : int
+        +csync_mode_op_str(st_mode: int, op: int) : string
+        +csync_operation(operation: string) : operation_t
+        +csync_operation_str(op: operation_t) : string
+    }
+
+    class UpdateManager {
+        +get_auto_method(peername: peername_p, filename: filename_p) : int
+        +csync_auto_resolve_time_size(auto_method: int, time_l: time_t, time_p: time_t, size_l: long long, size_p: long long) : int
+        +compare_files(filename: filename_p, pattern: filename_p, recursive: int) : int
+        +csync_update_host(db: db_conn_p, myname: peername_p, peername: peername_p, patlist: pattern_t, ip_version: int, flags: int) : void
+        +csync_sync_host(db: db_conn_p, myname: peername_p, peername: peername_p, patlist: pattern_t, ip_version: int, flags: int) : void
+        +csync_ping_host(db: db_conn_p, myname: peername_p, peername: peername_p, patlist: pattern_t, ip_version: int, flags: int) : void
+        +csync_update(db: db_conn_p, myname: peername_p, active_peers: set<string>, patlist: set<string>, ip_version: int, func: update_func, flags: int) : void
+        +csync_diff(db: db_conn_p, myname: peername_p, peername: peername_p, filename: filename_p, ip_version: int) : int
+        +csync_insynctest(db: db_conn_p, myname: string, peername: peername_p, filename: filename_p, ip_version: int, flags: int) : int
+        +csync_insynctest_all(db: db_conn_p, filename: filename_p, ip_version: int, active_peers: set<string>, flags: int) : int
+        +csync_remove_old(db: db_conn_p, pattern: filename_p) : void
+        +csync_update_file_sig_rs_diff(...) : int
+    }
+
+    class RsyncManager {
+        +csync_rs_check(conn: int, filename: filename_p, isreg: int) : int
+        +csync_rs_sig(conn: int, filename: filename_p) : void
+        +csync_rs_delta(conn: int, filename: filename_p) : int
+        +csync_rs_patch(conn: int, filename: filename_p) : int
+        +csync_recv_file(conn: int, file: FILE*) : int
+        +csync_send_file(conn: int, file: FILE*) : int
+        +csync_rs_recv_delta_and_patch(sock: int, fname: filename_p) : int
+        +to_hex(str: string, length: size_t, hexbuffer: char*) : char*
+    }
+}
+
+' Action and Command Management
+package "Action Management" {
+    class ActionManager {
+        +csync_schedule_commands(db: db_conn_p, filename: filename_p, islocal: int) : void
+        +csync_run_commands(db: db_conn_p) : void
+    }
+}
+
+' Daemon and Server Management
+package "Daemon" {
+    class DaemonManager {
+        +csync_daemon_session(conn: int, conn_out: int, db: db_conn_p, protocol_version: int, mode: int) : void
+        +csync_copy_file(fd_in: int, fd_out: int) : int
+        +csync_dir_count(db: db_conn_p, filename: filename_p) : int
+        +csync_start(mode: int, flags: int, argc: int, argv: char*[], updater: update_func, listenfd: int, cmd_db_version: int, cmd_ip_version: int) : int
+    }
+}
+
+' Utility Classes
+package "Utilities" {
+    class Buffer {
+        -strings_ : vector<unique_ptr<char, free>>
+        
+        +malloc(length: size_t) : char*
+        +strdup(str: string) : char*
+        +quote(str: string) : char*
+        +add(str: char*) : void
+        +count() : size_t
+        +get(index: size_t) : char*
+        +clear() : void
+        +empty() : bool
+        +begin() : iterator
+        +end() : iterator
+    }
+
+    struct textlist {
+        +next : textlist*
+        +operation : int
+        +intvalue : int
+        +value : char*
+        +value2 : char*
+        +value3 : char*
+        +value4 : char*
+        +value5 : char*
+        +num : int
+        +values : char**
+        +data : void*
+        +destroy : function<void(void*)>
+    }
+
+    class Logger {
+        -min_level_ : LogLevel
+        -debug_level_ : int
+        -output_type_ : Output
+        -file_stream_ : unique_ptr<ofstream>
+        -log_mutex_ : mutex
+        -timestamps_ : bool
+        -show_pid_ : bool
+        -child_pid_ : pid_t
+        
+        +configure(min_level: LogLevel, debug_level: int, output: Output) : void
+        +set_log_file(filename: string) : void
+        +set_timestamps(enable: bool) : void
+        +set_child_pid(pid: pid_t) : void
+        +should_log(level: LogLevel, debug_level: int) : bool
+        +log<Args>(level: LogLevel, debug_level: int, format: string, args...) : void
+        +log_format<Args>(level: LogLevel, debug_level: int, format_str: string, args...) : void
+        +stream(level: LogLevel, debug_level: int) : LogStream
+    }
+
+    enum LogLevel {
+        Emergency = 0
+        Alert = 1
+        Critical = 2
+        Error = 3
+        Warning = 4
+        Notice = 5
+        Info = 6
+        Debug = 7
+    }
+
+    class DigestManager {
+        +dsync_digest(file: int, digest_name: string, md_value: unsigned char*, md_len: unsigned int*) : int
+        +dsync_digest_hex(md_value: unsigned char*, md_len: unsigned int, digest_str: char*) : void
+        +dsync_digest_path_hex(filename: string, digest_name: string, digest: string&) : int
+    }
+}
+
+' Relationships
+DatabaseConnection ||--o{ PreparedStatement : creates
+PreparedStatement ||--o{ ResultSet : executes
+DbApi o-- DatabaseConnection : uses
+DbStmt o-- DbApi : belongs to
+
+SQLiteConnection --|> DatabaseConnection : implements
+MySQLConnection --|> DatabaseConnection : implements  
+PostgreSQLConnection --|> DatabaseConnection : implements
+
+FileRecord *-- Identity : contains
+FileRecord *-- Metadata : contains
+FileRecord --> FileType : uses
+FileRecord --> FileOperation : uses
+FileRecord --> FileStatus : uses
+FileRecord --> FileChangeType : uses
+
+CheckManager --> DbApi : uses
+UpdateManager --> DbApi : uses
+RsyncManager --> ConnectionManager : uses
+ActionManager --> DbApi : uses
+DaemonManager --> DbApi : uses
+DaemonManager --> ConnectionManager : uses
+
+CheckManager --> textlist : creates
+UpdateManager --> textlist : creates
+ActionManager --> textlist : uses
+
+Logger --> LogLevel : uses
+Buffer --> textlist : manages
+
+note top of DatabaseConnection : Modern C++ database abstraction layer\nSupports SQLite, MySQL, PostgreSQL
+note top of DbApi : Legacy database API layer\nBridge between old C code and new C++ database layer
+note top of FileRecord : Modern C++ file representation\nReplaces old C-style file handling
+note top of CheckManager : Core sync logic\nFile comparison and conflict detection
+note top of UpdateManager : Synchronization engine\nHandles peer-to-peer file updates
+note top of Buffer : RAII memory management\nReplaces old BUF_P C-style buffers
+
+@enduml
