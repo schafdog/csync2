@@ -27,7 +27,6 @@
 #include <string>
 #endif
 #include "db_api.hpp"
-#include "buffer.hpp"
 
 /* Device/Inode comparison flags */
 #define DEV_INO_SAME 0
