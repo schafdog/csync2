@@ -2,11 +2,11 @@
 <TESTBASE>/test/local/auto
 <TESTBASE>/test/local/auto/older
 <TESTBASE>/test/local/auto/older/update_both
-other	<TESTBASE>/test/local	MKDIR	NULL	1
-other	<TESTBASE>/test/local/auto	MKDIR	NULL	1
-other	<TESTBASE>/test/local/auto/older	MKDIR	NULL	1
-other	<TESTBASE>/test/local/auto/older/update_both	NEW	NULL	2
-peer	<TESTBASE>/test/local/auto/older/update_both	NEW	NULL	2
-peer	<TESTBASE>/test/local	MKDIR	NULL	129
-peer	<TESTBASE>/test/local/auto	MKDIR	NULL	129
-peer	<TESTBASE>/test/local/auto/older	MKDIR	NULL	129
+other	<TESTBASE>/test/local	MKDIR	-	1
+other	<TESTBASE>/test/local/auto	MKDIR	-	1
+other	<TESTBASE>/test/local/auto/older	MKDIR	-	1
+other	<TESTBASE>/test/local/auto/older/update_both	NEW	-	2
+peer	<TESTBASE>/test/local/auto/older/update_both	NEW	-	2
+peer	<TESTBASE>/test/local	MKDIR	-	129
+peer	<TESTBASE>/test/local/auto	MKDIR	-	129
+peer	<TESTBASE>/test/local/auto/older	MKDIR	-	129
