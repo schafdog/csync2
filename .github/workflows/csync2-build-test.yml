@@ -265,17 +265,22 @@ jobs:
           echo "PostgreSQL setup successful"
         fi
 
+        retries = 5
         if [ "${{ matrix.db }}" = "mysql" ]; then
           until mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "SELECT 1;" ; do
             echo "Waiting for MariaDB..."
             sleep 2
+            retries=$((retries - 1))
+            if [ retries -eq 0 ] ; then
+               echo "Giving up on mysql after 5 attempts"
+               exit 1
           done
           
           # Setup MariaDB for testing
-          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
-          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%';" || true
-          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_local'@'%';" || true
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%';" || true
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_local'@'%';" || true
           
           echo "MariaDB setup successful"
         fi
