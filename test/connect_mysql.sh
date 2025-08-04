@@ -1,3 +1,3 @@
 #!/bin/bash
 HOST=$1
-mysql --protocol tcp --table -u csync2_$HOST -pcsync2_$HOST csync2_$HOST
+mysql --defaults-extra-file=./$HOST.cnf --protocol tcp --table -h localhost -u csync2_$HOST csync2_$HOST
