@@ -501,7 +501,7 @@ jobs:
             ./set_database.sh "$db"
             
             # Run simple test if available
-	    ls -la 
+            ls -la 
             if [ -f simple.test ]; then
               echo "Running make check $db..."
               
