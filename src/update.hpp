@@ -60,7 +60,7 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version,
 
 void csync_remove_old(db_conn_p db, filename_p pattern);
 
-int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peername, const char *key_enc,
+int csync_update_file_sig_rs_diff(int conn, peername_p myname, peername_p peername, const std::string& key_enc,
 								  filename_p filename, filename_p filename_enc,
 								  const struct stat *st,
 								  const char *uidptr, const char *gidptr,
