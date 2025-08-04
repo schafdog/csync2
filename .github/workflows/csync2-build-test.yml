@@ -210,6 +210,8 @@ jobs:
       env:
         PGPASSWORD: csync238
         MYSQLPASSWORD: csync238
+        DB_HOST: 127.0.0.1
+
       run: |
         echo "=== Testing on ${{ matrix.os }} with database ${{ matrix.db }} ==="
         
@@ -264,16 +266,16 @@ jobs:
         fi
 
         if [ "${{ matrix.db }}" = "mysql" ]; then
-          until mysql --protocol=TCP -h localhost  --defaults-extra-file=./root.cnf -e "SELECT 1;" 2>/dev/null; do
+          until mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "SELECT 1;" ; do
             echo "Waiting for MariaDB..."
             sleep 2
           done
           
           # Setup MariaDB for testing
-          mysql --protocol=TCP -h localhost  --defaults-extra-file=./root.cnf -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
-          mysql --protocol=TCP -h localhost  --defaults-extra-file=./root.cnf -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-          mysql --protocol=TCP -h localhost  --defaults-extra-file=./root.cnf -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%';" || true
-          mysql --protocol=TCP -h localhost  --defaults-extra-file=./root.cnf -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_local'@'%';" || true
+          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
+          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
+          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%';" || true
+          mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_local'@'%';" || true
           
           echo "MariaDB setup successful"
         fi
