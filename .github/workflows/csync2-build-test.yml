@@ -168,7 +168,7 @@ jobs:
           echo "No test directory found, skipping tests"
         fi
         "
-	
+
     - name: Database cleanup test
       env:
         PGPASSWORD: csync238
