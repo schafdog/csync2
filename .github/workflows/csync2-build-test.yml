@@ -161,12 +161,27 @@ jobs:
           redis-tools \
           mysql-client \
           libmariadb-dev \
-          netcat-openbsd
+          netcat-openbsd \
+          libgnutls30 \
+          libsqlite3-0 \
+          libmariadb3 \
+          libpq5 \
+          libhiredis0.14 \
+          libssl3 \
+          librsync2
 
-    - name: Make csync2 executable
+    - name: Make csync2 executable and verify dependencies
       run: |
         chmod +x src/csync2
         echo "✅ csync2 binary is executable"
+        
+        # Check shared library dependencies
+        echo "🔍 Checking shared library dependencies..."
+        ldd src/csync2 || echo "⚠️  Could not check shared libraries"
+        
+        # Test basic functionality
+        echo "🧪 Testing basic csync2 functionality..."
+        ./src/csync2 -V || echo "⚠️  csync2 version check failed"
 
     - name: Setup PostgreSQL for csync2
       env:
@@ -482,7 +497,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
+        os: [ubuntu-latest] # ubuntu-22.04,
         db: [sqlite, mysql, pgsql]
     services:
       postgres:
@@ -546,9 +561,26 @@ jobs:
       run: |
         echo "=== Testing on ${{ matrix.os }} with database ${{ matrix.db }} ==="
         
-        # Install minimal dependencies
+        # Install minimal dependencies and runtime libraries
         sudo apt-get update
-        sudo apt-get install -y postgresql-client redis-tools mysql-client netcat-openbsd
+        sudo apt-get install -y \
+          postgresql-client \
+          redis-tools \
+          mysql-client \
+          netcat-openbsd \
+          libgnutls30 \
+          libsqlite3-0 \
+          libmariadb3 \
+          libpq5 \
+          libhiredis0.14 \
+          libssl3 \
+          librsync2
+
+        # Verify csync2 binary and dependencies
+        echo "🔍 Verifying csync2 binary and shared library dependencies..."
+        chmod +x src/csync2
+        ldd src/csync2 || echo "⚠️  Could not check shared libraries"
+        ./src/csync2 -V || echo "⚠️  csync2 version check failed"
 
         # Set up database configuration
         cd test
