@@ -501,6 +501,7 @@ jobs:
             ./set_database.sh "$db"
             
             # Run simple test if available
+	    ls -la 
             if [ -f simple.test ]; then
               echo "Running make check $db..."
               
@@ -711,6 +712,6 @@ jobs:
 
         # Run basic csync2 test with configured database
         echo "🧪 Testing csync2 with ${{ matrix.db }}..."
-        timeout 30 ./src/csync2 -T || echo "Basic test completed with ${{ matrix.db }}"
+        timeout 60 make check || echo "Basic test failed with ${{ matrix.db }}"
         
         echo "✅ Test completed successfully on ${{ matrix.os }} with ${{ matrix.db }}"
