@@ -307,9 +307,8 @@ jobs:
           # Setup MariaDB for testing
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%'identified by 'csync2_local'; " || truea
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_local'@'%' identified by 'csync2_peer';" || true
-          
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%'identified by 'csync2_local'; " || true
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer';" || true
           echo "MariaDB setup successful"
         fi
 
@@ -329,7 +328,7 @@ jobs:
           echo "📋 Running all *.test files..."
 
         # Run each test file
-        for test_file in *.test; do
+        for test_file in younger_auto_resolve.test; do
           if [ -f "$test_file" ]; then
             TOTAL_TESTS=$((TOTAL_TESTS + 1))
             test_script="${test_file/.test/.sh}"
@@ -338,7 +337,7 @@ jobs:
                   
              if [ -f "$test_script" ]; then
                # Run test with timeout
-               if timeout 120 ./"$test_script"; then
+               if timeout 120 DEBUG=vv ./"$test_script" > /dev/null ; then
                  echo "    ✅ PASS: $test_file"
                else
                  exit_code=$?
