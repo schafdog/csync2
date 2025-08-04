@@ -38,7 +38,7 @@ jobs:
       with:
         path: |
           src/csync2
-          test/Makefile
+          csync2
           config.h
           Makefile
           .deps/
@@ -137,6 +137,7 @@ jobs:
       with:
         path: |
           src/csync2
+          csync2
           config.h
           Makefile
           .deps/
@@ -433,10 +434,10 @@ jobs:
 
     - name: Test csync2 with all databases
       env:
-        PGPASSWORD: csync238
+        PGPASSWORD: csync238z
       run: |
         echo "=== Testing csync2 with all database backends ==="
-        
+        ls -al csync2 src/csync2 test/*.test
         cd test
         
         # Test each database type
@@ -636,8 +637,6 @@ jobs:
           exit 1
         fi
 
-        cd ..
-
         # Test database connections and setup
         if [ "${{ matrix.db }}" = "pgsql" ]; then
           until pg_isready -h localhost -p 5432 -U postgres; do
@@ -682,7 +681,7 @@ jobs:
         ERROR_COUNT=0
               
           echo "📋 Running all *.test files..."
-              
+
         # Run each test file
         for test_file in *.test; do
           if [ -f "$test_file" ]; then
