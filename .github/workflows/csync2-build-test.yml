@@ -38,6 +38,7 @@ jobs:
       with:
         path: |
           src/csync2
+          test/Makefile
           config.h
           Makefile
           .deps/
