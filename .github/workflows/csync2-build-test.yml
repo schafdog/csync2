@@ -265,7 +265,7 @@ jobs:
           echo "PostgreSQL setup successful"
         fi
 
-        retries = 5
+        retries=5
         if [ "${{ matrix.db }}" = "mysql" ]; then
           until mysql --protocol=TCP -h 127.0.0.1  --defaults-extra-file=./root.cnf -e "SELECT 1;" ; do
             echo "Waiting for MariaDB..."
