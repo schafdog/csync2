@@ -260,16 +260,16 @@ jobs:
 
         # Create csync2 databases
         echo "Creating csync2_local database..."
-        mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+        mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
 
         echo "Creating csync2_peer database..."
-        mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+        mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
 
         # Grant permissions
         echo "Granting permissions..."
-        mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';" || true
-        mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';" || true
-        mysql -h localhost -u root -pcsync238 -e "FLUSH PRIVILEGES;" || true
+        mysql --protocol=TCP -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';" || true
+        mysql --protocol=TCP -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';" || true
+        mysql --protocol=TCP -h localhost -u root -pcsync238 -e "FLUSH PRIVILEGES;" || true
 
     - name: Test database connectivity
       env:
@@ -376,7 +376,7 @@ jobs:
               ;;
             mysql)
               echo "Testing MariaDB connectivity..."
-              mysql -h localhost -u root -pcsync238 -e "SHOW DATABASES;" | grep -E "(csync2_local|csync2_peer)" || echo "Databases not found, continuing..."
+              mysql --protocol=TCP -h localhost -u root -pcsync238 -e "SHOW DATABASES;" | grep -E "(csync2_local|csync2_peer)" || echo "Databases not found, continuing..."
               ;;
             pgsql)
               echo "Testing PostgreSQL connectivity..."
@@ -417,8 +417,8 @@ jobs:
               case "$db" in
                 mysql)
                   echo "Ensuring MariaDB is ready for testing..."
-                  mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
-                  mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
+                  mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
+                  mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
                   ;;
                 pgsql)
                   echo "Ensuring PostgreSQL is ready for testing..."
@@ -581,16 +581,16 @@ jobs:
         fi
 
         if [ "${{ matrix.db }}" = "mysql" ]; then
-          until mariadb -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+          until mysql --protocol=TCP -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
             echo "Waiting for MariaDB..."
             sleep 2
           done
           
           # Setup MariaDB for testing
-          mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
-          mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-          mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';" || true
-          mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';" || true
+          mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
+          mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
+          mysql --protocol=TCP -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';" || true
+          mysql --protocol=TCP -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';" || true
           
           echo "MariaDB setup successful"
         fi
