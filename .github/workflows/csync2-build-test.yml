@@ -114,10 +114,10 @@ jobs:
       mariadb:
         image: mariadb:10.11
         env:
-          MARIADB_ROOT_PASSWORD: csync238
-          MARIADB_USER: csync2
-          MARIADB_PASSWORD: csync238
-          MARIADB_DATABASE: csync2_test
+          MYSQL_ROOT_PASSWORD: csync238
+          MYSQL_USER: csync2
+          MYSQL_PASSWORD: csync238
+          MYSQL_DATABASE: csync2_test
         options: >-
           --health-cmd "mysqladmin ping"
           --health-interval 10s
@@ -160,7 +160,8 @@ jobs:
           libpq-dev \
           redis-tools \
           mysql-client \
-          libmariadb-dev
+          libmariadb-dev \
+          netcat-openbsd
 
     - name: Make csync2 executable
       run: |
@@ -196,20 +197,66 @@ jobs:
         echo "=== Setting up MariaDB for csync2 ==="
 
         # Wait for MariaDB to be ready
-        # Wait for MariaDB with timeout
-        timeout=60
+        # Wait for MariaDB with verbose debugging
+        echo "🔍 Starting MariaDB connection diagnostics..."
+        
+        # Check if MariaDB port is accessible
+        echo "📡 Checking if port 3306 is accessible..."
+        nc -z localhost 3306 && echo "✅ Port 3306 is open" || echo "❌ Port 3306 is not accessible"
+        
+        # Show running containers
+        echo "🐳 Docker containers status:"
+        docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
+        
+        # Check MariaDB logs
+        echo "📋 MariaDB container logs (last 20 lines):"
+        docker logs $(docker ps -q --filter "ancestor=mariadb:10.11") --tail 20 || echo "Could not get MariaDB logs"
+        
+        # Try different connection methods with verbose output
+        echo "🔐 Testing different connection methods..."
+        
+        echo "Method 1: Basic ping with mysqladmin"
+        mysqladmin ping -h localhost -P 3306 2>&1 || echo "❌ mysqladmin ping failed"
+        
+        echo "Method 2: Connection without password"
+        mysql -h localhost -P 3306 -e "SELECT 1;" 2>&1 || echo "❌ Connection without password failed"
+        
+        echo "Method 3: Connection with root/no password"
+        mysql -h localhost -P 3306 -u root -e "SELECT 1;" 2>&1 || echo "❌ Connection with root/no password failed"
+        
+        echo "Method 4: Connection with root/password"
+        mysql -h localhost -P 3306 -u root -pcsync238 -e "SELECT 1;" 2>&1 || echo "❌ Connection with root/password failed"
+        
+        # Wait with detailed progress
+        timeout=90
         elapsed=0
-        until mysql -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
-          echo "Waiting for MariaDB... ($elapsed/$timeout seconds)"
+        echo "⏳ Waiting for MariaDB to accept connections..."
+        until mysql -h localhost -P 3306 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+          echo "⏳ Waiting for MariaDB... ($elapsed/$timeout seconds)"
+          
+          # Show more detailed info every 10 seconds
+          if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
+            echo "🔍 Detailed check at $elapsed seconds:"
+            echo "   Port status: $(nc -z localhost 3306 && echo 'OPEN' || echo 'CLOSED')"
+            echo "   Container status:"
+            docker ps --filter "ancestor=mariadb:10.11" --format "   {{.Status}}"
+            echo "   Recent logs:"
+            docker logs $(docker ps -q --filter "ancestor=mariadb:10.11") --tail 5 2>/dev/null | sed 's/^/   /' || echo "   Could not get logs"
+          fi
+          
           sleep 2
           elapsed=$((elapsed + 2))
           if [ $elapsed -ge $timeout ]; then
             echo "❌ MariaDB connection timeout after $timeout seconds"
-            # Show MariaDB service status for debugging
+            echo "💥 Final diagnostics:"
+            echo "   Port status: $(nc -z localhost 3306 && echo 'OPEN' || echo 'CLOSED')"
             docker ps --filter "ancestor=mariadb:10.11"
+            docker logs $(docker ps -q --filter "ancestor=mariadb:10.11") --tail 50 || echo "Could not get final logs"
             exit 1
           fi
         done
+        
+        echo "✅ MariaDB is ready after $elapsed seconds"
 
         # Create csync2 databases
         echo "Creating csync2_local database..."
@@ -465,10 +512,10 @@ jobs:
       mariadb:
         image: mariadb:10.11
         env:
-          MARIADB_ROOT_PASSWORD: csync238
-          MARIADB_USER: csync2
-          MARIADB_PASSWORD: csync238
-          MARIADB_DATABASE: csync2_test
+          MYSQL_ROOT_PASSWORD: csync238
+          MYSQL_USER: csync2
+          MYSQL_PASSWORD: csync238
+          MYSQL_DATABASE: csync2_test
         options: >-
           --health-cmd "mysqladmin ping"
           --health-interval 10s
@@ -501,7 +548,7 @@ jobs:
         
         # Install minimal dependencies
         sudo apt-get update
-        sudo apt-get install -y postgresql-client redis-tools mysql-client
+        sudo apt-get install -y postgresql-client redis-tools mysql-client netcat-openbsd
 
         # Set up database configuration
         cd test
