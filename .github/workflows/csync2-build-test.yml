@@ -232,6 +232,29 @@ jobs:
           libssl3 \
           librsync2
 
+        # Create symbolic links for missing library names that csync2 might expect
+        echo "🔗 Creating library symbolic links..."
+        
+        # Find libmariadb.so and create libmariadbclient.so symlink if needed
+        if [ -f /usr/lib/x86_64-linux-gnu/libmariadb.so.3 ]; then
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmariadb.so.3 /usr/lib/x86_64-linux-gnu/libmariadbclient.so || true
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmariadb.so.3 /usr/lib/x86_64-linux-gnu/libmariadbclient.so.18 || true
+          echo "  ✅ Created libmariadbclient.so -> libmariadb.so.3"
+        fi
+        
+        # Also check for libmysqlclient and create alternative symlinks
+        if [ -f /usr/lib/x86_64-linux-gnu/libmysqlclient.so.21 ]; then
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmysqlclient.so.21 /usr/lib/x86_64-linux-gnu/libmariadbclient.so || true
+          echo "  ✅ Created libmariadbclient.so -> libmysqlclient.so.21"
+        elif [ -f /usr/lib/x86_64-linux-gnu/libmysqlclient.so.20 ]; then
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmysqlclient.so.20 /usr/lib/x86_64-linux-gnu/libmariadbclient.so || true
+          echo "  ✅ Created libmariadbclient.so -> libmysqlclient.so.20"
+        fi
+        
+        # Update ldconfig cache
+        sudo ldconfig || true
+        echo "  ✅ Updated library cache"
+
         # Verify csync2 binary and dependencies
         echo "🔍 Verifying csync2 binary and shared library dependencies..."
         chmod +x src/csync2
@@ -268,13 +291,13 @@ jobs:
         fi
 
         if [ "${{ matrix.db }}" = "mysql" ]; then
-          retries=30
+          retries=20
           until mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
             echo "Waiting for MariaDB... ($retries retries left)"
             sleep 2
             retries=$((retries - 1))
             if [ $retries -eq 0 ] ; then
-               echo "❌ Giving up on mysql after 60 seconds - skipping MySQL tests"
+               echo "❌ Giving up on mysql after 20 seconds - skipping MySQL tests"
                echo "📊 Test Results for ${{ matrix.db }}:"
                echo "❌ Tests skipped: Database connection failed"
                exit 0
@@ -284,8 +307,8 @@ jobs:
           # Setup MariaDB for testing
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%';" || true
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_local'@'%';" || true
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%'identified by 'csync2_local'; " || truea
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_local'@'%' identified by 'csync2_peer';" || true
           
           echo "MariaDB setup successful"
         fi
