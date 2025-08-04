@@ -271,7 +271,7 @@ jobs:
             echo "Waiting for MariaDB..."
             sleep 2
             retries=$((retries - 1))
-            if [ retries -eq 0 ] ; then
+            if [ $retries -eq 0 ] ; then
                echo "Giving up on mysql after 5 attempts"
                exit 1
           done
