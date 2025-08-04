@@ -202,7 +202,7 @@ jobs:
         
         # Check if MariaDB port is accessible
         echo "📡 Checking if port 3306 is accessible..."
-        nc -z localhost 3306 && echo "✅ Port 3306 is open" || echo "❌ Port 3306 is not accessible"
+        nc -z 127.0.0.1 3306 && echo "✅ Port 3306 is open" || echo "❌ Port 3306 is not accessible"
         
         # Show running containers
         echo "🐳 Docker containers status:"
@@ -216,28 +216,28 @@ jobs:
         echo "🔐 Testing different connection methods..."
         
         echo "Method 1: Basic ping with mysqladmin"
-        mysqladmin ping -h localhost -P 3306 2>&1 || echo "❌ mysqladmin ping failed"
+        mysqladmin ping -h 127.0.0.1 -P 3306 --protocol=TCP 2>&1 || echo "❌ mysqladmin ping failed"
         
         echo "Method 2: Connection without password"
-        mysql -h localhost -P 3306 -e "SELECT 1;" 2>&1 || echo "❌ Connection without password failed"
+        mysql -h 127.0.0.1 -P 3306 --protocol=TCP -e "SELECT 1;" 2>&1 || echo "❌ Connection without password failed"
         
         echo "Method 3: Connection with root/no password"
-        mysql -h localhost -P 3306 -u root -e "SELECT 1;" 2>&1 || echo "❌ Connection with root/no password failed"
+        mysql -h 127.0.0.1 -P 3306 --protocol=TCP -u root -e "SELECT 1;" 2>&1 || echo "❌ Connection with root/no password failed"
         
         echo "Method 4: Connection with root/password"
-        mysql -h localhost -P 3306 -u root -pcsync238 -e "SELECT 1;" 2>&1 || echo "❌ Connection with root/password failed"
+        mysql -h 127.0.0.1 -P 3306 --protocol=TCP -u root -pcsync238 -e "SELECT 1;" 2>&1 || echo "❌ Connection with root/password failed"
         
         # Wait with detailed progress
         timeout=90
         elapsed=0
         echo "⏳ Waiting for MariaDB to accept connections..."
-        until mysql -h localhost -P 3306 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+        until mysql -h 127.0.0.1 -P 3306 --protocol=TCP -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
           echo "⏳ Waiting for MariaDB... ($elapsed/$timeout seconds)"
           
           # Show more detailed info every 10 seconds
           if [ $((elapsed % 10)) -eq 0 ] && [ $elapsed -gt 0 ]; then
             echo "🔍 Detailed check at $elapsed seconds:"
-            echo "   Port status: $(nc -z localhost 3306 && echo 'OPEN' || echo 'CLOSED')"
+            echo "   Port status: $(nc -z 127.0.0.1 3306 && echo 'OPEN' || echo 'CLOSED')"
             echo "   Container status:"
             docker ps --filter "ancestor=mariadb:10.11" --format "   {{.Status}}"
             echo "   Recent logs:"
@@ -249,7 +249,7 @@ jobs:
           if [ $elapsed -ge $timeout ]; then
             echo "❌ MariaDB connection timeout after $timeout seconds"
             echo "💥 Final diagnostics:"
-            echo "   Port status: $(nc -z localhost 3306 && echo 'OPEN' || echo 'CLOSED')"
+            echo "   Port status: $(nc -z 127.0.0.1 3306 && echo 'OPEN' || echo 'CLOSED')"
             docker ps --filter "ancestor=mariadb:10.11"
             docker logs $(docker ps -q --filter "ancestor=mariadb:10.11") --tail 50 || echo "Could not get final logs"
             exit 1
