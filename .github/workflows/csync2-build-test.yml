@@ -337,7 +337,7 @@ jobs:
                   
              if [ -f "$test_script" ]; then
                # Run test with timeout
-               if timeout 120 ./"$test_script" > /dev/null ; then
+               if timeout 120 bash -x ./"$test_script"  ; then
                  echo "    ✅ PASS: $test_file"
                else
                  exit_code=$?
