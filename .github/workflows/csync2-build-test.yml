@@ -521,7 +521,7 @@ jobs:
               
               # Run test with timeout (continue on failure to test other databases)
               for d in *.test ; do
-	        ./${d/.test/.sh}
+                ./${d/.test/.sh}
               done
               # timeout 120 make check || echo "❌ Test with $db completed with status $?"
               
