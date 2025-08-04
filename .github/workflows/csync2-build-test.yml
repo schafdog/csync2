@@ -498,46 +498,6 @@ jobs:
           for db in sqlite mysql pgsql; do
             echo "🔄 Running tests with database: $db"
             
-            # Set database configuration
-            ./set_database.sh "$db"
-            
-            # Run simple test if available
-            ls -la 
-            if [ -f simple.test ]; then
-              echo "Running make check $db..."
-              
-              # For non-SQLite databases, ensure they're properly set up
-              case "$db" in
-                mysql)
-                  echo "Ensuring MariaDB is ready for testing..."
-                  mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
-                  mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
-                  ;;
-                pgsql)
-                  echo "Ensuring PostgreSQL is ready for testing..."
-                  PGPASSWORD=csync238 psql -U postgres -h localhost -c "SELECT 1;" || true
-                  ;;
-              esac
-              
-              # Run test with timeout (continue on failure to test other databases)
-              for d in *.test ; do
-                ./${d/.test/.sh}
-              done
-              # timeout 120 make check || echo "❌ Test with $db completed with status $?"
-              
-              # Brief cleanup between database tests
-              pkill -f csync2 || true
-              sleep 1
-            else
-              echo "No test_simple.test found for $db"
-            fi
-            
-            echo "✅ Test with $db finished"
-            echo ""
-          done
-        else
-          echo "No test directory found, skipping tests"
-        fi
 
     - name: Database cleanup test
       env:
@@ -716,6 +676,85 @@ jobs:
 
         # Run basic csync2 test with configured database
         echo "🧪 Testing csync2 with ${{ matrix.db }}..."
-        timeout 60 make check || echo "Basic test failed with ${{ matrix.db }}"
+            # Set database configuration
+            ./set_database.sh "$db"
+            
+            # Run tests if available
+            ls -la 
+            if ls *.test 1> /dev/null 2>&1; then
+              echo "🧪 Running tests with database: $db"
+              
+              # For non-SQLite databases, ensure they're properly set up
+              case "$db" in
+                mysql)
+                  echo "Ensuring MariaDB is ready for testing..."
+                  mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
+                  mysql --protocol=TCP -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
+                  ;;
+                pgsql)
+                  echo "Ensuring PostgreSQL is ready for testing..."
+                  PGPASSWORD=csync238 psql -U postgres -h localhost -c "SELECT 1;" || true
+                  ;;
+              esac
+              
+              # Initialize test counters
+              TOTAL_TESTS=0
+              ERROR_COUNT=0
+              
+              echo "📋 Running all *.test files..."
+              
+              # Run each test file
+              for test_file in *.test; do
+                if [ -f "$test_file" ]; then
+                  TOTAL_TESTS=$((TOTAL_TESTS + 1))
+                  test_script="${test_file/.test/.sh}"
+                  
+                  echo "  🔄 Running test: $test_file (script: $test_script)"
+                  
+                  if [ -f "$test_script" ]; then
+                    # Run test with timeout
+                    if timeout 120 ./"$test_script"; then
+                      echo "    ✅ PASS: $test_file"
+                    else
+                      exit_code=$?
+                      ERROR_COUNT=$((ERROR_COUNT + 1))
+                      echo "    ❌ FAIL: $test_file (exit code: $exit_code)"
+                    fi
+                  else
+                    ERROR_COUNT=$((ERROR_COUNT + 1))
+                    echo "    ❌ FAIL: $test_file (script $test_script not found)"
+                  fi
+                  
+                  # Brief pause between tests
+                  sleep 1
+                fi
+              done
+              
+              # Show test results summary
+              echo ""
+              echo "📊 Test Results for $db:"
+              if [ $ERROR_COUNT -eq 0 ]; then
+                echo "✅ All tests passed: $ERROR_COUNT errors / $TOTAL_TESTS tests"
+              else
+                echo "❌ Tests failed: $ERROR_COUNT errors / $TOTAL_TESTS tests"
+              fi
+              echo ""
+              
+              # Brief cleanup between database tests
+              pkill -f csync2 || true
+              sleep 1
+            else
+              echo "No *.test files found for $db"
+            fi
+            
+            echo "✅ Test with $db finished"
+            echo ""
+          done
+        else
+          echo "No test directory found, skipping tests"
+        fi
+
+
+        #timeout 60 make check || echo "Basic test failed with ${{ matrix.db }}"
         
         echo "✅ Test completed successfully on ${{ matrix.os }} with ${{ matrix.db }}"
