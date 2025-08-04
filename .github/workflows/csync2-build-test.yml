@@ -337,7 +337,6 @@ jobs:
                   
              if [ -f "$test_script" ]; then
                # Run test with timeout
-	       export DEBUG=vv
                if timeout 120 ./"$test_script" > /dev/null ; then
                  echo "    ✅ PASS: $test_file"
                else
