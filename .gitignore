@@ -52,6 +52,7 @@ ylwrap
 tests/*.diff
 tests/test
 test/prefix.cfg
+test/database
 mkstemp
 version.h
 version.h.new
