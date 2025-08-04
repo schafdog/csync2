@@ -520,7 +520,10 @@ jobs:
               esac
               
               # Run test with timeout (continue on failure to test other databases)
-              timeout 120 make check || echo "Test with $db completed with status $?"
+              for d in *.test ; do
+	        ./${d/.test/.sh}
+              done
+              # timeout 120 make check || echo "❌ Test with $db completed with status $?"
               
               # Brief cleanup between database tests
               pkill -f csync2 || true
@@ -529,7 +532,7 @@ jobs:
               echo "No test_simple.test found for $db"
             fi
             
-            echo "✅ Test with $db completed"
+            echo "✅ Test with $db finished"
             echo ""
           done
         else
