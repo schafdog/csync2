@@ -191,6 +191,9 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 DbSqlite::DbSqlite() {}
 
 DbSqlite::~DbSqlite() {
+
+	delete conn_;
+	
     if (dl_handle) {
         dlclose(dl_handle);
         dl_handle = NULL;
