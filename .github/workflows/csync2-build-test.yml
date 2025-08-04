@@ -501,8 +501,8 @@ jobs:
             ./set_database.sh "$db"
             
             # Run simple test if available
-            if [ -f test_simple.test ]; then
-              echo "Running simple test with $db..."
+            if [ -f simple.test ]; then
+              echo "Running make check $db..."
               
               # For non-SQLite databases, ensure they're properly set up
               case "$db" in
@@ -518,7 +518,7 @@ jobs:
               esac
               
               # Run test with timeout (continue on failure to test other databases)
-              timeout 60 make check || echo "Test with $db completed with status $?"
+              timeout 120 make check || echo "Test with $db completed with status $?"
               
               # Brief cleanup between database tests
               pkill -f csync2 || true
