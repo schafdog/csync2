@@ -317,7 +317,7 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 		free(db_url);
 		return rc;
 	}
-
+	csync_debug(1, "host {} user {} pass {} database {} port {}\n", host,user, pass, database, port);
 	if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, CLIENT_FOUND_ROWS) == NULL) {
 		if (f.mysql_errno_fn(db) == ER_BAD_DB_ERROR) {
 			if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {
@@ -340,7 +340,7 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 		}
 	}
 	const char *encoding = mysql_character_set_name(db);
-	csync_debug(3, "Default encoding {}", encoding);
+	csync_debug(1, "Default encoding {}", encoding);
 	if (mysql_set_character_set(db, "utf8mb4")) {
 		csync_fatal("Cannot set character set to utf8mb4");
 	}
