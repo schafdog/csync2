@@ -152,7 +152,7 @@ jobs:
         
         if [ -d test ] && [ -f test/local.sh ]; then
           cd test
-          ./set_database pgsql
+          ./set_database.sh pgsql
           # Kill any existing processes
           pkill -f csync2 || true
           sleep 2
