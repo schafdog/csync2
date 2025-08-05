@@ -167,7 +167,6 @@ jobs:
         else
           echo "No test directory found, skipping tests"
         fi
-        "
 
     - name: Database cleanup test
       env:
@@ -364,7 +363,7 @@ jobs:
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer'; FLUSH PRIVILEGES;" || true
           echo "MariaDB setup successful"
 
-	  echo "SELECT 123" | mysql --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local csync2_local
+          echo "SELECT 123" | mysql --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local csync2_local
         fi
 
         # Test Redis connection (used by all database types)
