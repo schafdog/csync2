@@ -158,7 +158,7 @@ jobs:
           sleep 2
           
           # Run a simple test
-          if [ -f "simple.test ]; then
+          if [ -f "simple.test" ]; then
             echo "Running simple test..."
             timeout 120 make check || (echo "Test completed with status $?" && cat test-suite.log && exit 1) 
           else
