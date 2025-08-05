@@ -308,8 +308,10 @@ jobs:
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
           mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%' identified by 'csync2_local'; " || true
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer'; flush privileges;" || true
+          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer'; FLUSH PRIVILEGES;" || true
           echo "MariaDB setup successful"
+
+	  echo "SELECT 123" | mysql --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local csync2_local
         fi
 
         # Test Redis connection (used by all database types)
@@ -336,6 +338,7 @@ jobs:
              echo "  🔄 Running test: $test_file (script: $test_script)"
                   
              if [ -f "$test_script" ]; then
+               DEBUG=vv
                # Run test with timeout
                if timeout 120 bash -x ./"$test_script"  ; then
                  echo "    ✅ PASS: $test_file"
