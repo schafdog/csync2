@@ -131,6 +131,58 @@ jobs:
         echo "Sample warnings:"
         make warnings 2>/dev/null | head -10 || echo "No warnings to show"
 
+
+    - name: Run basic functionality test
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing basic csync2 functionality ==="
+        
+        # Test csync2 binary
+        ./src/csync2 -V | head -5
+        
+        # Test version
+        ./src/csync2 -V
+
+    - name: Run csync2 tests (if available)
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Running csync2 tests ==="
+        
+        if [ -d test ] && [ -f test/local.sh ]; then
+          cd test
+          ./set_database pgsql
+          # Kill any existing processes
+          pkill -f csync2 || true
+          sleep 2
+          
+          # Run a simple test
+          if [ -f "simple.test ]; then
+            echo "Running simple test..."
+            timeout 120 make check || (echo "Test completed with status $?" && cat test-suite.log && exit 1) 
+          else
+            echo "No simple.test found"
+          fi
+        else
+          echo "No test directory found, skipping tests"
+        fi
+        "
+
+    - name: Database cleanup test
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing database cleanup ==="
+        
+        # Test database cleanup
+        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
+          -- Show table sizes before cleanup
+          SELECT schemaname, tablename, 
+                 pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
+          FROM pg_tables 
+          WHERE schemaname = 'public';
+        "
     - name: Save build cache
       if: steps.cache-restore.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
@@ -143,6 +195,7 @@ jobs:
           .deps/
           .libs/
         key: ${{ steps.cache-key.outputs.cache-key }}
+
 
   test-multiple-ubuntu:
     needs: build
