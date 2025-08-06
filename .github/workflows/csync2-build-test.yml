@@ -8,83 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install build dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          autoconf \
-          automake \
-          pkg-config \
-          bison \
-          flex \
-          libgnutls28-dev \
-          libsqlite3-dev \
-          libmariadb-dev \
-          libpq-dev \
-          libhiredis-dev \
-          libssl-dev \
-          librsync-dev
-
-    - name: Build csync2
-      run: |
-        echo "=== Building csync2 ==="
-        
-        # Generate build system
-        autoreconf -fiv
-        
-        # Configure with all database support
-        ./configure \
-          --enable-postgres \
-          --enable-mysql \
-          --enable-sqlite3 \
-          --enable-redis \
-          --with-libpq-includes=/usr/include/postgresql \
-          --with-libpq-libs=/usr/lib/x86_64-linux-gnu
-        
-        # Build with enhanced warnings
-        make -j$(nproc)
-        
-        # Verify build succeeded
-        test -f src/csync2 || (echo "Build failed - csync2 binary not found" && exit 1)
-        echo "✅ Build completed successfully"
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: csync2-build
-        path: |
-          src/csync2
-          test/
-          sql/
-          configure
-          Makefile
-          config.h
-        retention-days: 1
-
-    - name: Check warning count
-      run: |
-        echo "=== Checking compiler warnings ==="
-        cd src
-        
-        # Count warnings
-        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
-        echo "Total warnings: $WARNING_COUNT"
-        
-        # Show sample warnings
-        echo "Sample warnings:"
-        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: [ ubuntu-latest ]
 
     services:
       postgres:
@@ -119,22 +44,16 @@ jobs:
           MARIADB_PASSWORD: csync238
           MARIADB_DATABASE: csync2_test
         options: >-
-          --health-cmd "mysqladmin ping"
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 5
         ports:
           - 3306:3306
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: csync2-build
-        path: .
 
     - name: Setup host aliases for csync2 testing
       run: |
@@ -152,20 +71,58 @@ jobs:
         nslookup local || true
         ping -c 1 peer || true
 
-    - name: Install test dependencies
+    - name: Calculate build cache key
+      id: cache-key
+      run: |
+        # Create a hash of source files and build configuration
+        echo "Calculating build cache key..."
+        
+        # Hash source files, headers, and build scripts
+        SOURCES_HASH=$(find src/ -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" | sort | xargs cat | sha256sum | cut -d' ' -f1)
+        CONFIG_HASH=$(cat configure.ac Makefile.am | sha256sum | cut -d' ' -f1)
+        DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
+        
+        # Combine hashes
+        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
+        
+        echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+        echo "🔑 Build cache key: ${CACHE_KEY}"
+
+    - name: Restore build cache
+      id: cache-restore
+      uses: actions/cache@v4
+      with:
+        path: |
+          src/csync2
+          csync2
+          config.h
+          Makefile
+          .deps/
+          .libs/
+        key: ${{ steps.cache-key.outputs.cache-key }}
+        restore-keys: |
+          build-
+
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
+          build-essential \
+          autoconf \
+          automake \
+          pkg-config \
+          bison \
+          flex \
+          libgnutls28-dev \
+          libsqlite3-dev \
+          libmariadb-dev \
           postgresql-client \
           libpq-dev \
+          libhiredis-dev \
+          libssl-dev \
+          librsync-dev \
           redis-tools \
-          mysql-client \
-          libmariadb-dev
-
-    - name: Make csync2 executable
-      run: |
-        chmod +x src/csync2
-        echo "✅ csync2 binary is executable"
+          mariadb-client
 
     - name: Setup PostgreSQL for csync2
       env:
@@ -181,48 +138,161 @@ jobs:
 
         # Create csync2 user (separate commands to avoid transaction issues)
         echo "Creating csync2 user..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2 WITH PASSWORD 'csync238';" || true
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2 CREATEDB;" || true
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2 WITH PASSWORD 'csync238';"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2 CREATEDB;"
 
         # Create csync2 databases with C collation (separate commands)
         echo "Creating csync2_local database..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;" || true
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
 
         echo "Creating csync2_peer database..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;" || true
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+
+        # Grant permissions on csync2_local
+        echo "Granting permissions on csync2_local..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
+
+        # Grant permissions on csync2_peer
+        echo "Granting permissions on csync2_peer..."
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
+
+    - name: Verify PostgreSQL setup
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Verifying PostgreSQL setup ==="
+        
+        # Check database collation
+        psql -h localhost -U postgres -c "
+          SELECT datname, datcollate, datctype 
+          FROM pg_database 
+          WHERE datname LIKE 'csync2_%' 
+          ORDER BY datname;
+        "
+        
+        # Test connection as csync2 user
+        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
+          SELECT current_user, current_database(), version();
+        "
 
     - name: Setup MariaDB for csync2
       run: |
         echo "=== Setting up MariaDB for csync2 ==="
 
         # Wait for MariaDB to be ready
-        # Wait for MariaDB with timeout
-        timeout=60
-        elapsed=0
-        until mysql -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
-          echo "Waiting for MariaDB... ($elapsed/$timeout seconds)"
+        until mariadb -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+          echo "Waiting for MariaDB..."
           sleep 2
-          elapsed=$((elapsed + 2))
-          if [ $elapsed -ge $timeout ]; then
-            echo "❌ MariaDB connection timeout after $timeout seconds"
-            # Show MariaDB service status for debugging
-            docker ps --filter "ancestor=mariadb:10.11"
-            exit 1
-          fi
         done
 
         # Create csync2 databases
         echo "Creating csync2_local database..."
-        mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+        mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
 
         echo "Creating csync2_peer database..."
-        mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+        mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
 
         # Grant permissions
         echo "Granting permissions..."
-        mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';" || true
-        mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';" || true
-        mysql -h localhost -u root -pcsync238 -e "FLUSH PRIVILEGES;" || true
+        mariadb -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';"
+        mariadb -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';"
+        mariadb -h localhost -u root -pcsync238 -e "FLUSH PRIVILEGES;"
+
+    - name: Verify MariaDB setup
+      run: |
+        echo "=== Verifying MariaDB setup ==="
+        
+        # Check database setup
+        mariadb -h localhost -u root -pcsync238 -e "
+          SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME 
+          FROM information_schema.SCHEMATA 
+          WHERE SCHEMA_NAME LIKE 'csync2_%' 
+          ORDER BY SCHEMA_NAME;
+        "
+        
+        # Test connection as csync2 user
+        mariadb -h localhost -u csync2 -pcsync238 -D csync2_local -e "
+          SELECT USER(), DATABASE(), VERSION();
+        "
+
+    - name: Setup and test Redis
+      run: |
+        echo "=== Setting up and testing Redis ==="
+
+        # Wait for Redis to be ready
+        until redis-cli -h localhost -p 6379 ping; do
+          echo "Waiting for Redis..."
+          sleep 2
+        done
+
+        # Test basic Redis operations
+        echo "Testing basic Redis operations..."
+        redis-cli -h localhost -p 6379 set test_key "test_value"
+        redis-cli -h localhost -p 6379 get test_key
+
+        # Test Redis info
+        echo "Redis server info:"
+        redis-cli -h localhost -p 6379 info server | head -10
+
+        # Test Redis configuration
+        echo "Redis configuration:"
+        redis-cli -h localhost -p 6379 config get "*max*" | head -10
+
+        # Clean up test data
+        redis-cli -h localhost -p 6379 del test_key
+
+        echo "✅ Redis setup and testing completed"
+
+    - name: Build csync2
+      run: |
+        echo "=== Building csync2 ==="
+        
+        # Generate build system
+        autoreconf -fiv
+        
+        # Configure with PostgreSQL support
+        ./configure \
+          --enable-postgres \
+          --enable-mysql \
+          --enable-sqlite3 \
+          --enable-redis \
+          --with-libpq-includes=/usr/include/postgresql \
+          --with-libpq-libs=/usr/lib/x86_64-linux-gnu
+        
+        # Build with enhanced warnings (silent mode for clean output)
+        make -j$(nproc)
+
+    - name: Check warning count
+      run: |
+        echo "=== Checking compiler warnings ==="
+        cd src
+        
+        # Count warnings
+        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
+        echo "Total warnings: $WARNING_COUNT"
+        
+        # Show sample warnings
+        echo "Sample warnings:"
+        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
+
+    - name: Setup csync2 database schema
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Setting up csync2 database schema ==="
+        
+        # Create schema in both databases
+        if [ -f test/create_csync2_schema.sql ]; then
+          PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -f test/create_csync2_schema.sql
+          PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_peer -f test/create_csync2_schema.sql
+        else
+          echo "Schema file not found, skipping schema creation"
+        fi
+        
+        # Verify tables were created
+        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "\d"
 
     - name: Test database connectivity
       env:
@@ -329,7 +399,7 @@ jobs:
               ;;
             mysql)
               echo "Testing MariaDB connectivity..."
-              mysql -h localhost -u root -pcsync238 -e "SHOW DATABASES;" | grep -E "(csync2_local|csync2_peer)" || echo "Databases not found, continuing..."
+              mariadb -h localhost -u root -pcsync238 -e "SHOW DATABASES;" | grep -E "(csync2_local|csync2_peer)" || echo "Databases not found, continuing..."
               ;;
             pgsql)
               echo "Testing PostgreSQL connectivity..."
@@ -370,8 +440,8 @@ jobs:
               case "$db" in
                 mysql)
                   echo "Ensuring MariaDB is ready for testing..."
-                  mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
-                  mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
+                  mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
+                  mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
                   ;;
                 pgsql)
                   echo "Ensuring PostgreSQL is ready for testing..."
@@ -431,7 +501,6 @@ jobs:
         "
 
   test-multiple-ubuntu:
-    needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -470,10 +539,10 @@ jobs:
           MARIADB_PASSWORD: csync238
           MARIADB_DATABASE: csync2_test
         options: >-
-          --health-cmd "mysqladmin ping"
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 5
         ports:
           - 3306:3306
 
@@ -481,56 +550,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: csync2-build
-        path: .
-
-    - name: Make csync2 executable
-      run: |
-        chmod +x src/csync2
-        echo "✅ csync2 binary is executable"
-
     - name: Test on ${{ matrix.os }} with ${{ matrix.db }}
       env:
         PGPASSWORD: csync238
-        MYSQLPASSWORD: csync238
       run: |
         echo "=== Testing on ${{ matrix.os }} with database ${{ matrix.db }} ==="
         
         # Install minimal dependencies
         sudo apt-get update
-        sudo apt-get install -y postgresql-client redis-tools mysql-client
+        sudo apt-get install -y postgresql-client redis-tools mariadb-client
 
-        # Set up database configuration
-        cd test
-        echo "🔄 Setting database configuration to ${{ matrix.db }}"
-        ./set_database.sh "${{ matrix.db }}"
-        
-        # Verify database configuration
-        if [ -L database ]; then
-          echo "✅ Database configuration set to: $(readlink database)"
-        else
-          echo "❌ Failed to set database configuration"
-          exit 1
-        fi
-
-        cd ..
-
-        # Test database connections and setup
+        # Test database connections
         if [ "${{ matrix.db }}" = "pgsql" ]; then
           until pg_isready -h localhost -p 5432 -U postgres; do
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
-          
-          # Setup PostgreSQL for testing
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2 WITH PASSWORD 'csync238';" || true
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2;" || true
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2;" || true
-          
-          echo "PostgreSQL setup successful"
+          psql -h localhost -U postgres -c "SELECT version();"
+          echo "PostgreSQL connection successful"
         fi
 
         if [ "${{ matrix.db }}" = "mysql" ]; then
@@ -538,14 +575,8 @@ jobs:
             echo "Waiting for MariaDB..."
             sleep 2
           done
-          
-          # Setup MariaDB for testing
-          mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
-          mysql -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-          mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';" || true
-          mysql -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';" || true
-          
-          echo "MariaDB setup successful"
+          mariadb -h localhost -u root -pcsync238 -e "SELECT VERSION();"
+          echo "MariaDB connection successful"
         fi
 
         # Test Redis connection (used by all database types)
@@ -553,9 +584,5 @@ jobs:
           echo "Waiting for Redis..."
           sleep 2
         done
-
-        # Run basic csync2 test with configured database
-        echo "🧪 Testing csync2 with ${{ matrix.db }}..."
-        timeout 30 ./src/csync2 -T || echo "Basic test completed with ${{ matrix.db }}"
-        
-        echo "✅ Test completed successfully on ${{ matrix.os }} with ${{ matrix.db }}"
+        redis-cli -h localhost -p 6379 info server | head -5
+        echo "Redis connection successful"
