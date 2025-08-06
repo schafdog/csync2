@@ -231,6 +231,7 @@ jobs:
           autoreconf -fiv
           # Configure with PostgreSQL support
           ./configure \
+            --enable-release \
             --enable-postgres \
             --enable-mysql \
             --enable-sqlite3 \
