@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest] # ubuntu-22.04,
-#        db: [sqlite, mysql, pgsql]
+        db: [sqlite, mysql, pgsql]
     services:
       postgres:
         image: postgres:15
@@ -111,125 +111,141 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          autoconf \
-          automake \
-          pkg-config \
-          bison \
-          flex \
-          libgnutls28-dev \
-          libsqlite3-dev \
-          libmariadb-dev \
-          postgresql-client \
-          libpq-dev \
-          libhiredis-dev \
-          libssl-dev \
-          librsync-dev \
-          redis-tools \
-          mariadb-client
+       if [ "${{ matrix.os }}" != "macos" ] ; then      
+          sudo apt-get update
+          if [ -f src/csync2 ] ;  then
+            apt-get install -y \
+              apt-get install -y libmariadb3 libhiredis1.1.0 libpq5
+          else 
+            sudo apt-get install -y \
+              build-essential \
+              autoconf \
+              automake \
+              pkg-config \
+              bison \
+              flex \
+              libgnutls28-dev \
+              libsqlite3-dev \
+              libmariadb-dev \
+              postgresql-client \
+              libpq-dev \
+              libhiredis-dev \
+              libssl-dev \
+              librsync-dev \
+              redis-tools \
+              mariadb-client
+          fi
+        fi
 
-    - name: Setup PostgreSQL for csync2
+    - name: Setup Postgresql for csync2 on ${{ matrix.os }}
       env:
         PGPASSWORD: csync238
       run: |
-        echo "=== Setting up PostgreSQL for csync2 ==="
-
-        # Wait for PostgreSQL to be ready
-        until pg_isready -h localhost -p 5432 -U postgres; do
-          echo "Waiting for PostgreSQL..."
-          sleep 2
-        done
-
-        # Create csync2 user (separate commands to avoid transaction issues)
-        echo "Creating csync2 user..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_local WITH PASSWORD 'csync2_local';"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_local CREATEDB;"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_peer WITH PASSWORD 'csync2_peer';"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_peer CREATEDB;"
-
-        # Create csync2 databases with C collation (separate commands)
-        echo "Creating csync2_local database..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
-
-        echo "Creating csync2_peer database..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
-
-        # Grant permissions on csync2_local
-        echo "Granting permissions on csync2_local..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2_local;"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_local;"
-
-        # Grant permissions on csync2_peer
-        echo "Granting permissions on csync2_peer..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2_peer;"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_peer;"
-
+        echo "=== Setting up PostgreSQL for csync2 ==="  
+        if [ "${{ matrix.db }}" != "pgsql" ]; then
+          echo "Not Postgres"
+        else 
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+  
+          # Create csync2 user (separate commands to avoid transaction issues)
+          echo "Creating csync2 user..."
+          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_local WITH PASSWORD 'csync2_local';"
+          PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_local CREATEDB;"
+          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_peer WITH PASSWORD 'csync2_peer';"
+          PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_peer CREATEDB;"
+  
+          # Create csync2 databases with C collation (separate commands)
+          echo "Creating csync2_local database..."
+          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+  
+          echo "Creating csync2_peer database..."
+          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+  
+          # Grant permissions on csync2_local
+          echo "Granting permissions on csync2_local..."
+          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2_local;"
+          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_local;"
+  
+          # Grant permissions on csync2_peer
+          echo "Granting permissions on csync2_peer..."
+          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2_peer;"
+          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_peer;"
+        fi
     - name: Verify PostgreSQL setup
       env:
         PGPASSWORD: csync238
       run: |
         echo "=== Verifying PostgreSQL setup ==="
-        
-        # Check database collation
-        psql -h localhost -U postgres -c "
-          SELECT datname, datcollate, datctype 
-          FROM pg_database 
-          WHERE datname LIKE 'csync2_%' 
-          ORDER BY datname;
-        "
-        
-        # Test connection as csync2 user
-        PGPASSWORD=csync2_local psql -U csync2_local -h localhost -d csync2_local -c "
-          SELECT current_user, current_database(), version();
-        "
+        if [ "${{ matrix.db }}" == "pgsql" ]; then
+          echo "Not Postgres"
+          # Check database collation
+          psql -h localhost -U postgres -c "
+            SELECT datname, datcollate, datctype 
+            FROM pg_database 
+            WHERE datname LIKE 'csync2_%' 
+            ORDER BY datname;
+          "
+          
+          # Test connection as csync2 user
+          PGPASSWORD=csync2_local psql -U csync2_local -h localhost -d csync2_local -c "
+            SELECT current_user, current_database(), version();
+          "
+        fi
 
     - name: Setup MariaDB for csync2
       run: |
         echo "=== Setting up MariaDB for csync2 ==="
+        if [ "${{ matrix.db }}" != "mysql" ]; then
+          echo "Not MySQL"
+        else 
 
-        # Wait for MariaDB to be ready
-        until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
-          echo "Waiting for MariaDB..."
-          sleep 2
-        done
-
-        # Create csync2 databases
-        echo "Creating csync2_local database..."
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
-
-        echo "Creating csync2_peer database..."
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
-
-        # Grant permissions
-        echo "Granting permissions..."
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%' identified by 'csync2_local';"
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer';"
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "FLUSH PRIVILEGES;"
-
+          # Wait for MariaDB to be ready
+          until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+            echo "Waiting for MariaDB..."
+            sleep 2
+          done
+  
+          # Create csync2 databases
+          echo "Creating csync2_local database..."
+          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+  
+          echo "Creating csync2_peer database..."
+          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+  
+          # Grant permissions
+          echo "Granting permissions..."
+          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%' identified by 'csync2_local';"
+          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer';"
+          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "FLUSH PRIVILEGES;"
+        fi
+ 
     - name: Verify MariaDB setup
       run: |
         echo "=== Verifying MariaDB setup ==="
+        if [ "${{ matrix.db }}" == "mysql" ]; then
+          # Check database setup
+          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "
+            SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME 
+            FROM information_schema.SCHEMATA 
+            WHERE SCHEMA_NAME LIKE 'csync2_%' 
+            ORDER BY SCHEMA_NAME;
+          "
         
-        # Check database setup
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "
-          SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME 
-          FROM information_schema.SCHEMATA 
-          WHERE SCHEMA_NAME LIKE 'csync2_%' 
-          ORDER BY SCHEMA_NAME;
-        "
-        
-        # Test connection as csync2 user
-        mariadb --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local -D csync2_local -e "
-          SELECT USER(), DATABASE(), VERSION();
-        "
+          # Test connection as csync2 user
+          mariadb --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local -D csync2_local -e "
+            SELECT USER(), DATABASE(), VERSION();
+          "
+        fi
 
-    - name: Build csync2
+    - name: Build csync2 on ${{ matrix.os }}
       run: |
         echo "=== Building csync2 ==="
         
-        if [ -f  src/csync2 ] ; then
+        if [ -f src/csync2 ] ; then
           echo "csync2 restored from cache" 
         else
           # Generate build system
@@ -247,7 +263,7 @@ jobs:
           make -j$(nproc) V=1
         fi
 
-    - name: Check warning count
+    - name: Check warning count on ${{ matrix.os }}
       run: |
         echo "=== Checking compiler warnings ==="
         cd src
@@ -272,35 +288,33 @@ jobs:
         # Test version
         ./src/csync2 -V
 
-    - name: Test csync2 with all databases
+    - name: Test csync2 on ${{ matrix.os }} with ${{ matrix.db }} 
       env:
         PGPASSWORD: csync238
       run: |
-        echo "=== Testing csync2 with all database backends ==="
+        echo "=== Testing csync2 on ${{ matrix.os }} with ${{ matrix.db }} ==="
         
         cd test
         
-        # Test each database type
-        for db in mysql pgsql sqlite; do
-          echo "🔄 Testing with database: $db"
-          
-          # Set the database configuration
-          ./set_database.sh "$db"
-          
-          # Verify the database configuration was set
-          if [ -L database ]; then
-            echo "✅ Database configuration set to: $(readlink database)"
-          else
-            echo "❌ Failed to set database configuration"
-            continue
-          fi
-          
-          # Run a simple test with this database
-          echo "Running basic functionality test with $db..."
-          
-          timeout 120 ./younger_auto_resolve.sh || echo "tests failed: $?" 
-          #cat test-suite.log
-          echo "✅ Database $db test completed"
-          echo ""
-        done
+        echo "🔄 Testing with database: ${{ matrix.db }} on ${{ matrix.os }}"
+        
+        # Set the database configuration
+        ./set_database.sh "$db"
+        
+        # Verify the database configuration was set
+        if [ -L database ]; then
+          echo "✅ Database configuration set to: $(readlink database)"
+        else
+          echo "❌ Failed to set database configuration"
+          continue
+        fi
+        
+        # Run a simple test with this database
+        echo "Running basic functionality test with $db..."
+        
+        timeout 120 ./younger_auto_resolve.sh || echo "tests failed: $?" 
+        #cat test-suite.log
+        echo "✅ Database $db test completed"
+        echo ""
+
 
