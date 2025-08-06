@@ -113,8 +113,8 @@ jobs:
       run: |
        if [ "${{ matrix.os }}" != "macos" ] ; then      
           sudo apt-get update
-          if [ -f src/csync2 ] ;  then
-            sudo apt-get install  -y libmariadb3 libhiredis1.1.0 libpq5
+          if [ -f not ] ;  then
+            sudo apt-get install  -y libmariadb3 libhiredis1.1.0 libpq5 librsync libgnutls30t64 
           else 
             sudo apt-get install -y \
               build-essential \
@@ -203,7 +203,7 @@ jobs:
         else 
 
           # Wait for MariaDB to be ready
-          until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+          until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" ; do
             echo "Waiting for MariaDB..."
             sleep 2
           done
