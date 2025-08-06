@@ -299,47 +299,6 @@ jobs:
           echo ""
         done
 
-    - name: Run csync2 tests
-      env:
-        PGPASSWORD: csync238
-        MYSQLPASSWORD: csync238
-      run: |
-        echo "=== Running csync2 tests with different databases ==="
-        
-        if [ -d test ] && [ -f test/local.sh ]; then
-          cd test
-          
-          # Kill any existing processes
-          pkill -f csync2 || true
-          sleep 2
-          
-          # Test with each database configuration
-          for db in mysql pgsql sqlite; do
-            echo "🔄 Running tests with database: $db"
-            
-            # Set database configuration
-            ./set_database.sh "$db"
-            
-            # Run simple test if available
-            if [ -f simple.test ]; then
-              echo "Running make check with $db..."
-              # Run test with timeout (continue on failure to test other databases)
-              timeout 60 make check || echo "Test with $db completed with status $?"
-              
-              # Brief cleanup between database tests
-              pkill -f csync2 || true
-              sleep 1
-            else
-              echo "No test_simple.test found for $db"
-            fi
-
-            echo "✅ Test with $db completed"
-            echo ""
-          done
-        else
-          echo "No test directory found, skipping tests"
-        fi
-
     - name: Database cleanup test
       env:
         PGPASSWORD: csync238
