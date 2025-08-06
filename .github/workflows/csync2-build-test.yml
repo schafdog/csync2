@@ -309,7 +309,7 @@ jobs:
         fi
         
         # Run a simple test with this database
-        echo "Running basic functionality test with ${{ matrix.dn }..."
+        echo "Running basic functionality test with ${{ matrix.dn }}..."
         
         timeout 120 ./younger_auto_resolve.sh || echo "tests failed: $?" 
         #cat test-suite.log
