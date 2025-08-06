@@ -388,24 +388,7 @@ jobs:
           # Run a simple test with this database
           echo "Running basic functionality test with $db..."
           
-          # Test database connectivity based on type
-          case "$db" in
-            sqlite)
-              echo "✅ SQLite test (no external connection needed)"
-              if [ -f ../src/csync2 ]; then
-                echo "Testing csync2 binary with SQLite..."
-                timeout 30 ../src/csync2 -T || echo "Basic test completed"
-              fi
-              ;;
-            mysql)
-              echo "Testing MariaDB connectivity..."
-              mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SHOW DATABASES;" | grep -E "(csync2_local|csync2_peer)" || echo "Databases not found, continuing..."
-              ;;
-            pgsql)
-              echo "Testing PostgreSQL connectivity..."
-              PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "SELECT current_database();" || echo "Database test completed"
-              ;;
-          esac
+          timeout 120 make check
           
           echo "✅ Database $db test completed"
           echo ""
