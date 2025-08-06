@@ -414,7 +414,7 @@ jobs:
     - name: Run csync2 tests
       env:
         PGPASSWORD: csync238
-	MYSQLPASSWORD: csync238
+        MYSQLPASSWORD: csync238
       run: |
         echo "=== Running csync2 tests with different databases ==="
         
