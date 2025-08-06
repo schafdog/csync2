@@ -224,8 +224,6 @@ for flag in \
     -Woverloaded-virtual \
     -Wnon-virtual-dtor \
     -Wold-style-cast \
-    -fsanitize=address \
-    -fno-omit-frame-pointer \
     -Wconversion-null
 #    -Wzero-as-null-pointer-constant
 #    -Winline \
