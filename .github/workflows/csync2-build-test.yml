@@ -176,7 +176,7 @@ jobs:
         "
         
         # Test connection as csync2 user
-        PGPASSWORD=csync238 psql -U csync2_local -h localhost -d csync2_local -c "
+        PGPASSWORD=csync2_local psql -U csync2_local -h localhost -d csync2_local -c "
           SELECT current_user, current_database(), version();
         "
 
