@@ -139,25 +139,27 @@ jobs:
 
         # Create csync2 user (separate commands to avoid transaction issues)
         echo "Creating csync2 user..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2 WITH PASSWORD 'csync238';"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2 CREATEDB;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_local WITH PASSWORD 'csync2_local';"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_local CREATEDB;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_peer WITH PASSWORD 'csync2_peer';"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_peer CREATEDB;"
 
         # Create csync2 databases with C collation (separate commands)
         echo "Creating csync2_local database..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
 
         echo "Creating csync2_peer database..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2 LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
 
         # Grant permissions on csync2_local
         echo "Granting permissions on csync2_local..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2;"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2_local;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_local;"
 
         # Grant permissions on csync2_peer
         echo "Granting permissions on csync2_peer..."
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2;"
-        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2_peer;"
+        PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_peer;"
 
     - name: Verify PostgreSQL setup
       env:
@@ -174,7 +176,7 @@ jobs:
         "
         
         # Test connection as csync2 user
-        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
+        PGPASSWORD=csync238 psql -U csync2_local -h localhost -d csync2_local -c "
           SELECT current_user, current_database(), version();
         "
 
@@ -197,8 +199,8 @@ jobs:
 
         # Grant permissions
         echo "Granting permissions..."
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';"
-        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';"
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%' identified by 'csync2_local';"
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer';"
         mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "FLUSH PRIVILEGES;"
 
     - name: Verify MariaDB setup
@@ -217,34 +219,6 @@ jobs:
         mariadb --protocol=TCP -h 127.0.0.1 -u csync2 -pcsync238 -D csync2_local -e "
           SELECT USER(), DATABASE(), VERSION();
         "
-
-    - name: Setup and test Redis
-      run: |
-        echo "=== Setting up and testing Redis ==="
-
-        # Wait for Redis to be ready
-        until redis-cli -h localhost -p 6379 ping; do
-          echo "Waiting for Redis..."
-          sleep 2
-        done
-
-        # Test basic Redis operations
-        echo "Testing basic Redis operations..."
-        redis-cli -h localhost -p 6379 set test_key "test_value"
-        redis-cli -h localhost -p 6379 get test_key
-
-        # Test Redis info
-        echo "Redis server info:"
-        redis-cli -h localhost -p 6379 info server | head -10
-
-        # Test Redis configuration
-        echo "Redis configuration:"
-        redis-cli -h localhost -p 6379 config get "*max*" | head -10
-
-        # Clean up test data
-        redis-cli -h localhost -p 6379 del test_key
-
-        echo "✅ Redis setup and testing completed"
 
     - name: Build csync2
       run: |
@@ -339,29 +313,15 @@ jobs:
           sleep 2
           
           # Test with each database configuration
-          for db in sqlite mysql pgsql; do
+          for db in mysql pgsql sqlite; do
             echo "🔄 Running tests with database: $db"
             
             # Set database configuration
             ./set_database.sh "$db"
             
             # Run simple test if available
-            if [ -f test_simple.test ]; then
-              echo "Running simple test with $db..."
-              
-              # For non-SQLite databases, ensure they're properly set up
-              case "$db" in
-                mysql)
-                  echo "Ensuring MariaDB is ready for testing..."
-                  mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
-                  mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
-                  ;;
-                pgsql)
-                  echo "Ensuring PostgreSQL is ready for testing..."
-                  PGPASSWORD=csync238 psql -U postgres -h localhost -c "SELECT 1;" || true
-                  ;;
-              esac
-              
+            if [ -f simple.test ]; then
+              echo "Running make check with $db..."
               # Run test with timeout (continue on failure to test other databases)
               timeout 60 make check || echo "Test with $db completed with status $?"
               
@@ -371,7 +331,7 @@ jobs:
             else
               echo "No test_simple.test found for $db"
             fi
-            
+
             echo "✅ Test with $db completed"
             echo ""
           done
