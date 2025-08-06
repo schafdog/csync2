@@ -216,7 +216,7 @@ jobs:
         "
         
         # Test connection as csync2 user
-        mariadb --protocol=TCP -h 127.0.0.1 -u csync2 -pcsync238 -D csync2_local -e "
+        mariadb --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local -D csync2_local -e "
           SELECT USER(), DATABASE(), VERSION();
         "
 
