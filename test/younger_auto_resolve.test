@@ -1,3 +1,4 @@
+cmd M
 daemon d
 clean local
 clean peer
