@@ -233,6 +233,7 @@ jobs:
           # Configure with PostgreSQL support
           ./configure \
             --enable-release \
+            --disable-release \
             --enable-postgres \
             --enable-mysql \
             --enable-sqlite3 \
