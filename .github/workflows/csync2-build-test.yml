@@ -203,10 +203,10 @@ jobs:
         else 
 
           # Wait for MariaDB to be ready
-          until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" ; do
-            echo "Waiting for MariaDB..."
-            sleep 2
-          done
+#          until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" ; do
+#            echo "Waiting for MariaDB..."
+#            sleep 2
+#          done
   
           # Create csync2 databases
           echo "Creating csync2_local database..."
