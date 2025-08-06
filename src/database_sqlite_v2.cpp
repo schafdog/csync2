@@ -311,7 +311,6 @@ SQLiteConnection::~SQLiteConnection() {
     if (db_) {
         sqlite_api_->sqlite3_close(db_);
     }
-    sqlite_api_->sqlite3_shutdown(db_);
 }
 
 void SQLiteConnection::query(const std::string& sql) {
