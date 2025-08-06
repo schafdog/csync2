@@ -115,7 +115,7 @@ jobs:
           sudo apt-get update
           if [ -f src/csync2 ] ;  then
             apt-get install -y \
-              apt-get install -y libmariadb3 libhiredis1.1.0 libpq5
+              sudo apt-get install -y libmariadb3 libhiredis1.1.0 libpq5
           else 
             sudo apt-get install -y \
               build-essential \
