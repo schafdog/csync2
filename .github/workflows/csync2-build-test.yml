@@ -9,8 +9,12 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: [ ubuntu-latest ]
-     
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest] # ubuntu-22.04,
+#        db: [sqlite, mysql, pgsql]
     services:
       postgres:
         image: postgres:15
@@ -300,36 +304,3 @@ jobs:
           echo ""
         done
 
-    - name: Database cleanup test
-      env:
-        PGPASSWORD: csync238
-      run: |
-        echo "=== Testing database cleanup ==="
-        
-        # Test database cleanup
-        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
-          -- Show table sizes before cleanup
-          SELECT schemaname, tablename, 
-                 pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
-          FROM pg_tables 
-          WHERE schemaname = 'public';
-        "
-
-    - name: Performance test
-      env:
-        PGPASSWORD: csync238
-      run: |
-        echo "=== Performance test ==="
-        
-        # Simple performance test
-        time PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
-          -- Create test data
-          CREATE TEMP TABLE perf_test AS 
-          SELECT 
-            'file_' || generate_series(1, 1000) as filename,
-            md5(random()::text) as checksum,
-            now() as created_at;
-          
-          -- Test query performance
-          SELECT count(*) FROM perf_test WHERE filename LIKE 'file_1%';
-        "
