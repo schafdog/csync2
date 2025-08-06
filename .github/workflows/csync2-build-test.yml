@@ -95,8 +95,9 @@ jobs:
         path: |
           src/csync2
           csync2
-          config.h
+          src/config.h
           Makefile
+          test/Makefile
           .deps/
           .libs/
         key: ${{ steps.cache-key.outputs.cache-key }}
@@ -300,7 +301,7 @@ jobs:
         cd test
         
         # Test each database type
-        for db in sqlite mysql pgsql; do
+        for db in mysql pgsql sqlite; do
           echo "🔄 Testing with database: $db"
           
           # Set the database configuration
