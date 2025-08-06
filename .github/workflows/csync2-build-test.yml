@@ -242,6 +242,7 @@ jobs:
           # Build with enhanced warnings (silent mode for clean output)
           make -j$(nproc) V=1
         fi
+
     - name: Check warning count
       run: |
         echo "=== Checking compiler warnings ==="
