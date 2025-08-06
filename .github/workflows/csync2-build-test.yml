@@ -237,12 +237,10 @@ jobs:
             --enable-postgres \
             --enable-mysql \
             --enable-sqlite3 \
-            --enable-redis \
-            --with-libpq-includes=/usr/include/postgresql \
-            --with-libpq-libs=/usr/lib/x86_64-linux-gnu
+            --enable-redis
           
           # Build with enhanced warnings (silent mode for clean output)
-          make -j$(nproc)
+          make -j$(nproc) V=1
         fi
     - name: Check warning count
       run: |
