@@ -182,30 +182,30 @@ jobs:
         echo "=== Setting up MariaDB for csync2 ==="
 
         # Wait for MariaDB to be ready
-        until mariadb -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
+        until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
           echo "Waiting for MariaDB..."
           sleep 2
         done
 
         # Create csync2 databases
         echo "Creating csync2_local database..."
-        mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
 
         echo "Creating csync2_peer database..."
-        mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
 
         # Grant permissions
         echo "Granting permissions..."
-        mariadb -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';"
-        mariadb -h localhost -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';"
-        mariadb -h localhost -u root -pcsync238 -e "FLUSH PRIVILEGES;"
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2'@'%';"
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2'@'%';"
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "FLUSH PRIVILEGES;"
 
     - name: Verify MariaDB setup
       run: |
         echo "=== Verifying MariaDB setup ==="
         
         # Check database setup
-        mariadb -h localhost -u root -pcsync238 -e "
+        mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "
           SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME 
           FROM information_schema.SCHEMATA 
           WHERE SCHEMA_NAME LIKE 'csync2_%' 
@@ -213,7 +213,7 @@ jobs:
         "
         
         # Test connection as csync2 user
-        mariadb -h localhost -u csync2 -pcsync238 -D csync2_local -e "
+        mariadb --protocol=TCP -h 127.0.0.1 -u csync2 -pcsync238 -D csync2_local -e "
           SELECT USER(), DATABASE(), VERSION();
         "
 
@@ -399,7 +399,7 @@ jobs:
               ;;
             mysql)
               echo "Testing MariaDB connectivity..."
-              mariadb -h localhost -u root -pcsync238 -e "SHOW DATABASES;" | grep -E "(csync2_local|csync2_peer)" || echo "Databases not found, continuing..."
+              mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SHOW DATABASES;" | grep -E "(csync2_local|csync2_peer)" || echo "Databases not found, continuing..."
               ;;
             pgsql)
               echo "Testing PostgreSQL connectivity..."
@@ -440,8 +440,8 @@ jobs:
               case "$db" in
                 mysql)
                   echo "Ensuring MariaDB is ready for testing..."
-                  mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
-                  mariadb -h localhost -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
+                  mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;" || true
+                  mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;" || true
                   ;;
                 pgsql)
                   echo "Ensuring PostgreSQL is ready for testing..."
