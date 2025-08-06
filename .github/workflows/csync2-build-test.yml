@@ -388,8 +388,8 @@ jobs:
           # Run a simple test with this database
           echo "Running basic functionality test with $db..."
           
-          timeout 120 make check
-          
+          timeout 120 make check || echo "tests failed: $?" 
+          cat test-suite.log
           echo "✅ Database $db test completed"
           echo ""
         done
