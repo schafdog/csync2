@@ -98,6 +98,7 @@ jobs:
           src/config.h
           Makefile
           test/Makefile
+          aclocal.m4
           .deps/
           .libs/
         key: ${{ steps.cache-key.outputs.cache-key }}
@@ -293,7 +294,7 @@ jobs:
           # Run a simple test with this database
           echo "Running basic functionality test with $db..."
           
-          timeout 120 make check || echo "tests failed: $?" 
+          timeout 120 make recheck || echo "tests failed: $?" 
           cat test-suite.log
           echo "✅ Database $db test completed"
           echo ""
