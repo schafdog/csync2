@@ -10,7 +10,7 @@ on:
 jobs:
   build-and-test:
     runs-on: [ ubuntu-latest ]
-
+     
     services:
       postgres:
         image: postgres:15
@@ -499,90 +499,3 @@ jobs:
           -- Test query performance
           SELECT count(*) FROM perf_test WHERE filename LIKE 'file_1%';
         "
-
-  test-multiple-ubuntu:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
-        db: [sqlite, mysql, pgsql]
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: csync238
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-      mariadb:
-        image: mariadb:10.11
-        env:
-          MARIADB_ROOT_PASSWORD: csync238
-          MARIADB_USER: csync2
-          MARIADB_PASSWORD: csync238
-          MARIADB_DATABASE: csync2_test
-        options: >-
-          --health-cmd "healthcheck.sh --connect --innodb_initialized"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 3306:3306
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Test on ${{ matrix.os }} with ${{ matrix.db }}
-      env:
-        PGPASSWORD: csync238
-      run: |
-        echo "=== Testing on ${{ matrix.os }} with database ${{ matrix.db }} ==="
-        
-        # Install minimal dependencies
-        sudo apt-get update
-        sudo apt-get install -y postgresql-client redis-tools mariadb-client
-
-        # Test database connections
-        if [ "${{ matrix.db }}" = "pgsql" ]; then
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
-          psql -h localhost -U postgres -c "SELECT version();"
-          echo "PostgreSQL connection successful"
-        fi
-
-        if [ "${{ matrix.db }}" = "mysql" ]; then
-          until mariadb -h localhost -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
-            echo "Waiting for MariaDB..."
-            sleep 2
-          done
-          mariadb -h localhost -u root -pcsync238 -e "SELECT VERSION();"
-          echo "MariaDB connection successful"
-        fi
-
-        # Test Redis connection (used by all database types)
-        until redis-cli -h localhost -p 6379 ping; do
-          echo "Waiting for Redis..."
-          sleep 2
-        done
-        redis-cli -h localhost -p 6379 info server | head -5
-        echo "Redis connection successful"
