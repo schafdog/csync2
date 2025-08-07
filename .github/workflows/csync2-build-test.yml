@@ -140,8 +140,10 @@ jobs:
       env:
         PGPASSWORD: csync238
       run: |
-        echo "=== Setting up ${{ matrix.db }} for csync2 ==="  
-        ./test/create_${{ matrix.db }}.sh
+        echo "=== Setting up ${{ matrix.db }} for csync2 ==="
+        if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
+          ./test/create_${{ matrix.db }}.sh
+        fi
   
     - name: Verify PostgreSQL setup
       env:
