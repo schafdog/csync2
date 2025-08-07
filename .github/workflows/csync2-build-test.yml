@@ -87,7 +87,7 @@ jobs:
         DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
         
         # Combine hashes
-        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
+        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}-${{ matrix.os }}" | sha256sum | cut -d' ' -f1 | head -c 16)"
         
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
@@ -136,44 +136,13 @@ jobs:
           fi
         fi
 
-    - name: Setup Postgresql for csync2 on ${{ matrix.os }}
+    - name: Setup ${{ matrix.db }} for csync2 on ${{ matrix.os }}
       env:
         PGPASSWORD: csync238
       run: |
-        echo "=== Setting up PostgreSQL for csync2 ==="  
-        if [ "${{ matrix.db }}" != "pgsql" ]; then
-          echo "Not Postgres"
-        else 
-          # Wait for PostgreSQL to be ready
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
+        echo "=== Setting up ${{ matrix.db }} for csync2 ==="  
+	./create_${{ matrix.db }}.sh
   
-          # Create csync2 user (separate commands to avoid transaction issues)
-          echo "Creating csync2 user..."
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_local WITH PASSWORD 'csync2_local';"
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_local CREATEDB;"
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_peer WITH PASSWORD 'csync2_peer';"
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "ALTER USER csync2_peer CREATEDB;"
-  
-          # Create csync2 databases with C collation (separate commands)
-          echo "Creating csync2_local database..."
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
-  
-          echo "Creating csync2_peer database..."
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2_local LC_COLLATE='C' LC_CTYPE='C' TEMPLATE template0;"
-  
-          # Grant permissions on csync2_local
-          echo "Granting permissions on csync2_local..."
-          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON DATABASE csync2_local TO csync2_local;"
-          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_local -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_local;"
-  
-          # Grant permissions on csync2_peer
-          echo "Granting permissions on csync2_peer..."
-          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON DATABASE csync2_peer TO csync2_peer;"
-          PGPASSWORD=csync238 psql -h localhost -U postgres -d csync2_peer -c "GRANT ALL PRIVILEGES ON SCHEMA public TO csync2_peer;"
-        fi
     - name: Verify PostgreSQL setup
       env:
         PGPASSWORD: csync238
@@ -195,33 +164,6 @@ jobs:
           "
         fi
 
-    - name: Setup MariaDB for csync2
-      run: |
-        echo "=== Setting up MariaDB for csync2 ==="
-        if [ "${{ matrix.db }}" != "mysql" ]; then
-          echo "Not MySQL"
-        else 
-
-          # Wait for MariaDB to be ready
-          # until mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" ; do
-          # echo "Waiting for MariaDB..."
-          # sleep 2
-          # done
-
-          # Create csync2 databases
-          echo "Creating csync2_local database..."
-          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
-  
-          echo "Creating csync2_peer database..."
-          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;"
-  
-          # Grant permissions
-          echo "Granting permissions..."
-          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%' identified by 'csync2_local';"
-          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer';"
-          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "FLUSH PRIVILEGES;"
-        fi
- 
     - name: Verify MariaDB setup
       run: |
         echo "=== Verifying MariaDB setup ==="
