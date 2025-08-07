@@ -100,12 +100,12 @@ jobs:
           src/csync2
           csync2
           src/config.h
+          config.status
           Makefile
           test/Makefile
-          aclocal.m4
           .deps/
           .libs/
-        key: ${{ steps.cache-key.outputs.cache-key }}-dummy
+        key: ${{ steps.cache-key.outputs.cache-key }}
         restore-keys: |
           build-
 
@@ -168,8 +168,8 @@ jobs:
           PGPASSWORD=csync2_peer psql -U csync2_peer -h localhost -d csync2_peer -c "
             SELECT current_user, current_database(), version();
           "
-          echo "SELECT current_user, current_database(), version();" | ./connect_pgsql.sh local
-          echo "SELECT current_user, current_database(), version();" | ./connect_pgsql.sh peer
+          echo "SELECT current_user, current_database(), version();" | ./test/connect_pgsql.sh local
+          echo "SELECT current_user, current_database(), version();" | ./test/connect_pgsql.sh peer
         fi
 
     - name: Verify MariaDB setup
@@ -211,6 +211,21 @@ jobs:
           # Build with enhanced warnings (silent mode for clean output)
           make -j$(nproc) V=1
         fi
+
+    - name: Save build cache
+      if: steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          src/csync2
+          csync2
+          src/config.h
+          config.status
+          Makefile
+          test/Makefile
+          .deps/
+          .libs/
+        key: ${{ steps.cache-key.outputs.cache-key }}
 
     - name: Check warning count on ${{ matrix.os }}
       run: |
