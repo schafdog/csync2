@@ -72,7 +72,7 @@ struct SQLiteAPI {
     sqlite3_db_handle_t sqlite3_db_handle;
     sqlite3_changes_t sqlite3_changes;
     sqlite3_free_t sqlite3_free;
-    sqlite3_free_t sqlite3_shutdown;
+    sqlite3_shutdown_t sqlite3_shutdown;
 
     SQLiteAPI() {
         const char* lib_name = get_sqlite_library_name();
@@ -105,11 +105,12 @@ struct SQLiteAPI {
         sqlite3_db_handle = reinterpret_cast<sqlite3_db_handle_t>(dlsym(handle_, "sqlite3_db_handle"));
         sqlite3_changes = reinterpret_cast<sqlite3_changes_t>(dlsym(handle_, "sqlite3_changes"));
         sqlite3_free = reinterpret_cast<sqlite3_free_t>(dlsym(handle_, "sqlite3_free"));
-        sqlite3_shutdown = reinterpret_cast<sqlite3_free_t>(dlsym(handle_, "sqlite3_shutdown"));
+        sqlite3_shutdown = reinterpret_cast<sqlite3_shutdown_t>(dlsym(handle_, "sqlite3_shutdown"));
     }
 
     ~SQLiteAPI() {
         if (handle_) {
+	    sqlite3_shutdown();
             dlclose(handle_);
         }
     }
