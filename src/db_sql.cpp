@@ -82,8 +82,10 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 		int dev_inode;
 		if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
 		{
-			csync_info(1, "File {} has changed device:inode {}:{} -> {}:{} {:o} \n",
-					   filename.c_str(), device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
+			// Happens on macos when dir <-> file
+			csync_info(3, "File {} has changed device:inode {}:{} -> {}:{} {:o} \n",
+					   filename.c_str(), device.c_str(), inode.c_str(),
+					   file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
 
 			if (dev_inode == DEV_CHANGED)
 			{
