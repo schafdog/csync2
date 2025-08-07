@@ -215,6 +215,7 @@ public:
 
     ~SQLitePreparedStatement() override {
         if (stmt_) {
+	    csync_debug(1, "SQLitePreparedStatement finalizing\n");
             api_->sqlite3_finalize(stmt_);
         }
     }
