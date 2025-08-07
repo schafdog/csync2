@@ -131,7 +131,7 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 	if (new_version > 2)
 		return DB_ERROR;
 
-	csync_info(1, "Upgrading database schema to version {}.", new_version);
+	csync_info(3, "Upgrading database schema to version {}.", new_version);
 
 	std::string sql =
 			"CREATE TABLE IF NOT EXISTS action ("
