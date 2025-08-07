@@ -105,7 +105,7 @@ jobs:
           aclocal.m4
           .deps/
           .libs/
-        key: ${{ steps.cache-key.outputs.cache-key }}
+        key: ${{ steps.cache-key.outputs.cache-key }}-dummy
         restore-keys: |
           build-
 
