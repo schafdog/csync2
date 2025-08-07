@@ -109,7 +109,7 @@ struct SQLiteAPI {
     }
 
     ~SQLiteAPI() {
-	csync_debug(1, "Close SQLite API\n");
+	csync_debug(3, "Close SQLite API\n");
         if (handle_) {
 	    sqlite3_shutdown();
             dlclose(handle_);
@@ -216,7 +216,7 @@ public:
 
     ~SQLitePreparedStatement() override {
         if (stmt_) {
-	    csync_debug(1, "SQLitePreparedStatement finalizing\n");
+	    csync_debug(3, "SQLitePreparedStatement finalizing\n");
             api_->sqlite3_finalize(stmt_);
         }
     }
@@ -313,7 +313,7 @@ SQLiteConnection::SQLiteConnection(sqlite3 *db) : db_(db) {
 SQLiteConnection::~SQLiteConnection() {
     // Need to finalize stmts before DB close.
     named_statements_.clear();
-    csync_debug(1, "Now closing DB\n");
+    csync_debug(3, "Now closing DB\n");
     if (db_) {
         sqlite_api_->sqlite3_close(db_);
     }
