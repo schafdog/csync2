@@ -30,17 +30,13 @@ jobs:
         DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
         
         # Combine hashes
-        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)-${{ matrix.os }}"
+        CACHE_KEY="build-${{ matrix.os }}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
 
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
 
-    - name: Debug cache key
-      run: |
-        echo "🔍 Debug: Retrieved cache key from step output: '${{ steps.build-cache-key.outputs.cache-key }}'"
-
     - name: Restore build cache
-      id: cache-restore
+      id: build-cache-restore
       uses: actions/cache@v4
       with:
         path: |
@@ -198,7 +194,7 @@ jobs:
         DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
 
         # Combine hashes
-        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}-${{ matrix.os }}" | sha256sum | cut -d' ' -f1 | head -c 16)"
+        CACHE_KEY="build-${{ matrix.os }}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
 
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
@@ -343,7 +339,7 @@ jobs:
         ping -c 1 peer || true
 
     - name: Calculate build cache key
-      id: test-cache-key
+      id: test-cache-key-macos
       run: |
         # Create a hash of source files and build configuration
         echo "Calculating build cache key..."
@@ -359,6 +355,10 @@ jobs:
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
 
+    - name: Debug cache key
+      run: |
+        echo "🔍 Debug: Retrieved cache key from step output: '${{ steps.test-cache-key.outputs.cache-key }}'"
+
     - name: Restore build cache
       id: test-cache-restore
       uses: actions/cache@v4
@@ -372,7 +372,7 @@ jobs:
           test/Makefile
           .deps/
           .libs/
-        key: ${{ steps.test-cache-key.outputs.cache-key }}
+        key: ${{ steps.test-cache-key-macos..outputs.cache-key }}
 
     - name: Install dependencies
       run: |
