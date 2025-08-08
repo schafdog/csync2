@@ -54,7 +54,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-       if [ "${{ matrix.os }}" != "macOs" ] ; then      
+       if [ "${{ matrix.os }}" != "macOS" ] ; then      
           sudo apt-get update
           if [ -f not ] ;  then
             sudo apt-get install  -y libmariadb3 libhiredis1.1.0 libpq5 librsync libgnutls30t64 
