@@ -14,65 +14,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macOS ] # ubuntu-22.04,
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: csync238
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-      mariadb:
-        image: mariadb:10.11
-        env:
-          MARIADB_ROOT_PASSWORD: csync238
-          MARIADB_USER: csync2
-          MARIADB_PASSWORD: csync238
-          MARIADB_DATABASE: csync2_test
-        options: >-
-          --health-cmd "healthcheck.sh --connect --innodb_initialized"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 3306:3306
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Setup host aliases for csync2 testing
-      run: |
-        echo "=== Setting up host aliases for csync2 ==="
-
-        # Add csync2-specific host aliases to /etc/hosts
-        sudo tee -a /etc/hosts << 'EOF'
-        # csync2 test environment hosts
-        127.0.0.1 local
-        127.0.0.1 peer
-        EOF
-
-        # Test hostname resolution
-        echo "Testing hostname resolution:"
-        nslookup local || true
-        ping -c 1 peer || true
 
     - name: Calculate build cache key
       id: cache-key
