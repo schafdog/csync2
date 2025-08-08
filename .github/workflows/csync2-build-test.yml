@@ -350,7 +350,7 @@ jobs:
         DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
 
         # Combine hashes
-        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}-${{ matrix.os }}" | sha256sum | cut -d' ' -f1 | head -c 16)"
+        CACHE_KEY="build-${{ matrix.os}}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}-${{ matrix.os }}" | sha256sum | cut -d' ' -f1 | head -c 16)"
 
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
