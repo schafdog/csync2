@@ -140,55 +140,21 @@ jobs:
       env:
         PGPASSWORD: csync238
       run: |
-        echo "=== Setting up ${{ matrix.db }} for csync2 ==="
         if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
+          echo "=== Setting up ${{ matrix.db }} for csync2 ==="
           ./test/create_${{ matrix.db }}.sh
         fi
   
-    - name: Verify PostgreSQL setup
+    - name: Verify ${{ matrix.db }} setup
       env:
         PGPASSWORD: csync238
       run: |
-        echo "=== Verifying PostgreSQL setup ==="
-        if [ "${{ matrix.db }}" == "pgsql" ]; then
-          echo "Not Postgres"
-          # Check database collation
-          psql -h localhost -U postgres -c "
-            SELECT datname, datcollate, datctype 
-            FROM pg_database 
-            WHERE datname LIKE 'csync2_%' 
-            ORDER BY datname;
-          "
-          
-          # Test connection as csync2_local
-          PGPASSWORD=csync2_local psql -U csync2_local -h localhost -d csync2_local -c "
-            SELECT current_user, current_database(), version();
-          "
-          # Test connection as csync2_peer
-          PGPASSWORD=csync2_peer psql -U csync2_peer -h localhost -d csync2_peer -c "
-            SELECT current_user, current_database(), version();
-          "
-          echo "SELECT current_user, current_database(), version();" | ./test/connect_pgsql.sh local
-          echo "SELECT current_user, current_database(), version();" | ./test/connect_pgsql.sh peer
+        if [ -f ./test/verify_${{ matrix.db }}.sh ] ; then
+           echo "=== Verifying ${{ matrix.db }} setup ==="
+           ./test/verify_${{ matrix.db }}.sh
         fi
-
     - name: Verify MariaDB setup
       run: |
-        echo "=== Verifying MariaDB setup ==="
-        if [ "${{ matrix.db }}" == "mysql" ]; then
-          # Check database setup
-          mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "
-            SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME 
-            FROM information_schema.SCHEMATA 
-            WHERE SCHEMA_NAME LIKE 'csync2_%' 
-            ORDER BY SCHEMA_NAME;
-          "
-        
-          # Test connection as csync2 user
-          mariadb --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local -D csync2_local -e "
-            SELECT USER(), DATABASE(), VERSION();
-          "
-        fi
 
     - name: Build csync2 on ${{ matrix.os }}
       run: |
