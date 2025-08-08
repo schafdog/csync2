@@ -136,26 +136,6 @@ jobs:
           fi
         fi
 
-    - name: Setup ${{ matrix.db }} for csync2 on ${{ matrix.os }}
-      env:
-        PGPASSWORD: csync238
-      run: |
-        if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
-          echo "=== Setting up ${{ matrix.db }} for csync2 ==="
-          ./test/create_${{ matrix.db }}.sh
-        fi
-  
-    - name: Verify ${{ matrix.db }} setup
-      env:
-        PGPASSWORD: csync238
-      run: |
-        if [ -f ./test/verify_${{ matrix.db }}.sh ] ; then
-           echo "=== Verifying ${{ matrix.db }} setup ==="
-           ./test/verify_${{ matrix.db }}.sh
-        fi
-    - name: Verify MariaDB setup
-      run: |
-
     - name: Build csync2 on ${{ matrix.os }}
       run: |
         echo "=== Building csync2 ==="
@@ -192,6 +172,24 @@ jobs:
           .deps/
           .libs/
         key: ${{ steps.cache-key.outputs.cache-key }}
+
+    - name: Setup ${{ matrix.db }} for csync2 on ${{ matrix.os }}
+      env:
+        PGPASSWORD: csync238
+      run: |
+        if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
+          echo "=== Setting up ${{ matrix.db }} for csync2 ==="
+          ./test/create_${{ matrix.db }}.sh
+        fi
+  
+    - name: Verify ${{ matrix.db }} setup
+      env:
+        PGPASSWORD: csync238
+      run: |
+        if [ -f ./test/verify_${{ matrix.db }}.sh ] ; then
+           echo "=== Verifying ${{ matrix.db }} setup ==="
+           ./test/verify_${{ matrix.db }}.sh
+        fi
 
     - name: Check warning count on ${{ matrix.os }}
       run: |
