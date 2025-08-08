@@ -372,7 +372,7 @@ jobs:
           test/Makefile
           .deps/
           .libs/
-        key: ${{ steps.test-cache-key-macos..outputs.cache-key }}
+        key: ${{ steps.test-cache-key-macos.outputs.cache-key }}
 
     - name: Install dependencies
       run: |
