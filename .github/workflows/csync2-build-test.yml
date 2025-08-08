@@ -100,9 +100,9 @@ jobs:
           src/csync2
           csync2
           src/config.h
+          config.status
           Makefile
           test/Makefile
-          aclocal.m4
           .deps/
           .libs/
         key: ${{ steps.cache-key.outputs.cache-key }}
@@ -140,8 +140,10 @@ jobs:
       env:
         PGPASSWORD: csync238
       run: |
-        echo "=== Setting up ${{ matrix.db }} for csync2 ==="  
-	./create_${{ matrix.db }}.sh
+        echo "=== Setting up ${{ matrix.db }} for csync2 ==="
+        if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
+          ./test/create_${{ matrix.db }}.sh
+        fi
   
     - name: Verify PostgreSQL setup
       env:
@@ -158,10 +160,16 @@ jobs:
             ORDER BY datname;
           "
           
-          # Test connection as csync2 user
+          # Test connection as csync2_local
           PGPASSWORD=csync2_local psql -U csync2_local -h localhost -d csync2_local -c "
             SELECT current_user, current_database(), version();
           "
+          # Test connection as csync2_peer
+          PGPASSWORD=csync2_peer psql -U csync2_peer -h localhost -d csync2_peer -c "
+            SELECT current_user, current_database(), version();
+          "
+          echo "SELECT current_user, current_database(), version();" | ./test/connect_pgsql.sh local
+          echo "SELECT current_user, current_database(), version();" | ./test/connect_pgsql.sh peer
         fi
 
     - name: Verify MariaDB setup
@@ -203,6 +211,21 @@ jobs:
           # Build with enhanced warnings (silent mode for clean output)
           make -j$(nproc) V=1
         fi
+
+    - name: Save build cache
+      if: steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          src/csync2
+          csync2
+          src/config.h
+          config.status
+          Makefile
+          test/Makefile
+          .deps/
+          .libs/
+        key: ${{ steps.cache-key.outputs.cache-key }}
 
     - name: Check warning count on ${{ matrix.os }}
       run: |
