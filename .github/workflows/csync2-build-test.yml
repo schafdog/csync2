@@ -8,13 +8,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest] # ubuntu-22.04,
-        db: [sqlite, mysql, pgsql]
     services:
       postgres:
         image: postgres:15
@@ -172,6 +171,135 @@ jobs:
           .deps/
           .libs/
         key: ${{ steps.cache-key.outputs.cache-key }}
+
+  test:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest] # ubuntu-22.04,
+        db: [sqlite, mysql, pgsql]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: csync238
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: csync238
+          MARIADB_USER: csync2
+          MARIADB_PASSWORD: csync238
+          MARIADB_DATABASE: csync2_test
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 3306:3306
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup host aliases for csync2 testing
+      run: |
+        echo "=== Setting up host aliases for csync2 ==="
+
+        # Add csync2-specific host aliases to /etc/hosts
+        sudo tee -a /etc/hosts << 'EOF'
+        # csync2 test environment hosts
+        127.0.0.1 local
+        127.0.0.1 peer
+        EOF
+
+        # Test hostname resolution
+        echo "Testing hostname resolution:"
+        nslookup local || true
+        ping -c 1 peer || true
+
+    - name: Calculate build cache key
+      id: cache-key
+      run: |
+        # Create a hash of source files and build configuration
+        echo "Calculating build cache key..."
+        
+        # Hash source files, headers, and build scripts
+        SOURCES_HASH=$(find src/ -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" | sort | xargs cat | sha256sum | cut -d' ' -f1)
+        CONFIG_HASH=$(cat configure.ac Makefile.am | sha256sum | cut -d' ' -f1)
+        DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
+        
+        # Combine hashes
+        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}-${{ matrix.os }}" | sha256sum | cut -d' ' -f1 | head -c 16)"
+        
+        echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+        echo "🔑 Build cache key: ${CACHE_KEY}"
+
+    - name: Restore build cache
+      id: cache-restore
+      uses: actions/cache@v4
+      with:
+        path: |
+          src/csync2
+          csync2
+          src/config.h
+          config.status
+          Makefile
+          test/Makefile
+          .deps/
+          .libs/
+        key: ${{ steps.cache-key.outputs.cache-key }}
+        restore-keys: |
+          build-
+
+    - name: Install dependencies
+      run: |
+       if [ "${{ matrix.os }}" != "macos" ] ; then      
+          sudo apt-get update
+          if [ -f not ] ;  then
+            sudo apt-get install  -y libmariadb3 libhiredis1.1.0 libpq5 librsync libgnutls30t64 
+          else 
+            sudo apt-get install -y \
+              build-essential \
+              autoconf \
+              automake \
+              pkg-config \
+              bison \
+              flex \
+              libgnutls28-dev \
+              libsqlite3-dev \
+              libmariadb-dev \
+              postgresql-client \
+              libpq-dev \
+              libhiredis-dev \
+              libssl-dev \
+              librsync-dev \
+              redis-tools \
+              mariadb-client
+          fi
+        fi
 
     - name: Setup ${{ matrix.db }} for csync2 on ${{ matrix.os }}
       env:
