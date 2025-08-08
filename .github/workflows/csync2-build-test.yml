@@ -53,8 +53,6 @@ jobs:
           .deps/
           .libs/
         key: ${{ steps.build-cache-key.outputs.cache-key }}
-        restore-keys: |
-          build-
 
     - name: Install dependencies
       run: |
@@ -219,8 +217,6 @@ jobs:
           .deps/
           .libs/
         key: ${{ steps.test-cache-key.outputs.cache-key }}
-        restore-keys: |
-          build-
 
     - name: Install dependencies
       run: |
