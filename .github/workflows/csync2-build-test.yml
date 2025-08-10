@@ -345,7 +345,7 @@ jobs:
         DEPS_HASH=$(./test/deps_hash.sh)
         echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY="build-${{ matrix.os}}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}-${{ matrix.os }}" | sha256sum | cut -d' ' -f1 | head -c 16)"
+        CACHE_KEY="build-${{ matrix.os}}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
 
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
