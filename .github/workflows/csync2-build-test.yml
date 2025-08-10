@@ -314,9 +314,8 @@ jobs:
         fi
         
         # Run a simple test with this database
-        echo "Running basic functionality test with ${{ matrix.dn }}..."
-        
-        timeout 120 ./younger_auto_resolve.sh
+        echo "Running 'make check' with ${{ matrix.dn }}..."
+        make check
 
   test-macos:
     needs: build
@@ -441,5 +440,5 @@ jobs:
         echo "Running basic functionality test with ${{ matrix.dn }}..."
 
         # No timeout on macOS
-        ./younger_auto_resolve.sh
+        make check
 
