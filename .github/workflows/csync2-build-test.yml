@@ -214,6 +214,10 @@ jobs:
         path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.test-cache-key.outputs.cache-key }}
 
+    - name: Verify cache restoration
+      run: |
+        ./test/verify_cache.sh "${{ steps.test-cache-restore.outputs.cache-hit }}" "${{ steps.test-cache-key.outputs.cache-key }}" "test job"
+
     - name: Install dependencies
       run: |
        if [ "${{ matrix.os }}" != "macOS" ] ; then
@@ -354,6 +358,10 @@ jobs:
       with:
         path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.test-cache-key-macos.outputs.cache-key }}
+
+    - name: Verify cache restoration
+      run: |
+        ./test/verify_cache.sh "${{ steps.test-cache-restore.outputs.cache-hit }}" "${{ steps.test-cache-key-macos.outputs.cache-key }}" "test-macos job"
 
     - name: Install dependencies
       run: |
