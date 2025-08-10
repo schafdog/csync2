@@ -26,13 +26,13 @@ jobs:
         
         # Hash source files, headers, and build scripts
         SOURCES_HASH=$(./test/source_hash.sh)
-        echo "SOURCE_HASH $SOURCE_HASH"
+        echo "SOURCES_HASH $SOURCES_HASH"
         CONFIG_HASH=$(./test/config_hash.sh)
         echo "CONFIG_HASH $CONFIG_HASH"
         DEPS_HASH=$(./test/deps_hash.sh)
         echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY="build-${{ matrix.os }}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
+        CACHE_KEY=$(combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
 
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
@@ -198,8 +198,7 @@ jobs:
         DEPS_HASH=$(./test/deps_hash.sh)
         echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY="build-${{ matrix.os }}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
-
+        CACHE_KEY=$(combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
 
@@ -345,8 +344,7 @@ jobs:
         DEPS_HASH=$(./test/deps_hash.sh)
         echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY="build-${{ matrix.os}}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
-
+        CACHE_KEY=$(combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
 
@@ -441,6 +439,7 @@ jobs:
         
         # Run a simple test with this database
         echo "Running basic functionality test with ${{ matrix.dn }}..."
-        
-        timeout 120 ./younger_auto_resolve.sh
+
+        # No timeout on macOS
+        ./younger_auto_resolve.sh
 
