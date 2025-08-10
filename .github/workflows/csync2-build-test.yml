@@ -25,10 +25,12 @@ jobs:
         echo "Calculating build cache key..."
         
         # Hash source files, headers, and build scripts
-        SOURCES_HASH=$(find src/ \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) -type f | sort | xargs -r cat | sha256sum | cut -d' ' -f1)
-        CONFIG_HASH=$(cat configure.ac Makefile.am | sha256sum | cut -d' ' -f1)
-        DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
-        
+        SOURCES_HASH=$(./test/source_hash.sh)
+        echo "SOURCE_HASH $SOURCE_HASH"
+        CONFIG_HASH=$(./test/config_hash.sh)
+        echo "CONFIG_HASH $CONFIG_HASH"
+        DEPS_HASH=$(./test/deps_hash.sh)
+        echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
         CACHE_KEY="build-${{ matrix.os }}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
 
@@ -189,10 +191,12 @@ jobs:
         echo "Calculating build cache key..."
         
         # Hash source files, headers, and build scripts
-        SOURCES_HASH=$(find src/ \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) -type f | sort | xargs -r cat | sha256sum | cut -d' ' -f1)
-        CONFIG_HASH=$(cat configure.ac Makefile.am | sha256sum | cut -d' ' -f1)
-        DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
-
+        SOURCES_HASH=$(./test/source_hash.sh)
+        echo "SOURCE_HASH $SOURCE_HASH"
+        CONFIG_HASH=$(./test/config_hash.sh)
+        echo "CONFIG_HASH $CONFIG_HASH"
+        DEPS_HASH=$(./test/deps_hash.sh)
+        echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
         CACHE_KEY="build-${{ matrix.os }}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
 
@@ -334,10 +338,12 @@ jobs:
         echo "Calculating build cache key..."
         
         # Hash source files, headers, and build scripts
-        SOURCES_HASH=$(find src/ \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) -type f | sort | xargs -r cat | sha256sum | cut -d' ' -f1)
-        CONFIG_HASH=$(cat configure.ac Makefile.am | sha256sum | cut -d' ' -f1)
-        DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
-
+        SOURCES_HASH=$(./test/source_hash.sh)
+        echo "SOURCE_HASH $SOURCE_HASH"
+        CONFIG_HASH=$(./test/config_hash.sh)
+        echo "CONFIG_HASH $CONFIG_HASH"
+        DEPS_HASH=$(./test/deps_hash.sh)
+        echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
         CACHE_KEY="build-${{ matrix.os}}-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}-${{ matrix.os }}" | sha256sum | cut -d' ' -f1 | head -c 16)"
 
