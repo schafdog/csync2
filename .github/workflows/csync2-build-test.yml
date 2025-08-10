@@ -326,6 +326,50 @@ jobs:
         echo "Running 'make check' with ${{ matrix.dn }}..."
         make test-only
 
+    - name: Upload test results on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.db }}
+        path: |
+          test/*.log
+          test/*.trs
+          test/test-suite.log
+          test/*/*.log
+          test/*/*.diff
+        retention-days: 7
+
+    - name: Send email notification on failure
+      if: failure()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "❌ Csync2 Test Failed - ${{ matrix.os }}-${{ matrix.db }}"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: GitHub Actions <${{ secrets.SMTP_USERNAME }}>
+        body: |
+          Test failure detected in csync2 repository!
+          
+          **Details:**
+          - Repository: ${{ github.repository }}
+          - Branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          - OS: ${{ matrix.os }}
+          - Database: ${{ matrix.db }}
+          - Workflow: ${{ github.workflow }}
+          - Run: ${{ github.run_number }}
+          
+          **View Details:**
+          - Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - Download Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          **Test Logs:**
+          Check the uploaded artifacts for detailed test logs and failure information.
+        attachments: test/test-suite.log
+
   test-macos:
     needs: build
     runs-on: ${{ matrix.os }}
@@ -433,4 +477,48 @@ jobs:
 
         # No timeout on macOS
         make test-only
+
+    - name: Upload test results on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.db }}
+        path: |
+          test/*.log
+          test/*.trs
+          test/test-suite.log
+          test/*/*.log
+          test/*/*.diff
+        retention-days: 7
+
+    - name: Send email notification on failure
+      if: failure()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "❌ Csync2 Test Failed - ${{ matrix.os }}-${{ matrix.db }}"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: GitHub Actions <${{ secrets.SMTP_USERNAME }}>
+        body: |
+          Test failure detected in csync2 repository!
+          
+          **Details:**
+          - Repository: ${{ github.repository }}
+          - Branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          - OS: ${{ matrix.os }}
+          - Database: ${{ matrix.db }}
+          - Workflow: ${{ github.workflow }}
+          - Run: ${{ github.run_number }}
+          
+          **View Details:**
+          - Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - Download Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          **Test Logs:**
+          Check the uploaded artifacts for detailed test logs and failure information.
+        attachments: test/test-suite.log
 
