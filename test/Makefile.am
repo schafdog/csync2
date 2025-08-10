@@ -21,6 +21,12 @@ CONFIG_CLEAN_FILES=*.log *.dif
 clean-local:
 	rm -f *.log *.dif
 
+# Run tests without checking if csync2 binary is up to date
+# Use this target when csync2 binary is known to be current (e.g., from cache)
+# This uses the same test framework as 'make check' but skips SUBDIRS dependency
+test-only: $(check_SCRIPTS)
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
+
 # Pattern rules replaced with explicit targets for portability
 # Use: make <testname> to run individual tests
 

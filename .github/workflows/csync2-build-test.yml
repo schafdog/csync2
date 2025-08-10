@@ -317,7 +317,7 @@ jobs:
         
         # Run a simple test with this database
         echo "Running 'make check' with ${{ matrix.dn }}..."
-        make check
+        make test-only
 
   test-macos:
     needs: build
@@ -438,5 +438,5 @@ jobs:
         echo "Running basic functionality test with ${{ matrix.dn }}..."
 
         # No timeout on macOS
-        make check
+        make test-only
 
