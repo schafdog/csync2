@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-MYSQL_ROOT_PW=$1
-if [ "$MYSQL_ROOT_PW" == "" ] ; then
-    MYSQL_ROOT_PW=csync238
+MYSQL_ROOT=$1
+MYSQL_ROOT_PW=$2
+OS=$3
+if [ "$MYSQL_ROOT" != "" ] ; then
+    MYSQL_OPT="-u $MYSQL_ROOT"
+fi
+if [ "$MYSQL_ROOT_PW" != "" ] ; then
+    MYSQL_OPT="$MYSQL_OPT -p$MYSQL_ROOT_PW"
 fi
 
-MYSQL_OPT="--protocol=TCP -h 127.0.0.1 -u root -p$MYSQL_ROOT_PW"
-mysql $MYSQL_OPT -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
-mysql $MYSQL_OPT -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-mysql $MYSQL_OPT -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%' identified by 'csync2_local'; " 
-mysql $MYSQL_OPT -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer';"
+MYSQL_OPT="--protocol=TCP -h 127.0.0.1 $MYSQL_OPT"
+for d in local peer ; do 
+    mysql $MYSQL_OPT -e "CREATE DATABASE IF NOT EXISTS csync2_$d;"
+    mysql $MYSQL_OPT -e "GRANT ALL PRIVILEGES ON csync2_$d.* TO 'csync2_$d'@'%' identified by 'csync2_$d'; " 
+done 
 mysql $MYSQL_OPT -e "FLUSH PRIVILEGES;"
