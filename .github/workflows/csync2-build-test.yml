@@ -252,7 +252,7 @@ jobs:
         fi
         if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
           echo "=== Setting up ${{ matrix.db }} for csync2 ==="
-          ./test/create_${{ matrix.db }}.sh $ROOT ${{ PASSWORD }} ${{ matrix.os }}
+          ./test/create_${{ matrix.db }}.sh $ROOT $PASSWORD ${{ matrix.os }}
         fi
   
     - name: Verify ${{ matrix.db }} setup
