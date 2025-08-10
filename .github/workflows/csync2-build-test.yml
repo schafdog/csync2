@@ -4,13 +4,20 @@ env:
   CACHE_PATHS: |
     src/csync2
     src/config.h
+    src/config.h.in
     src/Makefile
+    src/Makefile.in
     src/*.o
     src/.deps/
+    src/stamp-h1
     config.status
     config.log
+    configure.ac
+    aclocal.m4
     Makefile
+    Makefile.in
     test/Makefile
+    test/Makefile.in
     missing
     compile
     install-sh
