@@ -16,6 +16,7 @@ env:
     install-sh
     depcomp
     ylwrap
+    test-driver
     src/cfgfile_parser.cpp
     src/cfgfile_parser.hpp
     src/cfgfile_scanner.cpp
