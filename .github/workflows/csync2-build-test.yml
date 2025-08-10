@@ -122,6 +122,19 @@ jobs:
           make -j$(nproc) V=1
         fi
 
+    - name: Check warning count on ${{ matrix.os }}
+      run: |
+        echo "=== Checking compiler warnings ==="
+        cd src
+        
+        # Count warnings
+        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
+        echo "Total warnings: $WARNING_COUNT"
+        
+        # Show sample warnings
+        echo "Sample warnings:"
+        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
+
     - name: Save build cache
       if: steps.cache-restore.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
@@ -276,19 +289,6 @@ jobs:
            ./test/verify_${{ matrix.db }}.sh
         fi
 
-    - name: Check warning count on ${{ matrix.os }}
-      run: |
-        echo "=== Checking compiler warnings ==="
-        cd src
-        
-        # Count warnings
-        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
-        echo "Total warnings: $WARNING_COUNT"
-        
-        # Show sample warnings
-        echo "Sample warnings:"
-        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
-
     - name: Run basic functionality test
       env:
         PGPASSWORD: csync238
@@ -394,19 +394,6 @@ jobs:
            echo "=== Verifying ${{ matrix.db }} setup ==="
            ./test/verify_${{ matrix.db }}.sh
         fi
-
-    - name: Check warning count on ${{ matrix.os }}
-      run: |
-        echo "=== Checking compiler warnings ==="
-        cd src
-        
-        # Count warnings
-        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
-        echo "Total warnings: $WARNING_COUNT"
-        
-        # Show sample warnings
-        echo "Sample warnings:"
-        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
 
     - name: Run basic functionality test
       env:
