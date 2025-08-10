@@ -1,5 +1,26 @@
 name: Csync2 Build and Test
 
+env:
+  CACHE_PATHS: |
+    src/csync2
+    src/config.h
+    src/Makefile
+    src/*.o
+    src/.deps/
+    config.status
+    config.log
+    Makefile
+    test/Makefile
+    missing
+    compile
+    install-sh
+    depcomp
+    ylwrap
+    src/cfgfile_parser.cpp
+    src/cfgfile_parser.hpp
+    src/cfgfile_scanner.cpp
+    .libs/
+
 on:
   push:
     branches: [ main, master, feature/* ]
@@ -41,16 +62,7 @@ jobs:
       id: build-cache-restore
       uses: actions/cache@v4
       with:
-        path: |
-          src/csync2
-          csync2
-          src/config.h
-          config.status
-          Makefile
-          missing
-          test/Makefile
-          .deps/
-          .libs/
+        path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.build-cache-key.outputs.cache-key }}
 
     - name: Install dependencies
@@ -106,15 +118,7 @@ jobs:
       if: steps.cache-restore.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
-        path: |
-          src/csync2
-          csync2
-          src/config.h
-          config.status
-          Makefile
-          test/Makefile
-          .deps/
-          .libs/
+        path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.build-cache-key.outputs.cache-key }}
 
   test:
@@ -207,16 +211,7 @@ jobs:
       id: test-cache-restore
       uses: actions/cache@v4
       with:
-        path: |
-          src/csync2
-          csync2
-          src/config.h
-          config.status
-          Makefile
-          missing
-          test/Makefile
-          .deps/
-          .libs/
+        path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.test-cache-key.outputs.cache-key }}
 
     - name: Install dependencies
@@ -357,16 +352,7 @@ jobs:
       id: test-cache-restore
       uses: actions/cache@v4
       with:
-        path: |
-          src/csync2
-          csync2
-          src/config.h
-          config.status
-          Makefile
-          missing
-          test/Makefile
-          .deps/
-          .libs/
+        path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.test-cache-key-macos.outputs.cache-key }}
 
     - name: Install dependencies
