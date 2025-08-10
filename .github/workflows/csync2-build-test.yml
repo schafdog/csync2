@@ -32,7 +32,7 @@ jobs:
         DEPS_HASH=$(./test/deps_hash.sh)
         echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY=$(combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
+        CACHE_KEY=$(./test/combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
 
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
@@ -198,7 +198,7 @@ jobs:
         DEPS_HASH=$(./test/deps_hash.sh)
         echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY=$(combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
+        CACHE_KEY=$(./test/combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
 
@@ -344,7 +344,7 @@ jobs:
         DEPS_HASH=$(./test/deps_hash.sh)
         echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY=$(combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
+        CACHE_KEY=$(./test/combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
 
