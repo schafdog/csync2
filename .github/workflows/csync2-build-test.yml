@@ -335,8 +335,10 @@ jobs:
           test/*.log
           test/*.trs
           test/test-suite.log
-          test/*/*.log
-          test/*/*.diff
+          test/**/*.log
+          test/**/*.diff
+          test/**/*.res
+          test/*/
         retention-days: 7
 
     - name: Send email notification on failure
@@ -487,8 +489,10 @@ jobs:
           test/*.log
           test/*.trs
           test/test-suite.log
-          test/*/*.log
-          test/*/*.diff
+          test/**/*.log
+          test/**/*.diff
+          test/**/*.res
+          test/*/
         retention-days: 7
 
     - name: Send email notification on failure
