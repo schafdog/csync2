@@ -246,8 +246,8 @@ jobs:
         ROOT: root
         PASSWORD: csync238
       run: |
-        ROOT=${{ ROOT }}
-        if [ "${{ matrix.db" == "pgsql" ] ; then
+        ROOT=root
+        if [ "${{ matrix.db }}" == "pgsql" ] ; then
            ROOT=postgres
         fi
         if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
