@@ -47,6 +47,7 @@ jobs:
           src/config.h
           config.status
           Makefile
+          missing
           test/Makefile
           .deps/
           .libs/
@@ -212,6 +213,7 @@ jobs:
           src/config.h
           config.status
           Makefile
+          missing
           test/Makefile
           .deps/
           .libs/
@@ -349,7 +351,7 @@ jobs:
 
     - name: Debug cache key
       run: |
-        echo "🔍 Debug: Retrieved cache key from step output: '${{ steps.test-cache-key.outputs.cache-key }}'"
+        echo "🔍 Debug: Retrieved cache key from step output: ${{ steps.test-cache-key.outputs.cache-key }}"
 
     - name: Restore build cache
       id: test-cache-restore
@@ -361,6 +363,7 @@ jobs:
           src/config.h
           config.status
           Makefile
+          missing
           test/Makefile
           .deps/
           .libs/
