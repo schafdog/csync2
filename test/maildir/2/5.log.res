@@ -20,7 +20,14 @@ Calling check_mod on <TESTBASE>/test/local/Maildir/new from <TESTBASE>/test/loca
 Checking <TESTBASE>/test/local/Maildir/new/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/cur from <TESTBASE>/test/local/Maildir
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/Maildir/cur' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/cur 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/cur) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/cur found false
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/Maildir/cur' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/cur 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/cur) AND peername = other ORDER BY timestamp 
+db->get_old_operation: FOUND <TESTBASE>/test/local/Maildir/cur MKDIR
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/cur found true
 check_old_operation: MOD_DIR(129) Old operation: MKDIR(1) '<TESTBASE>/test/local/Maildir/cur' ''
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/cur (not synced) .
 Inserted/updated <TESTBASE>/test/local/Maildir/cur rows matched: 1
@@ -33,7 +40,14 @@ check same file (64) <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,, param2: local
 Found MOVE <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, -> <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
 mark other operation: 'MV' 'peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S' '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=8'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=8 AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S found false
 mark other operation: 'MV' 'other:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S' '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S 'v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=8'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=33188:user=<USER>:group=<GROUP>:type=reg:size=8 AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S) AND peername = other ORDER BY timestamp 
+db->get_old_operation: FOUND <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2, NEW
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S found true
 check_old_operation: MV(16) Old operation: NEW(2) '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,' ''
 mark operation NEW->MV => NEW other '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S' '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,' '<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,'.
 Inserted/updated <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S rows matched: 1
