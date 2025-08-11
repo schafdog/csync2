@@ -327,7 +327,6 @@ daemon: Auto resolve method YOUNGER 2 for local:<TESTBASE>/test/peer/auto/younge
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolved. clear dirty
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
 CONN local < OK 
 Sending sig_file for <TESTBASE>/test/peer/auto/younger/local_oldest to peer.
@@ -418,7 +417,6 @@ Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
 daemon_check_dirty: <TESTBASE>/test/peer/auto/younger/local_oldest is clean
 Removing file <TESTBASE>/test/peer/auto/younger/local_oldest
 backup <TESTBASE>/test/peer/auto/younger/local_oldest 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.3 due  3 
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest' to '/tmp/csync2<TESTBASE>/test/peer/auto/younger/local_oldest.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/auto/younger/local_oldest'
@@ -433,7 +431,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR file
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer

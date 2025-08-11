@@ -14,7 +14,6 @@ mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
 Calling check_mod on <TESTBASE>/test/local/type_change from <TESTBASE>/test/local
-File <TESTBASE>/test/local/type_change has changed device:inode <DEV>:<INODE> -> <DEV>:<INDE> 100644 
 File <TESTBASE>/test/local/type_change has changed mode 16384 => 32768 
 mark other operation: 'MOD' 'peer:<TESTBASE>/test/local/type_change' '-'.
 mark other operation: 'MOD' 'other:<TESTBASE>/test/local/type_change' '-'.
@@ -89,7 +88,7 @@ CONN peer < octet-stream 15
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/type_change (0)
 Directory time <TESTBASE>/test/local <TESTBASE>/test/local/type_change
-Dirty (missing) item <TESTBASE>/test/local/type_change/new_file 'N' all RM  0
+Dirty (missing) item <TESTBASE>/test/local/type_change/new_file 'N' all RM NULL 0
 Deleting peer:<TESTBASE>/test/local/type_change/new_file 'N' all
 CONN peer < STAT %25test%25/type_change/new_file%20%27N%27%20all 
 CONN peer > 'ERROR (Path not found): %25test%25/type_change'

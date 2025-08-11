@@ -469,7 +469,6 @@ Checking for modified files <TESTBASE>/test/peer/usr/local/sbin/hej
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin/hej.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local/sbin/hej is clean
 backup <TESTBASE>/test/peer/usr/local/sbin/hej 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/usr/local/sbin/hej.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/usr/local/sbin/hej'
 DEL local:<TESTBASE>/test/peer/usr/local/sbin/hej rc: 0
@@ -544,7 +543,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR file
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer

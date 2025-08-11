@@ -58,7 +58,7 @@ CONN peer < MOD %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE>
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 Directory time <TESTBASE>/test <TESTBASE>/test/local
-Dirty (missing) item <TESTBASE>/test/local/ÆØÅ Café.utf8 RM  0
+Dirty (missing) item <TESTBASE>/test/local/ÆØÅ Café.utf8 RM NULL 0
 Deleting peer:<TESTBASE>/test/local/ÆØÅ Café.utf8
 CONN peer < STAT %25test%25/ÆØÅ%20Café.utf8 
 CONN peer > 'OK (data_follows).'

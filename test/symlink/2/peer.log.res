@@ -253,7 +253,6 @@ Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.link.
 daemon_check_dirty: <TESTBASE>/test/peer/new_file 'N' all.link is clean
 Removing file <TESTBASE>/test/peer/new_file 'N' all.link
 backup <TESTBASE>/test/peer/new_file 'N' all.link 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.link.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all.link'
 Removing <TESTBASE>/test/peer/new_file 'N' all.link from file db.
@@ -265,7 +264,6 @@ Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 daemon_check_dirty: <TESTBASE>/test/peer/new_file 'N' all is clean
 Removing file <TESTBASE>/test/peer/new_file 'N' all
 backup <TESTBASE>/test/peer/new_file 'N' all 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all'
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
@@ -283,7 +281,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
