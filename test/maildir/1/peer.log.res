@@ -184,6 +184,9 @@ Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
 Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
 Updated(del) local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S  
 Command: local: STAT <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group <UID> <GID> <USER> <GROUP>    
 Command: local: DEL <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST         
@@ -191,6 +194,9 @@ Running check for <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST .
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.
 Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
 Updated(del) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST  
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/.Trash xxxxxxxx        
