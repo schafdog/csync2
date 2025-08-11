@@ -157,7 +157,7 @@ function daemon {
     if [ "$DAEMON" == "NO" ] ; then
 	echo "daemon start disabled";
 	echo "${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG"
-	if [ "WAIT" == "YES" ] ; then
+	if [ "$WAIT" == "YES" ] ; then
 	    echo "press any key to continue"
 	    read
 	fi
