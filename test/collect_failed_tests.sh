@@ -19,4 +19,4 @@ find test -name "*.diff" -type f -exec dirname {} \; | sort -u | while read dir;
 done
         
 echo "Collected artifacts:"
-find test-artifacts -type f | head -20
+find test-artifacts -type f
