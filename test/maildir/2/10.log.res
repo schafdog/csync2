@@ -62,7 +62,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM  0
+Dirty (missing) item <TESTBASE>/test/local RM NULL 0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -73,17 +73,17 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/Maildir RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/.Trash) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/.Trash/cur) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/cur RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/cur RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/cur) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/new RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/new RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/new) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/tmp RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/tmp RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/Maildir/tmp) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 

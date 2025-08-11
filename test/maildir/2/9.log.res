@@ -100,7 +100,7 @@ CONN peer < MOD %25test%25/Maildir/cur - <UID> <GID> <USER> <GROUP> <BLKSIZE> - 
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/cur (0)
 Directory time <TESTBASE>/test/local/Maildir <TESTBASE>/test/local/Maildir/cur
-Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S RM NULL 0
 Deleting peer:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S
 CONN peer < STAT %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S 
 CONN peer > 'OK (data_follows).'
@@ -109,7 +109,7 @@ delete flags: 0
 CONN peer < DEL %25test%25/Maildir/.Trash/cur/1434.M21,S=6631,W=6764%3A2,S 
 CONN peer > 'OK (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S (0)
-Dirty (missing) item <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST RM  0
+Dirty (missing) item <TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST RM NULL 0
 Deleting peer:<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 CONN peer < STAT %25test%25/Maildir/cur/1434.M21,S=6631,W=6764%3A2,ST 
 CONN peer > 'OK (data_follows).'

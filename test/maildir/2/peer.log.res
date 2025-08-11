@@ -730,7 +730,6 @@ Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S is clean
 backup <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S'
 DEL local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S rc: 0
@@ -754,7 +753,6 @@ Checking for modified files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.
 daemon_check_dirty: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST is clean
 backup <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST'
 DEL local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST rc: 0
@@ -847,7 +845,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR file
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 6 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
