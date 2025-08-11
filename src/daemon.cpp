@@ -559,13 +559,12 @@ int csync_set_backup_file_status(char *filename, int backupDirLength) {
 				buf.st_mode);
 
 		rc = lchown(filename, buf.st_uid, buf.st_gid);
-
-		// TODO set  priority depending on rc
-		csync_info((rc == 0 ? 4 : 0), "Changing owner of {} to user {} and group {}, rc= {} \n", filename, buf.st_uid,
+		// This happens when not running as root ex. in test. Shouldnt happen in productions
+		csync_info((rc == 0 ? 3 : 0), "Changing owner of {} to user {} and group {}, rc= {} \n", filename, buf.st_uid,
 				buf.st_gid, rc);
 
 		rc = chmod(filename, buf.st_mode);
-		csync_info((rc == 0 ? 4 : 0), "Changing mode of {} to mode {}, rc= {} \n", filename, buf.st_mode, rc);
+		csync_info((rc == 0 ? 3 : 0), "Changing mode of {} to mode {}, rc= {} \n", filename, buf.st_mode, rc);
 
 	} else {
 		csync_error(2, "ERROR: getting mode and owner ship from {} \n", (filename + backupDirLength));

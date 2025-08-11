@@ -91,6 +91,9 @@ Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve.
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/older/update_both won auto resolved. clear dirty
 Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
 Updated(patch) local:<TESTBASE>/test/peer/auto/older/update_both  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer/auto/older xxxxxxxx        
@@ -118,6 +121,9 @@ Checking for modified files <TESTBASE>/test/peer/auto/older/update_both
 Checking for deleted files <TESTBASE>/test/peer/auto/older/update_both.
 Removing file <TESTBASE>/test/peer/auto/older/update_both
 Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
+Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
+Changing mode of /tmp/csync2/<BACKUP> to mode 16877, rc= -1 
 Removing <TESTBASE>/test/peer/auto/older/update_both from file db.
 Removing directory <TESTBASE>/test/peer/auto/older 0
 Removing directory <TESTBASE>/test/peer/auto 0
