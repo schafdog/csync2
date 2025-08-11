@@ -235,7 +235,7 @@ static int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, i
 					rc = ERROR;
 				}
 			}
-			csync_warn(2, "Called csync_rmdir_recursive {}:{}. RC: {} {}\n", peername, filename, rc, errno);
+			csync_warn(2, "Called csync_rmdir_recursive {}:{}. RC: {} {}\n", peername, filename, rc, 0);
 		}
 		csync_info(0, "Deleted recursive from clean directory ({}): {} {} \n", filename, dir_count, rc);
 	} else {
