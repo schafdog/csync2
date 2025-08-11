@@ -368,7 +368,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR file
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer/recursive'
 Removing directory <TESTBASE>/test/peer/recursive 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer/recursive, param2: <TESTBASE>/test/peer/recursive/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer/recursive. RC: 1 35
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer/recursive. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer/recursive): 6 1 
 DEL local:<TESTBASE>/test/peer/recursive rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer/recursive, param2: peer
@@ -415,9 +415,8 @@ Command: local: DEL <TESTBASE>/test/peer
 daemon_check_dirty: <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
-Inserted/updated <TESTBASE>/test/peer rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer.
-daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
+daemon_check_dirty: <TESTBASE>/test/peer is clean
 backup <TESTBASE>/test/peer 0 
 0 files within directory '<TESTBASE>/test/peer': 
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 0 
@@ -426,7 +425,7 @@ Removing <TESTBASE>/test/peer/* ..
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 0 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer
