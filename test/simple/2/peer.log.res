@@ -204,6 +204,21 @@ CONN local < octet-stream 0
 Daemon end_command <TESTBASE>/test/peer SIG 0 
 CONN local < OK (cmd_finished).
 
+CONN local > 'MOD 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
+Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
+daemon_check_dirty: <TESTBASE>/test/peer
+Running check for <TESTBASE>/test/peer ...
+Checking for modified files <TESTBASE>/test/peer 
+Checking for deleted files <TESTBASE>/test/peer.
+daemon_check_dirty: <TESTBASE>/test/peer is clean
+setown <TESTBASE>/test/peer rc = 0 gid: <UID> gid: <GID> errno = 0 err = 
+setmod <TESTBASE>/test/peer rc = 0 mod: 16877 errno = 0 err = 
+settime <TESTBASE>/test/peer rc = 0 time: 0 errno = 0 err = 
+Updated(mod) local:<TESTBASE>/test/peer  
+Daemon end_command <TESTBASE>/test/peer MOD 1 
+IDENT (cmd_finished).
+CONN local < IDENT (cmd_finished).
+
 CONN local > 'SIG 9iNlOKBHPfeAtRpsCgaQqTwKuGmEVZGB4vCM2ALNvBDDKIZDnoAaK0209kviFLAV %25test%25/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxxxx'
 Command: local: SIG <TESTBASE>/test/peer/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 CONN local < OK (data_follows).
@@ -304,7 +319,6 @@ Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 daemon_check_dirty: <TESTBASE>/test/peer/new_file 'N' all is clean
 Removing file <TESTBASE>/test/peer/new_file 'N' all
 backup <TESTBASE>/test/peer/new_file 'N' all 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all'
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
@@ -317,7 +331,6 @@ Checking for deleted files <TESTBASE>/test/peer/A.
 daemon_check_dirty: <TESTBASE>/test/peer/A is just marked dirty
 Removing file <TESTBASE>/test/peer/A
 backup <TESTBASE>/test/peer/A 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/A.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/A'
 Removing <TESTBASE>/test/peer/A from file db.
@@ -330,7 +343,6 @@ Checking for deleted files <TESTBASE>/test/peer/.Test.
 daemon_check_dirty: <TESTBASE>/test/peer/.Test is just marked dirty
 Removing file <TESTBASE>/test/peer/.Test
 backup <TESTBASE>/test/peer/.Test 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/.Test.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/.Test'
 Removing <TESTBASE>/test/peer/.Test from file db.
@@ -338,7 +350,7 @@ remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1
 Locking 'DELETE,ISDIR:<TESTBASE>/test/peer'
 Removing directory <TESTBASE>/test/peer 0
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/peer, param2: <TESTBASE>/test/peer/%, param3: peer
-Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 0
+Called csync_rmdir_recursive local:<TESTBASE>/test/peer. RC: 1 35
 Deleted recursive from clean directory (<TESTBASE>/test/peer): 3 1 
 DEL local:<TESTBASE>/test/peer rc: 1
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  filename = ? , param1: <TESTBASE>/test/peer, param2: peer

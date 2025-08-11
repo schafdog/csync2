@@ -415,8 +415,9 @@ Command: local: DEL <TESTBASE>/test/peer
 daemon_check_dirty: <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
+Inserted/updated <TESTBASE>/test/peer rows matched: 1
 Checking for deleted files <TESTBASE>/test/peer.
-daemon_check_dirty: <TESTBASE>/test/peer is clean
+daemon_check_dirty: <TESTBASE>/test/peer is just marked dirty
 backup <TESTBASE>/test/peer 0 
 0 files within directory '<TESTBASE>/test/peer': 
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 0 
