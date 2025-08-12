@@ -75,9 +75,13 @@ jobs:
 
     - name: Install dependencies
       run: |
-       if [ "${{ matrix.os }}" != "macOS" ] ; then      
-          sudo apt-get update
-          if [ -f not ] ;  then
+        if [ -f src/csync2 ] ; then
+           echo "Skipping dependencies. Restored from cache"
+           exit 0;
+        fi
+        if [ "${{ matrix.os }}" != "macOS" ] ; then
+           sudo apt-get update
+           if [ -f not ] ;  then
             sudo apt-get install  -y libmariadb3 libhiredis1.1.0 libpq5 librsync libgnutls30t64 
           else 
             sudo apt-get install -y \
