@@ -28,11 +28,6 @@
 #include <cctype>
 #include "urlencode.hpp"
 
-#define RINGBUFF_LEN 10000
-
-static char *ringbuff[RINGBUFF_LEN];
-static int ringbuff_counter = 0;
-
 // Characters that need to be URL encoded
 static const std::string badchars = "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020"
 								   "\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\040"
@@ -87,76 +82,3 @@ std::string& UrlDecoder::operator()(const char* input)  {
 }
 
 UrlCodec url_codec;
-
-// Legacy C-style functions (deprecated) - maintain compatibility
-const char* url_encode(const char *in) {
-	char *out;
-	int i, j, k, len;
-
-	for (i = len = 0; in[i]; i++, len++)
-		for (j = 0; badchars[j]; j++)
-			if (in[i] == badchars[j]) {
-				len += 2;
-				break;
-			}
-
-	out = static_cast<char*>(malloc(len + 1));
-
-	for (i = k = 0; in[i]; i++) {
-		for (j = 0; badchars.c_str()[j]; j++)
-			if (in[i] == badchars[j])
-				break;
-		if (badchars[j]) {
-			snprintf(out + k, 4, "%%%02X", in[i]);
-			k += 3;
-		} else
-			out[k++] = in[i];
-	}
-	assert(k == len);
-	out[k] = 0;
-
-	if (ringbuff[ringbuff_counter])
-		free(ringbuff[ringbuff_counter]);
-	ringbuff[ringbuff_counter++] = out;
-	if (ringbuff_counter == RINGBUFF_LEN)
-		ringbuff_counter = 0;
-	return out;
-}
-const char *url_encode(peername_p in) {
-	return url_encode(in.c_str());
-}
-
-const char* url_decode(const char *in) {
-	char *out, num[3] = "XX";
-	int i, k, len;
-
-	if (in == NULL)
-		return strdup("");
-
-	for (i = len = 0; in[i]; i++, len++)
-		if (in[i] == '%' && in[i + 1] && in[i + 2])
-			i += 2;
-
-	out = static_cast<char*>(malloc(len + 1));
-
-	for (i = k = 0; in[i]; i++)
-		if (in[i] == '%' && in[i + 1] && in[i + 2]) {
-			num[0] = in[++i];
-			num[1] = in[++i];
-			out[k++] = strtol(num, 0, 16);
-		} else
-			out[k++] = in[i];
-	assert(k == len);
-	out[k] = 0;
-
-	if (ringbuff[ringbuff_counter])
-		free(ringbuff[ringbuff_counter]);
-	ringbuff[ringbuff_counter++] = out;
-	if (ringbuff_counter == RINGBUFF_LEN)
-		ringbuff_counter = 0;
-
-	return out;
-}
-const char *url_decode(peername_p in) {
-	return url_decode(in.c_str());
-}
