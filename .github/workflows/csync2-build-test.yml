@@ -280,37 +280,16 @@ jobs:
         
         echo "Generated files (should be newer than source files):"
         ls -la --time-style=full-iso configure 2>/dev/null || true
+        ls -la --time-style=full-iso config.status 2>/dev/null || true
         ls -la --time-style=full-iso Makefile test/Makefile src/Makefile 2>/dev/null || true
         ls -la --time-style=full-iso src/config.h config.status 2>/dev/null || true
         ls -la --time-style=full-iso src/stamp-h1 2>/dev/null || true
-        echo
         
     - name: Fix all timestamps after cache restore
       run: |
-        echo "=== Comprehensive timestamp fix ==="
-        
-        # Make sure configure is newer than its dependencies
-        [ -f configure ] && [ -f configure.ac ] && touch -r configure.ac configure && touch configure
-        [ -f configure ] && [ -f aclocal.m4 ] && touch -r aclocal.m4 configure && touch configure
-        
-        # Make sure all Makefiles are newer than their .am and .in files
-        for makefile in Makefile src/Makefile test/Makefile; do
-          makefile_am="${makefile}.am"
-          makefile_in="${makefile}.in"
-          if [ -f "$makefile" ]; then
-            [ -f "$makefile_am" ] && touch -r "$makefile_am" "$makefile" && touch "$makefile"
-            [ -f "$makefile_in" ] && touch -r "$makefile_in" "$makefile" && touch "$makefile"
-          fi
-        done
-        
-        # Make sure config.h is newer than config.h.in
-        [ -f src/config.h ] && [ -f src/config.h.in ] && touch -r src/config.h.in src/config.h && touch src/config.h
-        
-        # Update timestamp files
-        [ -f src/stamp-h1 ] && touch src/stamp-h1
-        [ -f config.status ] && touch config.status
-        
-        echo "All timestamps fixed - generated files should now be newer"
+        echo "=== timestamp fix ==="
+        # Make sure configure is same as the status
+        [ -f config.status ] && [ -f configure ] && touch -r config.status configure 
 
     - name: Install dependencies
       run: |
