@@ -47,6 +47,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Fix source file timestamps after checkout
+      run: |
+        echo "=== Fixing timestamps after git checkout ==="
+        # Git checkout sets all files to current time, but we need source files
+        # to appear older than any generated files we'll restore from cache
+        
+        # Set all source files to a time well in the past (1 hour ago)
+        PAST_TIME=$(date -d '1 hour ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-1H '+%Y%m%d%H%M.%S')
+        
+        echo "Setting source files to: $PAST_TIME"
+        find . -name "*.ac" -o -name "*.am" -o -name "*.in" | xargs touch -t "$PAST_TIME" 2>/dev/null || true
+        
+        echo "Timestamps fixed"
+
     - name: Calculate build cache key
       id: build-cache-key
       run: |
@@ -198,6 +212,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Fix source file timestamps after checkout
+      run: |
+        echo "=== Fixing timestamps after git checkout ==="
+        # Set all source files to a time well in the past (1 hour ago)
+        PAST_TIME=$(date -d '1 hour ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-1H '+%Y%m%d%H%M.%S')
+        echo "Setting source files to: $PAST_TIME"
+        find . -name "*.ac" -o -name "*.am" -o -name "*.in" | xargs touch -t "$PAST_TIME" 2>/dev/null || true
 
     - name: Setup host aliases for csync2 testing
       run: |
@@ -408,6 +430,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Fix source file timestamps after checkout
+      run: |
+        echo "=== Fixing timestamps after git checkout ==="
+        # Set all source files to a time well in the past (1 hour ago)
+        PAST_TIME=$(date -d '1 hour ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-1H '+%Y%m%d%H%M.%S')
+        echo "Setting source files to: $PAST_TIME"
+        find . -name "*.ac" -o -name "*.am" -o -name "*.in" | xargs touch -t "$PAST_TIME" 2>/dev/null || true
 
     - name: Calculate build cache key
       id: test-cache-key-macos
