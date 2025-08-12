@@ -12,6 +12,7 @@ env:
     src/stamp-h1
     config.status
     config.log
+    configure
     configure.ac
     aclocal.m4
     Makefile
