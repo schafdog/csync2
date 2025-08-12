@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-find src/ \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" \) -type f | sort | xargs -r cat | sha256sum | cut -d' ' -f1
+find src/ \( -name "*.l" -o -name "*.y" -o -name "*.cpp" -o -name "*.hpp" \) -type f | sort | xargs -r cat | sha256sum | cut -d' ' -f1
