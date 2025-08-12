@@ -223,7 +223,7 @@ jobs:
         
         # Hash source files, headers, and build scripts
         SOURCES_HASH=$(./test/source_hash.sh)
-        echo "SOURCE_HASH $SOURCE_HASH"
+        echo "SOURCES_HASH $SOURCES_HASH"
         CONFIG_HASH=$(./test/config_hash.sh)
         echo "CONFIG_HASH $CONFIG_HASH"
         DEPS_HASH=$(./test/deps_hash.sh)
