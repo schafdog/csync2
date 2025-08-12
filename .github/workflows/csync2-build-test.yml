@@ -141,19 +141,6 @@ jobs:
           make -j$(nproc) V=1
         fi
 
-    - name: Check warning count on ${{ matrix.os }}
-      run: |
-        echo "=== Checking compiler warnings ==="
-        cd src
-        
-        # Count warnings
-        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
-        echo "Total warnings: $WARNING_COUNT"
-        
-        # Show sample warnings
-        echo "Sample warnings:"
-        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
-
     - name: Save build cache
       if: steps.cache-restore.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
@@ -282,14 +269,15 @@ jobs:
         ls -la --time-style=full-iso configure 2>/dev/null || true
         ls -la --time-style=full-iso config.status 2>/dev/null || true
         ls -la --time-style=full-iso Makefile test/Makefile src/Makefile 2>/dev/null || true
-        ls -la --time-style=full-iso src/config.h config.status 2>/dev/null || true
+        ls -la --time-style=full-iso src/config.h 2>/dev/null || true
         ls -la --time-style=full-iso src/stamp-h1 2>/dev/null || true
         
     - name: Fix all timestamps after cache restore
       run: |
         echo "=== timestamp fix ==="
         # Make sure configure is same as the status
-        [ -f config.status ] && [ -f configure ] && touch -r config.status configure 
+        [ -f config.status ] && [ -f configure ] && touch -r config.status configure || echo "timestamp failed"
+        ls  -la --time-style=full-iso config.status configure
 
     - name: Install dependencies
       run: |
