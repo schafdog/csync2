@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS ] # ubuntu-22.04,
+        os: [ubuntu-latest, macOS ] # ubuntu-24.04
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -52,9 +52,9 @@ jobs:
       run: |
         # Create a hash of source files and build configuration
         echo "Calculating build cache key..."
-        
+        uname -a
         # Hash source files, headers, and build scripts
-        bash -x ./test_source_hash.sh
+        bash -x ./test/source_hash.sh
         SOURCES_HASH=$(./test/source_hash.sh)
         echo "SOURCES_HASH $SOURCES_HASH"
         CONFIG_HASH=$(./test/config_hash.sh)
@@ -222,6 +222,7 @@ jobs:
         echo "Calculating build cache key..."
         
         # Hash source files, headers, and build scripts
+        bash -x ./test/source_hash.sh
         SOURCES_HASH=$(./test/source_hash.sh)
         echo "SOURCES_HASH $SOURCES_HASH"
         CONFIG_HASH=$(./test/config_hash.sh)
