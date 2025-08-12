@@ -7,7 +7,7 @@ echo
 
 # Generate file list once and store in variable
 echo "Generating file list..."
-FILES=$(find src/ \( -name "*.l" -o -name "*.y" -o -name "*.cpp" -o -name "*.hpp" \) -type f | sort)
+FILES=$(find src/ -maxdepth 1 \( -name "*.l" -o -name "*.y" -o -name "*.cpp" -o -name "*.hpp" \) -type f | sort)
 
 echo "Files found by find command:"
 echo "$FILES"
