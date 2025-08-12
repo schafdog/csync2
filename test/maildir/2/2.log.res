@@ -12,49 +12,91 @@ Calling check_mod on <TESTBASE>/test/local from <TESTBASE>/test
 New file: <TESTBASE>/test/local
 csync_check_file_same_dev_inode <TESTBASE>/test/local <TESTBASE>/test/local
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local found false
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local) AND peername = other ORDER BY timestamp 
+csync_mark_other: Before check_old other:<TESTBASE>/test/local found false
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir from <TESTBASE>/test/local
 New file: <TESTBASE>/test/local/Maildir
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir <TESTBASE>/test/local/Maildir
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/Maildir' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir found false
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/Maildir' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir) AND peername = other ORDER BY timestamp 
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir found false
 Inserted/updated <TESTBASE>/test/local/Maildir rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/tmp from <TESTBASE>/test/local/Maildir
 New file: <TESTBASE>/test/local/Maildir/tmp
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir/tmp <TESTBASE>/test/local/Maildir/tmp
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/Maildir/tmp' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/tmp 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/tmp) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/tmp found false
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/Maildir/tmp' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/tmp 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/tmp) AND peername = other ORDER BY timestamp 
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/tmp found false
 Inserted/updated <TESTBASE>/test/local/Maildir/tmp rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/tmp/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/new from <TESTBASE>/test/local/Maildir
 New file: <TESTBASE>/test/local/Maildir/new
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir/new <TESTBASE>/test/local/Maildir/new
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/Maildir/new' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/new 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/new) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/new found false
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/Maildir/new' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/new 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/new) AND peername = other ORDER BY timestamp 
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/new found false
 Inserted/updated <TESTBASE>/test/local/Maildir/new rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/new/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/cur from <TESTBASE>/test/local/Maildir
 New file: <TESTBASE>/test/local/Maildir/cur
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir/cur <TESTBASE>/test/local/Maildir/cur
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/Maildir/cur' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/cur 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/cur) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/cur found false
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/Maildir/cur' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/cur 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/cur) AND peername = other ORDER BY timestamp 
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/cur found false
 Inserted/updated <TESTBASE>/test/local/Maildir/cur rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/cur/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/.Trash from <TESTBASE>/test/local/Maildir
 New file: <TESTBASE>/test/local/Maildir/.Trash
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir/.Trash <TESTBASE>/test/local/Maildir/.Trash
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/Maildir/.Trash' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/.Trash 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/.Trash) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/.Trash found false
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/Maildir/.Trash' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/.Trash 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/.Trash) AND peername = other ORDER BY timestamp 
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/.Trash found false
 Inserted/updated <TESTBASE>/test/local/Maildir/.Trash rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/.Trash/* ..
 Calling check_mod on <TESTBASE>/test/local/Maildir/.Trash/cur from <TESTBASE>/test/local/Maildir/.Trash
 New file: <TESTBASE>/test/local/Maildir/.Trash/cur
 csync_check_file_same_dev_inode <TESTBASE>/test/local/Maildir/.Trash/cur <TESTBASE>/test/local/Maildir/.Trash/cur
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/.Trash/cur 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/.Trash/cur) AND peername = peer ORDER BY timestamp 
+csync_mark_other: Before check_old peer:<TESTBASE>/test/local/Maildir/.Trash/cur found false
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/Maildir/.Trash/cur' '-'.
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/.Trash/cur 'v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir'
+SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = local AND (checktxt = v2:mtime=<MTIME>mode=16877:user=<USER>:group=<GROUP>:type=dir AND device = <DEV> AND inode = <INODE>  OR filename = <TESTBASE>/test/local/Maildir/.Trash/cur) AND peername = other ORDER BY timestamp 
+csync_mark_other: Before check_old other:<TESTBASE>/test/local/Maildir/.Trash/cur found false
 Inserted/updated <TESTBASE>/test/local/Maildir/.Trash/cur rows matched: 1
 Checking <TESTBASE>/test/local/Maildir/.Trash/cur/* ..
 Checking for deleted files <TESTBASE>/test recursive.

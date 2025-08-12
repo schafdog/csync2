@@ -14,7 +14,6 @@ mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 Inserted/updated <TESTBASE>/test/local rows matched: 1
 Checking <TESTBASE>/test/local/* ..
 Calling check_mod on <TESTBASE>/test/local/type_change from <TESTBASE>/test/local
-File <TESTBASE>/test/local/type_change has changed device:inode <DEV>:<INODE> -> <DEV>:<INDE> 40755 
 File <TESTBASE>/test/local/type_change has changed mode 32768 => 16384 
 mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/type_change' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/type_change' '-'.

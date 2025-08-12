@@ -54,7 +54,6 @@ Command: local: PATCH <TESTBASE>/test/peer/different - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 Checking for deleted files <TESTBASE>/test/peer/different.
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 Updated(patch) local:<TESTBASE>/test/peer/different  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        

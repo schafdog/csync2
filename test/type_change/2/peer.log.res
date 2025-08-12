@@ -228,7 +228,6 @@ Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
 daemon_check_dirty: <TESTBASE>/test/peer/type_change/new_file 'N' all is clean
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 backup <TESTBASE>/test/peer/type_change/new_file 'N' all 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/type_change/new_file 'N' all.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/type_change/new_file 'N' all'
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
@@ -342,7 +341,6 @@ Checking for deleted files <TESTBASE>/test/peer/type_change.
 daemon_check_dirty: <TESTBASE>/test/peer/type_change is clean
 Unlinking entry due to different type: 16384 32768 
 backup <TESTBASE>/test/peer/type_change 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/type_change.3 due  3 
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/type_change' to '/tmp/csync2<TESTBASE>/test/peer/type_change.1'. rc = 0
 Locking 'DELETE:<TESTBASE>/test/peer/type_change'
@@ -481,7 +479,6 @@ Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
 daemon_check_dirty: <TESTBASE>/test/peer/type_change/new_file 'N' all is clean
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 backup <TESTBASE>/test/peer/type_change/new_file 'N' all 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/type_change/new_file 'N' all.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/type_change/new_file 'N' all'
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
@@ -571,7 +568,6 @@ Checking for deleted files <TESTBASE>/test/peer/type_change.
 daemon_check_dirty: <TESTBASE>/test/peer/type_change is clean
 Removing file <TESTBASE>/test/peer/type_change
 backup <TESTBASE>/test/peer/type_change 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/type_change.3 due  3 
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/type_change.2' to '/tmp/csync2<TESTBASE>/test/peer/type_change.3'. rc = 0
 renaming backup files '/tmp/csync2<TESTBASE>/test/peer/type_change.1' to '/tmp/csync2<TESTBASE>/test/peer/type_change.2'. rc = 0

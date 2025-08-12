@@ -47,7 +47,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM  0
+Dirty (missing) item <TESTBASE>/test/local RM NULL 0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -58,11 +58,11 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/usr RM  0
+Dirty (missing) item <TESTBASE>/test/local/usr RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/usr) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/usr/local RM  0
+Dirty (missing) item <TESTBASE>/test/local/usr/local RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/usr/local) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin RM  0
+Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/usr/local/sbin) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 

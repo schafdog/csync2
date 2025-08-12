@@ -1,4 +1,3 @@
-created directory <TESTBASE>/test/peer
 ./
 recursive/
 recursive/1/

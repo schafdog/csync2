@@ -147,7 +147,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 
 	struct sockaddr *localaddr = csync_lookup_addr(myhostname.c_str(), NULL, ip_version);
 	if (localaddr == NULL) {
-		csync_error(0, "Failed to look up locala address address from {}\n", peername);
+		csync_error(0, "Failed to look up local address address from {}\n", peername);
 	}
 	struct sockaddr *peeraddr = csync_lookup_addr(peername, port, ip_version);
 

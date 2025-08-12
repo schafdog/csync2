@@ -1,5 +1,35 @@
 name: Csync2 Build and Test
 
+env:
+  CACHE_PATHS: |
+    src/csync2
+    src/config.h
+    src/config.h.in
+    src/Makefile
+    src/Makefile.in
+    src/*.o
+    src/.deps/
+    src/stamp-h1
+    config.status
+    config.log
+    configure
+    configure.ac
+    aclocal.m4
+    Makefile
+    Makefile.in
+    test/Makefile
+    test/Makefile.in
+    missing
+    compile
+    install-sh
+    depcomp
+    ylwrap
+    test-driver
+    src/cfgfile_parser.cpp
+    src/cfgfile_parser.hpp
+    src/cfgfile_scanner.cpp
+    .libs/
+
 on:
   push:
     branches: [ main, master, feature/* ]
@@ -9,200 +39,123 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macOS]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Fix source file timestamps after checkout
+      run: |
+        echo "=== Fixing timestamps after git checkout ==="
+        # Git checkout sets all files to current time, but we need source files
+        # to appear older than any generated files we'll restore from cache
+        
+        # Set all source files to a time well in the past (1 hour ago)
+        PAST_TIME=$(date -d '1 hour ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-1H '+%Y%m%d%H%M.%S')
+        
+        echo "Setting source files to: $PAST_TIME"
+        find . -name "*.ac" -o -name "*.am" -o -name "*.in" | xargs touch -t "$PAST_TIME" 2>/dev/null || true
+        
+        echo "Timestamps fixed"
+
     - name: Calculate build cache key
-      id: cache-key
+      id: build-cache-key
       run: |
         # Create a hash of source files and build configuration
         echo "Calculating build cache key..."
-        
+        uname -a
         # Hash source files, headers, and build scripts
-        SOURCES_HASH=$(find src/ -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.hpp" | sort | xargs cat | sha256sum | cut -d' ' -f1)
-        CONFIG_HASH=$(cat configure.ac Makefile.am | sha256sum | cut -d' ' -f1)
-        DEPS_HASH=$(echo "libgnutls28-dev libsqlite3-dev libmariadb-dev libpq-dev libhiredis-dev libssl-dev librsync-dev" | sha256sum | cut -d' ' -f1)
-        
+        # ./test/debug_source_hash.sh
+        SOURCES_HASH=$(./test/source_hash.sh)
+        echo "SOURCES_HASH $SOURCES_HASH"
+        CONFIG_HASH=$(./test/config_hash.sh)
+        echo "CONFIG_HASH $CONFIG_HASH"
+        DEPS_HASH=$(./test/deps_hash.sh)
+        echo "DEPS_HASH $DEPS_HASH"
         # Combine hashes
-        CACHE_KEY="build-$(echo "${SOURCES_HASH}-${CONFIG_HASH}-${DEPS_HASH}" | sha256sum | cut -d' ' -f1 | head -c 16)"
-        
+        CACHE_KEY=$(./test/combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
+
         echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
         echo "🔑 Build cache key: ${CACHE_KEY}"
 
     - name: Restore build cache
-      id: cache-restore
+      id: build-cache-restore
       uses: actions/cache@v4
       with:
-        path: |
-          src/csync2
-          csync2
-          config.h
-          Makefile
-          .deps/
-          .libs/
-        key: ${{ steps.cache-key.outputs.cache-key }}
-        restore-keys: |
-          build-
+        path: ${{ env.CACHE_PATHS }}
+        key: ${{ steps.build-cache-key.outputs.cache-key }}
 
-    - name: Install build dependencies
-      if: steps.cache-restore.outputs.cache-hit != 'true'
+    - name: Install dependencies
       run: |
-        echo "💾 Cache miss - installing build dependencies and building..."
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          autoconf \
-          automake \
-          pkg-config \
-          bison \
-          flex \
-          libgnutls28-dev \
-          libsqlite3-dev \
-          libmariadb-dev \
-          libpq-dev \
-          libhiredis-dev \
-          libssl-dev \
-          librsync-dev
+        if [ -f src/csync2 ] ; then
+           echo "Skipping dependencies. Restored from cache"
+           exit 0;
+        fi
+        if [ "${{ matrix.os }}" != "macOS" ] ; then
+           sudo apt-get update
+           if [ -f not ] ;  then
+            sudo apt-get install  -y libmariadb3 libhiredis1.1.0 libpq5 librsync libgnutls30t64 
+          else 
+            sudo apt-get install -y \
+              build-essential \
+              autoconf \
+              automake \
+              pkg-config \
+              bison \
+              flex \
+              libgnutls28-dev \
+              libsqlite3-dev \
+              libmariadb-dev \
+              postgresql-client \
+              libpq-dev \
+              libhiredis-dev \
+              libssl-dev \
+              librsync-dev \
+              redis-tools \
+              mariadb-client
+          fi
+        fi
 
-    - name: Build csync2
-      if: steps.cache-restore.outputs.cache-hit != 'true'
+    - name: Build csync2 on ${{ matrix.os }}
       run: |
         echo "=== Building csync2 ==="
         
-        # Generate build system
-        autoreconf -fiv
-        
-        # Configure with all database support
-        ./configure \
-          --enable-postgres \
-          --enable-mysql \
-          --enable-sqlite3 \
-          --enable-redis \
-          --with-libpq-includes=/usr/include/postgresql \
-          --with-libpq-libs=/usr/lib/x86_64-linux-gnu
-        
-        # Build with enhanced warnings
-        make -j$(nproc)
-        
-        # Verify build succeeded
-        test -f src/csync2 || (echo "Build failed - csync2 binary not found" && exit 1)
-        echo "✅ Build completed successfully"
-
-    - name: Verify cached or built binary
-      run: |
-        if [ "${{ steps.cache-restore.outputs.cache-hit }}" == "true" ]; then
-          echo "✅ Using cached build"
+        if [ -f src/csync2 ] ; then
+          echo "csync2 restored from cache" 
         else
-          echo "✅ Fresh build completed"
-        fi
-        
-        # Verify binary exists and is executable
-        test -f src/csync2 || (echo "❌ csync2 binary not found" && exit 1)
-        chmod +x src/csync2
-        ./src/csync2 -V || echo "⚠️  Version check failed"
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: csync2-build
-        path: |
-          src/csync2
-          test/
-          sql/
-          configure
-          Makefile
-          config.h
-        retention-days: 1
-
-    - name: Check warning count
-      if: steps.cache-restore.outputs.cache-hit != 'true'
-      run: |
-        echo "=== Checking compiler warnings ==="
-        cd src
-        
-        # Count warnings
-        WARNING_COUNT=$(make warnings-count 2>/dev/null || echo "0")
-        echo "Total warnings: $WARNING_COUNT"
-        
-        # Show sample warnings
-        echo "Sample warnings:"
-        make warnings 2>/dev/null | head -10 || echo "No warnings to show"
-
-
-    - name: Run basic functionality test
-      env:
-        PGPASSWORD: csync238
-      run: |
-        echo "=== Testing basic csync2 functionality ==="
-        
-        # Test csync2 binary
-        ./src/csync2 -V | head -5
-        
-        # Test version
-        ./src/csync2 -V
-
-    - name: Run csync2 tests (if available)
-      env:
-        PGPASSWORD: csync238
-      run: |
-        echo "=== Running csync2 tests ==="
-        
-        if [ -d test ] && [ -f test/local.sh ]; then
-          cd test
-          ./set_database.sh pgsql
-          # Kill any existing processes
-          pkill -f csync2 || true
-          sleep 2
+          # Generate build system
+          autoreconf -fiv
+          # Configure with PostgreSQL support
+          ./configure \
+            --enable-release \
+            --disable-debug \
+            --enable-postgres \
+            --enable-mysql \
+            --enable-sqlite3 \
+            --enable-redis
           
-          # Run a simple test
-          if [ -f "simple.test" ]; then
-            echo "Running simple test..."
-            timeout 120 make check || (echo "Test completed with status $?" && cat test-suite.log && exit 1) 
-          else
-            echo "No simple.test found"
-          fi
-        else
-          echo "No test directory found, skipping tests"
+          # Build with enhanced warnings (silent mode for clean output)
+          make -j$(nproc) V=1
         fi
 
-    - name: Database cleanup test
-      env:
-        PGPASSWORD: csync238
-      run: |
-        echo "=== Testing database cleanup ==="
-        
-        # Test database cleanup
-        PGPASSWORD=csync238 psql -U csync2 -h localhost -d csync2_local -c "
-          -- Show table sizes before cleanup
-          SELECT schemaname, tablename, 
-                 pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
-          FROM pg_tables 
-          WHERE schemaname = 'public';
-        "
     - name: Save build cache
       if: steps.cache-restore.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
-        path: |
-          src/csync2
-          csync2
-          config.h
-          Makefile
-          .deps/
-          .libs/
-        key: ${{ steps.cache-key.outputs.cache-key }}
+        path: ${{ env.CACHE_PATHS }}
+        key: ${{ steps.build-cache-key.outputs.cache-key }}
 
-
-  test-multiple-ubuntu:
+  test:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest] # ubuntu-22.04,
+        os: [ubuntu-latest ] # ubuntu-22.04,
         db: [sqlite, mysql, pgsql]
     services:
       postgres:
@@ -232,15 +185,15 @@ jobs:
       mariadb:
         image: mariadb:10.11
         env:
-          MYSQL_ROOT_PASSWORD: csync238
-          MYSQL_USER: csync2
-          MYSQL_PASSWORD: csync238
-          MYSQL_DATABASE: csync2_test
+          MARIADB_ROOT_PASSWORD: csync238
+          MARIADB_USER: csync2_notused
+          MARIADB_PASSWORD: notused
+          MARIADB_DATABASE: notused
         options: >-
-          --health-cmd "mysqladmin ping"
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 5
         ports:
           - 3306:3306
 
@@ -248,172 +201,410 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: csync2-build
-        path: .
-
-    - name: Make csync2 executable
+    - name: Fix source file timestamps after checkout
       run: |
-        chmod +x src/csync2
-        echo "✅ csync2 binary is executable"
+        echo "=== Fixing timestamps after git checkout ==="
+        # Set all source files to a time well in the past (1 hour ago)
+        PAST_TIME=$(date -d '1 hour ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-1H '+%Y%m%d%H%M.%S')
+        echo "Setting source files to: $PAST_TIME"
+        find . -name "*.ac" -o -name "*.am" -o -name "*.in" | xargs touch -t "$PAST_TIME" 2>/dev/null || true
 
-    - name: Test on ${{ matrix.os }} with ${{ matrix.db }}
-      continue-on-error: true
+    - name: Setup host aliases for csync2 testing
+      run: |
+        echo "=== Setting up host aliases for csync2 ==="
+
+        # Add csync2-specific host aliases to /etc/hosts
+        sudo tee -a /etc/hosts << 'EOF'
+        # csync2 test environment hosts
+        127.0.0.1 local
+        127.0.0.1 peer
+        EOF
+
+        # Test hostname resolution
+        echo "Testing hostname resolution:"
+        nslookup local || true
+        ping -c 1 peer || true
+
+    - name: Calculate build cache key
+      id: test-cache-key
+      run: |
+        # Create a hash of source files and build configuration
+        echo "Calculating build cache key..."
+        
+        # Hash source files, headers, and build scripts
+        SOURCES_HASH=$(./test/source_hash.sh)
+        echo "SOURCES_HASH $SOURCES_HASH"
+        CONFIG_HASH=$(./test/config_hash.sh)
+        echo "CONFIG_HASH $CONFIG_HASH"
+        DEPS_HASH=$(./test/deps_hash.sh)
+        echo "DEPS_HASH $DEPS_HASH"
+        # Combine hashes
+        CACHE_KEY=$(./test/combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
+        echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+        echo "🔑 Build cache key: ${CACHE_KEY}"
+
+    - name: Restore build cache
+      id: test-cache-restore
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.CACHE_PATHS }}
+        key: ${{ steps.test-cache-key.outputs.cache-key }}
+
+    - name: Verify cache restoration
+      run: |
+        ./test/verify_cache.sh "${{ steps.test-cache-restore.outputs.cache-hit }}" "${{ steps.test-cache-key.outputs.cache-key }}" "test job"
+
+    - name: Debug timestamps after cache restore
+      run: |
+        echo "=== Checking file timestamps ==="
+        echo "Current time: $(date)"
+        echo
+        
+        echo "Source files (should be older than generated files):"
+        ls -la --time-style=full-iso configure.ac aclocal.m4 2>/dev/null || true
+        ls -la --time-style=full-iso Makefile.am test/Makefile.am src/Makefile.am 2>/dev/null || true  
+        ls -la --time-style=full-iso src/config.h.in 2>/dev/null || true
+        echo
+        
+        echo "Refresh time for cached files. Generated files (should be newer than source files):"
+        ls -la --time-style=full-iso configure 2>/dev/null || true
+        ls -la --time-style=full-iso config.status 2>/dev/null || true
+        ls -la --time-style=full-iso Makefile test/Makefile src/Makefile 2>/dev/null || true
+        ls -la --time-style=full-iso src/config.h 2>/dev/null || true
+        ls -la --time-style=full-iso src/stamp-h1 2>/dev/null || true
+        
+    - name: Install dependencies
+      run: |
+       if [ "${{ matrix.os }}" != "macOS" ] ; then
+          sudo apt-get update
+          if [ -f not ] ;  then
+            sudo apt-get install  -y libmariadb3 libhiredis1.1.0 libpq5 librsync libgnutls30t64 
+          else 
+            sudo apt-get install -y \
+              build-essential \
+              autoconf \
+              automake \
+              pkg-config \
+              bison \
+              flex \
+              libgnutls28-dev \
+              libsqlite3-dev \
+              libmariadb-dev \
+              postgresql-client \
+              libpq-dev \
+              libhiredis-dev \
+              libssl-dev \
+              librsync-dev \
+              redis-tools \
+              mariadb-client
+          fi
+        fi
+
+    - name: Setup ${{ matrix.db }} for csync2 on ${{ matrix.os }}
+      env:
+        ROOT: root
+        PASSWORD: csync238
+      run: |
+        ROOT=root
+        if [ "${{ matrix.db }}" == "pgsql" ] ; then
+           ROOT=postgres
+        fi
+        if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
+          echo "=== Setting up ${{ matrix.db }} for csync2 ==="
+          ./test/create_${{ matrix.db }}.sh $ROOT $PASSWORD ${{ matrix.os }}
+        fi
+  
+    - name: Verify ${{ matrix.db }} setup
       env:
         PGPASSWORD: csync238
-        MYSQLPASSWORD: csync238
-        DB_HOST: 127.0.0.1
-
       run: |
-        echo "=== Testing on ${{ matrix.os }} with database ${{ matrix.db }} ==="
-        
-        # Install minimal dependencies and runtime libraries
-        sudo apt-get update
-        sudo apt-get install -y \
-          postgresql-client \
-          redis-tools \
-          mysql-client \
-          netcat-openbsd \
-          libgnutls30 \
-          libsqlite3-0 \
-          libmariadb3 \
-          libpq5 \
-          libhiredis-dev \
-          libssl3 \
-          librsync2
-
-        # Create symbolic links for missing library names that csync2 might expect
-        echo "🔗 Creating library symbolic links..."
-        
-        # Find libmariadb.so and create libmariadbclient.so symlink if needed
-        if [ -f /usr/lib/x86_64-linux-gnu/libmariadb.so.3 ]; then
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmariadb.so.3 /usr/lib/x86_64-linux-gnu/libmariadbclient.so || true
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmariadb.so.3 /usr/lib/x86_64-linux-gnu/libmariadbclient.so.18 || true
-          echo "  ✅ Created libmariadbclient.so -> libmariadb.so.3"
+        if [ -f ./test/verify_${{ matrix.db }}.sh ] ; then
+           echo "=== Verifying ${{ matrix.db }} setup ==="
+           ./test/verify_${{ matrix.db }}.sh
         fi
-        
-        # Also check for libmysqlclient and create alternative symlinks
-        if [ -f /usr/lib/x86_64-linux-gnu/libmysqlclient.so.21 ]; then
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmysqlclient.so.21 /usr/lib/x86_64-linux-gnu/libmariadbclient.so || true
-          echo "  ✅ Created libmariadbclient.so -> libmysqlclient.so.21"
-        elif [ -f /usr/lib/x86_64-linux-gnu/libmysqlclient.so.20 ]; then
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libmysqlclient.so.20 /usr/lib/x86_64-linux-gnu/libmariadbclient.so || true
-          echo "  ✅ Created libmariadbclient.so -> libmysqlclient.so.20"
-        fi
-        
-        # Update ldconfig cache
-        sudo ldconfig || true
-        echo "  ✅ Updated library cache"
 
-        # Verify csync2 binary and dependencies
-        echo "🔍 Verifying csync2 binary and shared library dependencies..."
-        chmod +x src/csync2
-        ldd src/csync2 || echo "⚠️  Could not check shared libraries"
-        ./src/csync2 -V || echo "⚠️  csync2 version check failed"
+    - name: Run basic functionality test
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing basic csync2 functionality ==="
+        
+        # Test csync2 binary
+        ./src/csync2 -V | head -5
+        
+        # Test version
+        ./src/csync2 -V
 
-        # Set up database configuration
+    - name: Test csync2 on ${{ matrix.os }} with ${{ matrix.db }} 
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing csync2 on ${{ matrix.os }} with ${{ matrix.db }} ==="
+        
         cd test
-        echo "🔄 Setting database configuration to ${{ matrix.db }}"
+        
+        echo "🔄 Testing with database: ${{ matrix.db }} on ${{ matrix.os }}"
+        
+        # Set the database configuration
         ./set_database.sh "${{ matrix.db }}"
         
-        # Verify database configuration
+        # Verify the database configuration was set
         if [ -L database ]; then
           echo "✅ Database configuration set to: $(readlink database)"
         else
           echo "❌ Failed to set database configuration"
-          echo "⚠️  Continuing with default database configuration..."
+          continue
+        fi
+        
+        # Run a simple test with this database
+        echo "Running 'make check' with ${{ matrix.dn }}..."
+        make test-only
+
+    - name: Collect test artifacts on failure
+      if: failure()
+      run: |
+        ./test/collect_failed_tests.sh
+
+    - name: Upload test results on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.db }}
+        path: test-artifacts/
+        retention-days: 7
+
+    - name: Send email notification on failure
+      if: failure()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "❌ Csync2 Test Failed - ${{ matrix.os }}-${{ matrix.db }}"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: GitHub Actions <${{ secrets.SMTP_USERNAME }}>
+        body: |
+          Test failure detected in csync2 repository!
+          
+          **Details:**
+          - Repository: ${{ github.repository }}
+          - Branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          - OS: ${{ matrix.os }}
+          - Database: ${{ matrix.db }}
+          - Workflow: ${{ github.workflow }}
+          - Run: ${{ github.run_number }}
+          
+          **View Details:**
+          - Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - Download Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          **Test Logs:**
+          Check the uploaded artifacts for detailed test logs and failure information.
+        attachments: test/test-suite.log
+
+  test-macos:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS ]
+        db: [sqlite, mysql, pgsql]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Fix source file timestamps after checkout
+      run: |
+        echo "=== Fixing timestamps after git checkout ==="
+        # Set all source files to a time well in the past (1 hour ago)
+        PAST_TIME=$(date -d '1 hour ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-1H '+%Y%m%d%H%M.%S')
+        echo "Setting source files to: $PAST_TIME"
+        find . -name "*.ac" -o -name "*.am" -o -name "*.in" | xargs touch -t "$PAST_TIME" 2>/dev/null || true
+
+    - name: Calculate build cache key
+      id: test-cache-key-macos
+      run: |
+        # Create a hash of source files and build configuration
+        echo "Calculating build cache key..."
+        
+        # Hash source files, headers, and build scripts
+        bash -x ./test/source_hash.sh
+        SOURCES_HASH=$(./test/source_hash.sh)
+        echo "SOURCES_HASH $SOURCES_HASH"
+        CONFIG_HASH=$(./test/config_hash.sh)
+        echo "CONFIG_HASH $CONFIG_HASH"
+        DEPS_HASH=$(./test/deps_hash.sh)
+        echo "DEPS_HASH $DEPS_HASH"
+        # Combine hashes
+        CACHE_KEY=$(./test/combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
+        echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+        echo "🔑 Build cache key: ${CACHE_KEY}"
+
+    - name: Debug cache key
+      run: |
+        echo "🔍 Debug: Retrieved cache key from step output: ${{ steps.test-cache-key.outputs.cache-key }}"
+
+    - name: Restore build cache
+      id: test-cache-restore
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.CACHE_PATHS }}
+        key: ${{ steps.test-cache-key-macos.outputs.cache-key }}
+
+    - name: Verify cache restoration
+      run: |
+        ./test/verify_cache.sh "${{ steps.test-cache-restore.outputs.cache-hit }}" "${{ steps.test-cache-key-macos.outputs.cache-key }}" "test-macos job"
+
+    - name: Debug timestamps after cache restore (macOS)
+      run: |
+        echo "=== Checking file timestamps ==="
+        echo "Current time: $(date)"
+        echo
+        
+        echo "Source files (should be older than generated files):"
+        ls -la configure.ac aclocal.m4 2>/dev/null || true
+        ls -la Makefile.am test/Makefile.am src/Makefile.am 2>/dev/null || true  
+        ls -la src/config.h.in 2>/dev/null || true
+        echo
+        
+        echo "Generated files (should be newer than source files):"
+        ls -la configure 2>/dev/null || true
+        ls -la Makefile test/Makefile src/Makefile 2>/dev/null || true
+        ls -la src/config.h config.status 2>/dev/null || true
+        ls -la src/stamp-h1 2>/dev/null || true
+        echo
+        
+        echo "Checking what make thinks needs rebuilding:"
+        make -n | head -10 || true
+
+    - name: Install dependencies
+      run: |
+        if [ -f ./test/install-run-time-dependencies.sh ] ; then
+           ./test/install-run-time-dependencies.sh
+        fi
+    - name: Setup ${{ matrix.db }} for csync2 on ${{ matrix.os }}
+      env:
+        PGPASSWORD: csync238
+      run: |
+        if [ -f ./test/create_${{ matrix.db }}.sh ] ; then
+          echo "=== Setting up ${{ matrix.db }} for csync2 ==="
+          # Call without root/password. 
+          ./test/create_${{ matrix.db }}.sh
+        fi
+  
+    - name: Verify ${{ matrix.db }} setup
+      env:
+        PGPASSWORD: csync238
+      run: |
+        if [ -f ./test/verify_${{ matrix.db }}.sh ] ; then
+           echo "=== Verifying ${{ matrix.db }} setup ==="
+           ./test/verify_${{ matrix.db }}.sh
         fi
 
-        # Test database connections and setup
-        if [ "${{ matrix.db }}" = "pgsql" ]; then
-          until pg_isready -h localhost -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
-          
-          # Setup PostgreSQL for testing
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_local WITH PASSWORD 'csync_local';" || true
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_local OWNER csync2_local;" || true
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE USER csync2_peer WITH PASSWORD 'csync_peer';" || true
-          PGPASSWORD=csync238 psql -h localhost -U postgres -c "CREATE DATABASE csync2_peer OWNER csync2_peer;" || true
-          
-          echo "PostgreSQL setup successful"
-        fi
+    - name: Run basic functionality test
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing basic csync2 functionality ==="
+        
+        # Test csync2 binary
+        ./src/csync2 -V | head -5
+        
+        # Test version
+        ./src/csync2 -V
 
-        if [ "${{ matrix.db }}" = "mysql" ]; then
-          retries=20
-          until mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "SELECT 1;" 2>/dev/null; do
-            echo "Waiting for MariaDB... ($retries retries left)"
-            sleep 2
-            retries=$((retries - 1))
-            if [ $retries -eq 0 ] ; then
-               echo "❌ Giving up on mysql after 20 seconds - skipping MySQL tests"
-               echo "📊 Test Results for ${{ matrix.db }}:"
-               echo "❌ Tests skipped: Database connection failed"
-               exit 0
-            fi
-          done
-          
-          # Setup MariaDB for testing
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_local;"
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "CREATE DATABASE IF NOT EXISTS csync2_peer;"
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_local.* TO 'csync2_local'@'%' identified by 'csync2_local'; " || true
-          mysql --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "GRANT ALL PRIVILEGES ON csync2_peer.* TO 'csync2_peer'@'%' identified by 'csync2_peer'; FLUSH PRIVILEGES;" || true
-          echo "MariaDB setup successful"
-
-          echo "SELECT 123" | mysql --protocol=TCP -h 127.0.0.1 -u csync2_local -pcsync2_local csync2_local
-        fi
-
-        # Test Redis connection (used by all database types)
-        until redis-cli -h localhost -p 6379 ping; do
-          echo "Waiting for Redis..."
-          sleep 2
-        done
-
-        # Run basic csync2 test with configured database
-        echo "🧪 Testing csync2 with ${{ matrix.db }}..."
-        # Run tests if available
-        # Initialize test counters
-        TOTAL_TESTS=0
-        ERROR_COUNT=0
-              
-          echo "📋 Running all *.test files..."
-
-        # Run each test file
-        for test_file in younger_auto_resolve.test; do
-          if [ -f "$test_file" ]; then
-            TOTAL_TESTS=$((TOTAL_TESTS + 1))
-            test_script="${test_file/.test/.sh}"
-                  
-             echo "  🔄 Running test: $test_file (script: $test_script)"
-                  
-             if [ -f "$test_script" ]; then
-               DEBUG=vv
-               # Run test with timeout
-               if timeout 120 bash -x ./"$test_script"  ; then
-                 echo "    ✅ PASS: $test_file"
-               else
-                 exit_code=$?
-                 ERROR_COUNT=$((ERROR_COUNT + 1))
-                 echo "    ❌ FAIL: $test_file (exit code: $exit_code)"
-               fi
-             else
-               ERROR_COUNT=$((ERROR_COUNT + 1))
-               echo "    ❌ FAIL: $test_file (script $test_script not found)"
-             fi
-                  
-             # Brief pause between tests
-             sleep 1
-          fi
-        done
-              
-        echo "📊 Test Results for $db:"
-        if [ $ERROR_COUNT -eq 0 ]; then
-          echo "✅ All tests passed: $ERROR_COUNT errors / $TOTAL_TESTS tests"
+    - name: Test csync2 on ${{ matrix.os }} with ${{ matrix.db }} 
+      env:
+        PGPASSWORD: csync238
+      run: |
+        echo "=== Testing csync2 on ${{ matrix.os }} with ${{ matrix.db }} ==="
+        
+        cd test
+        
+        echo "🔄 Testing with database: ${{ matrix.db }} on ${{ matrix.os }}"
+        
+        # Set the database configuration
+        ./set_database.sh "${{ matrix.db }}"
+        
+        # Verify the database configuration was set
+        if [ -L database ]; then
+          echo "✅ Database configuration set to: $(readlink database)"
         else
-          echo "❌ Tests failed: $ERROR_COUNT errors / $TOTAL_TESTS tests"
+          echo "❌ Failed to set database configuration"
+          continue
         fi
-        echo ""
-        echo "✅ Test completed successfully on ${{ matrix.os }} with ${{ matrix.db }}"
+        
+        # Run a simple test with this database
+        echo "Running basic functionality test with ${{ matrix.dn }}..."
+
+        # No timeout on macOS
+        make test-only
+
+    - name: Collect test artifacts on failure
+      if: failure()
+      run: |
+        echo "=== Collecting test artifacts ==="
+        mkdir -p test-artifacts
+        
+        # Copy basic test files
+        cp test/*.log test-artifacts/ 2>/dev/null || true
+        cp test/*.trs test-artifacts/ 2>/dev/null || true
+        cp test/test-suite.log test-artifacts/ 2>/dev/null || true
+        
+        # Find and copy all .log, .diff, and .res files from subdirectories
+        find test -name "*.log" -type f -exec cp --parents {} test-artifacts/ \; 2>/dev/null || true
+        find test -name "*.diff" -type f -exec cp --parents {} test-artifacts/ \; 2>/dev/null || true
+        find test -name "*.res" -type f -exec cp --parents {} test-artifacts/ \; 2>/dev/null || true
+        
+        # Find directories containing .diff files and copy them entirely
+        find test -name "*.diff" -type f -exec dirname {} \; | sort -u | while read dir; do
+          echo "Found diff directory: $dir"
+          mkdir -p "test-artifacts/$dir"
+          cp -r "$dir"/* "test-artifacts/$dir/" 2>/dev/null || true
+        done
+        
+        echo "Collected artifacts:"
+        find test-artifacts -type f | head -20
+
+    - name: Upload test results on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.db }}
+        path: test-artifacts/
+        retention-days: 7
+
+    - name: Send email notification on failure
+      if: failure()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "❌ Csync2 Test Failed - ${{ matrix.os }}-${{ matrix.db }}"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: GitHub Actions <${{ secrets.SMTP_USERNAME }}>
+        body: |
+          Test failure detected in csync2 repository!
+          
+          **Details:**
+          - Repository: ${{ github.repository }}
+          - Branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          - OS: ${{ matrix.os }}
+          - Database: ${{ matrix.db }}
+          - Workflow: ${{ github.workflow }}
+          - Run: ${{ github.run_number }}
+          
+          **View Details:**
+          - Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - Download Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          **Test Logs:**
+          Check the uploaded artifacts for detailed test logs and failure information.
+        attachments: test/test-suite.log
+

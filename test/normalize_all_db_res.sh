@@ -13,7 +13,7 @@ if [ "$RES" == "" ] ; then
     RES=$DB
     echo Assuming $DB files
 fi
-pattern="*/$LEVEL/*.${RES}.res"
+pattern="*/$LEVEL/$DB/*.${RES}.res"
 for d in $pattern ; do
     echo "cat $d | ./db_filter.sh $DB > $d.raw" 
     echo "mv $d.raw $d"

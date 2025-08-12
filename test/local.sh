@@ -93,8 +93,12 @@ function cmd {
 	echo $PROG ${OPTS} "${TESTPATH}"
         ASAN_OPTIONS=${ASAN_OPTIONS} $PROG ${OPTS} "${TESTPATH}" 2>&1 | \
 	    grep -a -v Finished >> ${TESTNAME}/${LEVEL}/${COUNT}.log.raw
-	cat ${TESTNAME}/${LEVEL}/${COUNT}.log.raw | ./normalize_logs.sh | \
-	    ./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.log
+	if [ "$FILTER" == "NO" ] ; then
+	    cp ${TESTNAME}/${LEVEL}/${COUNT}.log.raw ${TESTNAME}/${LEVEL}/${COUNT}.log
+	else
+	    cat ${TESTNAME}/${LEVEL}/${COUNT}.log.raw | ./normalize_logs.sh | \
+		./normalize_paths.sh > ${TESTNAME}/${LEVEL}/${COUNT}.log
+	fi
 	if [ "$KEEP_RAW" != "YES" ] ; then
 	    rm ${TESTNAME}/${LEVEL}/${COUNT}.log.raw
 	fi
@@ -157,7 +161,7 @@ function daemon {
     if [ "$DAEMON" == "NO" ] ; then
 	echo "daemon start disabled";
 	echo "${PROG} -y -q -K csync2_${DATABASE}_${DCFG}.cfg -N $DCFG -z $DNAME -iiiiB$DEBUG"
-	if [ "WAIT" == "YES" ] ; then
+	if [ "$WAIT" == "YES" ] ; then
 	    echo "press any key to continue"
 	    read
 	fi
