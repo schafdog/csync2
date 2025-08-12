@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS ] # ubuntu-24.04
+        os: [ubuntu-latest, macOS]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -266,20 +266,13 @@ jobs:
         ls -la --time-style=full-iso src/config.h.in 2>/dev/null || true
         echo
         
-        echo "Generated files (should be newer than source files):"
+        echo "Refresh time for cached files. Generated files (should be newer than source files):"
         ls -la --time-style=full-iso configure 2>/dev/null || true
         ls -la --time-style=full-iso config.status 2>/dev/null || true
         ls -la --time-style=full-iso Makefile test/Makefile src/Makefile 2>/dev/null || true
         ls -la --time-style=full-iso src/config.h 2>/dev/null || true
         ls -la --time-style=full-iso src/stamp-h1 2>/dev/null || true
         
-    - name: Fix all timestamps after cache restore
-      run: |
-        echo "=== timestamp fix ==="
-        # Make sure configure is same as the status
-        [ -f config.status ] && [ -f configure ] && touch -r config.status configure || echo "timestamp failed"
-        ls  -la --time-style=full-iso config.status configure
-
     - name: Install dependencies
       run: |
        if [ "${{ matrix.os }}" != "macOS" ] ; then
