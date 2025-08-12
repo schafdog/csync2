@@ -1,8 +1,8 @@
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 Found my alias peer localhost 30861
 Binding to 30861 IPv2
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -80,7 +80,7 @@ CONN local < OK (cu_later).
 
 goto nofork.
 CONN (null) > 'CONFIG '
-  Config-File:   csync2_<DB>_<PEER>.cfg
+Config-File:   csync2_<DB>_<PEER>.cfg
 My hostname is peer.
 Database File: <CONN_STR>
 DB Version:    2
@@ -142,7 +142,6 @@ Checking for modified files <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Checking for deleted files <TESTBASE>/test/peer/ÆØÅ Café.utf8.
 daemon_check_dirty: <TESTBASE>/test/peer/ÆØÅ Café.utf8 is clean
 backup <TESTBASE>/test/peer/ÆØÅ Café.utf8 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/ÆØÅ Café.utf8.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/ÆØÅ Café.utf8'
 DEL local:<TESTBASE>/test/peer/ÆØÅ Café.utf8 rc: 0

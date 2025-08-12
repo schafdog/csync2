@@ -64,7 +64,7 @@ CONN peer < MOD %25test%25/usr/local/sbin - <UID> <GID> <USER> <GROUP> <BLKSIZE>
 CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local/usr/local/sbin (0)
 Directory time <TESTBASE>/test/local/usr/local <TESTBASE>/test/local/usr/local/sbin
-Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin/hej RM  0
+Dirty (missing) item <TESTBASE>/test/local/usr/local/sbin/hej RM NULL 0
 Deleting peer:<TESTBASE>/test/local/usr/local/sbin/hej
 CONN peer < STAT %25test%25/usr/local/sbin/hej 
 CONN peer > 'OK (data_follows).'

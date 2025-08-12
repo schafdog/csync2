@@ -23,6 +23,7 @@ void csync2_version(void)
 	);
 }
 
+
 int  main(int argc, char **argv) {
     return csync2_main(argc, argv);
 }

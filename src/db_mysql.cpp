@@ -207,7 +207,7 @@ int DbMySql::upgrade_to_schema(int new_version) {
 			"  `status`  int,"
 			"  KEY `host` (`host`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", HOST_LENGTH);
-	csync_debug(1, "Creating host table: {}\n", sql);
+	csync_debug(3, "Creating host table: {}\n", sql);
 	conn_->query(sql);
 
 	sql = std::format(
@@ -217,7 +217,7 @@ int DbMySql::upgrade_to_schema(int new_version) {
 			"  `logfile` text,"
 			"  KEY `filename` (`filename`({}),`command`({})) "
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin", FILE_LENGTH, FILE_LENGTH, FILE_LENGTH);
-	csync_debug(1, "Creating action table: {}\n", sql);
+	csync_debug(3, "Creating action table: {}\n", sql);
 	conn_->query(sql);
 	sql = std::format(
 	                "CREATE TABLE IF NOT EXISTS `dirty` ("
@@ -242,7 +242,7 @@ int DbMySql::upgrade_to_schema(int new_version) {
 					"  KEY `idx_file_dev_inode` (`device`,`inode`) "
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 					FILE_LENGTH, HOST_LENGTH, HOST_LENGTH, FILE_LENGTH + 1000, FILE_LENGTH, FILE_LENGTH);
-	csync_debug(1, "Creating table dirty: {}\n", sql);
+	csync_debug(3, "Creating table dirty: {}\n", sql);
 	conn_->query(sql);
 
 	sql = std::format("CREATE TABLE IF NOT EXISTS `file` ("
@@ -263,7 +263,7 @@ int DbMySql::upgrade_to_schema(int new_version) {
 					"  KEY `idx_file_dev_inode` (`device`,`inode`) "
 					") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 					FILE_LENGTH, HOST_LENGTH, FILE_LENGTH + 100, FILE_LENGTH);
-	csync_debug(1, "Creating table file: {}\n", sql);
+	csync_debug(3, "Creating table file: {}\n", sql);
 	conn_->query(sql);
 
 	sql =   std::format("  CREATE TABLE IF NOT EXISTS `hint` ("
@@ -271,7 +271,7 @@ int DbMySql::upgrade_to_schema(int new_version) {
 			"  `is_recursive` int(11)    DEFAULT NULL"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin",
 			FILE_LENGTH);
-	csync_debug(1, "Creating table hint: {}\n", sql);
+	csync_debug(3, "Creating table hint: {}\n", sql);
 	conn_->query(sql);
 
 	sql = std::format(
@@ -280,7 +280,7 @@ int DbMySql::upgrade_to_schema(int new_version) {
 			"  `certdata` text DEFAULT NULL,"
 			"  UNIQUE KEY `peername` (`peername`)"
 			") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_bin");
-	csync_debug(1, "Creating table x509_cert: {}\n", sql);
+	csync_debug(3, "Creating table x509_cert: {}\n", sql);
 	conn_->query(sql);
 
 	return DB_OK;
@@ -317,7 +317,7 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 		free(db_url);
 		return rc;
 	}
-
+	csync_debug(3, "host {} user {} pass {} database {} port {}\n", host,user, pass, database, port);
 	if (f.mysql_real_connect_fn(db, host, user, pass, database, port, unix_socket, CLIENT_FOUND_ROWS) == NULL) {
 		if (f.mysql_errno_fn(db) == ER_BAD_DB_ERROR) {
 			if (f.mysql_real_connect_fn(db, host, user, pass, NULL, port, unix_socket, 0) != NULL) {

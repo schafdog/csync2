@@ -21,6 +21,7 @@ public:
 
 class ResultSet; // Forward declaration
 
+void replace_all(std::string &sql, const std::string &from, const std::string &to);
 /**
  * @brief Interface for a prepared statement.
  *

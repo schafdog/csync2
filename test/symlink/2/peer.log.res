@@ -253,7 +253,6 @@ Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.link.
 daemon_check_dirty: <TESTBASE>/test/peer/new_file 'N' all.link is clean
 Removing file <TESTBASE>/test/peer/new_file 'N' all.link
 backup <TESTBASE>/test/peer/new_file 'N' all.link 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.link.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all.link'
 Removing <TESTBASE>/test/peer/new_file 'N' all.link from file db.
@@ -265,7 +264,6 @@ Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
 daemon_check_dirty: <TESTBASE>/test/peer/new_file 'N' all is clean
 Removing file <TESTBASE>/test/peer/new_file 'N' all
 backup <TESTBASE>/test/peer/new_file 'N' all 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/new_file 'N' all.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/new_file 'N' all'
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.

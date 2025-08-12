@@ -131,7 +131,7 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 	if (new_version > 2)
 		return DB_ERROR;
 
-	csync_info(1, "Upgrading database schema to version {}.", new_version);
+	csync_info(3, "Upgrading database schema to version {}.", new_version);
 
 	std::string sql =
 			"CREATE TABLE IF NOT EXISTS action ("
@@ -139,51 +139,52 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 			" UNIQUE ( filename, command ) ON CONFLICT IGNORE"
 			")";
 
-	csync_debug(1, "Creating action table {} \n", sql);
+	csync_debug(3, "Creating action table {} \n", sql);
 	conn_->query(sql);
 
 	sql =
 	        "CREATE TABLE IF NOT EXISTS file ("
-			"  filename TEXT NOT NULL, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
+			"  filename TEXT NOT NULL, hostname, checktxt, "
+		    "  device bigint, inode bigint, size bigint, digest, mode int, mtime bigint, type, "
 			"  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 			" UNIQUE (hostname, filename) "
 			"       ON CONFLICT REPLACE); "
 			"CREATE INDEX idx_file_device_inode on file (device, inode);";
 
-	csync_debug(1, "Creating file table {} \n", sql);
+	csync_debug(3, "Creating file table {} \n", sql);
 	conn_->query(sql);
 
 	sql =	"CREATE TABLE IF NOT EXISTS dirty ("
 			"  filename, forced, myname, peername, checktxt, op, operation,"
-			"  device, inode, other, digest, mode, mtime, type, "
+			"  device bigint, inode bigint, other, digest, mode int, mtime bigint, type, "
 			"  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 			"  UNIQUE (filename, peername));"
 			// "  KEY (device, inode) "
 			// "  ON CONFLICT IGNORE); "
 			"CREATE INDEX idx_dirty_device_inode on file (device, inode);";
 
-	csync_debug(1, "Creating dirty table {} \n", sql);
+	csync_debug(3, "Creating dirty table {} \n", sql);
 	conn_->query(sql);
 
 	sql =   "CREATE TABLE IF NOT EXISTS hint ("
 			" filename, is_recursive,"
 			" UNIQUE ( filename, is_recursive ) ON CONFLICT IGNORE)";
 
-	csync_debug(1, "Creating hint table {} \n", sql);
+	csync_debug(3, "Creating hint table {} \n", sql);
 	conn_->query(sql);
 
 	sql =   "CREATE TABLE IF NOT EXISTS host ("
 			" host, status, "
 			" UNIQUE ( host ) ON CONFLICT IGNORE)";
 
-	csync_debug(1, "Creating host table {} \n", sql);
+	csync_debug(3, "Creating host table {} \n", sql);
 	conn_->query(sql);
 
 	sql =	"CREATE TABLE IF NOT EXISTS x509_cert ("
 			" peername, certdata, "
 			" UNIQUE ( peername ) ON CONFLICT IGNORE)";
 
-	csync_debug(1, "Creating x509_cert table {} \n", sql);
+	csync_debug(3, "Creating x509_cert table {} \n", sql);
 	conn_->query(sql);
 	return DB_OK;
 }
@@ -191,6 +192,9 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 DbSqlite::DbSqlite() {}
 
 DbSqlite::~DbSqlite() {
+
+	delete conn_;
+	
     if (dl_handle) {
         dlclose(dl_handle);
         dl_handle = NULL;

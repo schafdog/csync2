@@ -12,6 +12,7 @@ cmd c "New $NAME/$FILENAME"
 cmd M "New $NAME/$FILENAME"
 cmd x "New $NAME/$FILENAME"
 cmd T test/$NAME "List daemon"
+sleep 1
 ./portable_touch.sh "test/$NAME/mark"
 cmd m "test/$NAME/mark (mark)"
 cmd u "test/$NAME/mark (sync)"

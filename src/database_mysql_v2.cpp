@@ -146,8 +146,11 @@ std::unique_ptr<PreparedStatement> MySQLConnection::prepare(const std::string& s
 }
 
 std::shared_ptr<PreparedStatement> MySQLConnection::prepare(const std::string& name, const std::string& sql) {
+    std::string converted_sql = sql;
+    replace_all(converted_sql, "{}", "?");
+
     if (named_statements_.find(name) == named_statements_.end()) {
-        named_statements_[name] = std::make_shared<MySQLPreparedStatement>(mysql_, sql, mysql_api_);
+        named_statements_[name] = std::make_shared<MySQLPreparedStatement>(mysql_, converted_sql, mysql_api_);
     }
     return named_statements_[name];
 }

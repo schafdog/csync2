@@ -56,7 +56,7 @@ CONN peer > 'OK (cmd_finished).'
 CONN peer < HELLO local
 
 CONN peer > 'OK (cmd_finished).'
-Dirty (missing) item <TESTBASE>/test/local RM  0
+Dirty (missing) item <TESTBASE>/test/local RM NULL 0
 Deleting peer:<TESTBASE>/test/local
 CONN peer < STAT %25test%25 
 CONN peer > 'OK (data_follows).'
@@ -67,19 +67,19 @@ CONN peer > 'IDENT (cmd_finished).'
 Clear dirty peer:<TESTBASE>/test/local (0)
 remove_file SQL: DELETE FROM file WHERE hostname = ?  AND  (filename = ? OR filename LIKE ?) , param1: <TESTBASE>/test/local, param2: <TESTBASE>/test/local/%, param3: local
 DELETE (<TESTBASE>/test/local) Last dir: <TESTBASE>/test/local/. rc: 4
-Dirty (missing) item <TESTBASE>/test/local/recursive RM  0
+Dirty (missing) item <TESTBASE>/test/local/recursive RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/recursive) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/recursive/1 RM  0
+Dirty (missing) item <TESTBASE>/test/local/recursive/1 RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/recursive/1) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/recursive/1/2 RM  0
+Dirty (missing) item <TESTBASE>/test/local/recursive/1/2 RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/recursive/1/2) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3 RM  0
+Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3 RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4 RM  0
+Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4 RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4/5 RM  0
+Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4/5 RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4/5) from deleted directory (<TESTBASE>/test/local/)
-Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4/5/file.c RM  0
+Dirty (missing) item <TESTBASE>/test/local/recursive/1/2/3/4/5/file.c RM NULL 0
 Skipping matched file (<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c) from deleted directory (<TESTBASE>/test/local/)
 CONN peer < BYE
 

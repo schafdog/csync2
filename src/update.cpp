@@ -1106,6 +1106,10 @@ static int csync_find_update_hardlink(int conn, db_conn_p db, const std::string 
 	return rc;
 }
 
+const char * is_null_or_blank(const char *str) {
+	return str ? (str[0] != 0 ? str : "NULL") : "NULL";
+}
+
 static int csync_update_file_mod(int conn, db_conn_p db, const char *myname, peername_p peername, filename_p filename,
 		operation_t operation, const char *other, const char *checktxt, const char *digest, int force, int dry_run)
 {
@@ -1575,7 +1579,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 			last_tn = &(t->next);
 		} else {
 			/* File not found */
-			csync_debug(2, "Dirty (missing) item {} {} {} {}\n", filename, op_str, other ? other : "NULL", forced);
+			csync_debug(2, "Dirty (missing) item {} {} {} {}\n", filename, op_str, is_null_or_blank(other), forced);
 			if (t->operation != OP_RM && t->operation != OP_MARK) {
 				csync_warn(1, "Unable to {} {}:{}. File has disappeared since check.\n", csync_operation_str(operation),
 						   peername.c_str(), filename.c_str());

@@ -34,6 +34,7 @@ using sqlite3_errmsg_t = decltype(&sqlite3_errmsg);
 using sqlite3_db_handle_t = decltype(&sqlite3_db_handle);
 using sqlite3_changes_t = decltype(&sqlite3_changes);
 using sqlite3_free_t = decltype(&sqlite3_free);
+using sqlite3_shutdown_t = decltype(&sqlite3_shutdown);
 
 const char* get_sqlite_library_name() {
 #if defined(_WIN32) || defined(_WIN64)
@@ -71,6 +72,7 @@ struct SQLiteAPI {
     sqlite3_db_handle_t sqlite3_db_handle;
     sqlite3_changes_t sqlite3_changes;
     sqlite3_free_t sqlite3_free;
+    sqlite3_shutdown_t sqlite3_shutdown;
 
     SQLiteAPI() {
         const char* lib_name = get_sqlite_library_name();
@@ -103,10 +105,13 @@ struct SQLiteAPI {
         sqlite3_db_handle = reinterpret_cast<sqlite3_db_handle_t>(dlsym(handle_, "sqlite3_db_handle"));
         sqlite3_changes = reinterpret_cast<sqlite3_changes_t>(dlsym(handle_, "sqlite3_changes"));
         sqlite3_free = reinterpret_cast<sqlite3_free_t>(dlsym(handle_, "sqlite3_free"));
+        sqlite3_shutdown = reinterpret_cast<sqlite3_shutdown_t>(dlsym(handle_, "sqlite3_shutdown"));
     }
 
     ~SQLiteAPI() {
+	csync_debug(3, "Close SQLite API\n");
         if (handle_) {
+	    sqlite3_shutdown();
             dlclose(handle_);
         }
     }
@@ -211,6 +216,7 @@ public:
 
     ~SQLitePreparedStatement() override {
         if (stmt_) {
+	    csync_debug(3, "SQLitePreparedStatement finalizing\n");
             api_->sqlite3_finalize(stmt_);
         }
     }
@@ -305,6 +311,9 @@ SQLiteConnection::SQLiteConnection(sqlite3 *db) : db_(db) {
 }
 
 SQLiteConnection::~SQLiteConnection() {
+    // Need to finalize stmts before DB close.
+    named_statements_.clear();
+    csync_debug(3, "Now closing DB\n");
     if (db_) {
         sqlite_api_->sqlite3_close(db_);
     }
@@ -326,8 +335,10 @@ std::unique_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& 
 }
 
 std::shared_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& name, const std::string& sql) {
+    std::string converted_sql = sql;
+    replace_all(converted_sql, "{}", "?");
     if (named_statements_.find(name) == named_statements_.end()) {
-        named_statements_[name] = std::make_shared<SQLitePreparedStatement>(db_, sql, sqlite_api_);
+        named_statements_[name] = std::make_shared<SQLitePreparedStatement>(db_, converted_sql, sqlite_api_);
     }
     return named_statements_[name];
 }

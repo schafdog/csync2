@@ -247,7 +247,6 @@ Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c.
 daemon_check_dirty: <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c is clean
 Removing file <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c
 backup <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c'
 Removing <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c from file db.

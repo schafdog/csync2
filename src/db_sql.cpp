@@ -82,8 +82,10 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 		int dev_inode;
 		if ((dev_inode = compare_dev_inode(file_stat, device, inode, &old_stat)))
 		{
-			csync_info(1, "File {} has changed device:inode {}:{} -> {}:{} {:o} \n",
-					   filename.c_str(), device.c_str(), inode.c_str(), file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
+			// Happens on macos when dir <-> file
+			csync_info(3, "File {} has changed device:inode {}:{} -> {}:{} {:o} \n",
+					   filename.c_str(), device.c_str(), inode.c_str(),
+					   file_stat->st_dev, file_stat->st_ino, file_stat->st_mode);
 
 			if (dev_inode == DEV_CHANGED)
 			{
@@ -786,28 +788,31 @@ static textlist_p db_sql_get_dirty_by_peer(DbApi *db, const char *myhostname, pe
 }
 
 textlist_p DbSql::get_old_operation(const std::string& checktxt,
-							   peername_p str_peername,
-							   filename_p str_filename,
+							   peername_p peername,
+							   filename_p filename,
 							   const char *device, const char *ino)
 {
-	const char *peername = str_peername.c_str();
-	const char *filename = str_filename.c_str();
-
+	const std::string sql = 
+		"SELECT operation, filename, other, checktxt, digest, op "
+		"FROM dirty "
+		"WHERE myname = {} AND "
+		"(checktxt = {} AND device = {} AND inode = {} OR filename = {}) AND peername = {} "
+		"ORDER BY timestamp ";
+	csync_debug(3, sql,  g_myhostname, checktxt, device, ino, filename, peername);
 	textlist_p tl = 0;
 	auto rs = conn_->execute_query("get_old_operation",
-			  "SELECT operation, filename, other, checktxt, digest, op FROM dirty WHERE myname = ? AND "
-			  "(checktxt = ? AND device = ? AND inode = ? OR filename = ?) AND peername = ? "
-			  "ORDER BY timestamp ",
-			  g_myhostname,
-			  checktxt,
-			  device,
-			  ino,
-			  filename,
-			  peername);
+								   sql,
+								   g_myhostname,
+								   checktxt,
+								   device,
+								   ino,
+								   filename,
+								   peername);
 
 	while (rs->next()) {
 		operation_t old_operation = csync_operation(rs->get_string(1).c_str());
 		const std::string old_filename = rs->get_string(2);
+		csync_debug(3, "db->get_old_operation: FOUND {} {}\n", old_filename, rs->get_string(1));
 		const auto old_other = rs->get_string_optional(3);
 		const auto old_checktxt = rs->get_string_optional(4);
 		const auto old_digest = rs->get_string_optional(5);

@@ -469,7 +469,6 @@ Checking for modified files <TESTBASE>/test/peer/usr/local/sbin/hej
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin/hej.
 daemon_check_dirty: <TESTBASE>/test/peer/usr/local/sbin/hej is clean
 backup <TESTBASE>/test/peer/usr/local/sbin/hej 0 
-Changing owner of /tmp/csync2/<BACKUP> to user <UID> and group <GID>, rc= -1 
 check backup generation /tmp/csync2<TESTBASE>/test/peer/usr/local/sbin/hej.3 due  3 
 Locking 'DELETE:<TESTBASE>/test/peer/usr/local/sbin/hej'
 DEL local:<TESTBASE>/test/peer/usr/local/sbin/hej rc: 0
