@@ -239,6 +239,28 @@ jobs:
       run: |
         ./test/verify_cache.sh "${{ steps.test-cache-restore.outputs.cache-hit }}" "${{ steps.test-cache-key.outputs.cache-key }}" "test job"
 
+    - name: Debug timestamps after cache restore
+      run: |
+        echo "=== Checking file timestamps ==="
+        echo "Current time: $(date)"
+        echo
+        
+        echo "Source files (should be older than generated files):"
+        ls -la --time-style=full-iso configure.ac aclocal.m4 2>/dev/null || true
+        ls -la --time-style=full-iso Makefile.am test/Makefile.am src/Makefile.am 2>/dev/null || true  
+        ls -la --time-style=full-iso src/config.h.in 2>/dev/null || true
+        echo
+        
+        echo "Generated files (should be newer than source files):"
+        ls -la --time-style=full-iso configure 2>/dev/null || true
+        ls -la --time-style=full-iso Makefile test/Makefile src/Makefile 2>/dev/null || true
+        ls -la --time-style=full-iso src/config.h config.status 2>/dev/null || true
+        ls -la --time-style=full-iso src/stamp-h1 2>/dev/null || true
+        echo
+        
+        echo "Checking what make thinks needs rebuilding:"
+        make -n | head -10 || true
+
     - name: Install dependencies
       run: |
        if [ "${{ matrix.os }}" != "macOS" ] ; then
@@ -414,6 +436,28 @@ jobs:
     - name: Verify cache restoration
       run: |
         ./test/verify_cache.sh "${{ steps.test-cache-restore.outputs.cache-hit }}" "${{ steps.test-cache-key-macos.outputs.cache-key }}" "test-macos job"
+
+    - name: Debug timestamps after cache restore (macOS)
+      run: |
+        echo "=== Checking file timestamps ==="
+        echo "Current time: $(date)"
+        echo
+        
+        echo "Source files (should be older than generated files):"
+        ls -la configure.ac aclocal.m4 2>/dev/null || true
+        ls -la Makefile.am test/Makefile.am src/Makefile.am 2>/dev/null || true  
+        ls -la src/config.h.in 2>/dev/null || true
+        echo
+        
+        echo "Generated files (should be newer than source files):"
+        ls -la configure 2>/dev/null || true
+        ls -la Makefile test/Makefile src/Makefile 2>/dev/null || true
+        ls -la src/config.h config.status 2>/dev/null || true
+        ls -la src/stamp-h1 2>/dev/null || true
+        echo
+        
+        echo "Checking what make thinks needs rebuilding:"
+        make -n | head -10 || true
 
     - name: Install dependencies
       run: |
