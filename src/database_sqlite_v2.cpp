@@ -335,8 +335,10 @@ std::unique_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& 
 }
 
 std::shared_ptr<PreparedStatement> SQLiteConnection::prepare(const std::string& name, const std::string& sql) {
+    std::string converted_sql = sql;
+    replace_all(converted_sql, "{}", "?");
     if (named_statements_.find(name) == named_statements_.end()) {
-        named_statements_[name] = std::make_shared<SQLitePreparedStatement>(db_, sql, sqlite_api_);
+        named_statements_[name] = std::make_shared<SQLitePreparedStatement>(db_, converted_sql, sqlite_api_);
     }
     return named_statements_[name];
 }

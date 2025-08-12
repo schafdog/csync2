@@ -144,7 +144,8 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 
 	sql =
 	        "CREATE TABLE IF NOT EXISTS file ("
-			"  filename TEXT NOT NULL, hostname, checktxt, device, inode, size, digest, mode, mtime, type, "
+			"  filename TEXT NOT NULL, hostname, checktxt, "
+		    "  device bigint, inode bigint, size bigint, digest, mode int, mtime bigint, type, "
 			"  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 			" UNIQUE (hostname, filename) "
 			"       ON CONFLICT REPLACE); "
@@ -155,7 +156,7 @@ int DbSqlite::upgrade_to_schema(int new_version) {
 
 	sql =	"CREATE TABLE IF NOT EXISTS dirty ("
 			"  filename, forced, myname, peername, checktxt, op, operation,"
-			"  device, inode, other, digest, mode, mtime, type, "
+			"  device bigint, inode bigint, other, digest, mode int, mtime bigint, type, "
 			"  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, "
 			"  UNIQUE (filename, peername));"
 			// "  KEY (device, inode) "
