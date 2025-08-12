@@ -340,7 +340,7 @@ int db_mysql_open(const char *file, db_conn_p *api_p) {
 		}
 	}
 	const char *encoding = mysql_character_set_name(db);
-	csync_debug(1, "Default encoding {}", encoding);
+	csync_debug(3, "Default encoding {}", encoding);
 	if (mysql_set_character_set(db, "utf8mb4")) {
 		csync_fatal("Cannot set character set to utf8mb4");
 	}
