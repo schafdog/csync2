@@ -54,6 +54,7 @@ jobs:
         echo "Calculating build cache key..."
         
         # Hash source files, headers, and build scripts
+        bash -x ./test_source_hash.sh
         SOURCES_HASH=$(./test/source_hash.sh)
         echo "SOURCES_HASH $SOURCES_HASH"
         CONFIG_HASH=$(./test/config_hash.sh)
@@ -415,8 +416,9 @@ jobs:
         echo "Calculating build cache key..."
         
         # Hash source files, headers, and build scripts
+        bash -x ./test/source_hash.sh
         SOURCES_HASH=$(./test/source_hash.sh)
-        echo "SOURCE_HASH $SOURCE_HASH"
+        echo "SOURCES_HASH $SOURCES_HASH"
         CONFIG_HASH=$(./test/config_hash.sh)
         echo "CONFIG_HASH $CONFIG_HASH"
         DEPS_HASH=$(./test/deps_hash.sh)
