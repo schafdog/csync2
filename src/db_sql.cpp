@@ -90,7 +90,7 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 			if (dev_inode == DEV_CHANGED)
 			{
 				db_flags |= DEV_CHANGE;
-				csync_info(2, "File {} has only changed device {} -> {}}\n", filename, device, file_stat->st_dev);
+				csync_info(2, "File {} has only changed device {} -> {}\n", filename, device, file_stat->st_dev);
 				*old_no = old_stat.st_dev;
 			}
 			else
