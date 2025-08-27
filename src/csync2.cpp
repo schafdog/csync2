@@ -45,7 +45,6 @@
 #include <systemd/sd-daemon.h>
 #endif
 #include "redis.hpp"
-#include <vector>
 #include <memory>
 #include <string>
 #include <algorithm>

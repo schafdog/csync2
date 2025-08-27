@@ -25,17 +25,17 @@
 #include <memory>
 
 class UrlEncoder {
-    std::vector<std::string> encoded_strings;
+    std::deque<std::string> encoded_strings;
 public:
-    UrlEncoder() { encoded_strings.reserve(100); };
+    UrlEncoder();
     std::string& operator()(const std::string& input);
     std::string& operator()(const char* input);
 };
 
 class UrlDecoder {
-    std::vector<std::string> decoded_strings;
+    std::deque<std::string> decoded_strings;
 public:
-    UrlDecoder() { decoded_strings.reserve(100); };
+    UrlDecoder();
     std::string& operator()(const std::string& input);
     std::string& operator()(const char* input);
 };

@@ -21,7 +21,6 @@
 #ifndef CSYNC2_UPDATE_H 
 #define CSYNC2_UPDATE_H 1
 
-#include <vector>
 #include <string>
 #include "db_api.hpp"
 

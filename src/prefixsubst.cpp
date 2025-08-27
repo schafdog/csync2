@@ -22,6 +22,57 @@
 #include <stdio.h>
 #include "utils.hpp"
 #include <string>
+#include <deque>
+
+class PrefixSubst {
+	std::deque<std::string> decoded;
+public:
+	PrefixSubst();
+
+	std::string& operator()(std::string& text) {
+		std::string result = text; 
+		size_t start = 0;
+		// Find the opening %
+        start = text.find('%', start);
+        if (start != std::string::npos) {
+			// Find the closing %
+			size_t end = text.find('%', start + 1);
+			if (end != std::string::npos) {
+				std::string variable = text.substr(start+1, end - start);
+				struct csync_prefix *p;
+				for (p = csync_prefix; p; p = p->next) {
+					if (variable == p->name && p->path) {
+						result = std::string(p->path) + text.substr(end+1);
+					}
+				}
+			}
+		}
+		decoded.emplace_back(result);
+		return decoded.back();
+	};
+};
+
+
+class PrefixEncoder {
+	std::deque<std::string> encoded;
+public:
+	PrefixEncoder() {};
+
+	std::string& operator()(std::string& in) {
+		std::string result = "";
+		struct csync_prefix *p;
+		for (p = csync_prefix; p; p = p->next) {
+			if (p->path) {
+				if (in.starts_with(p->path)) {
+					result = std::string("%") + std::string(p->name) + std::string("%") + in.substr(strlen(p->path));
+				}
+			}
+		}
+		encoded.emplace_back(result);
+		return encoded.back();
+	};
+};
+	
 
 // Modern C++ version that returns std::string
 std::string prefixsubst_cpp(const char *in) {
@@ -38,13 +89,11 @@ std::string prefixsubst_cpp(const char *in) {
        path = pn + pn_len;
        if (*path == '%')
                path++;
-
        for (p = csync_prefix; p; p = p->next) {
-               if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len) && p->path) {
+		   if (strlen(p->name) == pn_len && !strncmp(p->name, pn, pn_len) && p->path) {
                        return std::string(p->path) + std::string(path);
                }
        }
-
        csync_fatal("Prefix '{:.{}}' is not defined for host '{}'.\n", pn, pn_len,  g_myhostname.c_str());
        return std::string();
 }
@@ -314,3 +363,29 @@ int compare_files(filename_p str_filename, filename_p str_pattern, int recursive
 		return 1;
 	return 0;
 }
+
+
+#if defined(STANDALONE)
+
+void main(int argc, char *argv[]) {
+	
+	struct cfg_prefix *prefix = malloc(sizeof(struct cfg_prefix));
+	prefix->next = NULL;
+	prefix->name = "test";
+	prefix->path = "/export/home";
+	csync_prefix = prefix;
+	
+	PrefixEncoder prefix_encode;
+	std::string decoded = "/export/home/dennis";
+	std::string encoded = prefix_encode(decoded);
+	std::string expected = "%test%/dennis";
+	if (expected != encoded) {
+		std::cout << "Failed encoding " << expected << "" << encoded << std::endl;
+	}
+	PrefixDecode prefix_decode;
+	std::string result = prefix_decode(expected);
+	if (decoded != result) {
+        std::cout << "Failed decoding " << expected << "" << result << std::endl;
+    }
+}
+#endif

@@ -23,7 +23,6 @@
 
 #include <sys/stat.h>
 #ifdef __cplusplus
-#include <vector>
 #include <string>
 #endif
 #include "db_api.hpp"

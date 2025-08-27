@@ -5,7 +5,7 @@
 #include <map>
 #include <stdexcept>
 #include <variant>
-#include <vector>
+#include <deque>
 #include "error.hpp"
 
 // Define function pointer types for the MySQL C API.

@@ -22,7 +22,6 @@
 #define CSYNC2_CONFIG_HPP 1
 
 #include <string>
-#include <vector>
 #include <memory>
 
 namespace csync2 {
