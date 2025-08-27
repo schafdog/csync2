@@ -27,7 +27,7 @@
 class UrlEncoder {
     std::deque<std::string> encoded_strings;
 public:
-    UrlEncoder();
+    UrlEncoder() {};
     std::string& operator()(const std::string& input);
     std::string& operator()(const char* input);
 };
@@ -35,7 +35,7 @@ public:
 class UrlDecoder {
     std::deque<std::string> decoded_strings;
 public:
-    UrlDecoder();
+    UrlDecoder() {};
     std::string& operator()(const std::string& input);
     std::string& operator()(const char* input);
 };
