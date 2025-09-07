@@ -1845,8 +1845,8 @@ int csync_diff(db_conn_p db, peername_p myname, peername_p peername, filename_p 
 		csync_info(1, "ERROR: rs_sig '{}' failed with {}. Skipping TYPE\n", filename, rc);
 		return finish_close(conn);
 	}
-
-	conn_printf(conn, "TYPE %s %s\n", key_enc, filename.c_str());
+	const char *encoded = url_encode(prefixencode(filename)).c_str();
+	conn_printf(conn, "TYPE %s %s\n", key_enc, encoded);
 
 	if (read_conn_status(conn, "<TYPE>", peername.c_str()))
 		return finish_close(conn);
