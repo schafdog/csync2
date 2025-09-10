@@ -437,7 +437,7 @@ static size_t READ(int filedesc, void *buf, size_t count) {
 	FD_ZERO(&set);
 	FD_SET(filedesc, &set);
 	/* Initialize the timeout data structure. */
-	timeout.tv_sec = 600;
+	timeout.tv_sec = 3600;
 	timeout.tv_usec = 0;
 	int rc = select(filedesc+1, &set, NULL, NULL, &timeout);
 	if (rc == 0) {
