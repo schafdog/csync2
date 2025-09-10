@@ -581,8 +581,10 @@ static int csync_send_reg_file(int conn, peername_p peername, filename_p filenam
 	csync_debug(0, "CREATE {} {}\n", filename, st.st_size);
 	rc = csync_send_file(conn, file);
 	if (rc < -1) {
+		fclose(file);
 		csync_error(0, "Failed to send file {}: {}", filename, errno);
 	}
+	fclose(file);
 	return read_conn_status(conn, filename, peername);
 }
 
