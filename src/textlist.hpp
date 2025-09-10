@@ -1,4 +1,4 @@
-
+/* -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
 #ifndef TEXTLIST_HPP
 #define TEXTLIST_HPP
 
@@ -71,7 +71,7 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 				 const char *item3, const char *item4, const char *item5,
 				 int intitem, int operation)
 {
-	struct textlist *tmp = *listhandle;
+	struct textlist *previous = *listhandle;
 #ifdef __cplusplus
 	*listhandle = static_cast<struct textlist*>(malloc(sizeof(struct textlist)));
 #else
@@ -84,7 +84,7 @@ static inline void textlist_add5(struct textlist **listhandle, const char *item,
 	(*listhandle)->value3 = (item3 ? strdup(item3) : 0);
 	(*listhandle)->value4 = (item4 ? strdup(item4) : 0);
 	(*listhandle)->value5 = (item5 ? strdup(item5) : 0);
-	(*listhandle)->next = tmp;
+	(*listhandle)->next = previous;
 }
 
 static inline void textlist_add5(struct textlist **listhandle, const std::string& item, const std::string& item2,
@@ -194,11 +194,11 @@ static inline void textlist_free(struct textlist *listhandle)
 		free(listhandle->value);
 		if (listhandle->value2)
 			free(listhandle->value2);
-		if ( listhandle->value3 )
+		if (listhandle->value3)
 			free(listhandle->value3);
-		if ( listhandle->value4 )
+		if (listhandle->value4)
 			free(listhandle->value4);
-		if ( listhandle->value5 )
+		if (listhandle->value5)
 			free(listhandle->value5);
 		free(listhandle);
 		listhandle = next;
