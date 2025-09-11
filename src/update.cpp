@@ -1565,8 +1565,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		//csync_debug(1, "DIRTY {} '{}'\n", filename, digest);
 		if (lstat_strict(filename, &st) == 0 && !csync_check_pure(filename)) {
 			rc = csync_update_file_mod(conn, db, myname.c_str(), peername, filename, operation, other, checktxt,
-									   digest, forced,
-					flags & FLAG_DRY_RUN);
+									   digest, forced, flags & FLAG_DRY_RUN);
 			if (rc == CONN_CLOSE) {
 				csync_error(0, "Connection closed on updating {}\n", filename);
 				break;

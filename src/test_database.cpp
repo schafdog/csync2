@@ -293,9 +293,9 @@ int main(int argc, char *argv[]) {
   } else {
     conn_string = argv[1];
   }
-  //test_textlist();
   test_database(conn_string);
   test_db_api(conn_string);
+  test_textlist();
 
   return 0;
 }
