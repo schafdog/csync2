@@ -218,9 +218,11 @@ void test_db_api(const std::string &conn_str) {
         const char *digest = "digest";
         tl = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
         cout << "check_file_same_dev_inode count " << print_textlist(tl) << std::endl;
+        textlist_free(tl);
 
 		tl = api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
         cout << "check_dirty_same_dev_inode count " << print_textlist(tl) << std::endl;
+        textlist_free(tl);
         api->clear_operation(hostname, peername, filename);
         cout << "check_delete next" << std::endl;
         api->check_delete(filename, 1, 0);
@@ -236,22 +238,19 @@ void test_db_api(const std::string &conn_str) {
         cout << "get_dirty_hosts" << std::endl;
         tl = api->get_dirty_hosts();
 	print_textlist(tl);
-	free(tl);
+	textlist_free(tl);
         cout << "get_hints" << std::endl;
         tl = api->get_hints();
 	print_textlist(tl);
 	if (tl)
-	    free(tl);
+	    textlist_free(tl);
         cout << "list_dirty" << std::endl;
         api->list_dirty(std::set<std::string>{hostname}, filename, 1);
-	print_textlist(tl);	
-	if (tl)
-	    free(tl);
         cout << "list_file" << std::endl;
         tl = api->list_file(filename, hostname, peername, 1);
 	print_textlist(tl);
 	if (tl)
-	    free(tl);
+	    textlist_free(tl);
         cout << "list_files" << std::endl;
         api->list_files(filename);
         cout << "list_hints" << std::endl;
