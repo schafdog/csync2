@@ -78,14 +78,30 @@ void test_database(const std::string &conn_str) {
     std::cout << "--- PostgreSQL Test Finished ---\n" << std::endl;
 }
 
+const char *nullv(const char *value) {
+    return value ? value : "(null)";
+}
+
 int print_textlist(textlist_p tl) {
     int count = 0;
     while (tl) {
-        std::cout << "Item: " << tl->value << std::endl;
+        std::cout << "Item: " << tl->value << " " << nullv(tl->value2) << " " << nullv(tl->value3)
+		  << " " << nullv(tl->value4) << " " << nullv(tl->value5) << std::endl;
         tl = tl->next;
         count++;
     }
     return count;
+}
+
+void test_textlist() {
+    textlist_p tl = NULL;
+    int index = 10;
+    while (index > 0) {
+	textlist_add5(&tl, "item", "item2", "item3", "item4", "item5", 1, 2);
+	index--;
+    }
+    cout << "Count " << print_textlist(tl) << std::endl; 
+    textlist_free(tl);
 }
 
 void test_db_api(const std::string &conn_str) {
@@ -154,11 +170,14 @@ void test_db_api(const std::string &conn_str) {
         std::cout << "add_dirty count: " << count << std::endl;
 
         std::set<std::string> patlist ={"", ""};
+        std::cout << "get_dirty_by_peer_match" << std::endl;	
         textlist_p tl = api->get_dirty_by_peer_match(hostname, peername, 1, patlist, NULL);
         count = print_textlist(tl);
         std::cout << "Dirty count: " << count << std::endl;
         assert(count == 1);
-
+	textlist_free(tl);
+	
+        std::cout << "Directory count " << std::endl;
         count = api->dir_count("/");
 
         std::cout << "Directory count: " << count << std::endl;
@@ -175,7 +194,7 @@ void test_db_api(const std::string &conn_str) {
         int hint_count = print_textlist(hints);
         std::cout << "Hint count: " << hint_count << std::endl;
         assert(hint_count == 1);
-
+	textlist_free(hints);
         long long remove_hint_count = api->remove_hint(filename, 1);
         std::cout << "remove_hint count: " << remove_hint_count << std::endl;
         assert(remove_hint_count == 1);
@@ -215,30 +234,41 @@ void test_db_api(const std::string &conn_str) {
         cout << "is_dirty" << std::endl;
         api->is_dirty(peername, filename, &operation, &mode);
         cout << "get_dirty_hosts" << std::endl;
-        api->get_dirty_hosts();
+        tl = api->get_dirty_hosts();
+	print_textlist(tl);
+	free(tl);
         cout << "get_hints" << std::endl;
-        api->get_hints();
+        tl = api->get_hints();
+	print_textlist(tl);
+	if (tl)
+	    free(tl);
         cout << "list_dirty" << std::endl;
         api->list_dirty(std::set<std::string>{hostname}, filename, 1);
+	print_textlist(tl);	
+	if (tl)
+	    free(tl);
         cout << "list_file" << std::endl;
-        api->list_file(filename, hostname, peername, 1);
+        tl = api->list_file(filename, hostname, peername, 1);
+	print_textlist(tl);
+	if (tl)
+	    free(tl);
         cout << "list_files" << std::endl;
         api->list_files(filename);
         cout << "list_hints" << std::endl;
         api->list_hint();
-        cout << "list_sync" << std::endl;
-		api->list_sync(hostname, peername);
-        cout << "mark" << std::endl;
+	cout << "list_sync" << std::endl;
+	api->list_sync(hostname, peername);
+	cout << "mark" << std::endl;
         api->mark(std::set<std::string>{peername}, filename, 1);
         cout << "non_dirty_files_match" << std::endl;
         api->non_dirty_files_match(filename);
-
         //api->upgrade_db();
         // clean up
         cout << "remove_dirty recursive" << std::endl;
         api->remove_dirty(peername, "/", 1);
         cout << "remove_file recursive" << std::endl;
         api->remove_file("/", 1);
+	delete api;
 
     } catch (const std::exception &e) {
         std::cerr << "[ERROR] " << e.what() << std::endl;
@@ -264,6 +294,7 @@ int main(int argc, char *argv[]) {
   } else {
     conn_string = argv[1];
   }
+  //test_textlist();
   test_database(conn_string);
   test_db_api(conn_string);
 
