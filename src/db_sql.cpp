@@ -20,6 +20,7 @@
 #endif
 
 using namespace std;
+using namespace csync2;
 
 struct FreeDeleter {
     void operator()(void* ptr) const noexcept {
@@ -246,7 +247,7 @@ int DbSql::list_dirty(const std::set<std::string> &active_peers, const char *rea
 
 std::vector<csync2::FileRecord>  DbSql::non_dirty_files_match(filename_p pattern)
 {
-	std::vector<csync2::FileRecord> result;
+	vector<FileRecord> result;
     try {
         std::string sql = "SELECT filename, checktxt, digest FROM file WHERE hostname = ? AND filename like ? "
                           " AND filename not in (select filename from dirty where myname = ? AND filename like ?)"
@@ -473,13 +474,13 @@ void DbSql::list_files(filename_p realname)
 }
 
 // Used by insynctest
-textlist_p DbSql::list_file(filename_p str_filename, const char *myhostname, peername_p str_peername,
+vector<FileRecord> DbSql::list_file(filename_p str_filename, const char *myhostname, peername_p str_peername,
 							   int recursive)
 {
 	const char *peername = str_peername.c_str();
 	const char *filename = str_filename.c_str();
 	csync_info(2, "DbSql::list_file {} <-> {} {}\n", myhostname, peername, filename);
-	textlist_p tl = 0;
+	vector<FileRecord> result;
     try {
         std::string sql = "SELECT checktxt, filename FROM file WHERE ";
         if (filename[0] != 0) {
@@ -501,14 +502,15 @@ textlist_p DbSql::list_file(filename_p str_filename, const char *myhostname, pee
             if (csync_match_file_host(filename_str.c_str(),
                                       myhostname, peername, 0))
             {
-                textlist_add2(&tl, rs->get_string(1).c_str(), filename_str.c_str(), 0);
+				FileRecord file(filename_str.c_str(), rs->get_string(1), "");
+				result.emplace_back(file);
                 csync_debug(2, "DbSql::list_file  {}:{}\n", peername, filename);
             }
         }
     } catch (const DatabaseError& e) {
         csync_error(0, "Failed to list file: {}", e.what());
     }
-	return tl;
+	return result;
 }
 
 int DbSql::move_file(filename_p filename, filename_p newname)

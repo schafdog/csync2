@@ -113,6 +113,13 @@ int print(vector<Hint> result) {
     return result.size();
 }
 
+int print(vector<FileRecord> result) {
+    for (FileRecord file : result) {
+	cout << "File(" << file.filename() << ", " << file.checktxt() << " " << file.digest() << endl;
+    }
+    return result.size();
+}
+
 void test_db_api(const std::string &conn_str) {
     std::cout << "--- Testing API: " << conn_str << " --- " << std::endl;
     try {
@@ -209,7 +216,8 @@ void test_db_api(const std::string &conn_str) {
 
         // Verify hint is removed
         hints = api->get_hints();
-        std::cout << "Hint count after removal: " << print(hints) << std::endl;
+	hint_count = print(hints);
+        std::cout << "Hint count after removal: " << hint_count << std::endl;
         assert(hint_count == 0);
 
         std::string command = "command";
@@ -250,11 +258,11 @@ void test_db_api(const std::string &conn_str) {
 	cout << "hint counts " << print(hints) << endl;
         cout << "list_dirty" << std::endl;
         api->list_dirty(std::set<std::string>{hostname}, filename, 1);
+
         cout << "list_file" << std::endl;
-        tl = api->list_file(filename, hostname, peername, 1);
-	print_textlist(tl);
-	if (tl)
-	    textlist_free(tl);
+	vector<FileRecord> list = api->list_file(filename, hostname, peername, 1);
+	cout << "list_file count " << print(list) << endl;
+
         cout << "list_files" << std::endl;
         api->list_files(filename);
         cout << "list_hints" << std::endl;

@@ -54,6 +54,8 @@
 #include "resolv.hpp"
 #include "redis.hpp"
 
+using namespace csync2;
+
 #define OK        0
 #define IDENTICAL 1
 #define NEXT_CMD  2
@@ -1109,13 +1111,10 @@ static int csync_daemon_settime(const char *filename, time_t time, const char **
 
 static void csync_daemon_list(int conn, db_conn_p db, const char *filename, const char *myname, const char *peername,
 							  int recursive) {
-	textlist_p tl = db->list_file(filename, myname, peername, recursive);
-	textlist_p t = tl;
-	while (t) {
-		conn_printf(conn, "%s\t%s\n", t->value, t->value2);
-		t = t->next;
+	std::vector<csync2::FileRecord> result = db->list_file(filename, myname, peername, recursive);
+	for (FileRecord file : result) {
+		conn_printf(conn, "%s\t%s\n", file.filename(), file.checktxt());
 	}
-	textlist_free(tl);
 }
 
 static const char* check_ssl(char *peername) {

@@ -29,8 +29,8 @@ public:
     void mark(const std::set<std::string>& active_peerlist, const filename_p realname, int recursive) override;
     void list_hint() override;
     void list_files(filename_p realname) override;
-    textlist_p list_file(filename_p str_filename, const char *myhostname, peername_p str_peername,
-                           int recursive) override;
+	std::vector<csync2::FileRecord> list_file(filename_p str_filename, const char *myhostname, peername_p str_peername,
+								 int recursive) override;
     int move_file(filename_p str_filename, filename_p newname) override;
     void list_sync(peername_p myhostname, peername_p peername) override;
     textlist_p get_commands() override;

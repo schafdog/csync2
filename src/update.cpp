@@ -1728,7 +1728,6 @@ void csync_update(db_conn_p db, peername_p myhostname,
 				  const std::set<std::string>& active_peers,
                   const std::set<std::string>& patlist,
 				  int ip_version, update_func func, int flags) {
-	textlist_p tl = 0, t;
 	if (flags & FLAG_DO_ALL) {
 		for (std::string peer : active_peers) {
 			func(db, myhostname, peer.c_str(), patlist, ip_version, flags);
@@ -1752,7 +1751,6 @@ void csync_update(db_conn_p db, peername_p myhostname,
 			if (found)
 				func(db, myhostname, host, patlist, ip_version, flags);
 		}
-		textlist_free(tl);
 	}
 }
 
@@ -1968,25 +1966,23 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	if (!remote_eof) {
 	    std::string r_file = "";
 	std::string r_checktxt = "";
-		while (!csync_insynctest_readline(conn, r_file, r_checktxt)) {
-			if (auto_diff)
-				textlist_add(&diff_list, r_file.c_str(), 0);
-			else {
-				textlist_p tl = db->list_file(r_file, myname.c_str(), peername, 0);
- 				const char *chk_local = "---";
-				if (tl) {
-					chk_local = tl->value;
-				}
-				int i;
-				if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
-					csync_info(1, "D\t{}\t{}\t{}\n", myname, peername, r_file);
-					csync_debug(2, "'{}' is different:\n", filename);
-					csync_debug(2, ">>> {} {}\n>>> {} {}\n", r_checktxt, peername, chk_local, myname);
-					count_diff++;
-				} else
-					csync_info(1, "S\t{}\t{}\t{}\n", myname, peername, r_file);
-
-				textlist_free(tl);
+	while (!csync_insynctest_readline(conn, r_file, r_checktxt)) {
+		if (auto_diff)
+			textlist_add(&diff_list, r_file.c_str(), 0);
+		else {
+			std::vector<csync2::FileRecord> result = db->list_file(r_file, myname.c_str(), peername, 0);
+			const char *chk_local = "---";
+			if (!result.empty()) {
+				chk_local = result[0].checktxt().c_str();
+			}
+			int i;
+			if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
+				csync_info(1, "D\t{}\t{}\t{}\n", myname, peername, r_file);
+				csync_debug(2, "'{}' is different:\n", filename);
+				csync_debug(2, ">>> {} {}\n>>> {} {}\n", r_checktxt, peername, chk_local, myname);
+				count_diff++;
+			} else
+				csync_info(1, "S\t{}\t{}\t{}\n", myname, peername, r_file);
 			}
 			ret = 0;
 			if (flags & FLAG_INIT_RUN) {

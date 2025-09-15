@@ -58,8 +58,8 @@ public:
     virtual int list_dirty(const std::set<std::string>& active_peers, const char *realname, int recursive) = 0;
     virtual void list_hint() = 0;
     virtual void list_files(filename_p filename) = 0;
-    virtual textlist_p list_file(filename_p filename, const char *myname, peername_p peername,
-                                 int recursive) = 0;
+    virtual std::vector<csync2::FileRecord> list_file(filename_p filename, const char *myname, peername_p peername,
+													  int recursive) = 0;
     virtual void list_sync(peername_p myname, peername_p peername) = 0;
 
     virtual int is_dirty(filename_p filename, peername_p peername, int *operation, int *mode) = 0;
