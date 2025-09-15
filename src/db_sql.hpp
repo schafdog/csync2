@@ -50,10 +50,10 @@ public:
 								  const std::set<std::string> &patlist,
 								  int (*get_dirty_by_peer)(filename_p str_filename, filename_p pattern, int rec),
 								  std::vector<csync2::DirtyRecord>& result) override;
-    textlist_p get_old_operation(const std::string& checktxt,
-                                   peername_p str_peername,
-                                   filename_p str_filename,
-                                   const char *device, const char *ino) override;
+    vector<DirtyRecord> get_old_operation(const std::string& checktxt,
+										  peername_p str_peername,
+										  filename_p str_filename,
+										  const char *device, const char *ino) override;
     int add_dirty(const char *file_new, int new_force,
                   const char *myhostname, peername_p str_peername,
                   const char *op_str, const std::string& checktxt, const char *dev, const char *ino,

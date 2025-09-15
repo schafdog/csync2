@@ -241,22 +241,22 @@ static textlist_p check_old_operation(filename_p filename, operation_t operation
 	return tl;
 }
 
-static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
+static void csync_mark_other(db_conn_p db, filename_p filename, peername_p thispeer,
 							 const std::set<std::string>& peerfilter, operation_t operation_org, const std::string& checktxt,
 							 const char *dev, const char *ino,
 							 std::optional<std::string>& org_other, int mode, int mtime) {
-	struct peer *pl = csync_find_peers(file.c_str(), thispeer);
+	struct peer *pl = csync_find_peers(filename.c_str(), thispeer);
 	int pl_idx;
 	operation_t operation = operation_org;
-	csync_schedule_commands(db, file, thispeer == "");
+	csync_schedule_commands(db, filename, thispeer == "");
 
 	if (!pl) {
-		csync_info(2, "Not in one of my groups: {} ({})\n", file, thispeer);
+		csync_info(2, "Not in one of my groups: {} ({})\n", filename, thispeer);
 		return;
 	}
 
 	struct stat st_file;
-	int rc_file = stat(file.c_str(), &st_file);
+	int rc_file = stat(filename.c_str(), &st_file);
 	const char *other = 0;
 	for (pl_idx = 0; pl[pl_idx].peername; pl_idx++) {
 		// Safe initialization from potentially NULL pointers
@@ -268,43 +268,44 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 		if (peerfilter.empty() || peerfilter.find(peername) != peerfilter.end()) {
 			csync_info(1, "mark other operation: '{}' '{}:{}' '{}'.\n",
 					   csync_mode_op_str(rc_file ? 0 : st_file.st_mode, operation),
-					   peername, file, (other ? other : "-"));
+					   peername, filename, (other ? other : "-"));
 			if (operation == OP_MOVE && other == NULL) {
 				csync_info(1, "mark other MV operation missing other {} {} \n",
-						peername.c_str(), file.c_str());
+						peername.c_str(), filename.c_str());
 				operation = OP_UNDEF;
 			}
-			short dirty = 1;
+			short is_dirty = 1;
 
 			std::string clean_other;
 			std::string result_other_str = other ? other : "";
 			const char *result_other = result_other_str.c_str();
-			std::string file_new = file;
+			std::string file_new = filename;
             const char *checktxt_c = checktxt.empty() ? NULL : checktxt.c_str();
 
 			if (1 && checktxt_c) {
-				textlist_p tl = db->get_old_operation(checktxt_c, peername, file, dev, ino);
-				if (tl) {
-					textlist_p t = check_old_operation(file.c_str(), operation, mode,
+				vector<DirtyRecord> result = db->get_old_operation(checktxt_c, peername, filename, dev, ino);
+				if (!result.empty()) {
+					DirtyRecord dirty = result[0];
+					FileRecord file = dirty.file();
+					const char *db_other = dirty.other().has_value() ? dirty.other()->c_str() : NULL; // optional
+					textlist_p t = check_old_operation(filename.c_str(), operation, mode,
 													   (rc_file ? NULL : &st_file),
 													   other,
-													   tl->value, // old filename
-													   tl->value2,   // old other
-													   tl->intvalue, // operation
-													   tl->value3,   // checktxt
+													   file.filename().c_str(),
+													   db_other,
+													   static_cast<int>(dirty.operation()),
+													   file.checktxt().c_str(), 
 													   peername);
-					textlist_free(tl);
-
 					if (t) {
 						file_new = t->value ? t->value : "";
 						clean_other = t->value2 ? t->value2 : "";
 						result_other_str = t->value3 ? t->value3 : "";
 						result_other = result_other_str.c_str();
-						dirty = (t->value4 != NULL);
+						is_dirty = (t->value4 != NULL);
 						operation = t->intvalue;
 						csync_info(3,
 									 "Found row: file '{}' clean_other: '{}' result_other: '{}' dirty: {} operation {}\n",
-									 file_new, clean_other, result_other, dirty, operation);
+									 file_new, clean_other, result_other, is_dirty, operation);
 						textlist_free(t);
 					} else {
 						csync_error(0,
@@ -318,7 +319,7 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 			if (!clean_other.empty() && file_new != clean_other) {
 				db->remove_dirty(peername, clean_other.c_str(), 0);
 			}
-			if (dirty)
+			if (is_dirty)
 				db->add_dirty(file_new.c_str(), 0, myname, peername,
 						csync_operation_str(operation), checktxt, dev, ino,
 						result_other, operation, mode, mtime);

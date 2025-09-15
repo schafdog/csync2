@@ -772,7 +772,7 @@ void DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p peername,
 	}
 }
 
-textlist_p DbSql::get_old_operation(const std::string& checktxt,
+vector<DirtyRecord> DbSql::get_old_operation(const std::string& checktxt,
 									peername_p peername,
 									filename_p filename,
 									const char *device, const char *ino)
@@ -782,9 +782,9 @@ textlist_p DbSql::get_old_operation(const std::string& checktxt,
 		"FROM dirty "
 		"WHERE myname = {} AND "
 		"(checktxt = {} AND device = {} AND inode = {} OR filename = {}) AND peername = {} "
-		"ORDER BY timestamp ";
+		"ORDER BY timestamp";
 	csync_debug(3, sql,  g_myhostname, checktxt, device, ino, filename, peername);
-	textlist_p tl = 0;
+	vector<DirtyRecord> result;
 	auto rs = conn_->execute_query("get_old_operation",
 								   sql,
 								   g_myhostname,
@@ -805,14 +805,14 @@ textlist_p DbSql::get_old_operation(const std::string& checktxt,
 		if (op != old_operation)
 			csync_warn(0, "WARN: operation - op mismatch: {}({}) <> {}({})\n",
 			           rs->get_string(1).c_str(), old_operation, csync_operation_str(op), op);
-		textlist_add4(&tl, old_filename.c_str(),
-		              old_other.has_value()    ? (*old_other).c_str() : NULL,
-		              old_checktxt.has_value() ? (*old_checktxt).c_str() : NULL,
-		              old_digest.has_value()   ? (*old_digest).c_str() : NULL,
-					  old_operation);
+		FileRecord file(old_filename,
+						old_checktxt.has_value() ? old_checktxt->c_str() : "",
+						old_digest.has_value()   ? (*old_digest).c_str() : "");
+		DirtyRecord dirty(file, peername, "", static_cast<FileOperation>(old_operation), false, old_other);
+		result.emplace_back(dirty);
 		break;
 	}
-	return tl;
+	return result;
 }
 
 const char *null(const char *value) {

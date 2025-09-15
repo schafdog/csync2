@@ -89,8 +89,9 @@ public:
     virtual void clear_operation(const char *myname, peername_p peername,
                                  filename_p filename /*, int recursive */) = 0;
 
-    virtual textlist_p get_old_operation(const std::string& checktxt, peername_p peername, filename_p filename,
-                                         const char *device, const char *ino) = 0;
+    virtual std::vector<DirtyRecord>  get_old_operation(const std::string& checktxt, peername_p peername,
+														filename_p filename,
+														const char *device, const char *ino) = 0;
 
     virtual std::vector<Command> get_commands() = 0;
     virtual std::vector<Command> get_command_filename(filename_p filename, const std::string logfile) = 0;
