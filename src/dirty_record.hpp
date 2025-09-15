@@ -33,11 +33,11 @@ class DirtyRecord {
 public:
     // Constructors
     DirtyRecord() = default;
-    explicit DirtyRecord(const csync2::FileRecord& file, const std::string& host,
+    explicit DirtyRecord(const csync2::FileRecord& file, const std::string& peername,
 			 const std::string& op_str = "MARK",
 			 csync2::FileOperation operation = FileOperation::Mark,
 			 bool forced = false, const std::optional<std::string>& other = std::nullopt)
-        : file_(file), operation_(operation), host_(host), forced_(forced), other_(other) {}
+        : file_(file), operation_(operation), peername_(peername), forced_(forced), other_(other) {}
 
     csync2::FileRecord& file() { return file_; }; 
     void setOther(const std::string& other) {
@@ -45,14 +45,14 @@ public:
     }
     std::optional<std::string>& other() { return other_; };   
     bool forced() const { return forced_; };
-    std::string host() const { return host_; };
+    std::string peername() const { return peername_; };
     csync2::FileOperation operation() const { return operation_; };
     const std::string&  op_str() const { return op_str_; };
 private:
     csync2::FileRecord file_;
     std::string op_str_;
     csync2::FileOperation operation_;
-    std::string host_;
+    std::string peername_;
     bool forced_;
     std::optional<std::string> other_;
 };

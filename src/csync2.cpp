@@ -1331,7 +1331,6 @@ static int handle_server_error(int mode, int conn)
 static int csync_start_client(int mode, int flags, int argc, char *argv[], update_func updater, int cmd_db_version, int cmd_ip_version)
 {
 	int retval = -1;
-	textlist_p tl = 0, t;
 	db_conn_p db = NULL;
 
 	if (csync_read_config(g_cfgname, 0, mode) == -1)
@@ -1348,7 +1347,8 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	if (cfg_db_version != -1)
 	{
 		if (cmd_db_version)
-			csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}", cfg_db_version, cmd_db_version);
+			csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}",
+					   cfg_db_version, cmd_db_version);
 		else
 			g_db_version = cfg_db_version;
 	}
@@ -1440,9 +1440,8 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 			for (csync2::Hint hint : result)
 			{
 				csync_check(db, hint.filename, (hint.is_recursive ? flags | FLAG_RECURSIVE : flags));
-				db->remove_hint(t->value, t->intvalue);
+				db->remove_hint(hint.filename, hint.is_recursive);
 			}
-			textlist_free(tl);
 		}
 		else
 		{

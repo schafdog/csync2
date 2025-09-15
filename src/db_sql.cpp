@@ -633,17 +633,17 @@ int DbSql::remove_dirty(peername_p peername, filename_p filename, int recursive)
 	return rc;
 }
 
-textlist_p DbSql::find_dirty(
+vector<DirtyRecord> DbSql::find_dirty(
 							int (*filter)(filename_p str_filename, peername_p localname, peername_p str_peername))
 {
-	textlist_p tl = 0;
+	vector<DirtyRecord> result;
 
     try {
         auto rs = conn_->execute_query("find_dirty",
 									   "SELECT filename, myname, peername FROM dirty where myname = ? "
 									   "AND peername not in (select host from host where status = 1) "
-									   "ORDER by filename, peername",
-                                     g_myhostname);
+									   "ORDER by filename ASC, peername DESC",
+									   g_myhostname);
 
         while (rs->next()) {
             std::string filename_str = rs->get_string(1);
@@ -654,37 +654,39 @@ textlist_p DbSql::find_dirty(
             {
                 csync_info(1, "Remove '{}:{}' from dirty. No longer in configuration\n",
 						   peername_str, filename_str);
-                textlist_add2(&tl, filename_str.c_str(), peername_str.c_str(), 0);
+				FileRecord file( filename_str, "", "");
+				DirtyRecord dirty(file, peername_str);
+                result.emplace_back(dirty);
             }
         }
     } catch (const DatabaseError& e) {
         csync_error(0, "Failed to find dirty files: {}", e.what());
     }
-
-	return tl;
+	return result;
 }
 
-textlist_p DbSql::find_file(filename_p str_pattern, int (*filter_file)(filename_p filename))
+vector<FileRecord> DbSql::find_file(filename_p pattern, int (*filter_file)(filename_p filename))
 {
-	const char *pattern = str_pattern.c_str();
-	textlist_p tl = 0;
+	vector<FileRecord> result;
     try {
         auto rs = conn_->execute_query("find_file",
-                                     "SELECT filename, mode FROM file where hostname = ? AND (filename = ? or filename like ?)",
-                                     g_myhostname, pattern, std::string(pattern) + "/%");
-
+									   "SELECT filename, mode FROM file "
+									   "WHERE hostname = ? AND (filename = ? or filename like ?) ORDER BY filename ASC",
+									   g_myhostname, pattern, pattern + "/%");
         while (rs->next()) {
             std::string filename = rs->get_string(1);
             int mode = (rs->get_string(2).empty() ? 0 : atoi(rs->get_string(2).c_str()));
             if (!filter_file || !filter_file(filename.c_str()))
             {
-                textlist_add(&tl, filename.c_str(), mode);
+				FileRecord file(filename, "", "");
+				file.mode(mode);
+                result.emplace_back(file);
             }
         }
     } catch (const DatabaseError& e) {
         csync_error(0, "Failed to find files: {}", e.what());
     }
-	return tl;
+	return result;
 }
 
  long long DbSql::delete_file(filename_p str_filename, int recursive) {
