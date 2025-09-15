@@ -244,9 +244,9 @@ int DbSql::list_dirty(const std::set<std::string> &active_peers, const char *rea
 	return retval;
 }
 
-textlist_p DbSql::non_dirty_files_match(filename_p pattern)
+std::vector<csync2::FileRecord>  DbSql::non_dirty_files_match(filename_p pattern)
 {
-	textlist_p tl = 0;
+	std::vector<csync2::FileRecord> result;
     try {
         std::string sql = "SELECT filename, checktxt, digest FROM file WHERE hostname = ? AND filename like ? "
                           " AND filename not in (select filename from dirty where myname = ? AND filename like ?)"
@@ -264,19 +264,19 @@ textlist_p DbSql::non_dirty_files_match(filename_p pattern)
             auto digest = rs->get_string_optional(3);
             if (compare_files(filename.c_str(), pattern, 0 /*recursive*/))
             {
-                textlist_add3(&tl, filename.c_str(), checktxt.c_str(), digest.has_value() ? digest->c_str() : NULL, 0);
+				csync2::FileRecord file(filename, checktxt, digest.has_value() ? digest->c_str() : "");
+				result.push_back(file);
             }
         }
     } catch (const DatabaseError& e) {
         csync_error(0, "Failed to get non-dirty files: {}", e.what());
     }
-
-	return tl;
+	return result;
 }
 
-textlist_p DbSql::get_dirty_hosts()
+std::vector<std::string> DbSql::get_dirty_hosts()
 {
-	textlist_p tl = 0;
+	std::vector<std::string> result;
 	csync_debug(3, "get dirty host\n");
     try {
         auto rs = conn_->execute_query("get_dirty_hosts",
@@ -286,14 +286,14 @@ textlist_p DbSql::get_dirty_hosts()
 
         while (rs->next()) {
             std::string peername = rs->get_string(1);
-            textlist_add(&tl, peername.c_str(), 0);
-            csync_debug(3, "dirty host {} \n", tl->value);
+			result.emplace_back(peername);
+            csync_debug(3, "dirty host {} \n", peername);
         }
     } catch (const DatabaseError& e) {
         csync_error(0, "Failed to get dirty hosts: {}", e.what());
     }
 
-	return tl;
+	return result;
 }
 
 int DbSql::upgrade_db()
