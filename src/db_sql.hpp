@@ -20,8 +20,8 @@ public:
                    struct stat *file_stat, int *operation, std::optional<std::string>& digest, int ignore_flags, dev_t *old_no) override;
     int is_dirty(peername_p str_peername, filename_p str_filename, int *operation, int *mode) override;
     int list_dirty(const std::set<std::string> &active_peers, const char *realname, int recursive) override;
-    textlist_p non_dirty_files_match(filename_p pattern) override;
-    textlist_p get_dirty_hosts() override;
+	std::vector<csync2::FileRecord> non_dirty_files_match(filename_p pattern) override;
+	std::vector<std::string> get_dirty_hosts() override;
     int upgrade_db() override;
     textlist_p get_hints() override;
     long long remove_hint(filename_p filename, int recursive) override;

@@ -1637,18 +1637,18 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 // NOT FULLY IMPLEMENTED
 void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
                      const std::set<std::string>& patlist, int ip_version, int flags) {
-	textlist_p tl = 0, t = 0;
 	int dry_run = flags & FLAG_DRY_RUN;
 
+	std::vector<csync2::FileRecord> result;
 	csync_debug(0, "csync_sync_host\n");
 	for (std::string pattern : patlist) {
-		tl = db->non_dirty_files_match(pattern.c_str());
-		if (tl) // Only use first pattern?
+		result  = db->non_dirty_files_match(pattern);
+		if (!result.empty()) // Only use first pattern?
 			break;
 	}
 	/* just return if there are no files to update */
-	if (!tl) {
-		csync_debug(0, "csync_sync_host: no files to sync\n");
+	if (result.empty()) {
+		csync_debug(0, "csync_sync_host: no files to sync on {}\n", peername);
 		return;
 	}
 	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
@@ -1672,8 +1672,8 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 	if (dry_run)
 		status = "(DRY RUN)";
 
-	for (t = tl; t != 0; t = t->next) {
-		filename_p filename = t->value;
+	for (csync2::FileRecord file : result) {
+		filename_p filename = file.filename();
 		const char *key = csync_key(peername, filename);
 		if (!key) {
 			csync_info(2, "Skipping file sync {} on {} - not in my groups.\n", filename, peername);
@@ -1681,8 +1681,8 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 			UrlEncoder url_encode;
 			std::string key_enc = url_encode(key);
 			filename_p filename_enc = url_encode(prefixencode(filename));
-			const char *chk_local = t->value2;
-			const char *digest = t->value3;
+			const std::string chk_local = file.checktxt();
+			const std::string digest = file.digest(); 
 			struct stat st;
 			char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
 			int rc_exist = csync_stat(filename, &st, uid, gid);
@@ -1690,7 +1690,7 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 				int last_conn_status;
 				rc = csync_update_file_sig_rs_diff(conn, myname.c_str(), peername, key_enc,
 												   filename, filename_enc, &st,
-												   uid, gid, chk_local, digest, &last_conn_status, 2);
+												   uid, gid, chk_local.c_str(), digest.c_str(), &last_conn_status, 2);
 				if (rc == CONN_CLOSE) {
 					csync_error(0, "Error while sync_host {}:{}. Connection closed", peername, filename);
 					break;
@@ -1709,7 +1709,6 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 			}
 		}
 	}
-	textlist_free(tl);
 	conn_printf(conn, "BYE\n");
 	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
@@ -1738,20 +1737,20 @@ void csync_update(db_conn_p db, peername_p myhostname,
 			csync_error(0, "No active peers given. Unable to iterate without");
 		}
 	} else {
-		tl = db->get_dirty_hosts();
+		std::vector<std::string> result = db->get_dirty_hosts();
 		int found = 1;
-		for (t = tl; t != 0; t = t->next) {
+		for (std::string host : result) {
 			if (!active_peers.empty()) {
 				found = 0;
 				for (std::string peer : active_peers) {
-					if (peer == t->value) {
+					if (peer == host) {
 						found = 1;
 						break;
 					}
 				}
 			}
 			if (found)
-				func(db, myhostname, t->value, patlist, ip_version, flags);
+				func(db, myhostname, host, patlist, ip_version, flags);
 		}
 		textlist_free(tl);
 	}

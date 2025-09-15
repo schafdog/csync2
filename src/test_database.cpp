@@ -236,9 +236,8 @@ void test_db_api(const std::string &conn_str) {
         cout << "is_dirty" << std::endl;
         api->is_dirty(peername, filename, &operation, &mode);
         cout << "get_dirty_hosts" << std::endl;
-        tl = api->get_dirty_hosts();
-	print_textlist(tl);
-	textlist_free(tl);
+	std::vector<std::string> result = api->get_dirty_hosts();
+	// print_textlist(tl);
         cout << "get_hints" << std::endl;
         tl = api->get_hints();
 	print_textlist(tl);

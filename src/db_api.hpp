@@ -114,9 +114,10 @@ public:
     virtual textlist_p check_file_same_dev_inode(filename_p filename, const std::string& checktxt, const char *digest,
                                                  struct stat *st, peername_p peername) = 0;
     virtual textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
-                                                       const std::string& checktxt, const char *digest, struct stat *st) = 0;
-    virtual textlist_p non_dirty_files_match(filename_p pattern) = 0;
-    virtual textlist_p get_dirty_hosts() = 0;
+                                                       const std::string& checktxt,
+													   const char *digest, struct stat *st) = 0;
+    virtual std::vector<csync2::FileRecord> non_dirty_files_match(filename_p pattern) = 0;
+    virtual std::vector<std::string> get_dirty_hosts() = 0;
     virtual int dir_count(const char *dirname) = 0;
     virtual int move_file(filename_p oldfile, filename_p newfile) = 0;
     virtual int update_dirty_hardlinks(peername_p peername, filename_p newfile, struct stat *st) = 0;
