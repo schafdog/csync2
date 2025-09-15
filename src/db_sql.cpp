@@ -542,21 +542,21 @@ void DbSql::list_sync(peername_p myhostname, peername_p peername)
     }
 }
 
-textlist_p DbSql::get_commands()
+vector<Command> DbSql::get_commands()
 {
     std::string name_sql = "get_commands";
     std::string sql = "SELECT command, logfile FROM action";
     auto stmt = conn_->prepare(name_sql, sql);
-
+	vector<Command> result;
     auto resultset = stmt->execute_query();
-    textlist_p tl = 0;
     while (resultset->next()) {
-        textlist_add2(&tl, resultset->get_string(1).c_str(), resultset->get_string(2).c_str(), 0);
+        Command command( resultset->get_string(1), resultset->get_string(2));
+		result.emplace_back(command);
     }
-	return tl;
+	return result;
 }
 
-textlist_p DbSql::get_command_filename(filename_p command, const char *logfile)
+std::vector<csync2::Command> DbSql::get_command_filename(filename_p command, const std::string logfile)
 {
 	std::string name_sql = "get_command_filename";
     std::string sql = "SELECT filename from action WHERE command = ? and logfile = ?";
@@ -565,12 +565,13 @@ textlist_p DbSql::get_command_filename(filename_p command, const char *logfile)
     stmt->bind(2, logfile);
 
     auto resultset = stmt->execute_query();
-    textlist_p tl = 0;
+	std::vector<csync2::Command> result;
     while (resultset->next())
     {
-		textlist_add(&tl, resultset->get_string(1).c_str(), 0);
+		csync2::Command cmd( resultset->get_string(1).c_str(), "");
+		result.emplace_back(command);
 	}
-	return tl;
+	return result;
 }
 
 int DbSql::dir_count(const char *dirname)

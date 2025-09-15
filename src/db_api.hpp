@@ -11,6 +11,8 @@
 #include "dirty_record.hpp"
 #include "error.hpp"
 
+using namespace csync2;
+
 #define DB_SQLITE2 1
 #define DB_SQLITE3 2
 #define DB_MYSQL   3
@@ -90,8 +92,8 @@ public:
     virtual textlist_p get_old_operation(const std::string& checktxt, peername_p peername, filename_p filename,
                                          const char *device, const char *ino) = 0;
 
-    virtual textlist_p get_commands() = 0;
-    virtual textlist_p get_command_filename(filename_p filename, const char *logfile) = 0;
+    virtual std::vector<Command> get_commands() = 0;
+    virtual std::vector<Command> get_command_filename(filename_p filename, const std::string logfile) = 0;
     // virtual textlist_p get_hosts() = 0;
 	virtual std::vector<csync2::Hint> get_hints() = 0;
     virtual long long update_file(filename_p filename, const std::string& checktxt,

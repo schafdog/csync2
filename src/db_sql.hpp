@@ -33,8 +33,8 @@ public:
 								 int recursive) override;
     int move_file(filename_p str_filename, filename_p newname) override;
     void list_sync(peername_p myhostname, peername_p peername) override;
-    textlist_p get_commands() override;
-    textlist_p get_command_filename(filename_p command, const char *logfile) override;
+	std::vector<csync2::Command> get_commands() override;
+	std::vector<csync2::Command> get_command_filename(filename_p command, const std::string logfile) override;
     int dir_count(const char *dirname) override;
     long long add_hint(filename_p filename, int recursive) override;
     int remove_dirty(peername_p peername, filename_p filename, int recursive) override;

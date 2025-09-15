@@ -33,6 +33,9 @@
 #include "groups.hpp"
 #include "utils.hpp"
 
+using namespace csync2;
+using namespace std;
+
 void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	const struct csync_group *g = NULL;
 	const struct csync_group_action *a = NULL;
@@ -66,39 +69,22 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 	}
 }
 
-static void csync_run_single_command(db_conn_p db, const char *command, const char *logfile) {
-	char *command_clr = strdup(command);
-	char *logfile_clr = strdup(logfile);
-	char *real_command, *mark;
+/**
+   Run a command and log to logfile. Replace %% with filenames that has this combination
+ **/
+static void csync_run_single_command(db_conn_p db,  const std::string& command, const std::string& logfile) {
+	std::string real_command;
 	pid_t pid;
 
-	textlist_p tl = 0, t;
-	tl = db->get_command_filename(command, logfile);
-	mark = strstr(command_clr, "%%");
-	if (!mark) {
-		real_command = strdup(command_clr);
+	std::vector<Command> result = db->get_command_filename(command, logfile);
+	if (!strstr(command.c_str(), "%%")) {
+		real_command = command;
 	} else {
-		size_t len = strlen(command_clr) + 10;
-		char *pos;
-
-		for (t = tl; t != 0; t = t->next)
-			len += strlen(t->value) + 1;
-
-		pos = real_command = static_cast<char*>(malloc(len));
-		memcpy(real_command, command_clr, mark - command_clr);
-		real_command[mark - command_clr] = 0;
-
-		for (t = tl; t != 0; t = t->next) {
-			pos += strlen(pos);
-			if (t != tl)
-				*(pos++) = ' ';
-			strcpy(pos, t->value);
+		std::string files = "";
+		for (csync2::Command file : result) {
+			files += ' ' + file.command;
 		}
-
-		pos += strlen(pos);
-		strcpy(pos, mark + 2);
-
-		assert(strlen(real_command) + 1 < len);
+		//real_command.replace(std::string("%%"), files);
 	}
 
 	csync_info(1, "Running '{}' ...", real_command);
@@ -109,29 +95,22 @@ static void csync_run_single_command(db_conn_p db, const char *command, const ch
 		close(1);
 		close(2);
 		/* 0 */open("/dev/null", O_RDONLY);
-		/* 1 */open(logfile_clr, O_WRONLY | O_CREAT | O_APPEND, 0666);
-		/* 2 */open(logfile_clr, O_WRONLY | O_CREAT | O_APPEND, 0666);
+		/* 1 */open(logfile.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0666);
+		/* 2 */open(logfile.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0666);
 
 		execl("/bin/sh", "sh", "-c", real_command, NULL);
 		_exit(127);
 	}
-	free(command_clr);
-	free(logfile_clr);
-	free(real_command);
 	if (waitpid(pid, 0, 0) < 0)
 		csync_fatal("ERROR: Waitpid returned error {}.", strerror(errno));
 
-	for (t = tl; t != 0; t = t->next)
-		db->remove_action_entry(t->value, command, logfile);
-	textlist_free(tl);
+	for (csync2::Command cmd : result)
+		db->remove_action_entry(cmd.command, command, logfile);
 }
 
 void csync_run_commands(db_conn_p db) {
-	textlist_p tl = 0, t;
-
-	tl = db->get_commands();
-	for (t = tl; t != 0; t = t->next) {
-		csync_run_single_command(db, t->value, t->value2);
+	std::vector<csync2::Command> result = db->get_commands();
+	for (csync2::Command cmd: result) {
+		csync_run_single_command(db, cmd.command, cmd.logfile);
 	}
-	textlist_free(tl);
 }

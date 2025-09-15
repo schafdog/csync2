@@ -76,6 +76,12 @@ public:
     bool is_recursive;
 };
 
+class Command {
+public:
+    std::string command;
+    std::string logfile;
+};
+
     
 class FileRecord {
 public:
