@@ -98,7 +98,7 @@ extern int csync_check_dir(db_conn_p db, peername_p file, int flags);
 extern void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 					   const std::set<std::string>& peerfilter, operation_t op,
 					   const std::string& checktxt, const char *dev, const char *ino, int mode, int mtime);
-extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
+//extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
 extern char *csync_check_path(filename_p filename);
 extern int   csync_check_pure(filename_p filename);
 

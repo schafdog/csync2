@@ -8,6 +8,7 @@
 
 #include "csync2.hpp"
 #include "database_v2.hpp"
+#include "dirty_record.hpp"
 #include "error.hpp"
 
 #define DB_SQLITE2 1
@@ -78,9 +79,10 @@ public:
 
     virtual int remove_dirty(peername_p peername, filename_p filename, int recursive) = 0;
 
-    virtual textlist_p get_dirty_by_peer_match(const char *myname, peername_p peername, int recursive,
-                                               const std::set<std::string>& patlist,
-                                               int (*match_func)(filename_p filename, filename_p pattern, int recursive)) = 0;
+    virtual void get_dirty_by_peer_match(const char *myname, peername_p peername, int recursive,
+										 const std::set<std::string>& patlist,
+										 int (*match_func)(filename_p filename, filename_p pattern, int recursive),
+										 std::vector<csync2::DirtyRecord>& result) = 0;
 
     virtual void clear_operation(const char *myname, peername_p peername,
                                  filename_p filename /*, int recursive */) = 0;

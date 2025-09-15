@@ -11,7 +11,8 @@
 #include <time.h>
 #include "db_sql.hpp"
 #include "db.hpp"
-
+#include "file_record.hpp"
+#include "dirty_record.hpp"
 
 // C++20 std::format support
 #if __cplusplus >= 202002L && __has_include(<format>)
@@ -730,20 +731,22 @@ void DbSql::clear_operation(const char *myhostname, peername_p peername,
                         myhostname, peername, filename);
 }
 
-textlist_p DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
-								  const std::set<std::string> &patlist,
-								  int (*get_dirty_by_peer)(filename_p fn, filename_p pattern, int recursive))
-{
-	const char *peername = str_peername.c_str();
+csync2::FileOperation get_operation(int operation) {
+	return static_cast<csync2::FileOperation>(operation);
+}
 
-	textlist_p tl = NULL;
+void DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p peername, int recursive,
+									const std::set<std::string> &patlist,
+									int (*get_dirty_by_peer)(filename_p fn, filename_p pattern, int recursive),
+									std::vector<csync2::DirtyRecord>& result)
+{
 	std::string named_statement = "get_dirty_by_peer_match";
 	std::string SQL_SELECT = std::format(
 	        "SELECT filename, operation, op, other, checktxt, digest, forced, (op & ?{}) as type "
 			"FROM dirty WHERE "
 			"peername = ? AND myname = ? "
 			"AND peername NOT IN (SELECT host FROM host WHERE status = 1) "
-			"ORDER by type DESC, filename DESC", getIntType());
+			"ORDER by type ASC, filename ASC", getIntType());
 	auto rs = conn_->execute_query(named_statement, SQL_SELECT, OP_FILTER, peername, myhostname);
 	while (rs->next())
 	{
@@ -756,16 +759,16 @@ textlist_p DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p str
 		// But seems to work (sometime) on db csync2. Doesnt make sense
 		auto digest = rs->get_string_optional(6);
 		const auto forced = rs->get_int(7);
+		csync2::FileRecord file(db_filename, checktxt, digest.has_value() ? *digest : "");
+		csync2::DirtyRecord dirty(file, peername, op_str, get_operation(operation), forced, other);
 		int found = 0;
 		csync_debug(3, "DIRTY LOOKUP: '{}' '{}' forced: '{}'\n", db_filename, checktxt, forced);
 		for (std::string pattern : patlist)
 		{
 			csync_debug(3, "compare file with pattern {}\n", pattern);
-			if (get_dirty_by_peer == NULL || get_dirty_by_peer(db_filename.c_str(), pattern.c_str(), recursive))
+			if (get_dirty_by_peer == NULL || get_dirty_by_peer(file.filename().c_str(), pattern.c_str(), recursive))
 			{
-				textlist_add5(&tl, db_filename.c_str(), op_str.c_str(),
-				                other.has_value() ? other->c_str() : NULL, checktxt.c_str(),
-								digest.has_value() ? digest->c_str() : NULL, forced, operation);
+				result.emplace_back(dirty);
 				found = 1;
 			}
 		}
@@ -777,20 +780,12 @@ textlist_p DbSql::get_dirty_by_peer_match(const char *myhostname, peername_p str
 			free(copy_checktxt);
 		}
 	}
-	return tl;
-}
-
-static textlist_p db_sql_get_dirty_by_peer(DbApi *db, const char *myhostname, peername_p peername)
-{
-	std::set<string> patlist;
-	patlist.insert("/");
-    	return db->get_dirty_by_peer_match(myhostname, peername, 1, patlist, NULL);
 }
 
 textlist_p DbSql::get_old_operation(const std::string& checktxt,
-							   peername_p peername,
-							   filename_p filename,
-							   const char *device, const char *ino)
+									peername_p peername,
+									filename_p filename,
+									const char *device, const char *ino)
 {
 	const std::string sql = 
 		"SELECT operation, filename, other, checktxt, digest, op "

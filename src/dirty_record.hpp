@@ -26,7 +26,6 @@
 
 #include "file_record.hpp"
 #include "modern_logging.hpp"
-#include "modern_textlist.hpp"
 
 namespace csync2 {
 
@@ -34,17 +33,28 @@ class DirtyRecord {
 public:
     // Constructors
     DirtyRecord() = default;
-    explicit DirtyRecord(const std::string& filename, FileOperation operation = FileOperation::None, std::optional<FileRecord> other = std::nullopt)
-        : file_{filename}, operation_{FileOperation::None},
-          other_{other} {}
+    explicit DirtyRecord(const csync2::FileRecord& file, const std::string& host,
+			 const std::string& op_str = "MARK",
+			 csync2::FileOperation operation = FileOperation::Mark,
+			 bool forced = false, const std::optional<std::string>& other = std::nullopt)
+        : file_(file), operation_(operation), host_(host), forced_(forced), other_(other) {}
 
-    void setOther(const FileRecord& other) {
+    csync2::FileRecord& file() { return file_; }; 
+    void setOther(const std::string& other) {
         other_ = other;
     }
+    std::optional<std::string>& other() { return other_; };   
+    bool forced() const { return forced_; };
+    std::string host() const { return host_; };
+    csync2::FileOperation operation() const { return operation_; };
+    const std::string&  op_str() const { return op_str_; };
 private:
-    FileRecord file_;
-    FileOperation operation_;
-    std::optional<FileRecord> other_;
+    csync2::FileRecord file_;
+    std::string op_str_;
+    csync2::FileOperation operation_;
+    std::string host_;
+    bool forced_;
+    std::optional<std::string> other_;
 };
 
 } // namespace csync2

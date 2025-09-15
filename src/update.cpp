@@ -1526,12 +1526,10 @@ void csync_ping_host(db_conn_p db, peername_p  myname, peername_p peername,
 
 void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
                        const std::set<std::string>& patlist, int ip_version, int flags) {
-	textlist_p tl = 0, t, next_t;
-	textlist_p tl_del = 0, *last_tn = &tl;
 	struct stat st;
-	tl = db->get_dirty_by_peer_match(myname.c_str(), peername, flags & FLAG_RECURSIVE, patlist, compare_files);
-	/* just return if there are no files to update */
-	if (!tl) {
+	std::vector<csync2::DirtyRecord> results; 
+	db->get_dirty_by_peer_match(myname.c_str(), peername, flags & FLAG_RECURSIVE, patlist, compare_files, results);
+	if (results.empty()) {
 		return;
 	}
 	csync_debug(1, "Got dirty files from host {}\n", peername);
@@ -1541,7 +1539,6 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		csync_error(0, "ERROR: Connection to remote host `{}' failed.\n", peername);
 		csync_error(1, "Host stays in dirty state. "
 				"Try again later...\n");
-		textlist_free(tl);
 		return;
 	}
 
@@ -1550,23 +1547,26 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		conn_printf(conn, "BYE\n");
 		read_conn_status(conn, "<BYE>", peername);
 		conn_close(conn);
-		textlist_free(tl);
 		return;
 	}
 	int rc = -1;
 	std::list<std::string> directory_list;
-	char *last_dir_deleted = NULL;
-	for (t = tl; t != 0; t = next_t) {
-		filename_p filename = t->value;
-		const char *other = t->value3;
-		const char *op_str = t->value2, *checktxt = t->value4, *digest = t->value5;
-		int operation = t->operation, forced = t->intvalue;
-		next_t = t->next;
+	std::string last_dir_deleted = "";
+	std::vector<csync2::DirtyRecord> delete_dirty;
+	for (csync2::DirtyRecord& dirty : results) {
+		csync2::FileRecord file = dirty.file();
+		filename_p filename = file.filename(); 
+		const char *other = dirty.other().has_value() ? dirty.other()->c_str() : NULL;
+		std::string op_str = dirty.op_str(), checktxt = file.checktxt();
+		std::string digest = file.digest();
+		csync2::FileOperation operation = dirty.operation();
+		bool forced = dirty.forced();
 		//csync_debug(1, "DIRTY {} '{}'\n", filename, digest);
 		if (lstat_strict(filename, &st) == 0 && !csync_check_pure(filename)) {
-			rc = csync_update_file_mod(conn, db, myname.c_str(), peername, filename, operation, other, checktxt,
-									   digest, forced,
-					flags & FLAG_DRY_RUN);
+			rc = csync_update_file_mod(conn, db, myname.c_str(), peername, filename,
+									   static_cast<int>(operation), other, checktxt.c_str(),
+									   digest.c_str(), forced,
+									   flags & FLAG_DRY_RUN);
 			if (rc == CONN_CLOSE) {
 				csync_error(0, "Connection closed on updating {}\n", filename);
 				break;
@@ -1578,12 +1578,13 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 				csync_directory_add(directory_list, other_str);
 			}
 
-			last_tn = &(t->next);
 		} else {
 			/* File not found */
+			int op_int = static_cast<int>(operation);
 			csync_debug(2, "Dirty (missing) item {} {} {} {}\n", filename, op_str, is_null_or_blank(other), forced);
-			if (t->operation != OP_RM && t->operation != OP_MARK) {
-				csync_warn(1, "Unable to {} {}:{}. File has disappeared since check.\n", csync_operation_str(operation),
+			if (op_int != OP_RM && op_int != OP_MARK) {
+				csync_warn(1, "Unable to {} {}:{}. File has disappeared since check.\n",
+						   csync_operation_str(static_cast<int>(operation)),
 						   peername.c_str(), filename.c_str());
 				std::set<string> peerlist;
 				peerlist.insert(peername);
@@ -1594,40 +1595,27 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 				}
 			} else {
 				//csync_debug(1, "LAST_DIR_DELETED {} filename {} strstr {} }\n", last_dir_deleted, filename.c_str());
-			    if (last_dir_deleted != NULL && (strstr(filename.c_str(), last_dir_deleted) != NULL)) {
+			    if (last_dir_deleted != "" && filename.starts_with(last_dir_deleted)) {
 					// this is a file belonging to the deleted directory, so it should be skipped
 					csync_info(2, "Skipping matched file ({}) from deleted directory ({})\n", filename,
-							last_dir_deleted);
+							   last_dir_deleted);
 				} else {
-					if (last_dir_deleted != NULL) {
-						free(last_dir_deleted);
-						last_dir_deleted = NULL;
-					}
 					rc = csync_update_file_del(conn, db, peername, filename, forced, flags & FLAG_DRY_RUN);
 					if (rc == IDENTICAL) {
 						db->remove_dirty(peername, filename, 1);
 						db->remove_file(filename, 1);
-						size_t len = strlen(filename.c_str());
-						last_dir_deleted = static_cast<char*>(malloc(len + 2));
-						strcpy(last_dir_deleted, filename.c_str());
-						strcat(last_dir_deleted, "/");
+						last_dir_deleted = filename + "/";
 						// Skip following files if from sub-directory
 						csync_info(2, "DELETE ({}) Last dir: {}. rc: {}\n", filename, last_dir_deleted, rc);
 					} else {
-						*last_tn = next_t;
-						t->next = tl_del;
-						tl_del = t;
+						delete_dirty.push_back(dirty);
 					}
 				}
 			}
 		}
 	}
-	if (last_dir_deleted) {
-		free(last_dir_deleted);
-	}
-	textlist_free(tl);
-	textlist_free(tl_del);
-
+	// Deletes ?
+	
 	rc = 0;
 	if (!(flags & FLAG_DRY_RUN))
 		for (const std::string& directory : directory_list) {

@@ -6,6 +6,7 @@
 #include "csync2.hpp"
 #include "database_v2.hpp"
 #include "db_api.hpp"
+#include "dirty_record.hpp"
 #include <memory>
 
 class DbSql : public DbApi {
@@ -45,9 +46,10 @@ public:
     long long delete_file(filename_p str_filename, int recursive) override;
     void clear_operation(const char *myhostname, peername_p peername,
                            filename_p filename /* , int recursive */) override;
-    textlist_p get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
-                                         const std::set<std::string> &patlist,
-                                         int (*get_dirty_by_peer)(filename_p str_filename, filename_p pattern, int recursive)) override;
+    void  get_dirty_by_peer_match(const char *myhostname, peername_p str_peername, int recursive,
+								  const std::set<std::string> &patlist,
+								  int (*get_dirty_by_peer)(filename_p str_filename, filename_p pattern, int rec),
+								  std::vector<csync2::DirtyRecord>& result) override;
     textlist_p get_old_operation(const std::string& checktxt,
                                    peername_p str_peername,
                                    filename_p str_filename,
