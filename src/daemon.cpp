@@ -1113,7 +1113,8 @@ static void csync_daemon_list(int conn, db_conn_p db, const char *filename, cons
 							  int recursive) {
 	std::vector<csync2::FileRecord> result = db->list_file(filename, myname, peername, recursive);
 	for (FileRecord file : result) {
-		conn_printf(conn, "%s\t%s\n", file.filename(), file.checktxt());
+		csync_debug(2, "daemon list {}:{}\n", file.checktxt(), file.filename());
+		conn_printf(conn, "%s\t%s\n", file.checktxt().c_str(), file.filename().c_str());
 	}
 }
 

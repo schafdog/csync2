@@ -486,7 +486,7 @@ vector<FileRecord> DbSql::list_file(filename_p str_filename, const char *myhostn
         if (filename[0] != 0) {
             sql += "(filename = ? OR filename LIKE ?) AND ";
         }
-        sql += " hostname = ? ORDER BY filename";
+        sql += " hostname = ? ORDER BY filename DESC";
 
         auto stmt = conn_->prepare("list_file", sql);
         int param_index = 1;
