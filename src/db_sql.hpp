@@ -23,7 +23,7 @@ public:
     textlist_p non_dirty_files_match(filename_p pattern) override;
     textlist_p get_dirty_hosts() override;
     int upgrade_db() override;
-    textlist_p get_hints() override;
+	std::vector<csync2::Hint> get_hints() override;
     long long remove_hint(filename_p filename, int recursive) override;
     void force(const char *realname, int recursive) override;
     void mark(const std::set<std::string>& active_peerlist, const filename_p realname, int recursive) override;

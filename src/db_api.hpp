@@ -93,8 +93,7 @@ public:
     virtual textlist_p get_commands() = 0;
     virtual textlist_p get_command_filename(filename_p filename, const char *logfile) = 0;
     // virtual textlist_p get_hosts() = 0;
-    virtual textlist_p get_hints() = 0;
-
+	virtual std::vector<csync2::Hint> get_hints() = 0;
     virtual long long update_file(filename_p filename, const std::string& checktxt,
                                   struct stat *file_stat, const char *digest) = 0;
     virtual long long insert_file(filename_p filename, const std::string& checktxt,

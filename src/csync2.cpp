@@ -1436,10 +1436,10 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	{
 		if (argc == optind)
 		{
-			tl = db->get_hints();
-			for (t = tl; t != 0; t = t->next)
+			std::vector<csync2::Hint> result = db->get_hints();
+			for (csync2::Hint hint : result)
 			{
-				csync_check(db, t->value, (t->intvalue ? flags | FLAG_RECURSIVE : flags));
+				csync_check(db, hint.filename, (hint.is_recursive ? flags | FLAG_RECURSIVE : flags));
 				db->remove_hint(t->value, t->intvalue);
 			}
 			textlist_free(tl);

@@ -70,6 +70,13 @@ enum class FileChangeType {
     PermissionChanged
 };
 
+class Hint {
+public:
+    std::string filename;
+    bool is_recursive;
+};
+
+    
 class FileRecord {
 public:
     // Primary file identification

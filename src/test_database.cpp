@@ -8,7 +8,9 @@
 #include <iostream>
 #include <memory>
 #include "textlist.hpp"
+
 using namespace std;
+using namespace csync2;
 
 void test_database(const std::string &conn_str) {
   std::cout << "--- Testing Database: " << conn_str << " --- " << std::endl;
@@ -104,6 +106,13 @@ void test_textlist() {
     textlist_free(tl);
 }
 
+int print(vector<Hint> result) {
+    for (Hint hint : result) {
+	cout << "Hint(" << hint.filename << ", " << hint.is_recursive << endl;
+    }
+    return result.size();
+}
+
 void test_db_api(const std::string &conn_str) {
     std::cout << "--- Testing API: " << conn_str << " --- " << std::endl;
     try {
@@ -171,7 +180,7 @@ void test_db_api(const std::string &conn_str) {
 
         std::set<std::string> patlist ={"", ""};
         std::cout << "get_dirty_by_peer_match" << std::endl;
-	std::vector<csync2::DirtyRecord> dirtyList;
+	vector<DirtyRecord> dirtyList;
         api->get_dirty_by_peer_match(hostname, peername, 1, patlist, NULL, dirtyList);
         // count = print_vector(dirtyList);
         //std::cout << "Dirty count: " << count << std::endl;
@@ -190,19 +199,17 @@ void test_db_api(const std::string &conn_str) {
         std::cout << "add_hint count: " << add_hint_count << std::endl;
         assert(add_hint_count == 1);
 
-        textlist_p hints = api->get_hints();
-        int hint_count = print_textlist(hints);
+        vector<Hint> hints = api->get_hints();
+        int hint_count = print(hints);
         std::cout << "Hint count: " << hint_count << std::endl;
         assert(hint_count == 1);
-	textlist_free(hints);
         long long remove_hint_count = api->remove_hint(filename, 1);
         std::cout << "remove_hint count: " << remove_hint_count << std::endl;
         assert(remove_hint_count == 1);
 
         // Verify hint is removed
         hints = api->get_hints();
-        hint_count = print_textlist(hints);
-        std::cout << "Hint count after removal: " << hint_count << std::endl;
+        std::cout << "Hint count after removal: " << print(hints) << std::endl;
         assert(hint_count == 0);
 
         std::string command = "command";
@@ -240,10 +247,8 @@ void test_db_api(const std::string &conn_str) {
 	print_textlist(tl);
 	textlist_free(tl);
         cout << "get_hints" << std::endl;
-        tl = api->get_hints();
-	print_textlist(tl);
-	if (tl)
-	    textlist_free(tl);
+        hints =  api->get_hints();
+	cout << "hint counts " << print(hints) << endl;
         cout << "list_dirty" << std::endl;
         api->list_dirty(std::set<std::string>{hostname}, filename, 1);
         cout << "list_file" << std::endl;

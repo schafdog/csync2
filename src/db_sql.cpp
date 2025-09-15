@@ -324,22 +324,22 @@ int DbSql::upgrade_db()
 	return 0;
 }
 
-textlist_p DbSql::get_hints()
+std::vector<csync2::Hint> DbSql::get_hints()
 {
-	textlist_p tl = NULL;
+	std::vector<csync2::Hint> result;
     try {
         auto rs = conn_->execute_query("get_hints",
                                      "SELECT filename, is_recursive FROM hint");
 
         while (rs->next()) {
             std::string filename = rs->get_string(1);
-            textlist_add(&tl, filename.c_str(),
-                         atoi(rs->get_string(2).c_str()));
+			csync2::Hint hint(filename, atoi(rs->get_string(2).c_str()));
+            result.emplace_back(hint);
         }
     } catch (const DatabaseError& e) {
         csync_error(0, "Failed to get hints: {}", e.what());
     }
-	return tl;
+	return result;
 };
 
 static std::string csync_generate_recursive_sql_placeholder(int recursive, int prepend_and) {
