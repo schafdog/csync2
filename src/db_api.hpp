@@ -113,8 +113,9 @@ public:
     virtual int check_file(filename_p filename, std::optional<std::string>& other, const std::string& checktxt,
                            struct stat *file_stat, int *operation, std::optional<std::string> &digest, int flags, dev_t *old_no) = 0;
 
-    virtual textlist_p check_file_same_dev_inode(filename_p filename, const std::string& checktxt, const char *digest,
-                                                 struct stat *st, peername_p peername) = 0;
+    virtual vector<FileRecord> check_file_same_dev_inode(filename_p filename, const std::string& checktxt,
+														 const char *digest,
+														 struct stat *st, peername_p peername) = 0;
     virtual textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
                                                        const std::string& checktxt,
 													   const char *digest, struct stat *st) = 0;

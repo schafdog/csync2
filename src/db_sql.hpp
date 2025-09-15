@@ -73,8 +73,8 @@ public:
     int remove_action_entry(filename_p filename, const std::string& command, const std::string& logfile) override;
 
     int update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st) override;
-    textlist_p check_file_same_dev_inode(filename_p str_filename, const std::string& checktxt, const char *digest,
-                                           struct stat *st, peername_p str_peername) override;
+    vector<FileRecord> check_file_same_dev_inode(filename_p str_filename, const std::string& checktxt, const char *digest,
+												 struct stat *st, peername_p str_peername) override;
     textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
                                                  const std::string& checktxt, const char *digest, struct stat *st) override;
     // unused:

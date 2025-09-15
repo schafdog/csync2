@@ -468,12 +468,11 @@ int csync_check_del(db_conn_p db, filename_p file, int flags) {
 	return csync_check_del(db, file.c_str(), flags);
 }
 
-static textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename,
+vector<FileRecord> csync_check_file_same_dev_inode(db_conn_p db, filename_p filename,
 										   const char *checktxt, const char *digest, struct stat *st, peername_p peername) {
-	textlist_p tl = 0;
 	csync_info(2, "csync_check_file_same_dev_inode {} {}\n", filename, filename);
-	tl = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
-	return tl;
+	auto rs = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
+	return rs;
 }
 
 textlist_p csync_check_move(db_conn_p db, peername_p peername,
@@ -707,26 +706,22 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	if ((is_upgrade || is_dirty) && !csync_compare_mode) {
 		const char *digest_c = (digest ? digest->c_str() : NULL);
 		if ((operation == OP_NEW && digest) || operation == OP_MKDIR) {
-			textlist_p tl = csync_check_file_same_dev_inode(db, filename.c_str(), checktxt.c_str(), digest_c, file_stat, "");
-			textlist_p ptr = tl;
-			while (ptr != NULL) {
-				csync_info(2, "check same file ({}) {} -> {} \n", ptr->intvalue,
-						ptr->value, filename.c_str());
-				if (ptr->intvalue == OP_RM) {
+			vector<FileRecord> result = csync_check_file_same_dev_inode(db, filename.c_str(), checktxt.c_str(), digest_c, file_stat, "");
+			for (FileRecord file : result) {
+				csync_info(2, "check same file ({}) {} -> {} \n", file.mode(), file.filename(), filename);
+				if (file.mode()  == OP_RM) {
 					operation = OP_MOVE;
-					db->delete_file(ptr->value, 0);
-					other = to_optional(ptr->value);
-					csync_info(1, "Found MOVE {} -> {} \n", ptr->value, filename);
+					db->delete_file(file.filename(), 0);
+					other = to_optional(file.filename().c_str());
+					csync_info(1, "Found MOVE {} -> {} \n", file.filename(), filename);
 					break;
-				} else if (ptr->intvalue == OP_HARDLINK) {
+				} else if (file.mode() == OP_HARDLINK) {
 					// BROKEN LOGIC. There can be more that one hardlink. Only finds last
 					operation = OP_HARDLINK;
-					other = to_optional(ptr->value);
-					csync_info(1, "Found HARDLINK {} -> {} \n", ptr->value, filename);
+					other = to_optional(file.filename().c_str());
+					csync_info(1, "Found HARDLINK {} -> {} \n", file.filename(), filename);
 				}
-				ptr = ptr->next;
 			}
-			textlist_free(tl);
 		}
 		int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
 		if (has_links) {

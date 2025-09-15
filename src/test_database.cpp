@@ -231,11 +231,10 @@ void test_db_api(const std::string &conn_str) {
 
         const char *checktxt = "checktxt";
         const char *digest = "digest";
-        textlist_p tl = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
-        cout << "check_file_same_dev_inode count " << print_textlist(tl) << std::endl;
-        textlist_free(tl);
-
-		tl = api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
+        vector<FileRecord> same_files = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
+        cout << "check_file_same_dev_inode count " << same_files.size() << std::endl;
+	
+	textlist_p tl = api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
         cout << "check_dirty_same_dev_inode count " << print_textlist(tl) << std::endl;
         textlist_free(tl);
         api->clear_operation(hostname, peername, filename);

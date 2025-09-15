@@ -1108,11 +1108,12 @@ std::optional<std::string> create_optional(const char *filename)
 }
 
 
-textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const std::string& checktxt, const char *digest,
+vector<FileRecord> DbSql::check_file_same_dev_inode(filename_p filename, const std::string& checktxt, const char *digest,
 							   struct stat *st, peername_p peername)
 {
 	(void)checktxt;
-	textlist_p tl = 0;
+
+	vector<FileRecord> result;
 	std::string name_sql = "check_file_same_dev_inode";
 	const char *sql =
 		" SELECT filename, checktxt, digest FROM file f "
@@ -1124,7 +1125,7 @@ textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const std::stri
 		" AND ('' = ? OR "
 		"     filename NOT IN (SELECT filename FROM dirty "
 		                       "WHERE peername = ? AND device = f.device AND inode = f.inode))"
-		" ORDER BY filename;";
+		" ORDER BY filename DESC;";
 	//	" AND checktxt  = '{}' "
 	//	" AND digest    = '{}' ";
 
@@ -1154,7 +1155,18 @@ textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const std::stri
 
 		if (opt_digest->empty() || db_digest->empty() || *opt_digest == *db_digest)
 		{
-			textlist_add_new2(&tl, db_filename, db_checktxt, operation);
+			bool found = false;
+			for (FileRecord file : result) {
+				if (file.filename() == db_filename) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				FileRecord file(db_filename, db_checktxt, db_digest.has_value() ? db_digest->c_str() : "");
+				file.mode(operation);
+				result.emplace_back(file);
+			}
 		}
 		else
 		{
@@ -1170,7 +1182,7 @@ textlist_p DbSql::check_file_same_dev_inode(filename_p filename, const std::stri
 				   static_cast<unsigned long long>(csync_level_debug == 3 ? st->st_ino : 0l),
 				   filename.c_str());
 	}
-	return tl;
+	return result;
 };
 
 // Use by csync_check_move, which isn't called. Error in seconds SQL fixed
@@ -1184,8 +1196,9 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
 
     try {
         auto rs = conn_->execute_query("check_dirty_file_same_dev_inode",
-									   "SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = ?"
-									   " AND device = ? and inode = ? and filename != ? and peername = ?",
+									   "SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = ? "
+									   "AND device = ? and inode = ? and filename != ? and peername = ? "
+									   "ORDER BY filename DESC",
 									   g_myhostname,
 									   static_cast<long long>(st->st_dev),
 									   static_cast<long long>(st->st_ino), filename, peername);

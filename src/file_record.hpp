@@ -147,6 +147,7 @@ public:
     size_t file_size() const { return metadata_.file_size; }
     FileRecord& file_size(size_t size) { metadata_.file_size = size; return *this; }
 
+    int mode() const { return metadata_.mode; }
     FileRecord& mode(int mode) { metadata_.mode = mode; return *this; }
     std::string checktxt() const { return metadata_.checktxt; }
     FileRecord& checktxt(const std::string& cs) { metadata_.checktxt = cs; return *this; }

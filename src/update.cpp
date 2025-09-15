@@ -1072,27 +1072,26 @@ static int csync_find_update_hardlink(int conn, db_conn_p db, const std::string 
 									  struct stat *st, const char *uid, const char *gid,
 									  int auto_resolve_run) {
 	csync_debug(2, "Find same DEV INODE {} already on {} and hardlink\n", filename, peername);
-	textlist_p tl = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
-	textlist_p ptr = tl;
+	vector<FileRecord> result = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
 	int last_conn_status;
 	int rc = OK_MISSING;
-	while (ptr != NULL) {
-		csync_info(2, "check same file ({}) {} -> {} \n", ptr->intvalue, ptr->value, filename);
+	for  (FileRecord file : result) {
+		csync_info(2, "check same file ({}) {} -> {} \n", file.mode(), file.filename(), filename);
 		// NOTE move check is disabled
-		if (0 && ptr->intvalue == OP_RM) {
-			db->delete_file(ptr->value, 0);
-			csync_info(1, "Found MOVE {} -> {} \n", ptr->value, filename);
+		if (0 && file.mode() == OP_RM) {
+			db->delete_file(file.filename(), 0);
+			csync_info(1, "Found MOVE {} -> {} \n", file.filename(), filename);
 			break;
-		} else if (ptr->intvalue == OP_HARDLINK) {
-			csync_info(1, "Found HARDLINK {} -> {} \n", ptr->value, filename);
+		} else if (file.mode() == OP_HARDLINK) {
+			csync_info(1, "Found HARDLINK {} -> {} \n", file.filename(), filename);
 			rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc,
-											 ptr->value, st, uid, gid, digest, &last_conn_status, auto_resolve_run);
-			csync_debug(1, "check_update_hardlink result: {} -> {}: {}\n", ptr->value, filename, rc);
+											 file.filename(), st, uid, gid, digest, &last_conn_status, auto_resolve_run);
+			csync_debug(1, "check_update_hardlink result: {} -> {}: {}\n", file.filename(), filename, rc);
 
 			if (rc == ERROR_HARDLINK || rc == OK_MISSING) {
-				csync_debug(1, "Failed attempt to HARDLINK {} -> {}\n", ptr->value, filename);
+				csync_debug(1, "Failed attempt to HARDLINK {} -> {}\n", file.filename(), filename);
 			} else if (rc == OK) {
-				csync_debug(1, "Hardlinked {}:{} -> {}\n", peername, ptr->value, filename);
+				csync_debug(1, "Hardlinked {}:{} -> {}\n", peername, file.filename(), filename);
 				csync_clear_dirty(db, peername, filename, auto_resolve_run);
 				break;
 			}
@@ -1101,10 +1100,8 @@ static int csync_find_update_hardlink(int conn, db_conn_p db, const std::string 
 			}
 
 		}
-		ptr = ptr->next;
 	}
 	csync_info(1, "csync_find_update_hardlink: result: {}:{} {}\n", peername, filename, rc);
-	textlist_free(tl);
 	return rc;
 }
 
