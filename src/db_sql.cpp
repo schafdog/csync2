@@ -396,12 +396,11 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 
 	if (recursive)
 	{
-		textlist_p tl = 0;
 		// Missing marking files only in FS
 		std::string where_rec = csync_generate_recursive_sql_placeholder(recursive, 1);
 		std::string sql = "SELECT filename, mode, checktxt, digest, device, inode, mtime FROM file "
                           "WHERE hostname = ? ";
-        sql += where_rec + "ORDER BY filename DESC";
+        sql += where_rec + "ORDER BY filename ASC";
 		csync_debug(3,"DbSql::mark {}", sql);
 		auto rs  = conn_->execute_query("mark_recursive", sql, g_myhostname, filename, filename + "/%");
 
@@ -416,31 +415,17 @@ void DbSql::mark(const std::set<std::string>& active_peerlist, const filename_p 
 			csync_debug(3, "DbSql::mark DB dev inode {} {}\n" , db_device, db_inode);
 			const std::string db_mtime_str = rs->get_string(7);
 			int db_mtime = atoi(db_mtime_str.c_str());
-			textlist_add5(&tl, db_filename, db_checktxt, db_device, db_inode, db_mtime_str, db_mode, db_mtime);
-		}
-		textlist_p ptr = tl;
-		while (tl != 0)
-		{
-			char *db_filename = tl->value;
-			char *db_checktxt = tl->value2;
-			char *db_device = tl->value3;
-			char *db_inode = tl->value4;
-			// char *mtime_str = tl->value5;
-			int db_mode = tl->intvalue;
-			int db_mtime = tl->operation;
-			int rc_stat = stat(db_filename, &file_st);
+			int rc_stat = stat(db_filename.c_str(), &file_st);
 			if (!rc_stat)
 			{
-				// file_st.st_dev;
-				// file_st.st_ino;
 				db_mode = file_st.st_mode;
 				db_mtime = file_st.st_mtime;
 			}
 			csync_debug(3, "DbSql::mark DB dev inode {} {}\n" , db_device, db_inode);
-			csync_mark(this, db_filename, "", active_peerlist, OP_MARK, db_checktxt, db_device, db_inode, db_mode, db_mtime);
-			tl = tl->next;
+			csync_mark(this, db_filename, "", active_peerlist, OP_MARK, db_checktxt,
+					   db_device.c_str(), db_inode.c_str(),
+					   db_mode, db_mtime);
 		}
-		textlist_free(ptr);
 	}
 }
 
@@ -1194,9 +1179,11 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
 
     try {
         auto rs = conn_->execute_query("check_dirty_file_same_dev_inode",
-                                     "SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = ?"
-                                     " AND device = ? and inode = ? and filename != ? and peername = ?",
-                                     g_myhostname, static_cast<long long>(st->st_dev), static_cast<long long>(st->st_ino), filename, peername);
+									   "SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = ?"
+									   " AND device = ? and inode = ? and filename != ? and peername = ?",
+									   g_myhostname,
+									   static_cast<long long>(st->st_dev),
+									   static_cast<long long>(st->st_ino), filename, peername);
 
         while (rs->next()) {
             std::string db_filename = rs->get_string(1);
@@ -1219,9 +1206,11 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
 
     try {
         auto rs = conn_->execute_query("check_dirty_file_same_dev_inode2",
-                                     "SELECT filename, checktxt, digest, NULL FROM file WHERE hostname = ?  "
-                                     " AND device = ? AND inode = ? AND filename != ? ",
-                                     g_myhostname, static_cast<long long>(st->st_dev), static_cast<long long>(st->st_ino), filename);
+									   "SELECT filename, checktxt, digest, NULL FROM file WHERE hostname = ?  "
+									   " AND device = ? AND inode = ? AND filename != ? ",
+									   g_myhostname,
+									   static_cast<long long>(st->st_dev),
+									   static_cast<long long>(st->st_ino), filename);
 
         while (rs->next()) {
             std::string db_filename = rs->get_string(1);
