@@ -128,17 +128,11 @@ public:
 
     dev_t device() const { return identity_.device_id; }
     FileRecord& device(dev_t id) { identity_.device_id = id; return *this; }
-    FileRecord& device(const std::string& id) {
-	sscanf(DEV_FORMAT, id.c_str(), &identity_.device_id);
-	return *this;
-    };
+    FileRecord& device(const std::string& id);
 
     ino_t inode() const { return identity_.inode_number; }
     FileRecord& inode(ino_t inode) { identity_.inode_number = inode; return *this; }
-    FileRecord& inode(const std::string& no) {
-	sscanf(INO_FORMAT, no.c_str(), &identity_.inode_number);
-	return *this;
-    };
+    FileRecord& inode(const std::string& no);
 
     const Metadata& metadata() const { return metadata_; }
     FileRecord& metadata(Metadata& update) { metadata_= update; return *this; }

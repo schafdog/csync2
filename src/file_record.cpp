@@ -8,17 +8,15 @@
 
 namespace csync2 {
 
-    /*
-FileRecord& FileRecord::device(const std::string& id) {
-    sscanf(DEV_FORMAT, id.c_str(), &identity_.device_id);
-    return *this;
-};
+    FileRecord& FileRecord::device(const std::string& id) {
+	sscanf(DEV_FORMAT, id.c_str(), &identity_.device_id);
+	return *this;
+    };
 
-FileRecord& FileRecord::inode(const std::string& no) {
-    sscanf(INO_FORMAT, no.c_str(), &identity_.inode_number);
-    return *this;
-};
-    */
+    FileRecord& FileRecord::inode(const std::string& no) {
+	sscanf(INO_FORMAT, no.c_str(), &identity_.inode_number);
+	return *this;
+    };
     
 // Generate a SHA-256 digest for the file
 std::string FileRecord::calculate_digest() const {
