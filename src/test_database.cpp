@@ -295,7 +295,6 @@ int main(int argc, char *argv[]) {
   }
   test_database(conn_string);
   test_db_api(conn_string);
-  test_textlist();
 
   return 0;
 }

@@ -1548,7 +1548,6 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		bool forced = dirty.forced();
 		//csync_debug(1, "DIRTY {} '{}'\n", filename, digest);
 		if (lstat_strict(filename, &st) == 0 && !csync_check_pure(filename)) {
-
 			rc = csync_update_file_mod(conn, db, myname.c_str(), peername, filename,
 									   static_cast<int>(operation), other, checktxt.c_str(),
 									   digest.c_str(), forced,
