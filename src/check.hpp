@@ -65,9 +65,6 @@
 #define ERROR_CREATE_STR "ERROR (create)"
 #define	ERROR_CREATE_STR_LEN sizeof(ERROR_CREATE_STR)-1
 
-struct textlist;
-typedef struct textlist *textlist_p;
-
 /* Function pointer type for textlist operations */
 typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st, struct textlist *tl);
 
@@ -109,8 +106,8 @@ extern int   csync_check_pure(filename_p filename);
 vector<DirtyRecord> csync_check_move(db_conn_p db, peername_p peername, filename_p filename,
 									 const char* checktxt, const char *digest, struct stat *st);
 
-textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
-				       const char* checktxt, operation_t op, const char *digest,
-				       struct stat *st);
+vector<DirtyRecord>  csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
+										   const char* checktxt, operation_t op, const char *digest,
+										   struct stat *st);
 
 #endif /* CSYNC2_CHECK_H */

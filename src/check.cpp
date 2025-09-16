@@ -495,14 +495,14 @@ vector<DirtyRecord> csync_check_move(db_conn_p db, peername_p peername, filename
 	return result;
 }
 
-textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
+vector<DirtyRecord> csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
 								 const char *checktxt, int operation,
 								 const char *digest, struct stat *st) {
 
 	vector<DirtyRecord> result = db->check_dirty_file_same_dev_inode(peername, filename, checktxt, digest, st);
 	struct stat file_stat;
 	int count = 0;
-	textlist_p tl = NULL;
+	vector<DirtyRecord> tl;
 	for (DirtyRecord dirty: result) {
 		FileRecord file = dirty.file();
 		const std::string db_filename = file.filename();
@@ -519,17 +519,18 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p f
 			csync_info(1, "check_link_move: Other file not found. Possible MOVE operation: {}\n", db_filename);
 			if (!(index = csync_cmpchecktxt(db_checktxt, checktxt))) {
 				csync_info(1, "OPERATION: MOVE {} to {}\n", db_filename, filename);
-				textlist_add(&tl, db_filename.c_str(), OP_MOVE);
+				DirtyRecord move(db_filename, OP_MOVE);
+				tl.emplace_back(move);
 			}
 		} else { // LINK, not MV
 			std::string new_checktxt = csync_genchecktxt_version(&file_stat, db_filename,
 																 SET_USER | SET_GROUP, db->version);
 			int i;
 			if (!(i = csync_cmpchecktxt(new_checktxt, checktxt))) {
-				csync_info(1,
-						"csync_check_link_move: OPERATION MHARDLINK {} to {}\n",
-						db_filename, filename);
-				textlist_add(&tl, db_filename.c_str(), OP_HARDLINK);
+				csync_info(1, "csync_check_link_move: OPERATION MHARDLINK {} to {}\n",  db_filename, filename);
+				DirtyRecord hardlink(db_filename, OP_HARDLINK);
+				tl.emplace_back(hardlink);
+				
 			} else { // LINK not verified
 				csync_info(1, "check_link: other file with same dev/inode, but different checktxt.");
 				csync_info(1, "File is different on peer (cktxt char #{}).\n", i);
