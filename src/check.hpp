@@ -82,25 +82,28 @@ int match_peer(const std::set<std::string>& active_peers, const char *peer);
 int match_peer(char **active_peers, const char *peer); // Legacy C-style interface
 
 /* Operation string conversion */
-extern const char *csync_mode_op_str(int st_mode, int op);
-extern operation_t csync_operation(const char *operation);
-extern const char *csync_operation_str(operation_t op);
+const char *csync_mode_op_str(int st_mode, int op);
+operation_t csync_operation(const char *operation);
+const char *csync_operation_str(operation_t op);
 
 /* Main check functions */
-extern void csync_hint(db_conn_p db, const char *file, int recursive);
-extern void csync_check(db_conn_p db, filename_p filename, int flags);
-extern int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g);
-extern int csync_check_del(db_conn_p db, filename_p filename, int flags);
-extern int csync_check_mod(db_conn_p db, peername_p file, int flags, int *count_dirty, const struct csync_group **);
-extern int csync_check_dir(db_conn_p db, peername_p file, int flags);
+void csync_hint(db_conn_p db, const char *file, int recursive);
+void csync_check(db_conn_p db, filename_p filename, int flags);
+int  csync_check_single(db_conn_p db, filename_p filename, int flags, const struct csync_group **g);
+int csync_check_del(db_conn_p db, filename_p filename, int flags);
+int csync_check_mod(db_conn_p db, peername_p file, int flags, int *count_dirty, const struct csync_group **);
+int csync_check_dir(db_conn_p db, peername_p file, int flags);
 
 /* Mark and path functions */
-extern void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
+void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 					   const std::set<std::string>& peerfilter, operation_t op,
 					   const std::string& checktxt, const char *dev, const char *ino, int mode, int mtime);
+void csync_mark(db_conn_p db, FileRecord file, peername_p thispeer,
+				const std::set<std::string>& peerfilter, operation_t operation, int mtime);
+
 //extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
-extern char *csync_check_path(filename_p filename);
-extern int   csync_check_pure(filename_p filename);
+char *csync_check_path(filename_p filename);
+int   csync_check_pure(filename_p filename);
 
 /* Move detection functions */
 vector<DirtyRecord> csync_check_move(db_conn_p db, peername_p peername, filename_p filename,

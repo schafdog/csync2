@@ -7,7 +7,6 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
-#include "textlist.hpp"
 
 using namespace std;
 using namespace csync2;
@@ -83,29 +82,6 @@ void test_database(const std::string &conn_str) {
 const char *nullv(const char *value) {
     return value ? value : "(null)";
 }
-
-int print_textlist(textlist_p tl) {
-    int count = 0;
-    while (tl) {
-        std::cout << "Item: " << tl->value << " " << nullv(tl->value2) << " " << nullv(tl->value3)
-		  << " " << nullv(tl->value4) << " " << nullv(tl->value5) << std::endl;
-        tl = tl->next;
-        count++;
-    }
-    return count;
-}
-
-void test_textlist() {
-    textlist_p tl = NULL;
-    int index = 10;
-    while (index > 0) {
-	textlist_add5(&tl, "item", "item2", "item3", "item4", "item5", 1, 2);
-	index--;
-    }
-    cout << "Count " << print_textlist(tl) << std::endl; 
-    textlist_free(tl);
-}
-
 int print(const vector<Hint>& result) {
     for (Hint hint : result) {
 	cout << "Hint(" << hint.filename << ", " << hint.is_recursive << endl;
@@ -265,7 +241,6 @@ void test_db_api(const std::string &conn_str) {
         api->is_dirty(peername, filename, &operation, &mode);
         cout << "get_dirty_hosts" << std::endl;
 	std::vector<std::string> result = api->get_dirty_hosts();
-	// print_textlist(tl);
         cout << "get_hints" << std::endl;
         hints =  api->get_hints();
 	cout << "hint counts " << print(hints) << endl;
@@ -318,7 +293,6 @@ int main(int argc, char *argv[]) {
   } else {
     conn_string = argv[1];
   }
-  //test_textlist();
   test_database(conn_string);
   test_db_api(conn_string);
 

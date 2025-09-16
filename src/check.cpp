@@ -235,14 +235,12 @@ static vector<DirtyRecord> check_old_operation(filename_p filename, operation_t 
 	DirtyRecord dirty(file, peername, "not used", static_cast<FileOperation>(operation), false, clean_other);
 	dirty.forced(is_dirty); // Misuse of dirty
 	result.emplace_back(dirty);
-	//textlist_add4(&tl, file_new.c_str(), clean_other.empty() ? nullptr : clean_other.c_str(),
-	//              result_other, (dirty ? "YES" : NULL), operation);
-
 	return result;
 };
 
 static void csync_mark_other(db_conn_p db, filename_p filename, peername_p thispeer,
-							 const std::set<std::string>& peerfilter, operation_t operation_org, const std::string& checktxt,
+							 const std::set<std::string>& peerfilter, operation_t operation_org,
+							 const std::string& checktxt,
 							 const char *dev, const char *ino,
 							 std::optional<std::string>& org_other, int mode, int mtime) {
 	struct peer *pl = csync_find_peers(filename.c_str(), thispeer);
@@ -332,6 +330,16 @@ void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 				const char *dev, const char *ino, int mode, int mtime) {
 	std::optional<std::string> other = std::nullopt;
 	csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev, ino, other, mode, mtime);
+}
+
+void csync_mark(db_conn_p db, FileRecord file, peername_p thispeer,
+				const std::set<std::string>& peerfilter, operation_t operation, int mtime) {
+	std::optional<std::string> other = std::nullopt;
+	char dev_str[20], ino_str[20];
+	sprintf(dev_str, DEV_FORMAT, file.device());
+	sprintf(ino_str, INO_FORMAT, file.inode());
+	csync_mark_other(db, file.filename(), thispeer, peerfilter, operation, file.checktxt(), dev_str, ino_str,
+					 other, file.mode(), mtime);
 }
 
 /* Return path that doesn't exist */
@@ -806,13 +814,10 @@ void csync_check(db_conn_p db, filename_p filename, int flags) {
 	const struct csync_group *g = NULL;
 	csync_check_recursive(db, filename, flags, &g);
 	/*
-	 textlist_p dub_entries = csync_check_all_same_dev_inode(db);
-	 textlist_p ptr = dub_entries;
-	 while (ptr != NULL) {
-	 csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4);
-	 ptr = ptr->next;
+	 vector dub_entries = csync_check_all_same_dev_inode(db);
+	 for (entry : dub_entries) {
+	   csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4);
 	 }
-	 textlist_free(dub_entries);
 	 */
 }
 

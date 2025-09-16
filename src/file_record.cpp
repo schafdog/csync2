@@ -8,6 +8,18 @@
 
 namespace csync2 {
 
+    /*
+FileRecord& FileRecord::device(const std::string& id) {
+    sscanf(DEV_FORMAT, id.c_str(), &identity_.device_id);
+    return *this;
+};
+
+FileRecord& FileRecord::inode(const std::string& no) {
+    sscanf(INO_FORMAT, no.c_str(), &identity_.inode_number);
+    return *this;
+};
+    */
+    
 // Generate a SHA-256 digest for the file
 std::string FileRecord::calculate_digest() const {
     if (!std::filesystem::exists(filename())) {
@@ -100,8 +112,8 @@ FileRecord FileRecord::from_filesystem(const std::filesystem::path& path) {
         // Get inode and device info
         struct stat file_stat;
         if (stat(path.c_str(), &file_stat) == 0) {
-            record.device_id(file_stat.st_dev);
-            record.inode_number(file_stat.st_ino);
+            record.device(file_stat.st_dev);
+            record.inode(file_stat.st_ino);
             Metadata metadata;
             metadata.user_id = file_stat.st_uid;
             metadata.group_id = file_stat.st_gid;

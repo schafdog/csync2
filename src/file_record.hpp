@@ -126,11 +126,20 @@ public:
     const std::string& filename() const { return identity_.filename; }
     FileRecord& filename(const std::string& name) { identity_.filename = name; return *this;}
 
-    dev_t device_id() const { return identity_.device_id; }
-    FileRecord&  device_id(dev_t id) { identity_.device_id = id; return *this; }
+    dev_t device() const { return identity_.device_id; }
+    FileRecord& device(dev_t id) { identity_.device_id = id; return *this; }
+    FileRecord& device(const std::string& id) {
+	sscanf(DEV_FORMAT, id.c_str(), &identity_.device_id);
+	return *this;
+    };
 
-    ino_t inode_number() const { return identity_.inode_number; }
-    void inode_number(ino_t inode) { identity_.inode_number = inode; }
+    ino_t inode() const { return identity_.inode_number; }
+    FileRecord& inode(ino_t inode) { identity_.inode_number = inode; return *this; }
+    FileRecord& inode(const std::string& no) {
+	sscanf(INO_FORMAT, no.c_str(), &identity_.inode_number);
+	return *this;
+    };
+
     const Metadata& metadata() const { return metadata_; }
     FileRecord& metadata(Metadata& update) { metadata_= update; return *this; }
 

@@ -130,7 +130,8 @@ static int daemon_remove_file(db_conn_p db, filename_p filename) {
 int csync_daemon_check_dirty(db_conn_p db, filename_p filename, peername_p peername, enum action_t cmd,
 		int auto_resolve, const char **cmd_error);
 
-static int csync_rmdir_recursive(db_conn_p db, filename_p filename, peername_p std_peername, textlist_p *tl, int backup) {
+static int csync_rmdir_recursive(db_conn_p db, filename_p filename, peername_p std_peername, vector<std::string>& tl,
+								 int backup) {
 	const char *peername = std_peername.c_str();
 	const char *file = filename.c_str();
 	struct dirent **namelist;
@@ -172,8 +173,7 @@ static int csync_rmdir_recursive(db_conn_p db, filename_p filename, peername_p s
 							}
 						} else {
 							csync_info(0, "File is dirty {}\n", fn);
-							if (tl != NULL)
-								textlist_add(tl, fn, 0);
+							tl.emplace_back(fn);
 						}
 					}
 				}
@@ -219,14 +219,14 @@ static int csync_rmdir(db_conn_p db, filename_p filename, peername_p peername, i
 	 */
 	int errors = 0;
 	if (recursive) {
-		textlist_p tl;
 		csync_info(0, "Deleting recursive from clean directory ({}): {} \n", filename, dir_count);
 		rc = ERROR;
 		errno = 0;
 		/* Above could fail due to ignore files. Do recursive on scandir  */
 		if (rc == ERROR) {
+			vector<std::string> tl;
 			csync_warn(1, "Calling csync_rmdir_recursive {}:{}. Errors {}\n", peername, filename, errors);
-			rc = csync_rmdir_recursive(db, filename, peername, &tl, 0);
+			rc = csync_rmdir_recursive(db, filename, peername, tl, 0);
 
 			if (rc == -1) {
 				csync_error(1, "Error on recursive delete: {} {}\n", errno, strerror(errno));
@@ -387,8 +387,10 @@ static int csync_backup_rename(filename_p std_filename, int length, int generati
 			rc = lstat(backup_other, &st);
 			if (rc == 0) {
 				csync_debug(2, "Remove backup {} due to generation {} \n", backup_other, generations);
-				if (S_ISDIR(st.st_mode))
-					csync_rmdir_recursive(NULL, backup_other, "", NULL, 1);
+				if (S_ISDIR(st.st_mode)) {
+					vector<std::string> empty;
+					csync_rmdir_recursive(NULL, backup_other, "", empty, 1);
+				}
 				else {
 					unlink(backup_other);
 				}
@@ -782,20 +784,16 @@ static void destroy_tag(const char *tag[32]) {
 
 static int csync_daemon_hardlink(filename_p filename, const char *linkname, const char *is_identical, const char **cmd_error);
 
-static textlist_p csync_hardlink(filename_p filename, struct stat *st, textlist_p tl) {
+static void csync_hardlink(filename_p filename, struct stat *st, vector<std::string> tl) {
     const char *cmd_error = NULL;
-	textlist_p t = tl;
-	while (t) {
-		char *src = t->value;
+	for (std::string value : tl) {
+		const char *src = value.c_str();
 		int rc = unlink(src);
 		if (rc) {
 			csync_error(0, "ERROR: Failed to unlink '{}'before hardlinking to '{}'", src, filename);
 		}
 		csync_daemon_hardlink(filename, src, "1", &cmd_error);
-		t = t->next;
 	}
-	textlist_free(tl);
-	return 0;
 }
 
 static int csync_patch(int conn, filename_p filename) {
