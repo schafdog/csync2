@@ -65,6 +65,9 @@
 #define ERROR_CREATE_STR "ERROR (create)"
 #define	ERROR_CREATE_STR_LEN sizeof(ERROR_CREATE_STR)-1
 
+struct textlist;
+typedef struct textlist *textlist_p;
+
 /* Function pointer type for textlist operations */
 typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st, struct textlist *tl);
 
