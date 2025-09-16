@@ -38,8 +38,6 @@ using namespace csync2;
 #endif
 
 // Forward declarations to avoid circular includes
-struct textlist;
-typedef struct textlist *textlist_p;
 using namespace csync2;
 using namespace std;
 class DbApi {
@@ -95,7 +93,7 @@ public:
 
     virtual std::vector<Command> get_commands() = 0;
     virtual std::vector<Command> get_command_filename(filename_p filename, const std::string logfile) = 0;
-    // virtual textlist_p get_hosts() = 0;
+    // virtual vector<std::string> get_hosts() = 0;
 	virtual std::vector<csync2::Hint> get_hints() = 0;
     virtual long long update_file(filename_p filename, const std::string& checktxt,
                                   struct stat *file_stat, const char *digest) = 0;
