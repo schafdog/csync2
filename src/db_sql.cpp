@@ -1186,14 +1186,13 @@ vector<FileRecord> DbSql::check_file_same_dev_inode(filename_p filename, const s
 };
 
 // Use by csync_check_move, which isn't called. Error in seconds SQL fixed
-textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
+vector<DirtyRecord> DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
 										 const std::string& checktxt, const char *digest, struct stat *st)
 {
 	// unused
 	(void)checktxt;
 
-	textlist_p tl = 0;
-
+	vector<DirtyRecord> result;
     try {
         auto rs = conn_->execute_query("check_dirty_file_same_dev_inode",
 									   "SELECT filename, checktxt, digest, operation FROM dirty WHERE myname = ? "
@@ -1211,7 +1210,9 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
 
             if (!digest || !db_digest.has_value() || *db_digest == digest)
             {
-                textlist_add_new3(&tl, db_filename.c_str(), db_checktxt.c_str(), db_operation.has_value() ? db_operation->c_str() : NULL);
+				FileRecord file(db_filename, db_checktxt, "");
+				DirtyRecord dirty(file, peername, db_operation.has_value() ? db_operation->c_str() : "");
+				result.emplace_back(dirty);
             }
             else
             {
@@ -1234,11 +1235,12 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
             std::string db_filename = rs->get_string(1);
             std::string db_checktxt = rs->get_string(2);
             auto db_digest = rs->get_string_optional(3);
-            auto db_operation = rs->get_string_optional(4);
 
             if (!digest || !db_digest.has_value() || *db_digest == digest)
             {
-                textlist_add_new3(&tl, db_filename.c_str(), db_checktxt.c_str(), db_operation.has_value() ? db_operation->c_str() : NULL);
+				FileRecord file(db_filename, db_checktxt, "");
+				DirtyRecord dirty(file, peername, "");
+				result.emplace_back(dirty);
             }
             else
             {
@@ -1249,5 +1251,5 @@ textlist_p DbSql::check_dirty_file_same_dev_inode(peername_p peername, filename_
         csync_error(0, "Failed to check dirty file same dev inode: {}", e.what());
     }
 
-	return tl;
+	return result;
 }

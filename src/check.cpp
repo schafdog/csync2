@@ -475,77 +475,67 @@ vector<FileRecord> csync_check_file_same_dev_inode(db_conn_p db, filename_p file
 	return rs;
 }
 
-textlist_p csync_check_move(db_conn_p db, peername_p peername,
-		filename_p filename, const char *checktxt, const char *digest,
-		struct stat *st) {
-	textlist_p t;
-	textlist_p db_tl = db->check_dirty_file_same_dev_inode(peername.c_str(),
-			filename.c_str(), checktxt, digest, st);
+vector<DirtyRecord> csync_check_move(db_conn_p db, peername_p peername, filename_p filename,
+							const char *checktxt, const char *digest, struct stat *st)
+{
+    vector<DirtyRecord> result = db->check_dirty_file_same_dev_inode(peername, filename, checktxt, digest, st);
 	struct stat file_stat;
-	for (t = db_tl; t != NULL; t = t->next) {
-		const char *db_filename = t->value;
-		const char *db_checktxt = t->value2;
-		int rc = stat(db_filename, &file_stat);
+	for (DirtyRecord dirty : result) {
+		
+		const std::string db_filename = dirty.file().filename();
+		const std::string db_checktxt = dirty.file().checktxt();
+		int rc = stat(db_filename.c_str(), &file_stat);
 		int i = 0;
 		if (rc) {
-			csync_info(1, "Other file not found. Posible MOVE operation: {}\n",
-					db_filename);
+			csync_info(1, "Other file not found. Posible MOVE operation: {}\n",	db_filename);
 			if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-				csync_info(1, "OPERATION: MOVE {} to {}\n", filename,
-						db_filename);
-				t->intvalue = OP_MOVE;
+				csync_info(1, "OPERATION: MOVE {} to {}\n", filename, db_filename);
+				dirty.operation(static_cast<FileOperation>(OP_MOVE));
 			}
 		}
 	}
-	return db_tl;
+	return result;
 }
 
-textlist_p csync_check_link_move(db_conn_p db, peername_p peername,
-		filename_p filename, const char *checktxt, int operation,
-		const char *digest, struct stat *st) {
+textlist_p check_link_move(db_conn_p db, peername_p peername, filename_p filename,
+								 const char *checktxt, int operation,
+								 const char *digest, struct stat *st) {
 
-	textlist_p t, tl = NULL;
-	textlist_p db_tl = db->check_dirty_file_same_dev_inode(peername.c_str(),
-														   filename.c_str(), checktxt, digest, st);
+	vector<DirtyRecord> result = db->check_dirty_file_same_dev_inode(peername, filename, checktxt, digest, st);
 	struct stat file_stat;
 	int count = 0;
-	for (t = db_tl; t != NULL; t = t->next) {
-		const char *db_filename = t->value;
-		const char *db_checktxt = t->value2;
-		const char *db_operation = t->value3;
-		csync_info(2, "check_link_move:  DB file: {} {}: {}\n", db_filename,
-				db_operation, operation);
-		int rc = stat(db_filename, &file_stat);
-		/* int db_version = */csync_get_checktxt_version(db_checktxt);
+	textlist_p tl = NULL;
+	for (DirtyRecord dirty: result) {
+		FileRecord file = dirty.file();
+		const std::string db_filename = file.filename();
+		const std::string db_checktxt = file.checktxt();
+		const std::string db_operation = dirty.op_str(); // Doesnt seem right since we are fetching file
+		csync_info(2, "check_link_move:  DB file: {} {}: {}\n", db_filename, db_operation, operation);
+		int rc = stat(db_filename.c_str(), &file_stat);
 		int index = 0;
-		if (db_operation && !strcmp(db_operation, "NEW")) {
+		if (db_operation == "NEW") {
 			csync_info(1, "Unable to MOVE/LINK: both NEW\n");
 			continue;
 		}
 		if (rc) {
-			csync_info(1,
-					"check_link_move: Other file not found. Possible MOVE operation: {}\n",
-					db_filename);
+			csync_info(1, "check_link_move: Other file not found. Possible MOVE operation: {}\n", db_filename);
 			if (!(index = csync_cmpchecktxt(db_checktxt, checktxt))) {
-				csync_info(1, "OPERATION: MOVE {} to {}\n", db_filename,
-						filename.c_str());
-				textlist_add(&tl, db_filename, OP_MOVE);
+				csync_info(1, "OPERATION: MOVE {} to {}\n", db_filename, filename);
+				textlist_add(&tl, db_filename.c_str(), OP_MOVE);
 			}
 		} else { // LINK, not MV
 			std::string db_checktxt_str = csync_genchecktxt_version(&file_stat, db_filename,
 			                                          SET_USER | SET_GROUP, db->version);
-		    db_checktxt = db_checktxt_str.c_str();
+		    const char *db_checktxt = db_checktxt_str.c_str();
 			int i;
 			if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
 				csync_info(1,
 						"csync_check_link_move: OPERATION MHARDLINK {} to {}\n",
 						db_filename, filename);
-				textlist_add(&tl, db_filename, OP_HARDLINK);
+				textlist_add(&tl, db_filename.c_str(), OP_HARDLINK);
 			} else { // LINK not verified
-				csync_info(1,
-						"check_link: other file with same dev/inode, but different checktxt.");
-				csync_info(1, "File is different on peer (cktxt char #{}).\n",
-						i);
+				csync_info(1, "check_link: other file with same dev/inode, but different checktxt.");
+				csync_info(1, "File is different on peer (cktxt char #{}).\n", i);
 				char *db_checktxt_log = strdup(db_checktxt), *checktxt_log = strdup(checktxt);
 				if (csync_zero_mtime_debug) {
 					filter_mtime(db_checktxt_log);
@@ -569,7 +559,6 @@ textlist_p csync_check_link_move(db_conn_p db, peername_p peername,
 			}
 		}
 	}
-	textlist_free(db_tl);
 	return tl;
 }
 

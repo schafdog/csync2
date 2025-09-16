@@ -75,8 +75,9 @@ public:
     int update_dirty_hardlinks(peername_p peername, filename_p filename, struct stat *st) override;
     vector<FileRecord> check_file_same_dev_inode(filename_p str_filename, const std::string& checktxt, const char *digest,
 												 struct stat *st, peername_p str_peername) override;
-    textlist_p check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
-                                                 const std::string& checktxt, const char *digest, struct stat *st) override;
+    vector<DirtyRecord> check_dirty_file_same_dev_inode(peername_p peername, filename_p filename,
+														const std::string& checktxt, const char *digest,
+														struct stat *st) override;
     // unused:
     long long db_sql_move_file_to_dirty(const char *file, int recursive, const char *peername);
 };

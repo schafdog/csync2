@@ -103,8 +103,10 @@ extern char *csync_check_path(filename_p filename);
 extern int   csync_check_pure(filename_p filename);
 
 /* Move detection functions */
-struct textlist *csync_check_move(db_conn_p db, peername_p peername, filename_p filename, const char* checktxt, const char *digest, struct stat *st);
-struct textlist *csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
+vector<DirtyRecord> csync_check_move(db_conn_p db, peername_p peername, filename_p filename,
+									 const char* checktxt, const char *digest, struct stat *st);
+
+textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
 				       const char* checktxt, operation_t op, const char *digest,
 				       struct stat *st);
 
