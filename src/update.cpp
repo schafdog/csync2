@@ -743,15 +743,14 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 								   const char *uid, const char *gid, operation_t operation,
 								   const char *checktxt, const char *digest, int is_identical,
 								   int *last_conn_status) {
-	textlist_p tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st);
-	textlist_p t = tl;
+	vector<DirtyRecord> result = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st);
 	int found_one = 0;
 	int errors = 0;
 
 	int count = 0;
-	for (; !found_one && t; t = t->next) {
-		const char *other = t->value;
-		if (t->intvalue == OP_HARDLINK && other) {
+	for (DirtyRecord dirty : result) {
+		const std::string other = dirty.file().filename();
+		if (dirty.operation() == static_cast<FileOperation>(OP_HARDLINK)) {
 			const char *key = csync_key(peername, other);
 			if (!key)
 				continue;
@@ -779,6 +778,9 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 			}
 		}
 		count++;
+		if (found_one) {
+			break;;
+		}
 	}
 	// unused
 	csync_debug(2, "csync_check_link_move: {}\n", count);
@@ -1032,13 +1034,13 @@ static int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname
 	return rc;
 }
 
+// Not used
 static int csync_update_hardlinks(int conn, const std::string& key_enc, peername_p peername, filename_p filename,
-								  filename_p filename_enc, struct stat *st, textlist_p tl) {
-	textlist_p ptr = tl;
+								  filename_p filename_enc, struct stat *st, vector<DirtyRecord> files) {
 	int count = 0;
-	while (ptr != NULL) {
-		filename_p other = ptr->value;
-		csync_info(0, "check same file ({}) {} -> {} \n", ptr->intvalue, other, filename);
+	for (DirtyRecord dirty : files) {
+		filename_p other = dirty.file().filename();
+		csync_info(0, "check same file ({}) {} -> {} \n", static_cast<int>(dirty.operation()), other, filename);
 		struct stat st_other;
 		int rc = stat(other.c_str(), &st_other);
 		if (rc == 0) {
@@ -1060,7 +1062,6 @@ static int csync_update_hardlinks(int conn, const std::string& key_enc, peername
 		} else {
 			csync_error(0, "stat failed {}\n", other);
 		}
-		ptr = ptr->next;
 	}
 	csync_debug(0, "Found {} links to {}\n", count, filename);
 	return OK;
@@ -1477,28 +1478,15 @@ struct dirty_row {
 	long long *inode;
 };
 
-static int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char *op_str, operation_t operation,
-		const char *patlist, filename_p other, const char *checktxt, const char *digest, int forced, int recursive) {
-	int use_this = 0;
-	if (compare_files(filename, patlist, recursive)) {
-		use_this = 1;
-		textlist_add5(p_tl, filename, op_str, other, checktxt, digest, forced, operation);
-	}
-	return use_this;
-}
-
 void csync_ping_host(db_conn_p db, peername_p  myname, peername_p peername,
                      const std::set<std::string>& patlist, int ip_version, int flags) {
 	// unused
 	(void) patlist;
 	(void) flags;
-	//csync_debug(4, "Unused parameters {} {} {}", patlist, patlist.size(), flags);
 	/*
-	 textlist_p tl = 0, t, next_t;
-	 textlist_p tl_del = 0, *last_tn=&tl;
 	 struct stat st;
 	 tl = db->get_dirty_by_peer_match(myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
-
+	 
 	 if ( !tl) {
 	 return;
 	 }
@@ -1914,7 +1902,6 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 		int flags) {
 	int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
 	int recursive = flags & FLAG_RECURSIVE;
-	textlist_p diff_list = 0, diff_ent;
 	const struct csync_group *g;
 	const struct csync_group_host *h;
 	int remote_eof = 0;
@@ -1959,27 +1946,27 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	}
 	conn_printf(conn, "LIST %s %s %s %d \n", peername.c_str(), filename_enc, g->key, recursive);
 	int count_diff = 0;
-
+	vector<std::string> diff_list;
 	if (!remote_eof) {
 	    std::string r_file = "";
-	std::string r_checktxt = "";
-	while (!csync_insynctest_readline(conn, r_file, r_checktxt)) {
-		if (auto_diff)
-			textlist_add(&diff_list, r_file.c_str(), 0);
-		else {
-			std::vector<csync2::FileRecord> result = db->list_file(r_file, myname.c_str(), peername, 0);
-			const char *chk_local = "---";
-			if (!result.empty()) {
-				chk_local = result[0].checktxt().c_str();
-			}
-			int i;
-			if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
-				csync_info(1, "D\t{}\t{}\t{}\n", myname, peername, r_file);
-				csync_debug(2, "'{}' is different:\n", filename);
-				csync_debug(2, ">>> {} {}\n>>> {} {}\n", r_checktxt, peername, chk_local, myname);
-				count_diff++;
-			} else
-				csync_info(1, "S\t{}\t{}\t{}\n", myname, peername, r_file);
+		std::string r_checktxt = "";
+		while (!csync_insynctest_readline(conn, r_file, r_checktxt)) {
+			if (auto_diff)
+				diff_list.emplace_back(r_file);
+			else {
+				std::vector<csync2::FileRecord> result = db->list_file(r_file, myname.c_str(), peername, 0);
+				const char *chk_local = "---";
+				if (!result.empty()) {
+					chk_local = result[0].checktxt().c_str();
+				}
+				int i;
+				if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
+					csync_info(1, "D\t{}\t{}\t{}\n", myname, peername, r_file);
+					csync_debug(2, "'{}' is different:\n", filename);
+					csync_debug(2, ">>> {} {}\n>>> {} {}\n", r_checktxt, peername, chk_local, myname);
+					count_diff++;
+				} else
+					csync_info(1, "S\t{}\t{}\t{}\n", myname, peername, r_file);
 			}
 			ret = 0;
 			if (flags & FLAG_INIT_RUN) {
@@ -1995,9 +1982,8 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
 
-	for (diff_ent = diff_list; diff_ent; diff_ent = diff_ent->next)
-		csync_diff(db, myname.c_str(), peername, diff_ent->value, ip_version);
-	textlist_free(diff_list);
+	for (std::string diff_file : diff_list)
+		csync_diff(db, myname.c_str(), peername, diff_file, ip_version);
 
 	return ret;
 }
@@ -2015,7 +2001,7 @@ static int peer_in(const std::set<std::string>& active_peers, const std::string&
 int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, const std::set<std::string>& active_peers,
 						 int flags) {
 	csync_debug(3, "csync_insynctest_all: flags {} \n", flags);
-	textlist_p myname_list = 0, myname;
+	std::set<std::string> myname_list;
 	int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
 	struct csync_group *g;
 	int ret = 1;
@@ -2035,53 +2021,32 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, cons
 	csync_debug(2, "csync_insynctest_all: get all groups \n");
 	for (g = csync_group; g; g = g->next) {
 		if (g->myname) {
-			int found = 0;
-			for (myname = myname_list; myname; myname = myname->next)
-				if (!strcmp(g->myname, myname->value)) {
-					found = 1;
-					break;
-				};
-			if (!found) {
-				csync_debug(2, "insynctest_all: Adding host {}\n", g->myname);
-				textlist_add(&myname_list, g->myname, 0);
-			}
+			myname_list.insert(g->myname);
 		}
 	}
 
-	for (myname = myname_list; myname; myname = myname->next) {
-		textlist_p peername_list = 0, peername;
+	for (std::string myname : myname_list) {
+		std::set<std::string> peername_list;
 		struct csync_group_host *h;
 		for (g = csync_group; g; g = g->next) {
 
 			if (!g->myname) // || strcmp(myname->value, g->myname) )
 				continue;
 			for (h = g->host; h; h = h->next) {
-				int found = 0;
-				for (peername = peername_list; peername; peername = peername->next)
-					if (!strcmp(h->hostname, peername->value)) {
-						found = 1;
-						break;
-					}
-				if (!found) {
-					csync_info(2, "Adding peer: {}\n", h->hostname);
-					textlist_add(&peername_list, h->hostname, 0);
-				}
+				peername_list.insert(h->hostname); 
+				csync_info(2, "Adding peer: {}\n", h->hostname);
 			}
 		}
 
-		for (peername = peername_list; peername; peername = peername->next) {
+		for (std::string peername : peername_list) {
 			csync_info(2, "Check peername \n");
-			if (peer_in(active_peers, peername->value)) {
-				csync_info(2, "Running in-sync check for {} <-> {} for file {}.\n", myname->value, peername->value,
-						   filename.c_str());
-				if (!csync_insynctest(db, myname->value, peername->value, filename, ip_version, flags))
+			if (peer_in(active_peers, peername)) {
+				csync_info(2, "Running in-sync check for {} <-> {} for file {}.\n", myname, peername, filename);
+				if (!csync_insynctest(db, myname, peername, filename, ip_version, flags))
 					ret = 0;
 			}
 		}
-		textlist_free(peername_list);
 	}
-	textlist_free(myname_list);
-
 	return ret;
 }
 
