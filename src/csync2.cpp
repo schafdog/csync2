@@ -1143,15 +1143,12 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 		break;
 	}
 
-	if (csync_error_count != 0 || (csync_messages_printed && csync_level_debug))
-	{
-		int run_time = time(NULL) - start_time;
-		if (csync_error_count > 0)
-			csync_warn(1, "Finished with {} errors in {} seconds.\n", csync_error_count, run_time);
-		else
-			csync_info(1, "Finished succesfully in {} seconds.", run_time);
-	}
-	csync_printtotaltime();
+	int run_time = time(NULL) - start_time;
+	if (csync_error_count > 0)
+		csync_warn(1, "Finished with {} errors in {} seconds.\n", csync_error_count, run_time);
+	else
+		csync_info(1, "Finished succesfully in {} seconds.", run_time);
+	//csync_printtotaltime();
 
 	if (retval >= 0 && csync_error_count == 0)
 		return retval;
