@@ -1020,19 +1020,20 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 
 	for (FileRecord file : tl)
 	{
-		std::string filename = file.filename();
+		std::string db_filename = file.filename();
 		if (!init_run)
 		{
 			std::set<string> peerlist;
-			csync_debug_c(3, "check_dirty (rm): before mark (all) %s %s %s %s %d\n",
+			csync_debug(3, "check_dirty (rm): before mark (all) {} {} {} {} {}\n",
 						  file.filename(), file.checktxt(), file.device(), file.inode(), file.mode());
 			csync_mark(this, file, "", peerlist, OP_RM, now);
 			count_deletes++;
 		}
 		std::string delete_file = "delete_file";
 		std::string delete_file_sql = "delete from file WHERE hostname = ? AND filename = ?";
-		csync_debug(3, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,  g_myhostname, filename);
-		conn_->execute_update(delete_file, delete_file_sql, g_myhostname, filename);
+		csync_debug(3, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,
+					g_myhostname, db_filename);
+		conn_->execute_update(delete_file, delete_file_sql, g_myhostname, db_filename);
 		csync_debug(3, "check_delete: executed {} {}\n", delete_file, delete_file_sql);
 	}
 	return count_deletes;

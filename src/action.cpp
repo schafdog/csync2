@@ -98,7 +98,7 @@ static void csync_run_single_command(db_conn_p db,  const std::string& command, 
 		/* 1 */open(logfile.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0666);
 		/* 2 */open(logfile.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0666);
 
-		execl("/bin/sh", "sh", "-c", real_command, NULL);
+		execl("/bin/sh", "sh", "-c", real_command.c_str(), NULL);
 		_exit(127);
 	}
 	if (waitpid(pid, 0, 0) < 0)

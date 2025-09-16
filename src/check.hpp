@@ -65,9 +65,6 @@
 #define ERROR_CREATE_STR "ERROR (create)"
 #define	ERROR_CREATE_STR_LEN sizeof(ERROR_CREATE_STR)-1
 
-/* Function pointer type for textlist operations */
-typedef struct textlist *(*textlist_loop_t)(filename_p filename, struct stat *st, struct textlist *tl);
-
 /* Device/Inode and file type functions */
 int compare_dev_inode(struct stat *file_stat, const char *dev, const char *ino, struct stat *old_stat);
 int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std::string& ino, struct stat *old_stat);
@@ -101,7 +98,6 @@ void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 void csync_mark(db_conn_p db, FileRecord file, peername_p thispeer,
 				const std::set<std::string>& peerfilter, operation_t operation, int mtime);
 
-//extern struct textlist *csync_mark_hardlinks(db_conn_p db, filename_p filename, struct stat *st, struct textlist *tl);
 char *csync_check_path(filename_p filename);
 int   csync_check_pure(filename_p filename);
 
