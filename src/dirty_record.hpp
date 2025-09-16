@@ -44,6 +44,7 @@ public:
         other_ = other;
     }
     std::optional<std::string>& other() { return other_; };   
+    void forced(bool forced) { forced_ = forced; };
     bool forced() const { return forced_; };
     std::string peername() const { return peername_; };
     void operation(const csync2::FileOperation& operation)  { operation_ = operation; };
