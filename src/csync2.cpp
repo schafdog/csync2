@@ -1304,7 +1304,8 @@ static int csync_start_server(int mode, int flags, int argc, char *argv[], int l
 		// Check if we should continue in non-forking mode
 		if (mode & MODE_NOFORK)
 		{
-			csync_debug(1, "goto nofork." /*"Continuing in non-forking mode." "Continuing server loop in non-forking mode." */);
+			csync_debug(1, "goto nofork."
+						/*"Continuing in non-forking mode." "Continuing server loop in non-forking mode." */);
 			// Clean up before continuing
 			csync_redis_close();
 			csync_run_commands(*db_ptr);
