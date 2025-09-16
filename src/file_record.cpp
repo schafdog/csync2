@@ -8,15 +8,27 @@
 
 namespace csync2 {
 
-// Generate a SHA-256 checksum for the file
-std::string FileRecord::calculate_checksum() const {
+    /*
+FileRecord& FileRecord::device(const std::string& id) {
+    sscanf(DEV_FORMAT, id.c_str(), &identity_.device_id);
+    return *this;
+};
+
+FileRecord& FileRecord::inode(const std::string& no) {
+    sscanf(INO_FORMAT, no.c_str(), &identity_.inode_number);
+    return *this;
+};
+    */
+    
+// Generate a SHA-256 digest for the file
+std::string FileRecord::calculate_digest() const {
     if (!std::filesystem::exists(filename())) {
         return "";
     }
 
     std::ifstream file(filename(), std::ios::binary);
     if (!file) {
-        throw std::runtime_error("Cannot open file for checksum: " + filename());
+        throw std::runtime_error("Cannot open file for digest: " + filename());
     }
 
     SHA256_CTX sha256;
@@ -41,7 +53,16 @@ std::string FileRecord::calculate_checksum() const {
 
     return ss.str();
 }
-
+    
+std::string FileRecord::calculate_checktxt() const {
+    if (!std::filesystem::exists(filename())) {
+        return "";
+    }
+    std::string checktxt;
+    
+    return checktxt;
+}
+    
 FileType FileRecord::map_file_type(std::filesystem::file_type  type) {
     // Determine file type
     switch (type) {
@@ -91,16 +112,16 @@ FileRecord FileRecord::from_filesystem(const std::filesystem::path& path) {
         // Get inode and device info
         struct stat file_stat;
         if (stat(path.c_str(), &file_stat) == 0) {
-            record.device_id(file_stat.st_dev);
-            record.inode_number(file_stat.st_ino);
+            record.device(file_stat.st_dev);
+            record.inode(file_stat.st_ino);
             Metadata metadata;
             metadata.user_id = file_stat.st_uid;
             metadata.group_id = file_stat.st_gid;
             record.metadata(metadata);
         }
-
-        // Calculate checksum
-        record.checksum(record.calculate_checksum());
+        // Calculate checksum and digest
+	record.checktxt(calculate_checktxt());
+        record.digest(record.calculate_digest());
 
         // Initial sync status
         // record.sync_status = FileSyncStatus::Dirty;
@@ -169,7 +190,7 @@ bool FileRecord::is_newer_than(const FileRecord& other) const {
 bool FileRecord::is_identical_to(const FileRecord& other) const {
     // Compare key attributes
     return (file_size() == other.file_size()) &&
-           (checksum() == other.checksum()) &&
+           (digest() == other.digest()) &&
            (metadata_.mode == other.metadata().mode);
 }
 
@@ -180,7 +201,7 @@ std::string FileRecord::to_json() const {
     json << "{"
          << "\"filename\":\"" << filename() << "\","
          << "\"size\":" << metadata_.file_size << ","
-         << "\"checksum\":\"" << checksum() << "\","
+         << "\"digest\":\"" << digest() << "\","
          << "}";
     return json.str();
 }

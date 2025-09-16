@@ -219,8 +219,6 @@ enum {
 /* Check conversion of char pointer to std::string */
 std::string  check_string(const char *str);
 
-#include "textlist.hpp"
-
 #include "groups.hpp"
 
 /* cfgfile_parser_processed.y - additional missing prototypes */

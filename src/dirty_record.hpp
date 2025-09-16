@@ -26,7 +26,6 @@
 
 #include "file_record.hpp"
 #include "modern_logging.hpp"
-#include "modern_textlist.hpp"
 
 namespace csync2 {
 
@@ -34,17 +33,33 @@ class DirtyRecord {
 public:
     // Constructors
     DirtyRecord() = default;
-    explicit DirtyRecord(const std::string& filename, FileOperation operation = FileOperation::None, std::optional<FileRecord> other = std::nullopt)
-        : file_{filename}, operation_{FileOperation::None},
-          other_{other} {}
+    explicit DirtyRecord(const std::string filename, int operation)
+	{ file_ = FileRecord(filename, "", ""); operation_ = static_cast<FileOperation>(operation); };
+    explicit DirtyRecord(const csync2::FileRecord& file, const std::string& peername,
+			 const std::string& op_str = "MARK",
+			 csync2::FileOperation operation = FileOperation::Mark,
+			 bool forced = false, const std::optional<std::string>& other = std::nullopt)
+        : file_(file), operation_(operation), peername_(peername), forced_(forced), other_(other) {}
 
-    void setOther(const FileRecord& other) {
+    csync2::FileRecord& file() { return file_; }; 
+    void setOther(const std::string& other) {
         other_ = other;
     }
+    std::optional<std::string>& other() { return other_; };   
+    void forced(bool forced) { forced_ = forced; };
+    bool forced() const { return forced_; };
+    std::string peername() const { return peername_; };
+    void operation(const csync2::FileOperation& operation)  { operation_ = operation; };
+    csync2::FileOperation operation() const { return operation_; };
+    void op_str(const std::string& operation)  { op_str_ = operation; };
+    const std::string&  op_str() const { return op_str_; };
 private:
-    FileRecord file_;
-    FileOperation operation_;
-    std::optional<FileRecord> other_;
+    csync2::FileRecord file_;
+    std::string op_str_;
+    csync2::FileOperation operation_;
+    std::string peername_;
+    bool forced_;
+    std::optional<std::string> other_;
 };
 
 } // namespace csync2

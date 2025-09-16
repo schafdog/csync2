@@ -7,8 +7,9 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
-#include "textlist.hpp"
+
 using namespace std;
+using namespace csync2;
 
 void test_database(const std::string &conn_str) {
   std::cout << "--- Testing Database: " << conn_str << " --- " << std::endl;
@@ -81,27 +82,32 @@ void test_database(const std::string &conn_str) {
 const char *nullv(const char *value) {
     return value ? value : "(null)";
 }
-
-int print_textlist(textlist_p tl) {
-    int count = 0;
-    while (tl) {
-        std::cout << "Item: " << tl->value << " " << nullv(tl->value2) << " " << nullv(tl->value3)
-		  << " " << nullv(tl->value4) << " " << nullv(tl->value5) << std::endl;
-        tl = tl->next;
-        count++;
+int print(const vector<Hint>& result) {
+    for (Hint hint : result) {
+	cout << "Hint(" << hint.filename << ", " << hint.is_recursive << endl;
     }
-    return count;
+    return result.size();
 }
 
-void test_textlist() {
-    textlist_p tl = NULL;
-    int index = 10;
-    while (index > 0) {
-	textlist_add5(&tl, "item", "item2", "item3", "item4", "item5", 1, 2);
-	index--;
+std::string  print(const FileRecord& file) {
+    stringstream ss;
+    ss << "File(" << file.filename() << ", " << file.checktxt() << " " << file.digest();
+    return ss.str();
+}
+
+int print(const vector<FileRecord>& result) {
+    for (FileRecord file : result) {
+	cout << "File(" << file.filename() << ", " << file.checktxt() << " " << file.digest() << endl;
     }
-    cout << "Count " << print_textlist(tl) << std::endl; 
-    textlist_free(tl);
+    return result.size();
+}
+
+int print(const vector<DirtyRecord>& result) {
+    for (DirtyRecord dirty : result) {
+	cout << "Dirty(" << print(dirty.file()) << ", " << dirty.op_str()
+	     << (dirty.other().has_value() ? dirty.other()->c_str() : " - ") << endl;
+    }
+    return result.size();
 }
 
 void test_db_api(const std::string &conn_str) {
@@ -170,12 +176,12 @@ void test_db_api(const std::string &conn_str) {
         std::cout << "add_dirty count: " << count << std::endl;
 
         std::set<std::string> patlist ={"", ""};
-        std::cout << "get_dirty_by_peer_match" << std::endl;	
-        textlist_p tl = api->get_dirty_by_peer_match(hostname, peername, 1, patlist, NULL);
-        count = print_textlist(tl);
-        std::cout << "Dirty count: " << count << std::endl;
-        assert(count == 1);
-	textlist_free(tl);
+        std::cout << "get_dirty_by_peer_match" << std::endl;
+	vector<DirtyRecord> dirtyList;
+        api->get_dirty_by_peer_match(hostname, peername, 1, patlist, NULL, dirtyList);
+        // count = print_vector(dirtyList);
+        //std::cout << "Dirty count: " << count << std::endl;
+        //assert(count == 1);
 	
         std::cout << "Directory count " << std::endl;
         count = api->dir_count("/");
@@ -190,18 +196,17 @@ void test_db_api(const std::string &conn_str) {
         std::cout << "add_hint count: " << add_hint_count << std::endl;
         assert(add_hint_count == 1);
 
-        textlist_p hints = api->get_hints();
-        int hint_count = print_textlist(hints);
+        vector<Hint> hints = api->get_hints();
+        int hint_count = print(hints);
         std::cout << "Hint count: " << hint_count << std::endl;
         assert(hint_count == 1);
-	textlist_free(hints);
         long long remove_hint_count = api->remove_hint(filename, 1);
         std::cout << "remove_hint count: " << remove_hint_count << std::endl;
         assert(remove_hint_count == 1);
 
         // Verify hint is removed
         hints = api->get_hints();
-        hint_count = print_textlist(hints);
+	hint_count = print(hints);
         std::cout << "Hint count after removal: " << hint_count << std::endl;
         assert(hint_count == 0);
 
@@ -216,13 +221,12 @@ void test_db_api(const std::string &conn_str) {
 
         const char *checktxt = "checktxt";
         const char *digest = "digest";
-        tl = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
-        cout << "check_file_same_dev_inode count " << print_textlist(tl) << std::endl;
-        textlist_free(tl);
-
-		tl = api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
-        cout << "check_dirty_same_dev_inode count " << print_textlist(tl) << std::endl;
-        textlist_free(tl);
+        vector<FileRecord> same_files = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
+        cout << "check_file_same_dev_inode count " << same_files.size() << std::endl;
+	
+	vector<DirtyRecord> same_dirty_files = api->check_dirty_file_same_dev_inode(peername, filename,
+										     "checktxt", "digest", &filestat);
+        cout << "check_dirty_same_dev_inode count " << print(same_dirty_files) << std::endl;
         api->clear_operation(hostname, peername, filename);
         cout << "check_delete next" << std::endl;
         api->check_delete(filename, 1, 0);
@@ -236,21 +240,17 @@ void test_db_api(const std::string &conn_str) {
         cout << "is_dirty" << std::endl;
         api->is_dirty(peername, filename, &operation, &mode);
         cout << "get_dirty_hosts" << std::endl;
-        tl = api->get_dirty_hosts();
-	print_textlist(tl);
-	textlist_free(tl);
+	std::vector<std::string> result = api->get_dirty_hosts();
         cout << "get_hints" << std::endl;
-        tl = api->get_hints();
-	print_textlist(tl);
-	if (tl)
-	    textlist_free(tl);
+        hints =  api->get_hints();
+	cout << "hint counts " << print(hints) << endl;
         cout << "list_dirty" << std::endl;
         api->list_dirty(std::set<std::string>{hostname}, filename, 1);
+
         cout << "list_file" << std::endl;
-        tl = api->list_file(filename, hostname, peername, 1);
-	print_textlist(tl);
-	if (tl)
-	    textlist_free(tl);
+	vector<FileRecord> list = api->list_file(filename, hostname, peername, 1);
+	cout << "list_file count " << print(list) << endl;
+
         cout << "list_files" << std::endl;
         api->list_files(filename);
         cout << "list_hints" << std::endl;

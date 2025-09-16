@@ -163,17 +163,15 @@ static int csync_same_stat(const struct stat *st1, const struct stat *st2) {
 	return 0;
 }
 
-static textlist_p check_old_operation(filename_p filename, operation_t operation,
-							   int mode, struct stat *st_file, const char *other,
-							   const char *old_filename, const char *old_other,
-							   operation_t old_operation, const char *old_checktxt,
-							   peername_p peername) {
+static vector<DirtyRecord> check_old_operation(filename_p filename, operation_t operation,
+											   int mode, struct stat *st_file, const char *other,
+											   const char *old_filename, const char *old_other,
+											   operation_t old_operation, const char *old_checktxt,
+											   peername_p peername) {
 	std::string file_new = filename;
-	std::string result_other_str = other ? other : "";
-	const char *result_other = result_other_str.c_str();
+	std::string result_other = other ? other : "";
 	std::string clean_other;
-	int dirty = 1; // Assume dirty
-	textlist_p tl = NULL;
+	bool is_dirty = true; // Assume dirty
 	if (old_operation == OP_HARDLINK && st_file && st_file->st_nlink == 1) {
 		operation = OP_MOD;
 	}
@@ -186,9 +184,8 @@ static textlist_p check_old_operation(filename_p filename, operation_t operation
 		csync_info(1, "mark operation NEW HARDLINK {}:{}->{} .\n", peername,
 				filename, old_filename);
 		operation = OP_HARDLINK;
-		result_other_str = old_filename ? old_filename : "";
-		result_other = result_other_str.c_str();
-		dirty = 1;
+		result_other = old_filename ? old_filename : "";
+		is_dirty = true;
 	}
 	// NEW/MK A -> RM A => remove from dirty, as it newer happened if it is same filename
 	else if (CHECK_NEW_RM && operation == OP_RM
@@ -198,7 +195,7 @@ static textlist_p check_old_operation(filename_p filename, operation_t operation
 		csync_info(1,
 				"mark operation {} -> RM {}:{} deleted before syncing. Removing from dirty.\n",
 				csync_operation_str(old_operation), peername, file_new);
-		dirty = 0;
+		is_dirty = false;
 		operation = OP_UNDEF;
 	}
 	// NEW/MK A -> MOD (still NEW)
@@ -207,14 +204,13 @@ static textlist_p check_old_operation(filename_p filename, operation_t operation
 		csync_info(1, "mark operation NEW -> MOD => NEW {}:{} (not synced) .\n",
 				peername.c_str(), filename.c_str());
 		operation = old_operation;
-		dirty = 1;
+		is_dirty = true;
 	} else if (CHECK_RM_MV
 			&& ((OP_RM == old_operation || OP_MOVE == old_operation
 					|| OP_UNDEF == old_operation) && OP_NEW == operation)
 			&& strstr(old_checktxt, "type=dir") == 0) {
 		// TODO verify logic
-		result_other_str = old_filename ? old_filename : "";
-		result_other = result_other_str.c_str();
+		result_other = old_filename ? old_filename : "";
 		csync_info(1, "mark operation RM -> NEW => MOVE {} '{}' '{}'.\n",
 				peername.c_str(), filename.c_str(), result_other);
 		operation = OP_MOVE;
@@ -232,31 +228,33 @@ static textlist_p check_old_operation(filename_p filename, operation_t operation
 		clean_other = old_filename;
 		csync_info(1, "mark operation NEW->MV => NEW {} '{}' '{}' '{}'.\n",
 				peername.c_str(), filename.c_str(), old_filename, other);
-		result_other_str = "";
-		result_other = result_other_str.c_str();
+		result_other = "";
 	}
-	textlist_add4(&tl, file_new.c_str(), clean_other.empty() ? nullptr : clean_other.c_str(), result_other,
-			(dirty ? "YES" : NULL), operation);
+	vector<DirtyRecord> result;
+	FileRecord file(file_new, "", result_other); // Misuse of digest
+	DirtyRecord dirty(file, peername, "not used", static_cast<FileOperation>(operation), false, clean_other);
+	dirty.forced(is_dirty); // Misuse of dirty
+	result.emplace_back(dirty);
+	return result;
+};
 
-	return tl;
-}
-
-static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
-							 const std::set<std::string>& peerfilter, operation_t operation_org, const std::string& checktxt,
+static void csync_mark_other(db_conn_p db, filename_p filename, peername_p thispeer,
+							 const std::set<std::string>& peerfilter, operation_t operation_org,
+							 const std::string& checktxt,
 							 const char *dev, const char *ino,
 							 std::optional<std::string>& org_other, int mode, int mtime) {
-	struct peer *pl = csync_find_peers(file.c_str(), thispeer);
+	struct peer *pl = csync_find_peers(filename.c_str(), thispeer);
 	int pl_idx;
 	operation_t operation = operation_org;
-	csync_schedule_commands(db, file, thispeer == "");
+	csync_schedule_commands(db, filename, thispeer == "");
 
 	if (!pl) {
-		csync_info(2, "Not in one of my groups: {} ({})\n", file, thispeer);
+		csync_info(2, "Not in one of my groups: {} ({})\n", filename, thispeer);
 		return;
 	}
 
 	struct stat st_file;
-	int rc_file = stat(file.c_str(), &st_file);
+	int rc_file = stat(filename.c_str(), &st_file);
 	const char *other = 0;
 	for (pl_idx = 0; pl[pl_idx].peername; pl_idx++) {
 		// Safe initialization from potentially NULL pointers
@@ -268,47 +266,46 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 		if (peerfilter.empty() || peerfilter.find(peername) != peerfilter.end()) {
 			csync_info(1, "mark other operation: '{}' '{}:{}' '{}'.\n",
 					   csync_mode_op_str(rc_file ? 0 : st_file.st_mode, operation),
-					   peername, file, (other ? other : "-"));
+					   peername, filename, (other ? other : "-"));
 			if (operation == OP_MOVE && other == NULL) {
 				csync_info(1, "mark other MV operation missing other {} {} \n",
-						peername.c_str(), file.c_str());
+						peername.c_str(), filename.c_str());
 				operation = OP_UNDEF;
 			}
-			short dirty = 1;
+			bool is_dirty = 1;
 
 			std::string clean_other;
-			std::string result_other_str = other ? other : "";
-			const char *result_other = result_other_str.c_str();
-			std::string file_new = file;
+			std::string result_other = other ? other : "";
+			std::string file_new = filename;
             const char *checktxt_c = checktxt.empty() ? NULL : checktxt.c_str();
 
 			if (1 && checktxt_c) {
-				textlist_p tl = db->get_old_operation(checktxt_c, peername, file, dev, ino);
-				if (tl) {
-					textlist_p t = check_old_operation(file.c_str(), operation, mode,
+				vector<DirtyRecord> db_result = db->get_old_operation(checktxt_c, peername, filename, dev, ino);
+				if (!db_result.empty()) {
+					DirtyRecord db_dirty = db_result[0];
+					FileRecord db_file = db_dirty.file();
+					const char *db_other = db_dirty.other().has_value() ? db_dirty.other()->c_str() : NULL; // optional
+					vector<DirtyRecord> result = check_old_operation(filename.c_str(), operation, mode,
 													   (rc_file ? NULL : &st_file),
 													   other,
-													   tl->value, // old filename
-													   tl->value2,   // old other
-													   tl->intvalue, // operation
-													   tl->value3,   // checktxt
+													   db_file.filename().c_str(),
+													   db_other,
+													   static_cast<int>(db_dirty.operation()),
+													   db_file.checktxt().c_str(), 
 													   peername);
-					textlist_free(tl);
-
-					if (t) {
-						file_new = t->value ? t->value : "";
-						clean_other = t->value2 ? t->value2 : "";
-						result_other_str = t->value3 ? t->value3 : "";
-						result_other = result_other_str.c_str();
-						dirty = (t->value4 != NULL);
-						operation = t->intvalue;
+					if (!result.empty()) {
+						DirtyRecord dirty = result[0];
+						FileRecord file = dirty.file();
+						file_new = file.filename();
+						clean_other = dirty.other().has_value() ? dirty.other()->c_str() : "";
+						result_other = file.digest(); // Misuse of digest
+						is_dirty = dirty.forced();    // Misuse of forced
+						operation = static_cast<int>(dirty.operation());
 						csync_info(3,
-									 "Found row: file '{}' clean_other: '{}' result_other: '{}' dirty: {} operation {}\n",
-									 file_new, clean_other, result_other, dirty, operation);
-						textlist_free(t);
+								   "Found row: file '{}' clean_other: '{}' result_other: '{}' dirty: {} operation {}\n",
+								   file_new, clean_other, result_other, is_dirty, operation);
 					} else {
-						csync_error(0,
-								"ERROR: check_old_operation MUST always return row\n");
+						csync_error(0, "ERROR: check_old_operation MUST always return row\n");
 					}
 				}
 			}
@@ -318,10 +315,10 @@ static void csync_mark_other(db_conn_p db, filename_p file, peername_p thispeer,
 			if (!clean_other.empty() && file_new != clean_other) {
 				db->remove_dirty(peername, clean_other.c_str(), 0);
 			}
-			if (dirty)
+			if (is_dirty)
 				db->add_dirty(file_new.c_str(), 0, myname, peername,
-						csync_operation_str(operation), checktxt, dev, ino,
-						result_other, operation, mode, mtime);
+							  csync_operation_str(operation), checktxt, dev, ino,
+							  result_other.c_str(), operation, mode, mtime);
 		};
 	};
 	free(pl);
@@ -333,6 +330,16 @@ void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,
 				const char *dev, const char *ino, int mode, int mtime) {
 	std::optional<std::string> other = std::nullopt;
 	csync_mark_other(db, file, thispeer, peerfilter, operation, checktxt, dev, ino, other, mode, mtime);
+}
+
+void csync_mark(db_conn_p db, FileRecord file, peername_p thispeer,
+				const std::set<std::string>& peerfilter, operation_t operation, int mtime) {
+	std::optional<std::string> other = std::nullopt;
+	char dev_str[20], ino_str[20];
+	sprintf(dev_str, DEV_FORMAT, file.device());
+	sprintf(ino_str, INO_FORMAT, file.inode());
+	csync_mark_other(db, file.filename(), thispeer, peerfilter, operation, file.checktxt(), dev_str, ino_str,
+					 other, file.mode(), mtime);
 }
 
 /* Return path that doesn't exist */
@@ -467,109 +474,84 @@ int csync_check_del(db_conn_p db, filename_p file, int flags) {
 	return csync_check_del(db, file.c_str(), flags);
 }
 
-static textlist_p csync_check_file_same_dev_inode(db_conn_p db, filename_p filename,
+vector<FileRecord> csync_check_file_same_dev_inode(db_conn_p db, filename_p filename,
 										   const char *checktxt, const char *digest, struct stat *st, peername_p peername) {
-	textlist_p tl = 0;
 	csync_info(2, "csync_check_file_same_dev_inode {} {}\n", filename, filename);
-	tl = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
-	return tl;
+	auto rs = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
+	return rs;
 }
 
-textlist_p csync_check_move(db_conn_p db, peername_p peername,
-		filename_p filename, const char *checktxt, const char *digest,
-		struct stat *st) {
-	textlist_p t;
-	textlist_p db_tl = db->check_dirty_file_same_dev_inode(peername.c_str(),
-			filename.c_str(), checktxt, digest, st);
+vector<DirtyRecord> csync_check_move(db_conn_p db, peername_p peername, filename_p filename,
+							const char *checktxt, const char *digest, struct stat *st)
+{
+    vector<DirtyRecord> result = db->check_dirty_file_same_dev_inode(peername, filename, checktxt, digest, st);
 	struct stat file_stat;
-	for (t = db_tl; t != NULL; t = t->next) {
-		const char *db_filename = t->value;
-		const char *db_checktxt = t->value2;
-		int rc = stat(db_filename, &file_stat);
+	for (DirtyRecord dirty : result) {
+		
+		const std::string db_filename = dirty.file().filename();
+		const std::string db_checktxt = dirty.file().checktxt();
+		int rc = stat(db_filename.c_str(), &file_stat);
 		int i = 0;
 		if (rc) {
-			csync_info(1, "Other file not found. Posible MOVE operation: {}\n",
-					db_filename);
+			csync_info(1, "Other file not found. Posible MOVE operation: {}\n",	db_filename);
 			if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-				csync_info(1, "OPERATION: MOVE {} to {}\n", filename,
-						db_filename);
-				t->intvalue = OP_MOVE;
+				csync_info(1, "OPERATION: MOVE {} to {}\n", filename, db_filename);
+				dirty.operation(static_cast<FileOperation>(OP_MOVE));
 			}
 		}
 	}
-	return db_tl;
+	return result;
 }
 
-textlist_p csync_check_link_move(db_conn_p db, peername_p peername,
-		filename_p filename, const char *checktxt, int operation,
-		const char *digest, struct stat *st) {
+vector<DirtyRecord> csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
+								 const char *checktxt, int operation,
+								 const char *digest, struct stat *st) {
 
-	textlist_p t, tl = NULL;
-	textlist_p db_tl = db->check_dirty_file_same_dev_inode(peername.c_str(),
-														   filename.c_str(), checktxt, digest, st);
+	vector<DirtyRecord> result = db->check_dirty_file_same_dev_inode(peername, filename, checktxt, digest, st);
 	struct stat file_stat;
 	int count = 0;
-	for (t = db_tl; t != NULL; t = t->next) {
-		const char *db_filename = t->value;
-		const char *db_checktxt = t->value2;
-		const char *db_operation = t->value3;
-		csync_info(2, "check_link_move:  DB file: {} {}: {}\n", db_filename,
-				db_operation, operation);
-		int rc = stat(db_filename, &file_stat);
-		/* int db_version = */csync_get_checktxt_version(db_checktxt);
+	vector<DirtyRecord> tl;
+	for (DirtyRecord dirty: result) {
+		FileRecord file = dirty.file();
+		const std::string db_filename = file.filename();
+		const std::string db_checktxt = file.checktxt();
+		const std::string db_operation = dirty.op_str(); // Doesnt seem right since we are fetching file
+		csync_info(2, "check_link_move:  DB file: {} {}: {}\n", db_filename, db_operation, operation);
+		int rc = stat(db_filename.c_str(), &file_stat);
 		int index = 0;
-		if (db_operation && !strcmp(db_operation, "NEW")) {
+		if (db_operation == "NEW") {
 			csync_info(1, "Unable to MOVE/LINK: both NEW\n");
 			continue;
 		}
 		if (rc) {
-			csync_info(1,
-					"check_link_move: Other file not found. Possible MOVE operation: {}\n",
-					db_filename);
+			csync_info(1, "check_link_move: Other file not found. Possible MOVE operation: {}\n", db_filename);
 			if (!(index = csync_cmpchecktxt(db_checktxt, checktxt))) {
-				csync_info(1, "OPERATION: MOVE {} to {}\n", db_filename,
-						filename.c_str());
-				textlist_add(&tl, db_filename, OP_MOVE);
+				csync_info(1, "OPERATION: MOVE {} to {}\n", db_filename, filename);
+				DirtyRecord move(db_filename, OP_MOVE);
+				tl.emplace_back(move);
 			}
 		} else { // LINK, not MV
-			std::string db_checktxt_str = csync_genchecktxt_version(&file_stat, db_filename,
-			                                          SET_USER | SET_GROUP, db->version);
-		    db_checktxt = db_checktxt_str.c_str();
+			std::string new_checktxt = csync_genchecktxt_version(&file_stat, db_filename,
+																 SET_USER | SET_GROUP, db->version);
 			int i;
-			if (!(i = csync_cmpchecktxt(db_checktxt, checktxt))) {
-				csync_info(1,
-						"csync_check_link_move: OPERATION MHARDLINK {} to {}\n",
-						db_filename, filename);
-				textlist_add(&tl, db_filename, OP_HARDLINK);
+			if (!(i = csync_cmpchecktxt(new_checktxt, checktxt))) {
+				csync_info(1, "csync_check_link_move: OPERATION MHARDLINK {} to {}\n",  db_filename, filename);
+				DirtyRecord hardlink(db_filename, OP_HARDLINK);
+				tl.emplace_back(hardlink);
+				
 			} else { // LINK not verified
-				csync_info(1,
-						"check_link: other file with same dev/inode, but different checktxt.");
-				csync_info(1, "File is different on peer (cktxt char #{}).\n",
-						i);
-				char *db_checktxt_log = strdup(db_checktxt), *checktxt_log = strdup(checktxt);
-				if (csync_zero_mtime_debug) {
-					filter_mtime(db_checktxt_log);
-				    filter_mtime(checktxt_log);
-				}
-				//csync_debug(1, "ZERO time {}\n", csync_zero_mtime_debug);
-
-				csync_info(1, ">>> {}: {}\n", db_checktxt_log, db_filename);
-				csync_info(1, ">>> {}: {}\n", checktxt_log, filename);
-				if (csync_zero_mtime_debug) {
-					free(db_checktxt_log);
-					free(checktxt_log);
-				}
+				csync_info(1, "check_link: other file with same dev/inode, but different checktxt.");
+				csync_info(1, "File is different on peer (cktxt char #{}).\n", i);
+				csync_info(1, ">>> {}: {}\n", new_checktxt, db_filename);
+				csync_info(1, ">>> {}: {}\n", checktxt, filename);
 				if (count > 1) {
-					csync_warn(0, "Multiple files with same inode: {} {}",
-							filename.c_str(), db_filename);
-					csync_warn(0, "Different checktxt {} {}", checktxt,
-							db_checktxt);
+					csync_warn(0, "Multiple files with same inode: {} {}", filename.c_str(), db_filename);
+					csync_warn(0, "Different checktxt {} {}", checktxt, new_checktxt);
 				}
 				count++;
 			}
 		}
 	}
-	textlist_free(db_tl);
 	return tl;
 }
 
@@ -706,26 +688,22 @@ static int csync_check_file_mod(db_conn_p db, filename_p filename, struct stat *
 	if ((is_upgrade || is_dirty) && !csync_compare_mode) {
 		const char *digest_c = (digest ? digest->c_str() : NULL);
 		if ((operation == OP_NEW && digest) || operation == OP_MKDIR) {
-			textlist_p tl = csync_check_file_same_dev_inode(db, filename.c_str(), checktxt.c_str(), digest_c, file_stat, "");
-			textlist_p ptr = tl;
-			while (ptr != NULL) {
-				csync_info(2, "check same file ({}) {} -> {} \n", ptr->intvalue,
-						ptr->value, filename.c_str());
-				if (ptr->intvalue == OP_RM) {
+			vector<FileRecord> result = csync_check_file_same_dev_inode(db, filename.c_str(), checktxt.c_str(), digest_c, file_stat, "");
+			for (FileRecord file : result) {
+				csync_info(2, "check same file ({}) {} -> {} \n", file.mode(), file.filename(), filename);
+				if (file.mode()  == OP_RM) {
 					operation = OP_MOVE;
-					db->delete_file(ptr->value, 0);
-					other = to_optional(ptr->value);
-					csync_info(1, "Found MOVE {} -> {} \n", ptr->value, filename);
+					db->delete_file(file.filename(), 0);
+					other = to_optional(file.filename().c_str());
+					csync_info(1, "Found MOVE {} -> {} \n", file.filename(), filename);
 					break;
-				} else if (ptr->intvalue == OP_HARDLINK) {
+				} else if (file.mode() == OP_HARDLINK) {
 					// BROKEN LOGIC. There can be more that one hardlink. Only finds last
 					operation = OP_HARDLINK;
-					other = to_optional(ptr->value);
-					csync_info(1, "Found HARDLINK {} -> {} \n", ptr->value, filename);
+					other = to_optional(file.filename().c_str());
+					csync_info(1, "Found HARDLINK {} -> {} \n", file.filename(), filename);
 				}
-				ptr = ptr->next;
 			}
-			textlist_free(tl);
 		}
 		int has_links = (file_stat->st_nlink > 1 && S_ISREG(file_stat->st_mode));
 		if (has_links) {
@@ -836,13 +814,10 @@ void csync_check(db_conn_p db, filename_p filename, int flags) {
 	const struct csync_group *g = NULL;
 	csync_check_recursive(db, filename, flags, &g);
 	/*
-	 textlist_p dub_entries = csync_check_all_same_dev_inode(db);
-	 textlist_p ptr = dub_entries;
-	 while (ptr != NULL) {
-	 csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4);
-	 ptr = ptr->next;
+	 vector dub_entries = csync_check_all_same_dev_inode(db);
+	 for (entry : dub_entries) {
+	   csync_combined_operation(ptr->value, ptr->value2, ptr->value3, ptr->value4);
 	 }
-	 textlist_free(dub_entries);
 	 */
 }
 

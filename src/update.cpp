@@ -743,15 +743,14 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 								   const char *uid, const char *gid, operation_t operation,
 								   const char *checktxt, const char *digest, int is_identical,
 								   int *last_conn_status) {
-	textlist_p tl = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st);
-	textlist_p t = tl;
+	vector<DirtyRecord> result = csync_check_link_move(db, peername, filename, checktxt, operation, digest, st);
 	int found_one = 0;
 	int errors = 0;
 
 	int count = 0;
-	for (; !found_one && t; t = t->next) {
-		const char *other = t->value;
-		if (t->intvalue == OP_HARDLINK && other) {
+	for (DirtyRecord dirty : result) {
+		const std::string other = dirty.file().filename();
+		if (dirty.operation() == static_cast<FileOperation>(OP_HARDLINK)) {
 			const char *key = csync_key(peername, other);
 			if (!key)
 				continue;
@@ -779,6 +778,9 @@ static int csync_update_file_all_hardlink(int conn, db_conn_p db, peername_p myn
 			}
 		}
 		count++;
+		if (found_one) {
+			break;;
+		}
 	}
 	// unused
 	csync_debug(2, "csync_check_link_move: {}\n", count);
@@ -1032,13 +1034,13 @@ static int csync_check_update_hardlink(int conn, db_conn_p db, peername_p myname
 	return rc;
 }
 
+// Not used
 static int csync_update_hardlinks(int conn, const std::string& key_enc, peername_p peername, filename_p filename,
-								  filename_p filename_enc, struct stat *st, textlist_p tl) {
-	textlist_p ptr = tl;
+								  filename_p filename_enc, struct stat *st, vector<DirtyRecord> files) {
 	int count = 0;
-	while (ptr != NULL) {
-		filename_p other = ptr->value;
-		csync_info(0, "check same file ({}) {} -> {} \n", ptr->intvalue, other, filename);
+	for (DirtyRecord dirty : files) {
+		filename_p other = dirty.file().filename();
+		csync_info(0, "check same file ({}) {} -> {} \n", static_cast<int>(dirty.operation()), other, filename);
 		struct stat st_other;
 		int rc = stat(other.c_str(), &st_other);
 		if (rc == 0) {
@@ -1060,7 +1062,6 @@ static int csync_update_hardlinks(int conn, const std::string& key_enc, peername
 		} else {
 			csync_error(0, "stat failed {}\n", other);
 		}
-		ptr = ptr->next;
 	}
 	csync_debug(0, "Found {} links to {}\n", count, filename);
 	return OK;
@@ -1072,27 +1073,26 @@ static int csync_find_update_hardlink(int conn, db_conn_p db, const std::string 
 									  struct stat *st, const char *uid, const char *gid,
 									  int auto_resolve_run) {
 	csync_debug(2, "Find same DEV INODE {} already on {} and hardlink\n", filename, peername);
-	textlist_p tl = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
-	textlist_p ptr = tl;
+	vector<FileRecord> result = db->check_file_same_dev_inode(filename, checktxt, digest, st, peername);
 	int last_conn_status;
 	int rc = OK_MISSING;
-	while (ptr != NULL) {
-		csync_info(2, "check same file ({}) {} -> {} \n", ptr->intvalue, ptr->value, filename);
+	for  (FileRecord file : result) {
+		csync_info(2, "check same file ({}) {} -> {} \n", file.mode(), file.filename(), filename);
 		// NOTE move check is disabled
-		if (0 && ptr->intvalue == OP_RM) {
-			db->delete_file(ptr->value, 0);
-			csync_info(1, "Found MOVE {} -> {} \n", ptr->value, filename);
+		if (0 && file.mode() == OP_RM) {
+			db->delete_file(file.filename(), 0);
+			csync_info(1, "Found MOVE {} -> {} \n", file.filename(), filename);
 			break;
-		} else if (ptr->intvalue == OP_HARDLINK) {
-			csync_info(1, "Found HARDLINK {} -> {} \n", ptr->value, filename);
+		} else if (file.mode() == OP_HARDLINK) {
+			csync_info(1, "Found HARDLINK {} -> {} \n", file.filename(), filename);
 			rc = csync_check_update_hardlink(conn, db, myname, peername, key_enc, filename, filename_enc,
-											 ptr->value, st, uid, gid, digest, &last_conn_status, auto_resolve_run);
-			csync_debug(1, "check_update_hardlink result: {} -> {}: {}\n", ptr->value, filename, rc);
+											 file.filename(), st, uid, gid, digest, &last_conn_status, auto_resolve_run);
+			csync_debug(1, "check_update_hardlink result: {} -> {}: {}\n", file.filename(), filename, rc);
 
 			if (rc == ERROR_HARDLINK || rc == OK_MISSING) {
-				csync_debug(1, "Failed attempt to HARDLINK {} -> {}\n", ptr->value, filename);
+				csync_debug(1, "Failed attempt to HARDLINK {} -> {}\n", file.filename(), filename);
 			} else if (rc == OK) {
-				csync_debug(1, "Hardlinked {}:{} -> {}\n", peername, ptr->value, filename);
+				csync_debug(1, "Hardlinked {}:{} -> {}\n", peername, file.filename(), filename);
 				csync_clear_dirty(db, peername, filename, auto_resolve_run);
 				break;
 			}
@@ -1101,10 +1101,8 @@ static int csync_find_update_hardlink(int conn, db_conn_p db, const std::string 
 			}
 
 		}
-		ptr = ptr->next;
 	}
 	csync_info(1, "csync_find_update_hardlink: result: {}:{} {}\n", peername, filename, rc);
-	textlist_free(tl);
 	return rc;
 }
 
@@ -1480,28 +1478,15 @@ struct dirty_row {
 	long long *inode;
 };
 
-static int check_dirty_by_peer(textlist_p *p_tl, filename_p filename, const char *op_str, operation_t operation,
-		const char *patlist, filename_p other, const char *checktxt, const char *digest, int forced, int recursive) {
-	int use_this = 0;
-	if (compare_files(filename, patlist, recursive)) {
-		use_this = 1;
-		textlist_add5(p_tl, filename, op_str, other, checktxt, digest, forced, operation);
-	}
-	return use_this;
-}
-
 void csync_ping_host(db_conn_p db, peername_p  myname, peername_p peername,
                      const std::set<std::string>& patlist, int ip_version, int flags) {
 	// unused
 	(void) patlist;
 	(void) flags;
-	//csync_debug(4, "Unused parameters {} {} {}", patlist, patlist.size(), flags);
 	/*
-	 textlist_p tl = 0, t, next_t;
-	 textlist_p tl_del = 0, *last_tn=&tl;
 	 struct stat st;
 	 tl = db->get_dirty_by_peer_match(myname, peername, flags & FLAG_RECURSIVE, patlist, patnum, compare_files);
-
+	 
 	 if ( !tl) {
 	 return;
 	 }
@@ -1526,12 +1511,10 @@ void csync_ping_host(db_conn_p db, peername_p  myname, peername_p peername,
 
 void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
                        const std::set<std::string>& patlist, int ip_version, int flags) {
-	textlist_p tl = 0, t, next_t;
-	textlist_p tl_del = 0, *last_tn = &tl;
 	struct stat st;
-	tl = db->get_dirty_by_peer_match(myname.c_str(), peername, flags & FLAG_RECURSIVE, patlist, compare_files);
-	/* just return if there are no files to update */
-	if (!tl) {
+	std::vector<csync2::DirtyRecord> results; 
+	db->get_dirty_by_peer_match(myname.c_str(), peername, flags & FLAG_RECURSIVE, patlist, compare_files, results);
+	if (results.empty()) {
 		return;
 	}
 	csync_debug(1, "Got dirty files from host {}\n", peername);
@@ -1541,7 +1524,6 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		csync_error(0, "ERROR: Connection to remote host `{}' failed.\n", peername);
 		csync_error(1, "Host stays in dirty state. "
 				"Try again later...\n");
-		textlist_free(tl);
 		return;
 	}
 
@@ -1550,22 +1532,27 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 		conn_printf(conn, "BYE\n");
 		read_conn_status(conn, "<BYE>", peername);
 		conn_close(conn);
-		textlist_free(tl);
 		return;
 	}
 	int rc = -1;
 	std::list<std::string> directory_list;
-	char *last_dir_deleted = NULL;
-	for (t = tl; t != 0; t = next_t) {
-		filename_p filename = t->value;
-		const char *other = t->value3;
-		const char *op_str = t->value2, *checktxt = t->value4, *digest = t->value5;
-		int operation = t->operation, forced = t->intvalue;
-		next_t = t->next;
+	std::string last_dir_deleted = "";
+	std::vector<csync2::DirtyRecord> delete_dirty;
+	for (csync2::DirtyRecord& dirty : results) {
+		csync2::FileRecord file = dirty.file();
+		filename_p filename = file.filename(); 
+		const char *other = dirty.other().has_value() ? dirty.other()->c_str() : NULL;
+		std::string op_str = dirty.op_str(), checktxt = file.checktxt();
+		std::string digest = file.digest();
+		csync2::FileOperation operation = dirty.operation();
+		bool forced = dirty.forced();
 		//csync_debug(1, "DIRTY {} '{}'\n", filename, digest);
 		if (lstat_strict(filename, &st) == 0 && !csync_check_pure(filename)) {
-			rc = csync_update_file_mod(conn, db, myname.c_str(), peername, filename, operation, other, checktxt,
-									   digest, forced, flags & FLAG_DRY_RUN);
+
+			rc = csync_update_file_mod(conn, db, myname.c_str(), peername, filename,
+									   static_cast<int>(operation), other, checktxt.c_str(),
+									   digest.c_str(), forced,
+									   flags & FLAG_DRY_RUN);
 			if (rc == CONN_CLOSE) {
 				csync_error(0, "Connection closed on updating {}\n", filename);
 				break;
@@ -1577,12 +1564,13 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 				csync_directory_add(directory_list, other_str);
 			}
 
-			last_tn = &(t->next);
 		} else {
 			/* File not found */
+			int op_int = static_cast<int>(operation);
 			csync_debug(2, "Dirty (missing) item {} {} {} {}\n", filename, op_str, is_null_or_blank(other), forced);
-			if (t->operation != OP_RM && t->operation != OP_MARK) {
-				csync_warn(1, "Unable to {} {}:{}. File has disappeared since check.\n", csync_operation_str(operation),
+			if (op_int != OP_RM && op_int != OP_MARK) {
+				csync_warn(1, "Unable to {} {}:{}. File has disappeared since check.\n",
+						   csync_operation_str(static_cast<int>(operation)),
 						   peername.c_str(), filename.c_str());
 				std::set<string> peerlist;
 				peerlist.insert(peername);
@@ -1593,40 +1581,27 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 				}
 			} else {
 				//csync_debug(1, "LAST_DIR_DELETED {} filename {} strstr {} }\n", last_dir_deleted, filename.c_str());
-			    if (last_dir_deleted != NULL && (strstr(filename.c_str(), last_dir_deleted) != NULL)) {
+			    if (last_dir_deleted != "" && filename.starts_with(last_dir_deleted)) {
 					// this is a file belonging to the deleted directory, so it should be skipped
 					csync_info(2, "Skipping matched file ({}) from deleted directory ({})\n", filename,
-							last_dir_deleted);
+							   last_dir_deleted);
 				} else {
-					if (last_dir_deleted != NULL) {
-						free(last_dir_deleted);
-						last_dir_deleted = NULL;
-					}
 					rc = csync_update_file_del(conn, db, peername, filename, forced, flags & FLAG_DRY_RUN);
 					if (rc == IDENTICAL) {
 						db->remove_dirty(peername, filename, 1);
 						db->remove_file(filename, 1);
-						size_t len = strlen(filename.c_str());
-						last_dir_deleted = static_cast<char*>(malloc(len + 2));
-						strcpy(last_dir_deleted, filename.c_str());
-						strcat(last_dir_deleted, "/");
+						last_dir_deleted = filename + "/";
 						// Skip following files if from sub-directory
 						csync_info(2, "DELETE ({}) Last dir: {}. rc: {}\n", filename, last_dir_deleted, rc);
 					} else {
-						*last_tn = next_t;
-						t->next = tl_del;
-						tl_del = t;
+						delete_dirty.push_back(dirty);
 					}
 				}
 			}
 		}
 	}
-	if (last_dir_deleted) {
-		free(last_dir_deleted);
-	}
-	textlist_free(tl);
-	textlist_free(tl_del);
-
+	// Deletes ?
+	
 	rc = 0;
 	if (!(flags & FLAG_DRY_RUN))
 		for (const std::string& directory : directory_list) {
@@ -1648,18 +1623,18 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 // NOT FULLY IMPLEMENTED
 void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
                      const std::set<std::string>& patlist, int ip_version, int flags) {
-	textlist_p tl = 0, t = 0;
 	int dry_run = flags & FLAG_DRY_RUN;
 
+	std::vector<csync2::FileRecord> result;
 	csync_debug(0, "csync_sync_host\n");
 	for (std::string pattern : patlist) {
-		tl = db->non_dirty_files_match(pattern.c_str());
-		if (tl) // Only use first pattern?
+		result  = db->non_dirty_files_match(pattern);
+		if (!result.empty()) // Only use first pattern?
 			break;
 	}
 	/* just return if there are no files to update */
-	if (!tl) {
-		csync_debug(0, "csync_sync_host: no files to sync\n");
+	if (result.empty()) {
+		csync_debug(0, "csync_sync_host: no files to sync on {}\n", peername);
 		return;
 	}
 	int conn = connect_to_host(db, myname.c_str(), peername, ip_version);
@@ -1683,8 +1658,8 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 	if (dry_run)
 		status = "(DRY RUN)";
 
-	for (t = tl; t != 0; t = t->next) {
-		filename_p filename = t->value;
+	for (csync2::FileRecord file : result) {
+		filename_p filename = file.filename();
 		const char *key = csync_key(peername, filename);
 		if (!key) {
 			csync_info(2, "Skipping file sync {} on {} - not in my groups.\n", filename, peername);
@@ -1692,8 +1667,8 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 			UrlEncoder url_encode;
 			std::string key_enc = url_encode(key);
 			filename_p filename_enc = url_encode(prefixencode(filename));
-			const char *chk_local = t->value2;
-			const char *digest = t->value3;
+			const std::string chk_local = file.checktxt();
+			const std::string digest = file.digest(); 
 			struct stat st;
 			char uid[MAX_UID_SIZE], gid[MAX_GID_SIZE];
 			int rc_exist = csync_stat(filename, &st, uid, gid);
@@ -1701,7 +1676,7 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 				int last_conn_status;
 				rc = csync_update_file_sig_rs_diff(conn, myname.c_str(), peername, key_enc,
 												   filename, filename_enc, &st,
-												   uid, gid, chk_local, digest, &last_conn_status, 2);
+												   uid, gid, chk_local.c_str(), digest.c_str(), &last_conn_status, 2);
 				if (rc == CONN_CLOSE) {
 					csync_error(0, "Error while sync_host {}:{}. Connection closed", peername, filename);
 					break;
@@ -1720,7 +1695,6 @@ void csync_sync_host(db_conn_p db, peername_p myname, peername_p peername,
 			}
 		}
 	}
-	textlist_free(tl);
 	conn_printf(conn, "BYE\n");
 	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
@@ -1740,7 +1714,6 @@ void csync_update(db_conn_p db, peername_p myhostname,
 				  const std::set<std::string>& active_peers,
                   const std::set<std::string>& patlist,
 				  int ip_version, update_func func, int flags) {
-	textlist_p tl = 0, t;
 	if (flags & FLAG_DO_ALL) {
 		for (std::string peer : active_peers) {
 			func(db, myhostname, peer.c_str(), patlist, ip_version, flags);
@@ -1749,22 +1722,21 @@ void csync_update(db_conn_p db, peername_p myhostname,
 			csync_error(0, "No active peers given. Unable to iterate without");
 		}
 	} else {
-		tl = db->get_dirty_hosts();
+		std::vector<std::string> result = db->get_dirty_hosts();
 		int found = 1;
-		for (t = tl; t != 0; t = t->next) {
+		for (std::string host : result) {
 			if (!active_peers.empty()) {
 				found = 0;
 				for (std::string peer : active_peers) {
-					if (peer == t->value) {
+					if (peer == host) {
 						found = 1;
 						break;
 					}
 				}
 			}
 			if (found)
-				func(db, myhostname, t->value, patlist, ip_version, flags);
+				func(db, myhostname, host, patlist, ip_version, flags);
 		}
-		textlist_free(tl);
 	}
 }
 
@@ -1931,7 +1903,6 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 		int flags) {
 	int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
 	int recursive = flags & FLAG_RECURSIVE;
-	textlist_p diff_list = 0, diff_ent;
 	const struct csync_group *g;
 	const struct csync_group_host *h;
 	int remote_eof = 0;
@@ -1976,18 +1947,18 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	}
 	conn_printf(conn, "LIST %s %s %s %d \n", peername.c_str(), filename_enc, g->key, recursive);
 	int count_diff = 0;
-
+	vector<std::string> diff_list;
 	if (!remote_eof) {
 	    std::string r_file = "";
-	std::string r_checktxt = "";
+		std::string r_checktxt = "";
 		while (!csync_insynctest_readline(conn, r_file, r_checktxt)) {
 			if (auto_diff)
-				textlist_add(&diff_list, r_file.c_str(), 0);
+				diff_list.emplace_back(r_file);
 			else {
-				textlist_p tl = db->list_file(r_file, myname.c_str(), peername, 0);
- 				const char *chk_local = "---";
-				if (tl) {
-					chk_local = tl->value;
+				std::vector<csync2::FileRecord> result = db->list_file(r_file, myname.c_str(), peername, 0);
+				const char *chk_local = "---";
+				if (!result.empty()) {
+					chk_local = result[0].checktxt().c_str();
 				}
 				int i;
 				if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {
@@ -1997,8 +1968,6 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 					count_diff++;
 				} else
 					csync_info(1, "S\t{}\t{}\t{}\n", myname, peername, r_file);
-
-				textlist_free(tl);
 			}
 			ret = 0;
 			if (flags & FLAG_INIT_RUN) {
@@ -2014,9 +1983,8 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 	read_conn_status(conn, "<BYE>", peername);
 	conn_close(conn);
 
-	for (diff_ent = diff_list; diff_ent; diff_ent = diff_ent->next)
-		csync_diff(db, myname.c_str(), peername, diff_ent->value, ip_version);
-	textlist_free(diff_list);
+	for (std::string diff_file : diff_list)
+		csync_diff(db, myname.c_str(), peername, diff_file, ip_version);
 
 	return ret;
 }
@@ -2034,7 +2002,7 @@ static int peer_in(const std::set<std::string>& active_peers, const std::string&
 int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, const std::set<std::string>& active_peers,
 						 int flags) {
 	csync_debug(3, "csync_insynctest_all: flags {} \n", flags);
-	textlist_p myname_list = 0, myname;
+	std::set<std::string> myname_list;
 	int auto_diff = flags & FLAG_TEST_AUTO_DIFF;
 	struct csync_group *g;
 	int ret = 1;
@@ -2054,53 +2022,32 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, cons
 	csync_debug(2, "csync_insynctest_all: get all groups \n");
 	for (g = csync_group; g; g = g->next) {
 		if (g->myname) {
-			int found = 0;
-			for (myname = myname_list; myname; myname = myname->next)
-				if (!strcmp(g->myname, myname->value)) {
-					found = 1;
-					break;
-				};
-			if (!found) {
-				csync_debug(2, "insynctest_all: Adding host {}\n", g->myname);
-				textlist_add(&myname_list, g->myname, 0);
-			}
+			myname_list.insert(g->myname);
 		}
 	}
 
-	for (myname = myname_list; myname; myname = myname->next) {
-		textlist_p peername_list = 0, peername;
+	for (std::string myname : myname_list) {
+		std::set<std::string> peername_list;
 		struct csync_group_host *h;
 		for (g = csync_group; g; g = g->next) {
 
 			if (!g->myname) // || strcmp(myname->value, g->myname) )
 				continue;
 			for (h = g->host; h; h = h->next) {
-				int found = 0;
-				for (peername = peername_list; peername; peername = peername->next)
-					if (!strcmp(h->hostname, peername->value)) {
-						found = 1;
-						break;
-					}
-				if (!found) {
-					csync_info(2, "Adding peer: {}\n", h->hostname);
-					textlist_add(&peername_list, h->hostname, 0);
-				}
+				peername_list.insert(h->hostname); 
+				csync_info(2, "Adding peer: {}\n", h->hostname);
 			}
 		}
 
-		for (peername = peername_list; peername; peername = peername->next) {
+		for (std::string peername : peername_list) {
 			csync_info(2, "Check peername \n");
-			if (peer_in(active_peers, peername->value)) {
-				csync_info(2, "Running in-sync check for {} <-> {} for file {}.\n", myname->value, peername->value,
-						   filename.c_str());
-				if (!csync_insynctest(db, myname->value, peername->value, filename, ip_version, flags))
+			if (peer_in(active_peers, peername)) {
+				csync_info(2, "Running in-sync check for {} <-> {} for file {}.\n", myname, peername, filename);
+				if (!csync_insynctest(db, myname, peername, filename, ip_version, flags))
 					ret = 0;
 			}
 		}
-		textlist_free(peername_list);
 	}
-	textlist_free(myname_list);
-
 	return ret;
 }
 
@@ -2126,22 +2073,18 @@ static int filter_missing_file(filename_p filename) {
 
 void csync_remove_old(db_conn_p db, filename_p pattern) {
 	csync_debug(1, "remove_old: dirty\n");
-	textlist_p tl = 0, t;
-	tl = db->find_dirty(filter_missing_dirty);
-	for (t = tl; t != 0; t = t->next) {
-		filename_p filename = t->value;
-		peername_p peername = t->value2;
+	vector<DirtyRecord> result =  db->find_dirty(filter_missing_dirty);
+	for (DirtyRecord dirty : result) {
+		filename_p filename = dirty.file().filename();
+		peername_p peername = dirty.peername();
 		csync_info(1, "Removing {} ({}) from dirty db.\n", filename, peername);
 		db->remove_dirty(peername, filename, 0);
 	}
-	textlist_free(tl);
 	csync_debug(1, "remove_old: file\n");
-	tl = 0;
-	tl = db->find_file(pattern, filter_missing_file);
-	for (t = tl; t != 0; t = t->next) {
-		csync_info(1, "Removing {} from file db.\n", t->value);
-		db->remove_file(t->value, 1);
+	vector<FileRecord> files = db->find_file(pattern, filter_missing_file);
+	for (FileRecord file : files) {
+		csync_info(1, "Removing {} from file db.\n", file.filename());
+		db->remove_file(file.filename(), 1);
 	}
-	textlist_free(tl);
 	csync_debug(1, "remove_old: end\n");
 }

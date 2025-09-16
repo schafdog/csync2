@@ -1304,7 +1304,8 @@ static int csync_start_server(int mode, int flags, int argc, char *argv[], int l
 		// Check if we should continue in non-forking mode
 		if (mode & MODE_NOFORK)
 		{
-			csync_debug(1, "goto nofork." /*"Continuing in non-forking mode." "Continuing server loop in non-forking mode." */);
+			csync_debug(1, "goto nofork."
+						/*"Continuing in non-forking mode." "Continuing server loop in non-forking mode." */);
 			// Clean up before continuing
 			csync_redis_close();
 			csync_run_commands(*db_ptr);
@@ -1331,7 +1332,6 @@ static int handle_server_error(int mode, int conn)
 static int csync_start_client(int mode, int flags, int argc, char *argv[], update_func updater, int cmd_db_version, int cmd_ip_version)
 {
 	int retval = -1;
-	textlist_p tl = 0, t;
 	db_conn_p db = NULL;
 
 	if (csync_read_config(g_cfgname, 0, mode) == -1)
@@ -1348,7 +1348,8 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	if (cfg_db_version != -1)
 	{
 		if (cmd_db_version)
-			csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}", cfg_db_version, cmd_db_version);
+			csync_info(0, "Command line overrides configuration DB protocol version: {} -> {}",
+					   cfg_db_version, cmd_db_version);
 		else
 			g_db_version = cfg_db_version;
 	}
@@ -1436,13 +1437,12 @@ static int csync_start_client(int mode, int flags, int argc, char *argv[], updat
 	{
 		if (argc == optind)
 		{
-			tl = db->get_hints();
-			for (t = tl; t != 0; t = t->next)
+			std::vector<csync2::Hint> result = db->get_hints();
+			for (csync2::Hint hint : result)
 			{
-				csync_check(db, t->value, (t->intvalue ? flags | FLAG_RECURSIVE : flags));
-				db->remove_hint(t->value, t->intvalue);
+				csync_check(db, hint.filename, (hint.is_recursive ? flags | FLAG_RECURSIVE : flags));
+				db->remove_hint(hint.filename, hint.is_recursive);
 			}
-			textlist_free(tl);
 		}
 		else
 		{
