@@ -33,6 +33,8 @@ class DirtyRecord {
 public:
     // Constructors
     DirtyRecord() = default;
+    explicit DirtyRecord(const std::string filename, int operation)
+	{ file_ = FileRecord(filename, "", ""); operation_ = static_cast<FileOperation>(operation); };
     explicit DirtyRecord(const csync2::FileRecord& file, const std::string& peername,
 			 const std::string& op_str = "MARK",
 			 csync2::FileOperation operation = FileOperation::Mark,
