@@ -26,16 +26,14 @@ database_SOURCES = database_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp 
                 db_api.cpp db_sql.cpp db_sqlite.cpp db_mysql.cpp db_postgres.cpp
 
 common_SOURCES = action.cpp cfgfile_parser_processed.y cfgfile_scanner.l \
-	check.cpp file_record.cpp file_record.hpp \
+	check.cpp file_record.cpp \
 	checktxt.cpp global.cpp daemon.cpp db.cpp \
 	error.cpp error.hpp getrealfn.cpp modern_logging.cpp \
 	groups.cpp rsync.cpp update.cpp urlencode.cpp conn.cpp prefixsubst.cpp \
-	db_api.cpp db_sql.cpp db_sqlite.cpp db_mysql.cpp db_postgres.cpp \
 	uidgid.cpp uidgid.hpp resolv.cpp resolv.hpp \
 	csync2.hpp redis.hpp redis.cpp modern_logging.hpp \
-	database_v2.cpp database_sqlite_v2.cpp database_mysql_v2.cpp database_postgres_v2.cpp \
-	db_api.hpp db_sql.hpp db_mysql.hpp db_postgres.hpp db_sqlite.hpp dl.hpp \
-	digest.cpp digest.hpp version.hpp \
+	$(database_SOURCES) \
+	digest.cpp digest.hpp version.hpp dl.hpp \
 	csync2-compare csync2.1
 
 csync2_SOURCES = main.cpp $(common_SOURCES) csync2.cpp
@@ -62,7 +60,9 @@ AM_LDFLAGS = $(BUILD_LDFLAGS)
 # --- Tests for the new DB layer ---
 check_PROGRAMS = test_database
 
-test_database_SOURCES = $(database_SOURCES) test_database.cpp global.cpp utils.hpp error.cpp db.cpp check.cpp modern_logging.cpp prefixsubst.cpp checktxt.cpp groups.cpp digest.cpp action.cpp redis.cpp urlencode.cpp uidgid.cpp
+test_database_SOURCES = $(database_SOURCES) test_database.cpp global.cpp utils.hpp error.cpp db.cpp check.cpp \
+	modern_logging.cpp prefixsubst.cpp checktxt.cpp groups.cpp digest.cpp action.cpp redis.cpp \
+	urlencode.cpp uidgid.cpp file_record.cpp
 test_database_LDADD = $(csync2_LDADD)
 
 
