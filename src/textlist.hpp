@@ -24,7 +24,7 @@ struct textlist {
     void (*destroy)(void *data);
 };
 
-typedef struct text_list *text_list_p;
+typedef struct textlist *textlist_p;
 
 void textlist_add_struct(struct textlist **listhandle, void *data, void (*destroy) (void *));
 void textlist_add_var(struct textlist **listhandle, int intitem, int num, ...);
