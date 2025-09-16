@@ -106,16 +106,30 @@ void test_textlist() {
     textlist_free(tl);
 }
 
-int print(vector<Hint> result) {
+int print(const vector<Hint>& result) {
     for (Hint hint : result) {
 	cout << "Hint(" << hint.filename << ", " << hint.is_recursive << endl;
     }
     return result.size();
 }
 
-int print(vector<FileRecord> result) {
+std::string  print(const FileRecord& file) {
+    stringstream ss;
+    ss << "File(" << file.filename() << ", " << file.checktxt() << " " << file.digest();
+    return ss.str();
+}
+
+int print(const vector<FileRecord>& result) {
     for (FileRecord file : result) {
 	cout << "File(" << file.filename() << ", " << file.checktxt() << " " << file.digest() << endl;
+    }
+    return result.size();
+}
+
+int print(const vector<DirtyRecord>& result) {
+    for (DirtyRecord dirty : result) {
+	cout << "Dirty(" << print(dirty.file()) << ", " << dirty.op_str()
+	     << (dirty.other().has_value() ? dirty.other()->c_str() : " - ") << endl;
     }
     return result.size();
 }
@@ -234,9 +248,9 @@ void test_db_api(const std::string &conn_str) {
         vector<FileRecord> same_files = api->check_file_same_dev_inode(filename, checktxt, digest, &filestat, peername);
         cout << "check_file_same_dev_inode count " << same_files.size() << std::endl;
 	
-	textlist_p tl = api->check_dirty_file_same_dev_inode(peername, filename, "checktxt", "digest", &filestat);
-        cout << "check_dirty_same_dev_inode count " << print_textlist(tl) << std::endl;
-        textlist_free(tl);
+	vector<DirtyRecord> same_dirty_files = api->check_dirty_file_same_dev_inode(peername, filename,
+										     "checktxt", "digest", &filestat);
+        cout << "check_dirty_same_dev_inode count " << print(same_dirty_files) << std::endl;
         api->clear_operation(hostname, peername, filename);
         cout << "check_delete next" << std::endl;
         api->check_delete(filename, 1, 0);

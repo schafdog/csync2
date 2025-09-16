@@ -497,7 +497,7 @@ vector<DirtyRecord> csync_check_move(db_conn_p db, peername_p peername, filename
 	return result;
 }
 
-textlist_p check_link_move(db_conn_p db, peername_p peername, filename_p filename,
+textlist_p csync_check_link_move(db_conn_p db, peername_p peername, filename_p filename,
 								 const char *checktxt, int operation,
 								 const char *digest, struct stat *st) {
 
