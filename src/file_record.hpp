@@ -24,19 +24,23 @@
 #endif
 
 #include "modern_logging.hpp"
-#include "db_api.hpp"
 
 namespace csync2 {
 
 enum class FileOperation {
-    None = 0,
-    Create = 1,
-    Modify = 2,
-    Delete = 4,
-    Move = 8,
-    Hardlink = 16,
-    MakeDirectory = 32,
-    RemoveDirectory = 64
+    Mark     = OP_MARK,
+    Mkdir    = OP_MKDIR,
+    New      = OP_NEW,
+    MkFifo   = OP_MKFIFO,
+    MkChr    = OP_MKCHR,
+    Move     = OP_MOVE,
+    Symlink  = OP_NEW,
+    Hardlink = OP_HARDLINK,
+    Delete   = OP_RM,
+    Modify   = OP_MOD,
+    Modify2  = OP_MOD2,
+    Sync     = OP_SYNC,
+    Filter   = OP_FILTER
 };
 
 enum class FileStatus {
@@ -66,6 +70,19 @@ enum class FileChangeType {
     PermissionChanged
 };
 
+class Hint {
+public:
+    std::string filename;
+    bool is_recursive;
+};
+
+class Command {
+public:
+    std::string command;
+    std::string logfile;
+};
+
+    
 class FileRecord {
 public:
     // Primary file identification
@@ -83,7 +100,8 @@ public:
         time_t modification_time;
         size_t file_size;
         std::string symlink_target;
-        std::string checksum;
+        std::string checktxt;
+	std::string digest;
     };
 
 private:
@@ -98,35 +116,53 @@ public:
     FileRecord() = default;
     explicit FileRecord(const std::string& filename)
         : identity_{filename} {}
-
+    explicit FileRecord(const std::string& filename, const std::string& checktxt, const std::string& digest)
+	: identity_{filename} {
+	metadata_.checktxt = checktxt;
+	metadata_.digest = digest;
+    };
+	
     // Identity accessors
     const std::string& filename() const { return identity_.filename; }
-    void filename(const std::string& name) { identity_.filename = name; }
+    FileRecord& filename(const std::string& name) { identity_.filename = name; return *this;}
 
-    dev_t device_id() const { return identity_.device_id; }
-    void device_id(dev_t id) { identity_.device_id = id; }
+    dev_t device() const { return identity_.device_id; }
+    FileRecord& device(dev_t id) { identity_.device_id = id; return *this; }
+    FileRecord& device(const std::string& id) {
+	sscanf(DEV_FORMAT, id.c_str(), &identity_.device_id);
+	return *this;
+    };
 
-    ino_t inode_number() const { return identity_.inode_number; }
-    void inode_number(ino_t inode) { identity_.inode_number = inode; }
+    ino_t inode() const { return identity_.inode_number; }
+    FileRecord& inode(ino_t inode) { identity_.inode_number = inode; return *this; }
+    FileRecord& inode(const std::string& no) {
+	sscanf(INO_FORMAT, no.c_str(), &identity_.inode_number);
+	return *this;
+    };
+
     const Metadata& metadata() const { return metadata_; }
-    void metadata(Metadata& update) { metadata_= update; }
+    FileRecord& metadata(Metadata& update) { metadata_= update; return *this; }
 
     // Metadata accessors
     uid_t user_id() const { return metadata_.user_id; }
     void user_id(uid_t uid) { metadata_.user_id = uid; }
 
     gid_t group_id() const { return metadata_.group_id; }
-    void group_id(gid_t gid) { metadata_.group_id = gid; }
+    FileRecord& group_id(gid_t gid) { metadata_.group_id = gid; return *this;}
 
     time_t modification_time() const { return metadata_.modification_time; }
-    void modification_time(time_t mtime) { metadata_.modification_time = mtime; }
+    FileRecord& modification_time(time_t mtime) { metadata_.modification_time = mtime; return *this; }
 
     size_t file_size() const { return metadata_.file_size; }
-    void file_size(size_t size) { metadata_.file_size = size; }
+    FileRecord& file_size(size_t size) { metadata_.file_size = size; return *this; }
 
-    void mode(int mode) { metadata_.mode = mode; }
-    std::string checksum() const { return metadata_.checksum; }
-    void checksum(const std::string& cs) { metadata_.checksum = cs; }
+    int mode() const { return metadata_.mode; }
+    FileRecord& mode(int mode) { metadata_.mode = mode; return *this; }
+    std::string checktxt() const { return metadata_.checktxt; }
+    FileRecord& checktxt(const std::string& cs) { metadata_.checktxt = cs; return *this; }
+
+    std::string digest() const { return metadata_.digest; }
+    FileRecord& digest(const std::string& cs) { metadata_.digest = cs; return *this; }
 
     // Filesystem interaction methods
     FileChangeType detect_changes(const FileRecord& other) const {
@@ -137,19 +173,8 @@ public:
         return FileChangeType::NoChange;
     }
 
-    // Serialization methods (to be implemented based on specific database)
-    void serialize_to_database(db_conn_p db) const {
-        // Placeholder for database serialization
-        // Implement actual database insertion logic
-    }
-
-    static FileRecord deserialize_from_database(db_conn_p db, const std::string& filename) {
-        // Placeholder for database deserialization
-        FileRecord record(filename);
-        return record;
-    }
-
-    std::string calculate_checksum() const;
+    std::string calculate_checktxt() const;
+    std::string calculate_digest() const;
     FileType& file_type() const;
     void file_type(FileType type) { file_type_ = type; };
     static FileType map_file_type(std::filesystem::file_type type);
