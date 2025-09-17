@@ -91,8 +91,8 @@ public:
 														filename_p filename,
 														const char *device, const char *ino) = 0;
 
-    virtual std::vector<Command> get_commands() = 0;
-    virtual std::vector<Command> get_command_filename(filename_p filename, const std::string logfile) = 0;
+    virtual std::vector<Action> get_commands() = 0;
+    virtual std::vector<Action> get_command_filename(filename_p filename, const std::string logfile) = 0;
     // virtual vector<std::string> get_hosts() = 0;
 	virtual std::vector<csync2::Hint> get_hints() = 0;
     virtual long long update_file(filename_p filename, const std::string& checktxt,

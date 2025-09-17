@@ -76,8 +76,9 @@ public:
     bool is_recursive;
 };
 
-class Command {
+class Action {
 public:
+    std::string filename;
     std::string command;
     std::string logfile;
 };

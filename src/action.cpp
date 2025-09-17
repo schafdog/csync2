@@ -52,18 +52,18 @@ void csync_schedule_commands(db_conn_p db, filename_p filename, int islocal) {
 				goto found_matching_pattern;
 			for (p = a->pattern; p; p = p->next) {
 				const char *prefix = prefixsubst(p->pattern);
-				csync_debug(1, "File pattern: {} => {} ", p->pattern,
-						prefix);
+				csync_debug(1, "File pattern: {} => {} ", p->pattern, prefix);
 				int fnm_pathname = p->star_matches_slashes ? 0 : FNM_PATHNAME;
-				if (!fnmatch(prefix, filename.c_str(),
-				FNM_LEADING_DIR | fnm_pathname))
+				if (!fnmatch(prefix, filename.c_str(),FNM_LEADING_DIR | fnm_pathname))
 					goto found_matching_pattern;
 			}
 			continue;
-			found_matching_pattern: for (c = a->command; c; c = c->next) {
+			found_matching_pattern:
+			for (c = a->command; c; c = c->next) {
 				const char *prefix_cmd = prefixsubst(c->command);
 				db->del_action(filename, prefix_cmd);
 				db->add_action(filename, prefix_cmd, a->logfile);
+				csync_debug(1, "schedule for {}: {} {}", filename, prefix_cmd, a->logfile);
 			}
 		}
 	}
@@ -76,15 +76,19 @@ static void csync_run_single_command(db_conn_p db,  const std::string& command, 
 	std::string real_command;
 	pid_t pid;
 
-	std::vector<Command> result = db->get_command_filename(command, logfile);
+	std::vector<Action> result = db->get_command_filename(command, logfile);
 	if (!strstr(command.c_str(), "%%")) {
 		real_command = command;
 	} else {
 		std::string files = "";
-		for (csync2::Command file : result) {
-			files += ' ' + file.command;
+		for (csync2::Action file : result) {
+			files += ' ' + file.filename;
 		}
-		//real_command.replace(std::string("%%"), files);
+		std::string mark = "%%";
+		size_t pos = real_command.find(mark);
+		if (pos != std::string::npos) {
+			real_command.replace(pos, mark.length(), files);
+		}
 	}
 
 	csync_info(1, "Running '{}' ...", real_command);
@@ -104,13 +108,13 @@ static void csync_run_single_command(db_conn_p db,  const std::string& command, 
 	if (waitpid(pid, 0, 0) < 0)
 		csync_fatal("ERROR: Waitpid returned error {}.", strerror(errno));
 
-	for (csync2::Command cmd : result)
-		db->remove_action_entry(cmd.command, command, logfile);
+	for (csync2::Action cmd : result)
+		db->remove_action_entry(cmd.filename, command, logfile);
 }
 
 void csync_run_commands(db_conn_p db) {
-	std::vector<csync2::Command> result = db->get_commands();
-	for (csync2::Command cmd: result) {
+	std::vector<csync2::Action> result = db->get_commands();
+	for (csync2::Action cmd: result) {
 		csync_run_single_command(db, cmd.command, cmd.logfile);
 	}
 }

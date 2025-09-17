@@ -542,34 +542,36 @@ void DbSql::list_sync(peername_p myhostname, peername_p peername)
     }
 }
 
-vector<Command> DbSql::get_commands()
+vector<Action> DbSql::get_commands()
 {
     std::string name_sql = "get_commands";
-    std::string sql = "SELECT command, logfile FROM action";
+    std::string sql = "SELECT command, logfile FROM action group by 1,2";
     auto stmt = conn_->prepare(name_sql, sql);
-	vector<Command> result;
+	vector<Action> result;
     auto resultset = stmt->execute_query();
     while (resultset->next()) {
-        Command command( resultset->get_string(1), resultset->get_string(2));
+        Action command( "", resultset->get_string(1), resultset->get_string(2));
 		result.emplace_back(command);
     }
 	return result;
 }
 
-std::vector<csync2::Command> DbSql::get_command_filename(filename_p command, const std::string logfile)
+std::vector<csync2::Action> DbSql::get_command_filename(filename_p command, const std::string logfile)
 {
 	std::string name_sql = "get_command_filename";
+
     std::string sql = "SELECT filename from action WHERE command = ? and logfile = ?";
   	auto stmt = conn_->prepare(name_sql, sql);
     stmt->bind(1, command);
     stmt->bind(2, logfile);
 
     auto resultset = stmt->execute_query();
-	std::vector<csync2::Command> result;
+	std::vector<csync2::Action> result;
     while (resultset->next())
     {
-		csync2::Command cmd( resultset->get_string(1).c_str(), "");
-		result.emplace_back(command);
+		csync2::Action cmd(resultset->get_string(1), command, logfile);
+		//csync_debug(1, " Action: {}\n", cmd);
+		result.emplace_back(cmd);
 	}
 	return result;
 }
@@ -1077,7 +1079,8 @@ int DbSql::remove_action_entry(filename_p filename, const std::string& command, 
 {
     std::string name_sql = "remove_action_entry";
     std::string sql = R"(DELETE FROM action
-                        WHERE filename = ? and command = ? and logfile = ?)";
+                        WHERE filename = {} and command = {} and logfile = {})";
+	csync_debug(1, sql, filename, command, logfile);
    	auto stmt = conn_->prepare(name_sql, sql);
 	stmt->bind(1, filename);
 	stmt->bind(2, command);
