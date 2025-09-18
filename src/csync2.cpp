@@ -1079,7 +1079,7 @@ int csync2_main(int argc, char **argv)
 };
 
 // Forward declarations
-static int csync_start_server(int mode, int flags, int argc, char *argv[], int listenfd, db_conn_p *db_ptr, int cmd_db_version, int cmd_ip_version);
+static int csync_start_server(int mode, int flags, int argc, char *argv[], int listenfd, db_conn_p *db_ptr, int cmd_db_version, int cmd_ip_version, int *start_time);
 static int csync_start_client(int mode, int flags, int argc, char *argv[], update_func updater, int cmd_db_version, int cmd_ip_version);
 static int handle_server_error(int mode, int conn);
 
@@ -1106,7 +1106,8 @@ int csync_start(int mode, int flags, int argc, char *argv[], update_func updater
 		// Handle server mode
 		if (server)
 		{
-			int server_result = csync_start_server(mode, flags, argc, argv, listenfd, &db, cmd_db_version, cmd_ip_version);
+			int server_result = csync_start_server(mode, flags, argc, argv, listenfd, &db,
+												   cmd_db_version, cmd_ip_version, &start_time);
 
 			if (server_result == 1)
 				return 1; // Server failure
@@ -1176,7 +1177,8 @@ int check_ip_version(int ip_version, int cmd_ip_version) {
 }
 
 // Server startup function - handles daemon mode connection setup
-static int csync_start_server(int mode, int flags, int argc, char *argv[], int listenfd, db_conn_p *db_ptr, int cmd_db_version, int cmd_ip_version)
+static int csync_start_server(int mode, int flags, int argc, char *argv[], int listenfd, db_conn_p *db_ptr,
+							  int cmd_db_version, int cmd_ip_version, int *start_time)
 {
 	int conn = -1;
 	int conn_out = 1;
@@ -1197,7 +1199,8 @@ static int csync_start_server(int mode, int flags, int argc, char *argv[], int l
 			if (csync_server_accept_loop(mode & (MODE_SINGLE | MODE_NOFORK), listenfd, &conn))
 				return 1;
 		}
-
+		// New session
+		*start_time = time(NULL);
 		// configure conn.c for MODE_INETD or STANDALONE
 		if (MODE_INETD & mode)
 		{
