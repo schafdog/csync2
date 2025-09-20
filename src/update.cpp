@@ -1955,9 +1955,9 @@ int csync_insynctest(db_conn_p db, const std::string& myname, peername_p peernam
 				diff_list.emplace_back(r_file);
 			else {
 				std::vector<csync2::FileRecord> result = db->list_file(r_file, myname.c_str(), peername, 0);
-				const char *chk_local = "---";
+				std::string chk_local = "---";
 				if (!result.empty()) {
-					chk_local = result[0].checktxt().c_str();
+					chk_local = result[0].checktxt();
 				}
 				int i;
 				if ((i = csync_cmpchecktxt(r_checktxt, chk_local))) {

@@ -20,8 +20,9 @@ namespace csync2 {
     
 // Generate a SHA-256 digest for the file
 std::string FileRecord::calculate_digest() const {
+    std::string digest = "";
     if (!std::filesystem::exists(filename())) {
-        return "";
+        return digest;
     }
 
     std::ifstream file(filename(), std::ios::binary);
@@ -48,16 +49,17 @@ std::string FileRecord::calculate_digest() const {
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
         ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
     }
-
-    return ss.str();
+    digest = ss.str();
+    return digest;
 }
     
 std::string FileRecord::calculate_checktxt() const {
+    std::string checktxt = ""; 
     if (!std::filesystem::exists(filename())) {
-        return "";
+        return checktxt;
     }
-    std::string checktxt;
-    
+    // TODO
+    // checktxt = csync_genchecktxt_version(st, filename(), flag, 2);
     return checktxt;
 }
     
