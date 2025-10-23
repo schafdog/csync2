@@ -1,5 +1,5 @@
 # Check database collation
-psql -h localhost -U postgres -c "
+psql -h localhost postgres -c "
             SELECT datname, datcollate, datctype 
             FROM pg_database 
             WHERE datname LIKE 'csync2_%' 
