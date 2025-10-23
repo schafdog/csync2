@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(swift build:*)",
+      "Bash(.build/debug/csync2-swift:*)",
+      "Bash(swift test:*)",
+      "WebFetch(domain:www.swift.org)"
     ],
     "deny": []
   }

@@ -54,6 +54,9 @@
 #include "resolv.hpp"
 #include "redis.hpp"
 
+// Swift C++ interop - import Digest module
+#include <Csync2Swift-Swift.h>
+
 using namespace csync2;
 
 #define OK        0
@@ -354,10 +357,12 @@ static void daemon_file_update(db_conn_p db, filename_p filename, peername_p pee
 		std::string checktxt = csync_genchecktxt_version(&st, filename,
 		SET_USER | SET_GROUP, db->version);
 		if (S_ISREG(st.st_mode)) {
-			digest.reserve(4 * DIGEST_MAX_SIZE + 1);
-			int rc = dsync_digest_path_hex(filename, "sha1", digest);
-			if (rc) {
-				csync_error(0, "ERROR: generating digest {} for '{}': {}", "sha1", filename, rc);
+			// Use Swift Digest directly via C++ interop
+			auto result = Csync2Swift::Digest::computePathDigest(std::string(filename), std::string("sha1"));
+			if (!result.getSuccess()) {
+				csync_error(0, "ERROR: generating digest {} for '{}'", "sha1", filename);
+			} else {
+				digest = std::string(result.toHex());
 			}
 		}
 		csync_debug(3, "daemon_file_update: UPDATE/INSERT into file filename: {}\n", filename);

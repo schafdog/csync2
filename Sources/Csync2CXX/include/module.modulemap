@@ -1,0 +1,5 @@
+module Csync2CXX {
+    header "csync2_wrapper.h"
+    requires cplusplus
+    export *
+}

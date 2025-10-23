@@ -1,9 +1,12 @@
 /*  -*- c-file-style: "k&r"; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
 
-int csync2_main(int argc, char **argv);
 #include "version.h"
 #include <cstdio>
 #include "config.h"
+
+extern "C" {
+
+int csync2_main(int argc, char **argv);
 
 const char *csync2_git_version() {
 	return CSYNC_GIT_VERSION;
@@ -23,6 +26,7 @@ void csync2_version(void)
 	);
 }
 
+} // extern "C"
 
 int  main(int argc, char **argv) {
     return csync2_main(argc, argv);

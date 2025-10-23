@@ -28,6 +28,9 @@
 #include "db_api.hpp"
 #include "redis.hpp"
 
+// Swift C++ interop - import Digest module
+#include <Csync2Swift-Swift.h>
+
 // C++20 std::format support
 #if __cplusplus >= 202002L && __has_include(<format>)
     #include <format>
@@ -632,12 +635,18 @@ int compare_dev_inode(struct stat *file_stat, const std::string& dev, const std:
 
 int csync_calc_digest(const std::string& file, std::string& digest)
 {
-	digest = ""; // std::string(size, ' ');
-	int rc = dsync_digest_path_hex(file, "sha1", digest);
-	if (rc) {
-		csync_error(0, "ERROR: generating digest for file: {} {}", file, rc);
+	// Use Swift Digest directly via C++ interop
+	auto result = Csync2Swift::Digest::computePathDigest(file, std::string("sha1"));
+
+	if (!result.getSuccess()) {
+		csync_error(0, "ERROR: generating digest for file: {}", file);
+		digest = "";
+		return -1;
 	}
-	return rc;
+
+	// Convert Swift result to hex string
+	digest = std::string(result.toHex());
+	return 0;
 }
 
 std::optional<std::string> to_optional(const char* s) {
