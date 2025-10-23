@@ -217,7 +217,7 @@ jobs:
           autoreconf -fiv
           # Check for newer clang
           if [ -f /Users/dennis/.swiftly/bin/clang++ ] ; then
-             CXX_OPT="CXX=/Users/dennis/.swiftly/bin/clang++
+             CXX_OPT="CXX=/Users/dennis/.swiftly/bin/clang++"
           fi
           # Configure with PostgreSQL support
           ./configure $CXX_OPT \
