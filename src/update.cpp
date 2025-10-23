@@ -1517,13 +1517,12 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 	if (results.empty()) {
 		return;
 	}
-	csync_debug(1, "Got dirty files from host {}\n", peername);
+	csync_debug(1, "Got {} dirty files from host {}\n", results.size(), peername);
 	int conn = connect_to_host(db, myname, peername, ip_version);
 	if (conn < 0) {
 		csync_error_count++;
 		csync_error(0, "ERROR: Connection to remote host `{}' failed.\n", peername);
-		csync_error(1, "Host stays in dirty state. "
-				"Try again later...\n");
+		csync_error(1, "Host stays in dirty state. Try again later...\n");
 		return;
 	}
 

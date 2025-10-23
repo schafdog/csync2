@@ -153,6 +153,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 
 	if (peeraddr == NULL) {
 		csync_error(0, "Failed to look up peer address from {}\n", peername);
+		close(sfd);
 		return -1;
 	}
 	size_t sockaddr_size = get_sockaddr_len(peeraddr);
@@ -168,6 +169,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 
 	if (connect(sfd, peeraddr, sockaddr_size) == -1) {
 		csync_error(0, "Failed to connect to peer {}:{}: {}, {}\n", peername, port, errno, strerror(errno));
+		close(sfd);
 		free(peeraddr);
 		return -1;
 	}
