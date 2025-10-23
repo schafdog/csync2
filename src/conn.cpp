@@ -160,7 +160,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 	if (localaddr != NULL) {
 		char ipstr[INET6_ADDRSTRLEN];
 		csync_info(2, "Using specific address {}\n", sockaddr_to_ipstr(localaddr, ipstr, sizeof(ipstr)));
-		if (bind(sfd, localaddr, sockaddr_size) == -1) {
+		if (::bind(sfd, localaddr, sockaddr_size) == -1) {
 			csync_error(0, "Failed to bind to {}: {}, {}\n", static_cast<char *>(ipstr), errno, strerror(errno));
 		}
 		free(localaddr);
