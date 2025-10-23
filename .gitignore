@@ -70,3 +70,10 @@ installed.txt
 sqlite:*
 *.db
 
+# Swift Package Manager
+.build/
+.swiftpm/
+*.xcodeproj
+xcuserdata/
+DerivedData/
+Package.resolved
