@@ -156,7 +156,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS]
-        arch: [ARM64, X86]
+        arch: [ARM64, X64]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -502,7 +502,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS]
-        arch: [macOS-ARM64, macOS-X86]
+        arch: [macOS-ARM64, macOS-X64]
         db: [sqlite, mysql, pgsql]
     steps:
     - name: Checkout code
