@@ -500,6 +500,7 @@ jobs:
     runs-on: ${{ matrix.arch }}
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         os: [macOS]
         arch: [macOS-ARM64, macOS-X64]
