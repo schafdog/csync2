@@ -151,7 +151,7 @@ jobs:
         key: ${{ steps.build-cache-key.outputs.cache-key }}
 
   test:
-    needs: build (ubuntu-latest)
+    needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
