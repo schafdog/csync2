@@ -50,7 +50,7 @@ jobs:
 
     - name: Fix source file timestamps after checkout
       run: |
-        echo "=== Fixing timestamps after git checkout ==="
+#        echo "=== Fixing timestamps after git checkout ==="
         # Git checkout sets all files to current time, but we need source files
         # to appear older than any generated files we'll restore from cache
         
