@@ -21,6 +21,6 @@ mark other operation: 'RM' 'peer:<TESTBASE>/test/local/recursive' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/recursive' '-'.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
-Got dirty files from host peer
+Got 8 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:<TESTBASE>/test/local

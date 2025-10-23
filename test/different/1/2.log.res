@@ -4,6 +4,6 @@ Checking recursive for modified files <TESTBASE>/test
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 1 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''

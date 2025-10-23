@@ -10,7 +10,7 @@ mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/Maildir/new (not sy
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/Maildir/new/1434.M21,S=6631,W=6764' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/new' ''
 ?M: peer            <TESTBASE>/test/local/Maildir/new

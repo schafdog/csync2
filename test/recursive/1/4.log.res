@@ -26,7 +26,7 @@ mark operation MKDIR -> RM other:<TESTBASE>/test/local/recursive/1 deleted befor
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/recursive' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/recursive' '-'.
 mark operation MKDIR -> RM other:<TESTBASE>/test/local/recursive deleted before syncing. Removing from dirty.
-Got dirty files from host peer
+Got 8 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''
 ?M: peer            <TESTBASE>/test/local

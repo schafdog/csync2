@@ -1,5 +1,5 @@
 cmd du "7 more files hardlinked (dry-run updated)" local peer test
-Got dirty files from host peer
+Got 8 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MARK) 'peer:<TESTBASE>/test/local' ''
 clear peer:<TESTBASE>/test/local on dry run

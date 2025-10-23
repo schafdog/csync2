@@ -11,7 +11,7 @@ mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/type_change (not sy
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
 Checking for deleted files <TESTBASE>/test/local recursive.
-Got dirty files from host peer
+Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''
 ?M: peer            <TESTBASE>/test/local

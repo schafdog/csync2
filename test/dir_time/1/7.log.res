@@ -10,7 +10,7 @@ mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/usr/local/sbin (not
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/usr/local/sbin/hej' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/usr/local/sbin/hej' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/usr/local' ''
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/usr/local/sbin' ''

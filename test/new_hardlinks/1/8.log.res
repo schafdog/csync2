@@ -1,5 +1,5 @@
 cmd u "8 more files hardlinked (updated)" local peer test
-Got dirty files from host peer
+Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MARK) 'peer:<TESTBASE>/test/local/new' ''
 ?M: peer            <TESTBASE>/test/local/new

@@ -8,7 +8,7 @@ mark other operation: 'NEW' 'other:<TESTBASE>/test/local/new_file 'N' all.link' 
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/new_file 'N' all' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/new_file 'N' all' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
 Updating (NEW) 'peer:<TESTBASE>/test/local/new_file 'N' all' ''

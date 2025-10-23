@@ -2,7 +2,7 @@ cmd x "New local/new_file 'N' all" local peer test
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 4 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
 Updating (NEW) 'peer:<TESTBASE>/test/local/.Test' ''
