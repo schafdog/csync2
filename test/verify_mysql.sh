@@ -1,5 +1,14 @@
 # Check database setup
-mariadb --protocol=TCP -h 127.0.0.1 -u root -pcsync238 -e "
+MYSQL_ROOT=$1
+MYSQL_ROOT_PW=$2
+OS=$3
+if [ "$MYSQL_ROOT" != "" ] ; then
+    MYSQL_OPT="-u $MYSQL_ROOT"
+fi
+if [ "$MYSQL_ROOT_PW" != "" ] ; then
+    MYSQL_OPT="$MYSQL_OPT -p$MYSQL_ROOT_PW"
+fi
+mariadb --protocol=TCP -h 127.0.0.1  $MYSQL_OPT -e "
 	            SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME 
         	    FROM information_schema.SCHEMATA 
 		    WHERE SCHEMA_NAME LIKE 'csync2_%' 

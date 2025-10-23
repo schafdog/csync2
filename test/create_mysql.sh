@@ -12,6 +12,7 @@ fi
 MYSQL_OPT="--protocol=TCP -h 127.0.0.1 $MYSQL_OPT"
 for d in local peer ; do 
     mysql $MYSQL_OPT -e "CREATE DATABASE IF NOT EXISTS csync2_$d;"
+    mysql $MYSQL_OPT -e "CREATE USER IF NOT EXISTS 'csync2_$d'@'localhost' identified by 'csync2_$d'; " 
     mysql $MYSQL_OPT -e "GRANT ALL PRIVILEGES ON csync2_$d.* TO 'csync2_$d'@'%' identified by 'csync2_$d'; " 
 done 
 mysql $MYSQL_OPT -e "FLUSH PRIVILEGES;"
