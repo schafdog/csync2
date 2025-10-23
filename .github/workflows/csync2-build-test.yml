@@ -209,7 +209,6 @@ jobs:
     - name: Build csync2 on ${{ matrix.os }}
       run: |
         echo "=== Building csync2 ==="
-        env
         export PKG_CONFIG_PATH="/opt/homebrew/opt/libpq/lib/pkgconfig"
         if [ -f src/csync2 ] ; then
           echo "csync2 restored from cache"
