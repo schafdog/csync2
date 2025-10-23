@@ -38,7 +38,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-linux:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -240,8 +240,8 @@ jobs:
         path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.build-cache-key.outputs.cache-key }}
 
-  test:
-    needs: build
+  test-linux:
+    needs: build-linux
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -496,7 +496,7 @@ jobs:
         attachments: test/test-suite.log
 
   test-macos:
-    needs: build
+    needs: build-mac
     runs-on: ${{ matrix.os }}-${{ matrix.arch }}
     strategy:
       fail-fast: false
