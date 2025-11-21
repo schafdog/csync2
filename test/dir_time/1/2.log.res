@@ -10,7 +10,7 @@ mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/usr/local' '-'.
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/usr/local/sbin' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/usr/local/sbin' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 4 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
 Updating (MKDIR) 'peer:<TESTBASE>/test/local/usr' ''

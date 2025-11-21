@@ -6,7 +6,7 @@ mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local' '-'.
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/ÆØÅ Café.utf8' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/ÆØÅ Café.utf8' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 2 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''
 Updating (NEW) 'peer:<TESTBASE>/test/local/ÆØÅ Café.utf8' ''

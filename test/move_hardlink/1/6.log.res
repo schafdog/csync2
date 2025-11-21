@@ -1,5 +1,5 @@
 cmd u "5 Read and deleted (update)" local peer test
-Got dirty files from host peer
+Got 5 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/Maildir/.Trash/cur' ''
 ?M: peer            <TESTBASE>/test/local/Maildir/.Trash/cur

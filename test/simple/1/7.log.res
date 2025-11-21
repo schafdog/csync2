@@ -1,5 +1,5 @@
 cmd u "test/local/mark (sync)" local peer test/local
-Got dirty files from host peer
+Got 4 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MARK) 'peer:<TESTBASE>/test/local' ''
 ?M: peer            <TESTBASE>/test/local

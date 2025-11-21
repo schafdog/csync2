@@ -7,7 +7,7 @@ mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local (not synced) .
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/tmp' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/tmp' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 2 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''
 ?M: peer            <TESTBASE>/test/local

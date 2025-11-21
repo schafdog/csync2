@@ -1,5 +1,5 @@
 cmd u "6 Fail to autoresolve (not younger)" local peer test
-Got dirty files from host peer
+Got 1 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (NEW) 'peer:<TESTBASE>/test/local/auto/younger/local_oldest' ''
 Auto resolve method YOUNGER 2 for peer:<TESTBASE>/test/local/auto/younger/local_oldest 

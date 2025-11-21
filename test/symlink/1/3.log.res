@@ -9,7 +9,7 @@ mark other operation: 'RM?' 'peer:<TESTBASE>/test/local/bad.link' 'missing'.
 WARN: stat failed. op: 2
 mark other operation: 'RM?' 'other:<TESTBASE>/test/local/bad.link' 'missing'.
 Checking for deleted files <TESTBASE>/test recursive.
-Got dirty files from host peer
+Got 2 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''
 ?M: peer            <TESTBASE>/test/local

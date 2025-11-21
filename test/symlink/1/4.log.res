@@ -14,6 +14,6 @@ mark operation NEW -> RM other:<TESTBASE>/test/local/bad.link deleted before syn
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
-Got dirty files from host peer
+Got 4 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:<TESTBASE>/test/local

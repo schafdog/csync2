@@ -312,7 +312,7 @@ fi
 if test "$enable_asan" = "yes"; then
     AC_MSG_NOTICE([Enabling AddressSanitizer])
     BUILD_CXXFLAGS="$BUILD_CXXFLAGS -fsanitize=address -fno-omit-frame-pointer"
-    BUILD_LDFLAGS="$BUILD_LDFLAGS -fsanitize=address -fuse-ld=bfd"
+    BUILD_LDFLAGS="$BUILD_LDFLAGS -fsanitize=address" # d-fuse-ld=bfd
     AC_DEFINE([HAVE_ADDRESS_SANITIZER], [1], [Define if AddressSanitizer is enabled])
 else
     AC_MSG_NOTICE([AddressSanitizer disabled])

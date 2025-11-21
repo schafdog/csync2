@@ -1,5 +1,5 @@
 cmd u "Both updated (peer still dirty)" local peer test
-Got dirty files from host peer
+Got 1 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (NEW) 'peer:<TESTBASE>/test/local/different' ''
 ?F: peer            <TESTBASE>/test/local/different

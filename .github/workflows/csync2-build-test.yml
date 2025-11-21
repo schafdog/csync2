@@ -38,12 +38,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-linux:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS]
+        os: [ubuntu-latest]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -123,7 +123,8 @@ jobs:
     - name: Build csync2 on ${{ matrix.os }}
       run: |
         echo "=== Building csync2 ==="
-        
+        env
+        export PKG_CONFIG_PATH="/opt/homebrew/opt/libpq/lib/pkgconfig"
         if [ -f src/csync2 ] ; then
           echo "csync2 restored from cache" 
         else
@@ -149,8 +150,98 @@ jobs:
         path: ${{ env.CACHE_PATHS }}
         key: ${{ steps.build-cache-key.outputs.cache-key }}
 
-  test:
-    needs: build
+  build-mac:
+    runs-on: ${{ matrix.os }}-${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS]
+        arch: [ARM64, X64]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Fix source file timestamps after checkout
+      run: |
+
+        # Git checkout sets all files to current time, but we need source files
+        # to appear older than any generated files we'll restore from cache
+        # Set all source files to a time well in the past (1 hour ago)
+        PAST_TIME=$(date -d '1 hour ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-1H '+%Y%m%d%H%M.%S')
+        echo "Setting source files to: $PAST_TIME"
+        find . -name "*.ac" -o -name "*.am" -o -name "*.in" | xargs touch -t "$PAST_TIME" 2>/dev/null || true
+        echo "Timestamps fixed"
+
+    - name: Calculate build cache key
+      id: build-cache-key
+      run: |
+        # Create a hash of source files and build configuration
+        echo "Calculating build cache key..."
+        uname -a
+        # Hash source files, headers, and build scripts
+        # ./test/debug_source_hash.sh
+        SOURCES_HASH=$(./test/source_hash.sh)
+        echo "SOURCES_HASH $SOURCES_HASH"
+        CONFIG_HASH=$(./test/config_hash.sh)
+        echo "CONFIG_HASH $CONFIG_HASH"
+        DEPS_HASH=$(./test/deps_hash.sh)
+        echo "DEPS_HASH $DEPS_HASH"
+        # Combine hashes
+        CACHE_KEY=$(./test/combine_hash.sh ${{ matrix.os }} $SOURCES_HASH $CONFIG_HASH $DEPS_HASH)
+
+        echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+        echo "🔑 Build cache key: ${CACHE_KEY}"
+
+    - name: Restore build cache
+      id: build-cache-restore
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.CACHE_PATHS }}
+        key: ${{ steps.build-cache-key.outputs.cache-key }}
+
+    - name: Install dependencies
+      run: |
+        if [ -f src/csync2 ] ; then
+           echo "Install runtime dependencies... Restored from cache"
+           exit 0;
+        fi
+
+    - name: Build csync2 on ${{ matrix.os }}
+      run: |
+        echo "=== Building csync2 ==="
+        export PKG_CONFIG_PATH="/opt/homebrew/opt/libpq/lib/pkgconfig"
+        if [ -f src/csync2 ] ; then
+          echo "csync2 restored from cache"
+        else
+          unset TMPDIR
+          # Generate build system
+          autoreconf -fiv
+          # Check for newer clang
+          if [ -f /Users/dennis/.swiftly/bin/clang++ ] ; then
+             CXX_OPT="CXX=/Users/dennis/.swiftly/bin/clang++"
+          fi
+          # Configure with PostgreSQL support
+          ./configure $CXX_OPT \
+            --enable-release   \
+            --disable-debug    \
+            --enable-postgres  \
+            --enable-mysql     \
+            --enable-sqlite3   \
+            --enable-redis
+
+          # Build with enhanced warnings (silent mode for clean output)
+          make -j$(nproc) V=1
+        fi
+
+    - name: Save build cache
+      if: steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ env.CACHE_PATHS }}
+        key: ${{ steps.build-cache-key.outputs.cache-key }}
+
+  test-linux:
+    needs: build-linux
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -405,12 +496,14 @@ jobs:
         attachments: test/test-suite.log
 
   test-macos:
-    needs: build
-    runs-on: ${{ matrix.os }}
+    needs: build-mac
+    runs-on: ${{ matrix.arch }}
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
-        os: [macOS ]
+        os: [macOS]
+        arch: [macOS-ARM64, macOS-X64]
         db: [sqlite, mysql, pgsql]
     steps:
     - name: Checkout code

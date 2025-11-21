@@ -1,5 +1,5 @@
 cmd u "10 not hardlinked when updated" local peer test
-Got dirty files from host peer
+Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local/new' ''
 ?M: peer            <TESTBASE>/test/local/new

@@ -456,7 +456,7 @@ static int csync_bind(const char *service_port, int ip_version)
 		if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, &on, static_cast<socklen_t>(sizeof(on))) < 0)
 			goto error;
 
-		if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
+		if (::bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0)
 			break; /* Success */
 
 		close(sfd);
