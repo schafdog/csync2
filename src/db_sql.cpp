@@ -516,12 +516,13 @@ vector<FileRecord> DbSql::list_file(filename_p str_filename, const char *myhostn
 int DbSql::move_file(filename_p filename, filename_p newname)
 {
 	const std::string update_sql_format =
-		std::format("UPDATE file set filename = concat(?{},substring(filename,?)) "
-		"WHERE (filename = ? or filename like ?) ", getTextType());
-	csync_debug(3, "SQL MOVE: {}\n", update_sql_format);
+		std::format("UPDATE file set filename = concat(?{},substring(filename,length(?)+1)) "
+					"WHERE (filename = ? or filename like ?)", getTextType());
+	
 	std::string recursive = filename + "/%";
-	conn_->execute_update("move_file", update_sql_format, newname, static_cast<long long>(filename.size() + 1), filename, recursive);
-	return 0;
+	csync_info(1, "SQL MOVE: '{}' '{}' {} '{}' '{}'\n", update_sql_format, newname, filename, filename, recursive);
+	long long rc = conn_->execute_update("move_file", update_sql_format, newname, filename);
+	return rc;
 }
 
 void DbSql::list_sync(peername_p myhostname, peername_p peername)
