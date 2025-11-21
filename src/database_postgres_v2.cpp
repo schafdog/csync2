@@ -267,7 +267,8 @@ long long PostgresPreparedStatement::execute_update() {
     //     cout << param << " ";
     // }
     // cout << endl;
-    PGresult* res = api_->PQexecPrepared(conn_, name_.c_str(), param_pointers_.size(), param_pointers_.data(), nullptr, nullptr, 0);
+    PGresult* res = api_->PQexecPrepared(conn_, name_.c_str(), param_pointers_.size(), param_pointers_.data(),
+										 nullptr, nullptr, 0);
 
     if (api_->PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::string error = api_->PQerrorMessage(conn_);
