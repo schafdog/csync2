@@ -1308,8 +1308,9 @@ static int csync_daemon_mv(db_conn_p db, filename_p std_filename, const char *ne
 			csync_redis_del_custom(filename, operation);
 		return ABORT_CMD;
 	}
-	int rc = db->move_file(filename, newname);
-	if (rc) {
+	int rows_affected = db->move_file(filename, newname);
+	csync_debug(1, "DAEMON_MV: {} rows\n", rows_affected);
+	if (rows_affected < 1) {
 		csync_error(0, "ERROR: failed to update DB path for moved file {} -> {}\n", filename, newname);
 	}
 	db->remove_dirty("%", filename, 0);
