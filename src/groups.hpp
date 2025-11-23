@@ -46,13 +46,13 @@ struct file_info {
 
 typedef struct file_info *file_info_t; 
 
-extern const struct csync_group *csync_find_next(const struct csync_group *g, filename_p file, int compare_mode);
-extern int csync_match_file(filename_p  file, int compare_mode, const struct csync_group **g);
-extern int csync_check_usefullness(filename_p file, int recursive);
-extern int csync_match_file_host(filename_p file, peername_p myname, peername_p peername, const char **keys);
-extern struct peer *csync_find_peers(filename_p file, peername_p thispeer);
-extern const char *csync_key(const char *hostname, const char *filename);
-extern const char *csync_key(peername_p hostname, filename_p filename);
-extern int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode);
+const struct csync_group *csync_find_next(const struct csync_group *g, filename_p file, int compare_mode);
+int csync_match_file(filename_p  file, int compare_mode, const struct csync_group **g);
+int csync_check_usefullness(filename_p file, int recursive);
+int csync_match_file_host(filename_p file, peername_p myname, peername_p peername, const char **keys);
+std::set<std::string> csync_find_peers(filename_p file, peername_p thispeer);
+const char *csync_key(const char *hostname, const char *filename);
+const char *csync_key(peername_p hostname, filename_p filename);
+int csync_perm(filename_p filename, const char *key, const char *hostname, int compare_mode);
 
 #endif /* CSYNC2_GROUPS_H */

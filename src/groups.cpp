@@ -152,10 +152,9 @@ int csync_match_file_host(filename_p filename, peername_p myname, peername_p pee
 	return 0;
 }
 
-struct peer* csync_find_peers(peername_p file, peername_p thispeer) {
+std::set<std::string> csync_find_peers(filename_p file, peername_p thispeer) {
 	const struct csync_group *g = NULL;
-	struct peer *plist = 0;
-	int pl_size = 0;
+	std::set<std::string> peers;
 
 	while ((g = csync_find_next(g, file, 0))) {
 		struct csync_group_host *h = g->host;
@@ -172,20 +171,13 @@ struct peer* csync_find_peers(peername_p file, peername_p thispeer) {
 		}
 
 		while (h) {
-			int i = 0;
-			while (plist && plist[i].peername)
-				if (!strcmp(plist[i++].peername, h->hostname)) // Already in plist
-					goto next_host;
-			plist = static_cast<struct peer*>(realloc(plist, sizeof(struct peer) * (++pl_size + 1)));
-			plist[pl_size - 1].peername = h->hostname;
-			plist[pl_size - 1].myname = g->myname;
-			plist[pl_size].peername = 0;
-			next_host: h = h->next;
+			peers.insert(h->hostname);
+			h = h->next;
 		}
 		next_group: ;
 	}
 
-	return plist;
+	return peers;
 }
 
 const char* csync_key(peername_p hostname, filename_p filename) {
