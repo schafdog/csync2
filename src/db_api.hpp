@@ -73,7 +73,7 @@ public:
     virtual long long delete_file(filename_p filename, int recursive) = 0;
     virtual std::vector<csync2::DirtyRecord> find_dirty( int (*filter)(filename_p fn, peername_p ln, peername_p pn)) = 0;
     virtual std::vector<csync2::FileRecord>  find_file(filename_p pattern, int (*filter_file)(filename_p filename)) = 0;
-    virtual int add_dirty(const char *file_new, int csync_new_force, const char *myname, peername_p peername,
+    virtual int add_dirty(const char *file_new, int csync_new_force, peername_p myname, peername_p peername,
                           const char *operation, const std::string& checktxt, const char *dev, const char *ino, const char *result_other,
                           int op, int mode, int mtime) = 0;
 

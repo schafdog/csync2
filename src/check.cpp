@@ -243,12 +243,11 @@ static void csync_mark_other(db_conn_p db, filename_p filename, peername_p thisp
 							 const std::string& checktxt,
 							 const char *dev, const char *ino,
 							 std::optional<std::string>& org_other, int mode, int mtime) {
-	struct peer *pl = csync_find_peers(filename.c_str(), thispeer);
-	int pl_idx;
+	std::set<std::string> peers = csync_find_peers(filename.c_str(), thispeer);
 	operation_t operation = operation_org;
 	csync_schedule_commands(db, filename, thispeer == "");
 
-	if (!pl) {
+	if (peers.empty()) {
 		csync_info(2, "Not in one of my groups: {} ({})\n", filename, thispeer);
 		return;
 	}
@@ -256,10 +255,8 @@ static void csync_mark_other(db_conn_p db, filename_p filename, peername_p thisp
 	struct stat st_file;
 	int rc_file = stat(filename.c_str(), &st_file);
 	const char *other = 0;
-	for (pl_idx = 0; pl[pl_idx].peername; pl_idx++) {
+	for (std::string peername : peers) {
 		// Safe initialization from potentially NULL pointers
-		peername_p peername = pl[pl_idx].peername ? pl[pl_idx].peername : "";
-		const char *myname = pl[pl_idx].myname;
 		operation = operation_org;
 		other = org_other ? org_other->c_str() : NULL;
 
@@ -316,12 +313,11 @@ static void csync_mark_other(db_conn_p db, filename_p filename, peername_p thisp
 				db->remove_dirty(peername, clean_other.c_str(), 0);
 			}
 			if (is_dirty)
-				db->add_dirty(file_new.c_str(), 0, myname, peername,
+				db->add_dirty(file_new.c_str(), 0, g_myhostname, peername,
 							  csync_operation_str(operation), checktxt, dev, ino,
 							  result_other.c_str(), operation, mode, mtime);
 		};
 	};
-	free(pl);
 }
 
 void csync_mark(db_conn_p db, filename_p file, peername_p thispeer,

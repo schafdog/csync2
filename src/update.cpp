@@ -1570,8 +1570,7 @@ void csync_update_host(db_conn_p db, peername_p myname, peername_p peername,
 				csync_warn(1, "Unable to {} {}:{}. File has disappeared since check.\n",
 						   csync_operation_str(static_cast<int>(operation)),
 						   peername.c_str(), filename.c_str());
-				std::set<string> peerlist;
-				peerlist.insert(peername);
+				std::set<string> peerlist = csync_find_peers(filename, "");
 				csync_mark(db, filename, "", peerlist, OP_RM, "" /* NULL checktxt */, NULL, NULL, 0, time(NULL));
 				if (other) {
 					csync_mark(db, other, "", peerlist, OP_MARK, "" /* NULL checktxt */, NULL, NULL, 0, time(NULL));
@@ -2005,15 +2004,12 @@ int csync_insynctest_all(db_conn_p db, filename_p filename, int ip_version, cons
 	struct csync_group *g;
 	int ret = 1;
 	if (auto_diff && filename != "") {
-		int pl_idx;
-		struct peer *pl = csync_find_peers(filename, "");
-		for (pl_idx = 0; pl && pl[pl_idx].peername; pl_idx++) {
-			std::string peername(pl[pl_idx].peername);
+		std::set<string> peers = csync_find_peers(filename, "");
+		for (std::string peername : peers) {
 			if (peer_in(active_peers, peername)) {
-				csync_diff(db, std::string(pl[pl_idx].myname), peername.c_str(), filename, ip_version);
+				csync_diff(db, g_myhostname, peername.c_str(), filename, ip_version);
 			}
 		}
-		free(pl);
 		return ret;
 	}
 	// No autotest or filename

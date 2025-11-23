@@ -836,10 +836,10 @@ int parse_long_long(const char *no_str, long long& no_ref, const char *field) {
 }
 
 int DbSql::add_dirty(const char *file_new, int new_force,
-					const char *myhostname, peername_p str_peername,
-					const char *op_str, const std::string& checktxt, const char *dev, const char *ino,
-					const char *result_other,
-					operation_t op, int mode, int mtime)
+					 peername_p myhostname, peername_p str_peername,
+					 const char *op_str, const std::string& checktxt, const char *dev, const char *ino,
+					 const char *result_other,
+					 operation_t op, int mode, int mtime)
 {
 	std::string add_dirty_sql =
 		"INSERT INTO dirty "

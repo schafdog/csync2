@@ -55,7 +55,7 @@ public:
 										  filename_p str_filename,
 										  const char *device, const char *ino) override;
     int add_dirty(const char *file_new, int new_force,
-                  const char *myhostname, peername_p str_peername,
+                  peername_p myhostname, peername_p str_peername,
                   const char *op_str, const std::string& checktxt, const char *dev, const char *ino,
                   const char *result_other,
                   operation_t op, int mode, int mtime) override;
