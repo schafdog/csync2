@@ -104,6 +104,9 @@ Updated(mod) local:<TESTBASE>/test/peer/Maildir/new
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 1
+SQL MOVE: 'UPDATE file set filename = concat(?::text,substring(filename,length(?)+1)) WHERE (filename = ? or filename like ?)' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,' <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764' '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764/%'
+DAEMON_MV: 0 rows
+ERROR: failed to update DB path for moved file <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 -> <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/new xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/cur xxxxxxxx        
@@ -122,6 +125,9 @@ Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 1
+SQL MOVE: 'UPDATE file set filename = concat(?::text,substring(filename,length(?)+1)) WHERE (filename = ? or filename like ?)' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S' <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,/%'
+DAEMON_MV: 0 rows
+ERROR: failed to update DB path for moved file <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, -> <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/cur xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir xxxxxxxx        
@@ -146,6 +152,9 @@ Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 1
+SQL MOVE: 'UPDATE file set filename = concat(?::text,substring(filename,length(?)+1)) WHERE (filename = ? or filename like ?)' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S/%'
+DAEMON_MV: 0 rows
+ERROR: failed to update DB path for moved file <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S -> <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx

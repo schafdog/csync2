@@ -1,10 +1,10 @@
 cmd x "3. Sync with missing directories" local peer test
 Running recursive check for <TESTBASE>/test ...
 Checking recursive for modified files <TESTBASE>/test 
-mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/recursive/1/2/3/4/5' '-'.
 mark other operation: 'MOD_DIR' 'other:<TESTBASE>/test/local/recursive/1/2/3/4/5' '-'.
-mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c' '-'.
+mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/recursive/1/2/3/4/5' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c' '-'.
+mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/recursive/1/2/3/4/5/file.c' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
 Got 2 dirty files from host peer
 Connecting to host peer (PLAIN) ...
