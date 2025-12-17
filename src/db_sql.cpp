@@ -798,6 +798,7 @@ vector<DirtyRecord> DbSql::get_old_operation(const std::string& checktxt,
 								   peername);
 
 	while (rs->next()) {
+		// TODO we doesnt insert MOD so this is wrongly NEW even when operation is 128 (MOD)
 		operation_t old_operation = csync_operation(rs->get_string(1).c_str());
 		const std::string old_filename = rs->get_string(2);
 		csync_debug(3, "db->get_old_operation: FOUND {} {}\n", old_filename, rs->get_string(1));
@@ -808,6 +809,8 @@ vector<DirtyRecord> DbSql::get_old_operation(const std::string& checktxt,
 		if (op != old_operation)
 			csync_warn(0, "WARN: operation - op mismatch: {}({}) <> {}({})\n",
 			           rs->get_string(1).c_str(), old_operation, csync_operation_str(op), op);
+		// Force 
+		old_operation = op;
 		FileRecord file(old_filename,
 						old_checktxt.has_value() ? old_checktxt->c_str() : "",
 						old_digest.has_value()   ? (*old_digest).c_str() : "");
