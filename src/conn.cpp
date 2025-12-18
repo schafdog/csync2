@@ -57,7 +57,7 @@ static gnutls_session_t conn_tls_session;
 static gnutls_certificate_credentials_t conn_x509_cred;
 #endif
 
-static struct sockaddr * csync_lookup_addr(const char *hostname, const char *port, int ip_version) {
+static struct sockaddr * csync_lookup_addr(const std::string& hostname, const char *port, int ip_version) {
 	struct addrinfo hints;
 	struct addrinfo *result;
 	/* Obtain address(es) matching host/port */
@@ -67,7 +67,7 @@ static struct sockaddr * csync_lookup_addr(const char *hostname, const char *por
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0; /* Any protocol */
 
-	int s = getaddrinfo(hostname, port, &hints, &result);
+	int s = getaddrinfo(hostname.c_str(), port, &hints, &result);
 	if (s != 0) {
 		csync_warn(1, "Cannot resolve peername, getaddrinfo: {}\n", gai_strerror(s));
 		return NULL;
@@ -125,7 +125,7 @@ static const char *sockaddr_to_ipstr(const struct sockaddr *sa, char *out, size_
 static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_version) {
 	int sfd;
 	struct csync_hostinfo *p = csync_hostinfo;
-	const char *peername = str_peername.c_str();
+	std::string peername = str_peername;
 	const  char *port = csync_port;
 	csync_debug(2, "Looking for alternative host:port for {}\n", peername);
 	while (p) {
@@ -145,7 +145,7 @@ static int conn_connect(peername_p myhostname, peername_p str_peername, int ip_v
 		return -1;
 	}
 
-	struct sockaddr *localaddr = csync_lookup_addr(myhostname.c_str(), NULL, ip_version);
+	struct sockaddr *localaddr = csync_lookup_addr(myhostname, NULL, ip_version);
 	if (localaddr == NULL) {
 		csync_error(0, "Failed to look up local address address from {}\n", peername);
 	}
