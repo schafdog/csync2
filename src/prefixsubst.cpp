@@ -240,7 +240,7 @@ operation_t csync_operation(const char *operation) {
 }
 
 const char* csync_operation_str(operation_t op) {
-	switch (op & OP_FILTER) {
+	switch (op /* & OP_FILTER */) {
 	case OP_NEW:
 		return "NEW";
 	case OP_MKDIR:
@@ -256,8 +256,8 @@ const char* csync_operation_str(operation_t op) {
 	case OP_MOVE:
 		return "MV";
 	}
-	csync_error(1, "No mapping for operation: %u %u\n", op, OP_FILTER);
-	return "?";
+	csync_error(1, "No mapping for operation: {} {}\n", op, OP_FILTER);
+	return "MARK";
 }
 
 extern int csync_zero_mtime_debug;
