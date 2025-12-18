@@ -99,7 +99,7 @@ Removing file <TESTBASE>/test/peer/new_file 'N' all
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
 Running check for <TESTBASE>/test/peer/mark ...
 Checking for modified files <TESTBASE>/test/peer/mark 
-Skipping <TESTBASE>/test/peer/mark. Locked by daemon at 1766071978
+Skipping <TESTBASE>/test/peer/mark. Locked by daemon at <TIME>
 Checking for deleted files <TESTBASE>/test/peer/mark.
 Removing file <TESTBASE>/test/peer/mark
 Removing <TESTBASE>/test/peer/mark from file db.
