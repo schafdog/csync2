@@ -972,7 +972,7 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 {
 	vector<FileRecord> tl;
     struct stat st;
-        csync_info(1, "Checking for deleted files {}{}\n", filename, (recursive ? " recursive." : "."));
+	csync_info(1, "Checking for deleted files {}{}\n", filename, (recursive ? " recursive." : "."));
 	std::string where_rec = csync_generate_recursive_sql_placeholder(recursive, 1);
 
 	std::string SQL_SELECT = "SELECT filename, checktxt, device, inode, mode FROM file WHERE hostname = ? ";
@@ -1008,6 +1008,7 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 		if (!csync_match_file(db_filename, 0, &g))
 			continue;
 
+
 		// Not found
 		if (lstat_strict(db_filename, &st) != 0 || csync_check_pure(db_filename))
 		{
@@ -1016,28 +1017,27 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 				FileRecord file(db_filename, checktxt, "");
 				file.device(device).inode(inode).mode(mode_int);
 				tl.emplace_back(file);
-				//_add4(&tl, db_filename.c_str(), checktxt.c_str(), device.c_str(), inode.c_str(), mode_int);
 				//Move code up instead of list?
 			}
 		}
 	}
 	int count_deletes = 0;
 	time_t now = time(NULL);
-
+	csync_debug(1, "Found {} files to delete", tl.size());
 	for (FileRecord file : tl)
 	{
 		std::string db_filename = file.filename();
 		if (!init_run)
 		{
 			std::set<string> peerlist;
-			csync_debug(3, "check_dirty (rm): before mark (all) {} {} {} {} {}\n",
+			csync_debug(1, "check_dirty (rm): before mark (all) {} {} {} {} {}\n",
 						  file.filename(), file.checktxt(), file.device(), file.inode(), file.mode());
 			csync_mark(this, file, "", peerlist, OP_RM, now);
 			count_deletes++;
 		}
 		std::string delete_file = "delete_file";
 		std::string delete_file_sql = "delete from file WHERE hostname = ? AND filename = ?";
-		csync_debug(3, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,
+		csync_debug(1, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,
 					g_myhostname, db_filename);
 		conn_->execute_update(delete_file, delete_file_sql, g_myhostname, db_filename);
 		csync_debug(3, "check_delete: executed {} {}\n", delete_file, delete_file_sql);
