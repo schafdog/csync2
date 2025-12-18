@@ -18,4 +18,4 @@ other	<TESTBASE>/test/local/new/hardlinked_2	HARDLINK	<TESTBASE>/test/local/new/
 other	<TESTBASE>/test/local/new/hardlinked_3	HARDLINK	<TESTBASE>/test/local/new/hardlinked	32
 other	<TESTBASE>/test/local/new/hardlinked_6	HARDLINK	<TESTBASE>/test/local/new/was_hardlink	32
 peer	<TESTBASE>/test/local/new/hardlinked_6	HARDLINK	<TESTBASE>/test/local/new/was_hardlink	32
-peer	<TESTBASE>/test/local/new	MKDIR	-	129
+peer	<TESTBASE>/test/local/new	MOD	-	128

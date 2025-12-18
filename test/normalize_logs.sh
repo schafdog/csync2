@@ -44,8 +44,5 @@ sed -e "s|$TESTDIR/test|<TESTBASE>/test|g" \
     -e "s|mtime=[0-9]*:|mtime=<MTIME>|g" \
     -e "s|Config-File:   csync2_.*_.*.cfg|Config-File:   csync2_<DB>_<PEER>.cfg|g" \
     -e "s|Database File: .*|Database File: <CONN_STR>|g" \
-    -e "s| device:inode [0-9]*:[0-9]* -> [0-9]*:[0-9]* | device:inode <DEV>:<INODE> -> <DEV>:<INDE> |g"
-
-
-
-
+    -e "s| device:inode [0-9]*:[0-9]* -> [0-9]*:[0-9]* | device:inode <DEV>:<INODE> -> <DEV>:<INODE> |g" \
+    -e "s| Locked by daemon at [0-9]*| Locked by daemon at <TIME>|g"

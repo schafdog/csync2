@@ -17,6 +17,9 @@ sleep 1
 cmd m "test/$NAME/mark (mark)"
 cmd u "test/$NAME/mark (sync)"
 sleep 2
+echo "vel" > "test/$NAME/$FILENAME"
+cmd c "updated $NAME/$FILENAME (MOD)"
+cmd u "updated $NAME/$FILENAME"
 rm -rf test/$NAME
 cmd x "clean up"
 killdaemon

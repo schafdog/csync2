@@ -175,8 +175,8 @@ static vector<DirtyRecord> check_old_operation(filename_p filename, operation_t 
 	if (old_operation == OP_HARDLINK && st_file && st_file->st_nlink == 1) {
 		operation = OP_MOD;
 	}
-	csync_info(2, "check_old_operation: {}({}) Old operation: {}({}) '{}' '{}'\n",
-			   csync_mode_op_str(mode, operation), operation,
+	csync_info(2, "check_old_operation: {} {}({}) Old operation: {}({}) '{}' '{}'\n",
+			   peername, csync_mode_op_str(mode, operation), operation,
 			   csync_mode_op_str(mode, old_operation), old_operation, old_filename,
 			   old_other);
 	if (CHECK_HARDLINK && st_file

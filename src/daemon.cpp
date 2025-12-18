@@ -351,8 +351,7 @@ static void daemon_file_update(db_conn_p db, filename_p filename, peername_p pee
 		db->remove_file(filename, 0);
 	} else {
 		std::string digest;
-		std::string checktxt = csync_genchecktxt_version(&st, filename,
-		SET_USER | SET_GROUP, db->version);
+		std::string checktxt = csync_genchecktxt_version(&st, filename,	 SET_USER | SET_GROUP, db->version);
 		if (S_ISREG(st.st_mode)) {
 			digest.reserve(4 * DIGEST_MAX_SIZE + 1);
 			int rc = dsync_digest_path_hex(filename, "sha1", digest);
@@ -362,9 +361,12 @@ static void daemon_file_update(db_conn_p db, filename_p filename, peername_p pee
 		}
 		csync_debug(3, "daemon_file_update: UPDATE/INSERT into file filename: {}\n", filename);
 		int count = db->insert_update_file(filename, checktxt.c_str(), &st, to_db(digest));
-		if (count < 0)
-			csync_warn(1, "Failed to update or insert {}: {}", filename, count);
-		csync_debug(3, "daemon_file_update DONE: UPDATE/INSERT into file filename: {}\n", filename);
+		if (count < 0) {
+			csync_warn(1, "daemon_file_update: Failed to update or insert {}: {}", filename, count);
+		}
+		else {
+			csync_debug(3, "daemon_file_update DONE: UPDATE/INSERT into file filename: {}\n", filename);
+		}
 	}
 }
 
@@ -818,7 +820,8 @@ static int csync_daemon_create(int conn, filename_p std_filename, const char **c
 		*cmd_error = "ERROR (exist).\n";
 		return ABORT_CMD;
 	}
-	time_t lock_time = csync_redis_lock_custom(filename, csync_lock_time, "CLOSE_WRITE,CLOSE");
+	const char *operation = "CLOSE_WRITE,CLOSE";
+	time_t lock_time = csync_redis_lock_custom(filename, csync_lock_time, operation);
 	csync_info(1, "daemon CREATE {} {} {}\n", filename, csync_lock_time, csync_zero_mtime_debug ? 0 : lock_time);
 	if (lock_time == -1) {
 		csync_error(1, "Create {}: {}. Continue\n", filename, "ERROR (locked)");
@@ -828,12 +831,14 @@ static int csync_daemon_create(int conn, filename_p std_filename, const char **c
 	int fd = open(filename, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR);
 	if (fd < 0) {
 		*cmd_error = "ERROR (create).\n";
+		csync_redis_del_custom(filename, operation);
 		return ABORT_CMD;
 	}
 	FILE *new_file = fdopen(fd, "wb+");
 	rc = csync_recv_file(conn, new_file);
 	if (rc == -1) {
 		csync_error(0, "ERROR: Failed to stat new file: {} {}", filename, rc);
+		csync_redis_del_custom(filename, operation);
 		return rc;
 	}
 	return OK;
