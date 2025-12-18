@@ -5,7 +5,7 @@ FILENAME="different"
 mkdir -p test/$NAME
 cmd x "Sync directory"
 sleep 1
-echo "far" >"test/$NAME/$FILENAME"
+echo "far" > "test/$NAME/$FILENAME"
 echo "vel" > "test/$PEER/$FILENAME"
 cmd x "Both updated (peer dirty)"
 cmd u "Both updated (peer still dirty)"

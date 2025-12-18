@@ -7,6 +7,6 @@ other	<TESTBASE>/test/local/auto	MKDIR	-	1
 other	<TESTBASE>/test/local/auto/older	MKDIR	-	1
 other	<TESTBASE>/test/local/auto/older/update_both	NEW	-	2
 peer	<TESTBASE>/test/local/auto/older/update_both	NEW	-	2
-peer	<TESTBASE>/test/local	MKDIR	-	129
-peer	<TESTBASE>/test/local/auto	MKDIR	-	129
-peer	<TESTBASE>/test/local/auto/older	MKDIR	-	129
+peer	<TESTBASE>/test/local	MOD	-	128
+peer	<TESTBASE>/test/local/auto	MOD	-	128
+peer	<TESTBASE>/test/local/auto/older	MOD	-	128

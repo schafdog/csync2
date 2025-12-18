@@ -18,5 +18,5 @@ other	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	NEW	-	2
 peer	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	MV	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,S	16
 other	<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S	HARDLINK	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	32
 peer	<TESTBASE>/test/local/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S	HARDLINK	<TESTBASE>/test/local/Maildir/cur/1434.M21,S=6631,W=6764:2,ST	32
-peer	<TESTBASE>/test/local/Maildir/.Trash/cur	MKDIR	-	129
-peer	<TESTBASE>/test/local/Maildir/cur	MKDIR	-	129
+peer	<TESTBASE>/test/local/Maildir/.Trash/cur	MOD	-	128
+peer	<TESTBASE>/test/local/Maildir/cur	MOD	-	128
