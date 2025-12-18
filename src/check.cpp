@@ -794,9 +794,11 @@ static int csync_check_recursive(db_conn_p db, filename_p filename, int flags, c
 			(flags & FLAG_RECURSIVE ? " recursive" : ""), filename.c_str());
 	csync_check_mod(db, filename, flags, &count_dirty, g);
 
-	if (!csync_compare_mode)
-		count_dirty += csync_check_del(db, filename, flags);
-
+	if (!csync_compare_mode) {
+		int deleted = csync_check_del(db, filename, flags);
+		csync_debug(1, "Found {} deleted files", deleted);
+		count_dirty += deleted;
+	}
 	return count_dirty;
 }
 
