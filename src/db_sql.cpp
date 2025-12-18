@@ -112,23 +112,23 @@ int DbSql::check_file(filename_p filename, std::optional<std::string>& other, co
 		csync_debug(3, "File {} checktxt \n{}\n{}\n", filename, checktxt_same_version, checktxt_db);
 		if (csync_cmpchecktxt(checktxt_same_version, checktxt_db))
 		{
-		csync_debug(3, "File {} CHANGES \n{}\n{}\n", filename, checktxt_same_version, checktxt_db);
+			csync_debug(3, "File {} CHANGES \n{}\n{}\n", filename, checktxt_same_version, checktxt_db);
 			int file_mode = file_stat->st_mode & S_IFMT;
 			int flag = OP_MOD;
 			if (file_mode != (mode & S_IFMT))
 			{
 				csync_info(1, "File {} has changed mode {} => {} \n", filename, (mode & S_IFMT), file_mode);
-				flag = OP_MOD2;
+				flag = OP_MOD; // Dont seem to handle this2;
 				//*operation |= OP_SYNC;
 				db_flags |= IS_UPGRADE;
 			}
 			if (S_ISDIR(file_mode))
-				*operation = OP_MKDIR | flag;
+				*operation = flag /* | OP_MKDIR */;
 			else
-				*operation = OP_NEW | flag;
+				*operation = flag /* | OP_NEW */;
 
-			csync_info(3, "{} has changed: \n    {} \nDB: {} {}\n",
-					   filename.c_str(), checktxt_same_version, checktxt_db.c_str(), csync_operation_str(*operation));
+			csync_info(3, "{} has changed: \n    {} \nDB: {} {}\n", filename,
+					   checktxt_same_version, checktxt_db.c_str(), csync_operation_str(*operation));
 			csync_info(3, "ignore flags: {}\n", ignore_flags);
 			if ((ignore_flags & FLAG_IGN_DIR) && file_stat && S_ISDIR(file_stat->st_mode))
 				db_flags |= IS_UPGRADE;
@@ -846,12 +846,11 @@ int DbSql::add_dirty(const char *file_new, int new_force,
 {
 	std::string add_dirty_sql =
 		"INSERT INTO dirty "
-		"(filename, forced, myname, peername, operation, checktxt, device, inode, other, op, mode, type, mtime) "
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		"(filename, forced, myname, peername, operation, op, checktxt, device, inode, other, mode, type, mtime) \n"
+		"VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})";
 	std::string sql_name = "add_dirty";
-	csync_info(3, "add_dirty_sql '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}' '{}'",
-			   add_dirty_sql, file_new, new_force, myhostname, str_peername,
-			   null(op_str), checktxt, dev, ino, null(result_other), op, mode, get_file_type(mode), mtime);
+	csync_info(3, add_dirty_sql, file_new, new_force, myhostname, str_peername,
+			   null(op_str), op, checktxt, dev, ino, null(result_other), mode, get_file_type(mode), mtime);
 
 	auto stmt = conn_->prepare(sql_name, add_dirty_sql);
 	csync_info(3, "add_dirty_sql prepared {}\n", add_dirty_sql);
@@ -860,24 +859,24 @@ int DbSql::add_dirty(const char *file_new, int new_force,
     stmt->bind(3, myhostname);
     stmt->bind(4, str_peername);
     stmt->bind(5, op_str);
-    stmt->bind(6, checktxt);
+    stmt->bind(6, static_cast<int>(op));
+	stmt->bind(7, checktxt);
 	long long number;
     if (parse_long_long(dev, number, "dev")) {
-			stmt->bind(7, number);
-    } else {
-        stmt->bind_null(7);
-    }
-
-	if (parse_long_long(ino, number, "ino")) {
-        stmt->bind(8, std::stoll(ino));
+			stmt->bind(8, number);
     } else {
         stmt->bind_null(8);
     }
+
+	if (parse_long_long(ino, number, "ino")) {
+        stmt->bind(9, std::stoll(ino));
+    } else {
+        stmt->bind_null(9);
+    }
 	if (result_other && result_other[0] != 0)
-		stmt->bind(9, result_other);
+		stmt->bind(10, result_other);
 	else
-		stmt->bind_null(9);
-    stmt->bind(10, static_cast<int>(op));
+		stmt->bind_null(10);
     stmt->bind(11, mode);
     stmt->bind(12, get_file_type(mode));
     stmt->bind(13, mtime);
