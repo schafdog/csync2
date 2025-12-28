@@ -521,7 +521,7 @@ int DbSql::move_file(filename_p filename, filename_p newname)
 	
 	std::string recursive = filename + "/%";
 	csync_info(1, "SQL MOVE: '{}' '{}' {} '{}' '{}'\n", update_sql_format, newname, filename, filename, recursive);
-	long long rc = conn_->execute_update("move_file", update_sql_format, newname, filename);
+	long long rc = conn_->execute_update("move_file", update_sql_format, newname, filename, filename, recursive);
 	return rc;
 }
 
