@@ -1029,14 +1029,14 @@ int DbSql::check_delete(filename_p filename, int recursive, int init_run)
 		if (!init_run)
 		{
 			std::set<string> peerlist;
-			csync_debug(1, "check_dirty (rm): before mark (all) {} {} {} {} {}\n",
+			csync_debug(2, "check_dirty (rm): before mark (all) {} {} {} {} {}\n",
 						  file.filename(), file.checktxt(), file.device(), file.inode(), file.mode());
 			csync_mark(this, file, "", peerlist, OP_RM, now);
 			count_deletes++;
 		}
 		std::string delete_file = "delete_file";
 		std::string delete_file_sql = "delete from file WHERE hostname = ? AND filename = ?";
-		csync_debug(1, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,
+		csync_debug(2, "check_delete: execute_update {} {} {} {}\n", delete_file, delete_file_sql,
 					g_myhostname, db_filename);
 		conn_->execute_update(delete_file, delete_file_sql, g_myhostname, db_filename);
 		csync_debug(3, "check_delete: executed {} {}\n", delete_file, delete_file_sql);
