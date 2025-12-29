@@ -366,8 +366,8 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 		else
 		{
 			struct stat st;
-			std::string checktxt = "";
-			int is_delete = strcmp(operation, "DELETE") == 0;
+			std::string checktxt = "-";
+			int is_delete = strcmp(operation, "DELETE") == 0 || strcmp(operation, "MOVED_FROM") == 0 || move_from != "";
 			if (lstat_strict(file, &st) == 0)
 			{
 				checktxt = csync_genchecktxt_version( &st, file, SET_USER | SET_GROUP, db->version);
