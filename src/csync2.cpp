@@ -285,6 +285,7 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 	char *oldbuffer = NULL;
 	int duplicated = 0;
 	time_t last_sql = time(NULL);
+	std::string move_from = "";
 	while (1)
 	{
 		char *buffer = readbuffer;
@@ -410,7 +411,17 @@ static int csync_tail(db_conn_p db, int fileno, int flags)
 				csync_check(db, file, flags);
 			}
 			std::set<std::string> patlist = {file};
-			csync_update(db, g_myhostname, g_active_peers, patlist, g_ip_version, csync_update_host, flags);
+			if (strcmp(operation, "MOVE_FRPM") != 0) {
+				// add MOVE_FROM file if exist
+				if (move_from != "") {
+					patlist.emplace(move_from);
+					move_from = "";
+				}
+				csync_update(db, g_myhostname, g_active_peers, patlist, g_ip_version, csync_update_host, flags);
+			} else {
+				// Postbone update
+				move_from = file;
+			}
 			last_sql = time(NULL);
 		}
 		if (oldbuffer)
