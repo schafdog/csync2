@@ -9,9 +9,11 @@ mark other operation: 'MOD' 'other:<TESTBASE>/test/local/type_change' '-'.
 mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/type_change (not synced) .
 mark other operation: 'MOD' 'peer:<TESTBASE>/test/local/type_change' '-'.
 Checking for deleted files <TESTBASE>/test/local recursive.
+Found 1 files to delete
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
 mark operation NEW -> RM other:<TESTBASE>/test/local/type_change/new_file 'N' all deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
+Found 1 deleted files
 Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''

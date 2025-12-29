@@ -7,6 +7,8 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/usr user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -14,6 +16,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/usr - <UID> <GID> <USER> <GROUP> <BLK
 Running check for <TESTBASE>/test/peer/usr ...
 Checking for modified files <TESTBASE>/test/peer/usr 
 Checking for deleted files <TESTBASE>/test/peer/usr.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/usr  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/usr/local user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -21,6 +25,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/usr/local - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/usr/local ...
 Checking for modified files <TESTBASE>/test/peer/usr/local 
 Checking for deleted files <TESTBASE>/test/peer/usr/local.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/usr/local  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/usr/local/sbin user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -28,6 +34,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/usr/local/sbin - <UID> <GID> <USER> <
 Running check for <TESTBASE>/test/peer/usr/local/sbin ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer/usr/local xxxxxxxx        
@@ -43,6 +51,8 @@ Command: local: MOD <TESTBASE>/test/peer/usr/local/sbin - <UID> <GID> <USER> <GR
 Running check for <TESTBASE>/test/peer/usr/local/sbin ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer/usr/local xxxxxxxx        
@@ -58,6 +68,8 @@ Command: local: MOD <TESTBASE>/test/peer/usr/local - <UID> <GID> <USER> <GROUP> 
 Running check for <TESTBASE>/test/peer/usr/local ...
 Checking for modified files <TESTBASE>/test/peer/usr/local 
 Checking for deleted files <TESTBASE>/test/peer/usr/local.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/usr/local  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/usr/local/sbin user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -75,6 +87,8 @@ Command: local: MOD <TESTBASE>/test/peer/usr/local/sbin - <UID> <GID> <USER> <GR
 Running check for <TESTBASE>/test/peer/usr/local/sbin ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/usr/local/sbin/hej user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -82,6 +96,8 @@ Command: local: CREATE <TESTBASE>/test/peer/usr/local/sbin/hej - <UID> <GID> <US
 Running check for <TESTBASE>/test/peer/usr/local/sbin/hej ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin/hej 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin/hej.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/usr/local/sbin/hej 1 0
 Updated(create) local:<TESTBASE>/test/peer/usr/local/sbin/hej  
 IDENT (cmd_finished).
@@ -98,6 +114,8 @@ Command: local: MOD <TESTBASE>/test/peer/usr/local/sbin - <UID> <GID> <USER> <GR
 Running check for <TESTBASE>/test/peer/usr/local/sbin ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/usr/local/sbin  
 IDENT (cmd_finished).
 Command: local: STAT <TESTBASE>/test/peer/usr/local/sbin/hej user/group <UID> <GID> <USER> <GROUP>    
@@ -105,6 +123,8 @@ Command: local: DEL <TESTBASE>/test/peer/usr/local/sbin/hej
 Running check for <TESTBASE>/test/peer/usr/local/sbin/hej ...
 Checking for modified files <TESTBASE>/test/peer/usr/local/sbin/hej 
 Checking for deleted files <TESTBASE>/test/peer/usr/local/sbin/hej.
+Found 0 files to delete
+Found 0 deleted files
 Updated(del) local:<TESTBASE>/test/peer/usr/local/sbin/hej  
 Command: local: SETTIME <TESTBASE>/test/peer/usr/local xxxxxxxx        
 Command: local: BYE          
@@ -117,6 +137,8 @@ Command: local: DEL <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 3 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer. Errors 0
 Removing <TESTBASE>/test/peer/* ..

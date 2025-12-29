@@ -7,6 +7,8 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/ÆØÅ Café.utf8 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -14,6 +16,8 @@ Command: local: CREATE <TESTBASE>/test/peer/ÆØÅ Café.utf8 - <UID> <GID> <USE
 Running check for <TESTBASE>/test/peer/ÆØÅ Café.utf8 ...
 Checking for modified files <TESTBASE>/test/peer/ÆØÅ Café.utf8 
 Checking for deleted files <TESTBASE>/test/peer/ÆØÅ Café.utf8.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/ÆØÅ Café.utf8 1 0
 Updated(create) local:<TESTBASE>/test/peer/ÆØÅ Café.utf8  
 IDENT (cmd_finished).
@@ -28,6 +32,8 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: STAT <TESTBASE>/test/peer/ÆØÅ Café.utf8 user/group <UID> <GID> <USER> <GROUP>    
@@ -35,6 +41,8 @@ Command: local: DEL <TESTBASE>/test/peer/ÆØÅ Café.utf8
 Running check for <TESTBASE>/test/peer/ÆØÅ Café.utf8 ...
 Checking for modified files <TESTBASE>/test/peer/ÆØÅ Café.utf8 
 Checking for deleted files <TESTBASE>/test/peer/ÆØÅ Café.utf8.
+Found 0 files to delete
+Found 0 deleted files
 Updated(del) local:<TESTBASE>/test/peer/ÆØÅ Café.utf8  
 Command: local: BYE          
 goto nofork.

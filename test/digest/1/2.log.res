@@ -11,6 +11,8 @@ mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/A' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/.Test' '-'.
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/.Test' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
+Found 0 files to delete
+Found 0 deleted files
 Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MKDIR) 'peer:<TESTBASE>/test/local' ''

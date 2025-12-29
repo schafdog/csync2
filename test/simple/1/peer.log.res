@@ -7,6 +7,8 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -14,6 +16,8 @@ Command: local: CREATE <TESTBASE>/test/peer/.Test - <UID> <GID> <USER> <GROUP> <
 Running check for <TESTBASE>/test/peer/.Test ...
 Checking for modified files <TESTBASE>/test/peer/.Test 
 Checking for deleted files <TESTBASE>/test/peer/.Test.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/.Test 1 0
 Updated(create) local:<TESTBASE>/test/peer/.Test  
 IDENT (cmd_finished).
@@ -22,6 +26,8 @@ Command: local: CREATE <TESTBASE>/test/peer/A - <UID> <GID> <USER> <GROUP> <BLKS
 Running check for <TESTBASE>/test/peer/A ...
 Checking for modified files <TESTBASE>/test/peer/A 
 Checking for deleted files <TESTBASE>/test/peer/A.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/A 1 0
 Updated(create) local:<TESTBASE>/test/peer/A  
 IDENT (cmd_finished).
@@ -30,6 +36,8 @@ Command: local: CREATE <TESTBASE>/test/peer/new_file 'N' all - <UID> <GID> <USER
 Running check for <TESTBASE>/test/peer/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/new_file 'N' all 1 0
 Updated(create) local:<TESTBASE>/test/peer/new_file 'N' all  
 IDENT (cmd_finished).
@@ -51,6 +59,8 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/.Test user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -68,6 +78,8 @@ Command: local: PATCH <TESTBASE>/test/peer/new_file 'N' all - <UID> <GID> <USER>
 Running check for <TESTBASE>/test/peer/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
+Found 0 files to delete
+Found 0 deleted files
 Updated(patch) local:<TESTBASE>/test/peer/new_file 'N' all  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/mark user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -75,6 +87,8 @@ Command: local: CREATE <TESTBASE>/test/peer/mark - <UID> <GID> <USER> <GROUP> <B
 Running check for <TESTBASE>/test/peer/mark ...
 Checking for modified files <TESTBASE>/test/peer/mark 
 Checking for deleted files <TESTBASE>/test/peer/mark.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/mark 1 0
 Updated(create) local:<TESTBASE>/test/peer/mark  
 IDENT (cmd_finished).
@@ -89,28 +103,38 @@ Command: local: DEL <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 4 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer. Errors 0
 Removing <TESTBASE>/test/peer/* ..
 Running check for <TESTBASE>/test/peer/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/new_file 'N' all.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/new_file 'N' all
 Removing <TESTBASE>/test/peer/new_file 'N' all from file db.
 Running check for <TESTBASE>/test/peer/mark ...
 Checking for modified files <TESTBASE>/test/peer/mark 
 Skipping <TESTBASE>/test/peer/mark. Locked by daemon at <TIME>
 Checking for deleted files <TESTBASE>/test/peer/mark.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/mark
 Removing <TESTBASE>/test/peer/mark from file db.
 Running check for <TESTBASE>/test/peer/A ...
 Checking for modified files <TESTBASE>/test/peer/A 
 Checking for deleted files <TESTBASE>/test/peer/A.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/A
 Removing <TESTBASE>/test/peer/A from file db.
 Running check for <TESTBASE>/test/peer/.Test ...
 Checking for modified files <TESTBASE>/test/peer/.Test 
 Checking for deleted files <TESTBASE>/test/peer/.Test.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/.Test
 Removing <TESTBASE>/test/peer/.Test from file db.
 Removing directory <TESTBASE>/test/peer 0

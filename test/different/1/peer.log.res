@@ -7,6 +7,8 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: BYE          
@@ -22,6 +24,8 @@ Checking for modified files <TESTBASE>/test/peer/different
 mark other operation: 'NEW' 'local:<TESTBASE>/test/peer/different' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/peer/different' '-'.
 Checking for deleted files <TESTBASE>/test/peer/different.
+Found 0 files to delete
+Found 0 deleted files
 File <TESTBASE>/test/peer/different is dirty here: NEW 2
 File local:<TESTBASE>/test/peer/different is dirty here. Continuing.
 ERROR: File is also marked dirty here! (<TESTBASE>/test/peer/different)
@@ -36,6 +40,8 @@ Command: local: PATCH <TESTBASE>/test/peer/different - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 Checking for deleted files <TESTBASE>/test/peer/different.
+Found 0 files to delete
+Found 0 deleted files
 File <TESTBASE>/test/peer/different is dirty here: NEW 2
 File local:<TESTBASE>/test/peer/different is dirty here. Continuing.
 ERROR: File is also marked dirty here! (<TESTBASE>/test/peer/different)
@@ -49,11 +55,15 @@ Command: local: FLUSH <TESTBASE>/test/peer/different
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 Checking for deleted files <TESTBASE>/test/peer/different.
+Found 0 files to delete
+Found 0 deleted files
 Command: local: SIG <TESTBASE>/test/peer/different user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: PATCH <TESTBASE>/test/peer/different - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/different ...
 Checking for modified files <TESTBASE>/test/peer/different 
 Checking for deleted files <TESTBASE>/test/peer/different.
+Found 0 files to delete
+Found 0 deleted files
 Updated(patch) local:<TESTBASE>/test/peer/different  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer xxxxxxxx        
@@ -67,6 +77,8 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -76,6 +88,8 @@ Checking for modified files <TESTBASE>/test/peer/tmp
 mark other operation: 'MKDIR' 'local:<TESTBASE>/test/peer/tmp' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/peer/tmp' '-'.
 Checking for deleted files <TESTBASE>/test/peer/tmp.
+Found 0 files to delete
+Found 0 deleted files
 Ignoring dirty directory <TESTBASE>/test/peer/tmp
 Updated(mod) local:<TESTBASE>/test/peer/tmp  
 IDENT (cmd_finished).

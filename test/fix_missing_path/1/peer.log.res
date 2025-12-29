@@ -8,42 +8,56 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: MKDIR <TESTBASE>/test/peer/recursive - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/recursive ...
 Checking for modified files <TESTBASE>/test/peer/recursive 
 Checking for deleted files <TESTBASE>/test/peer/recursive.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive  
 IDENT (cmd_finished).
 Command: local: MKDIR <TESTBASE>/test/peer/recursive/1 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/recursive/1 ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1  
 IDENT (cmd_finished).
 Command: local: MKDIR <TESTBASE>/test/peer/recursive/1/2 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/recursive/1/2 ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1/2 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1/2.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2  
 IDENT (cmd_finished).
 Command: local: MKDIR <TESTBASE>/test/peer/recursive/1/2/3 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/recursive/1/2/3 ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1/2/3 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2/3  
 IDENT (cmd_finished).
 Command: local: MKDIR <TESTBASE>/test/peer/recursive/1/2/3/4 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/recursive/1/2/3/4 ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1/2/3/4 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2/3/4  
 IDENT (cmd_finished).
 Command: local: MKDIR <TESTBASE>/test/peer/recursive/1/2/3/4/5 - <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Running check for <TESTBASE>/test/peer/recursive/1/2/3/4/5 ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1/2/3/4/5 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4/5.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/recursive/1/2/3/4/5  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -51,6 +65,8 @@ Command: local: CREATE <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c - <UID> <
 Running check for <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c 1 0
 Updated(create) local:<TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c  
 IDENT (cmd_finished).
@@ -66,6 +82,8 @@ Command: local: DEL <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 7 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer. Errors 0
 Removing <TESTBASE>/test/peer/* ..
@@ -78,6 +96,8 @@ Removing <TESTBASE>/test/peer/recursive/1/2/3/4/5/* ..
 Running check for <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c ...
 Checking for modified files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c 
 Checking for deleted files <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c
 Removing <TESTBASE>/test/peer/recursive/1/2/3/4/5/file.c from file db.
 Removing directory <TESTBASE>/test/peer/recursive/1/2/3/4/5 0

@@ -15,3 +15,5 @@ mark operation NEW -> MOD => NEW other:<TESTBASE>/test/local/auto/older/update_b
 mark other operation: 'MOD' 'peer:<TESTBASE>/test/local/auto/older/update_both' '-'.
 mark operation NEW -> MOD => NEW peer:<TESTBASE>/test/local/auto/older/update_both (not synced) .
 Checking for deleted files <TESTBASE>/test recursive.
+Found 0 files to delete
+Found 0 deleted files

@@ -7,6 +7,8 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -14,6 +16,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/auto - <UID> <GID> <USER> <GROUP> <BL
 Running check for <TESTBASE>/test/peer/auto ...
 Checking for modified files <TESTBASE>/test/peer/auto 
 Checking for deleted files <TESTBASE>/test/peer/auto.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/auto  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/auto/younger user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -21,6 +25,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/auto/younger - <UID> <GID> <USER> <GR
 Running check for <TESTBASE>/test/peer/auto/younger ...
 Checking for modified files <TESTBASE>/test/peer/auto/younger 
 Checking for deleted files <TESTBASE>/test/peer/auto/younger.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/auto/younger  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer/auto xxxxxxxx        
@@ -37,6 +43,8 @@ Checking for modified files <TESTBASE>/test/peer/auto/younger/local_oldest
 mark other operation: 'NEW' 'local:<TESTBASE>/test/peer/auto/younger/local_oldest' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/peer/auto/younger/local_oldest' '-'.
 Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
+Found 0 files to delete
+Found 0 deleted files
 File <TESTBASE>/test/peer/auto/younger/local_oldest is dirty here: NEW 2
 File local:<TESTBASE>/test/peer/auto/younger/local_oldest is dirty here. Continuing.
 ERROR: File is also marked dirty here! (<TESTBASE>/test/peer/auto/younger/local_oldest)
@@ -52,6 +60,8 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/auto user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -59,6 +69,8 @@ Command: local: MOD <TESTBASE>/test/peer/auto - <UID> <GID> <USER> <GROUP> <BLKS
 Running check for <TESTBASE>/test/peer/auto ...
 Checking for modified files <TESTBASE>/test/peer/auto 
 Checking for deleted files <TESTBASE>/test/peer/auto.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/auto  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/auto/younger user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -69,6 +81,8 @@ check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger won auto reso
 Running check for <TESTBASE>/test/peer/auto/younger ...
 Checking for modified files <TESTBASE>/test/peer/auto/younger 
 Checking for deleted files <TESTBASE>/test/peer/auto/younger.
+Found 0 files to delete
+Found 0 deleted files
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger won auto resolved. clear dirty
 Updated(mod) local:<TESTBASE>/test/peer/auto/younger  
@@ -81,6 +95,8 @@ check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest 
 Running check for <TESTBASE>/test/peer/auto/younger/local_oldest ...
 Checking for modified files <TESTBASE>/test/peer/auto/younger/local_oldest 
 Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
+Found 0 files to delete
+Found 0 deleted files
 check_auto_resolve: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolve
 daemon dispatch: Remote local:<TESTBASE>/test/peer/auto/younger/local_oldest won auto resolved. clear dirty
 Updated(patch) local:<TESTBASE>/test/peer/auto/younger/local_oldest  
@@ -98,6 +114,8 @@ Command: local: DEL <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 3 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer. Errors 0
 Removing <TESTBASE>/test/peer/* ..
@@ -106,6 +124,8 @@ Removing <TESTBASE>/test/peer/auto/younger/* ..
 Running check for <TESTBASE>/test/peer/auto/younger/local_oldest ...
 Checking for modified files <TESTBASE>/test/peer/auto/younger/local_oldest 
 Checking for deleted files <TESTBASE>/test/peer/auto/younger/local_oldest.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/auto/younger/local_oldest
 Removing <TESTBASE>/test/peer/auto/younger/local_oldest from file db.
 Removing directory <TESTBASE>/test/peer/auto/younger 0

@@ -7,6 +7,8 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -14,6 +16,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/Maildir - <UID> <GID> <USER> <GROUP> 
 Running check for <TESTBASE>/test/peer/Maildir ...
 Checking for modified files <TESTBASE>/test/peer/Maildir 
 Checking for deleted files <TESTBASE>/test/peer/Maildir.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -21,6 +25,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/Maildir/.Trash - <UID> <GID> <USER> <
 Running check for <TESTBASE>/test/peer/Maildir/.Trash ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -28,6 +34,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/Maildir/.Trash/cur - <UID> <GID> <USE
 Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -35,6 +43,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/Maildir/cur - <UID> <GID> <USER> <GRO
 Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/new user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -42,6 +52,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/Maildir/new - <UID> <GID> <USER> <GRO
 Running check for <TESTBASE>/test/peer/Maildir/new ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/new  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -49,6 +61,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/Maildir/tmp - <UID> <GID> <USER> <GRO
 Running check for <TESTBASE>/test/peer/Maildir/tmp ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/tmp 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/Maildir/tmp  
 IDENT (cmd_finished).
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/.Trash xxxxxxxx        
@@ -64,6 +78,8 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/new - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/Maildir/new ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/new  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/tmp user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -71,6 +87,8 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/tmp - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/Maildir/tmp ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/tmp 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/tmp.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/tmp  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -78,6 +96,8 @@ Command: local: CREATE <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 -
 Running check for <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 1 0
 Updated(create) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764  
 IDENT (cmd_finished).
@@ -93,6 +113,8 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/cur - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/new user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -100,13 +122,14 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/new - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/Maildir/new ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/new 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/new.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/new  
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 1
 SQL MOVE: 'UPDATE file set filename = concat(?::text,substring(filename,length(?)+1)) WHERE (filename = ? or filename like ?)' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,' <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764' '<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764/%'
-DAEMON_MV: 0 rows
-ERROR: failed to update DB path for moved file <TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 -> <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,
+DAEMON_MV: 1 rows
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/new/1434.M21,S=6631,W=6764 <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, 
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/new xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/cur xxxxxxxx        
@@ -121,13 +144,14 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/cur - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 1
 SQL MOVE: 'UPDATE file set filename = concat(?::text,substring(filename,length(?)+1)) WHERE (filename = ? or filename like ?)' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S' <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,/%'
-DAEMON_MV: 0 rows
-ERROR: failed to update DB path for moved file <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, -> <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S
+DAEMON_MV: 1 rows
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2, <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S 
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/cur xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir xxxxxxxx        
@@ -141,6 +165,8 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/.Trash/cur - <UID> <GID> <USER>
 Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -148,13 +174,14 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/cur - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 Command: local: MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST        
 DAEMON_MV <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S Locking MOVED_TO:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 1
 SQL MOVE: 'UPDATE file set filename = concat(?::text,substring(filename,length(?)+1)) WHERE (filename = ? or filename like ?)' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST' <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S' '<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S/%'
-DAEMON_MV: 0 rows
-ERROR: failed to update DB path for moved file <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S -> <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST
+DAEMON_MV: 1 rows
 Updated(mv) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Command: local: SIG <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -162,6 +189,8 @@ Command: local: MKHARDLINK <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=66
 Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
+Found 0 files to delete
+Found 0 deleted files
 HARDLINK: <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST -> <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
 Updated(mkhardlink) local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/.Trash/cur xxxxxxxx        
@@ -178,6 +207,8 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/.Trash/cur - <UID> <GID> <USER>
 Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/.Trash/cur  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/Maildir/cur user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -185,6 +216,8 @@ Command: local: MOD <TESTBASE>/test/peer/Maildir/cur - <UID> <GID> <USER> <GROUP
 Running check for <TESTBASE>/test/peer/Maildir/cur ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer/Maildir/cur  
 IDENT (cmd_finished).
 Command: local: STAT <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S user/group <UID> <GID> <USER> <GROUP>    
@@ -192,12 +225,16 @@ Command: local: DEL <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=67
 Running check for <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S.
+Found 0 files to delete
+Found 0 deleted files
 Updated(del) local:<TESTBASE>/test/peer/Maildir/.Trash/cur/1434.M21,S=6631,W=6764:2,S  
 Command: local: STAT <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST user/group <UID> <GID> <USER> <GROUP>    
 Command: local: DEL <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST         
 Running check for <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST ...
 Checking for modified files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST 
 Checking for deleted files <TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST.
+Found 0 files to delete
+Found 0 deleted files
 Updated(del) local:<TESTBASE>/test/peer/Maildir/cur/1434.M21,S=6631,W=6764:2,ST  
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir xxxxxxxx        
 Command: local: SETTIME <TESTBASE>/test/peer/Maildir/.Trash xxxxxxxx        
@@ -211,6 +248,8 @@ Command: local: DEL <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 6 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer. Errors 0
 Removing <TESTBASE>/test/peer/* ..

@@ -11,6 +11,8 @@ mark other operation: 'MOD_DIR' 'peer:<TESTBASE>/test/local/type_change' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/type_change/new_file 'N' all' '-'.
 Checking for deleted files <TESTBASE>/test/local recursive.
+Found 0 files to delete
+Found 0 deleted files
 Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Updating (MOD_DIR) 'peer:<TESTBASE>/test/local' ''

@@ -7,6 +7,8 @@ Command: local: MKDIR <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/type_change user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -14,6 +16,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/type_change - <UID> <GID> <USER> <GRO
 Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mkdir) local:<TESTBASE>/test/peer/type_change  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/type_change/new_file 'N' all user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -21,6 +25,8 @@ Command: local: CREATE <TESTBASE>/test/peer/type_change/new_file 'N' all - <UID>
 Running check for <TESTBASE>/test/peer/type_change/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/type_change/new_file 'N' all 1 0
 Updated(create) local:<TESTBASE>/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
@@ -43,6 +49,8 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/type_change user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -50,6 +58,8 @@ Command: local: PATCH <TESTBASE>/test/peer/type_change - <UID> <GID> <USER> <GRO
 Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
+Found 0 files to delete
+Found 0 deleted files
 Unlinking entry due to different type: 32768 16384 
 Deleting recursive from clean directory (<TESTBASE>/test/peer/type_change): 1 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer/type_change. Errors 0
@@ -57,6 +67,8 @@ Removing <TESTBASE>/test/peer/type_change/* ..
 Running check for <TESTBASE>/test/peer/type_change/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
@@ -77,6 +89,8 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/type_change user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -84,6 +98,8 @@ Command: local: MKDIR <TESTBASE>/test/peer/type_change - <UID> <GID> <USER> <GRO
 Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
+Found 0 files to delete
+Found 0 deleted files
 Unlinking entry due to different type: 16384 32768 
 Updated(mkdir) local:<TESTBASE>/test/peer/type_change  
 IDENT (cmd_finished).
@@ -92,6 +108,8 @@ Command: local: CREATE <TESTBASE>/test/peer/type_change/new_file 'N' all - <UID>
 Running check for <TESTBASE>/test/peer/type_change/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
+Found 0 files to delete
+Found 0 deleted files
 daemon CREATE <TESTBASE>/test/peer/type_change/new_file 'N' all 1 0
 Updated(create) local:<TESTBASE>/test/peer/type_change/new_file 'N' all  
 IDENT (cmd_finished).
@@ -107,6 +125,8 @@ Command: local: MOD <TESTBASE>/test/peer - <UID> <GID> <USER> <GROUP> <BLKSIZE> 
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Updated(mod) local:<TESTBASE>/test/peer  
 IDENT (cmd_finished).
 Command: local: SIG <TESTBASE>/test/peer/type_change user/group <UID> <GID> <USER> <GROUP> <BLKSIZE> - <DIRSIZE> xxxxxxxx
@@ -114,6 +134,8 @@ Command: local: PATCH <TESTBASE>/test/peer/type_change - <UID> <GID> <USER> <GRO
 Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
+Found 0 files to delete
+Found 0 deleted files
 Unlinking entry due to different type: 32768 16384 
 Deleting recursive from clean directory (<TESTBASE>/test/peer/type_change): 1 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer/type_change. Errors 0
@@ -121,6 +143,8 @@ Removing <TESTBASE>/test/peer/type_change/* ..
 Running check for <TESTBASE>/test/peer/type_change/new_file 'N' all ...
 Checking for modified files <TESTBASE>/test/peer/type_change/new_file 'N' all 
 Checking for deleted files <TESTBASE>/test/peer/type_change/new_file 'N' all.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/type_change/new_file 'N' all
 Removing <TESTBASE>/test/peer/type_change/new_file 'N' all from file db.
 Removing directory <TESTBASE>/test/peer/type_change 0
@@ -141,12 +165,16 @@ Command: local: DEL <TESTBASE>/test/peer
 Running check for <TESTBASE>/test/peer ...
 Checking for modified files <TESTBASE>/test/peer 
 Checking for deleted files <TESTBASE>/test/peer.
+Found 0 files to delete
+Found 0 deleted files
 Deleting recursive from clean directory (<TESTBASE>/test/peer): 1 
 Calling csync_rmdir_recursive local:<TESTBASE>/test/peer. Errors 0
 Removing <TESTBASE>/test/peer/* ..
 Running check for <TESTBASE>/test/peer/type_change ...
 Checking for modified files <TESTBASE>/test/peer/type_change 
 Checking for deleted files <TESTBASE>/test/peer/type_change.
+Found 0 files to delete
+Found 0 deleted files
 Removing file <TESTBASE>/test/peer/type_change
 Removing <TESTBASE>/test/peer/type_change from file db.
 Removing directory <TESTBASE>/test/peer 0

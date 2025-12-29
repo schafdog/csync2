@@ -11,3 +11,5 @@ mark operation NEW->MV => NEW other '<TESTBASE>/test/local/Z' '<TESTBASE>/test/l
 mark other operation: 'MV' 'peer:<TESTBASE>/test/local/Z' '<TESTBASE>/test/local/A'.
 mark operation NEW->MV => NEW peer '<TESTBASE>/test/local/Z' '<TESTBASE>/test/local/A' '<TESTBASE>/test/local/A'.
 Checking for deleted files <TESTBASE>/test recursive.
+Found 0 files to delete
+Found 0 deleted files

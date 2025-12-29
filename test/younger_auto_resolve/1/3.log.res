@@ -8,3 +8,5 @@ mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/auto' '-'.
 mark other operation: 'MKDIR' 'other:<TESTBASE>/test/local/auto/younger' '-'.
 mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local/auto/younger' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
+Found 0 files to delete
+Found 0 deleted files

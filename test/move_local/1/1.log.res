@@ -6,3 +6,5 @@ mark other operation: 'MKDIR' 'peer:<TESTBASE>/test/local' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/A' '-'.
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/A' '-'.
 Checking for deleted files <TESTBASE>/test recursive.
+Found 0 files to delete
+Found 0 deleted files

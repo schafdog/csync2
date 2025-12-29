@@ -10,3 +10,5 @@ mark other operation: 'MOD' 'peer:<TESTBASE>/test/local/new_file 'N' all' '-'.
 mark other operation: 'NEW' 'other:<TESTBASE>/test/local/mark' '-'.
 mark other operation: 'NEW' 'peer:<TESTBASE>/test/local/mark' '-'.
 Checking for deleted files <TESTBASE>/test/local recursive.
+Found 0 files to delete
+Found 0 deleted files

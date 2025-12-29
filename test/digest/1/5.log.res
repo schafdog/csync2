@@ -2,6 +2,7 @@ cmd x "clean up" local peer test/local
 Running recursive check for <TESTBASE>/test/local ...
 Checking recursive for modified files <TESTBASE>/test/local 
 Checking for deleted files <TESTBASE>/test/local recursive.
+Found 3 files to delete
 mark other operation: 'RM' 'other:<TESTBASE>/test/local/A' '-'.
 mark operation NEW -> RM other:<TESTBASE>/test/local/A deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local/A' '-'.
@@ -11,6 +12,7 @@ mark other operation: 'RM' 'peer:<TESTBASE>/test/local/.Test' '-'.
 mark other operation: 'RM' 'other:<TESTBASE>/test/local' '-'.
 mark operation MKDIR -> RM other:<TESTBASE>/test/local deleted before syncing. Removing from dirty.
 mark other operation: 'RM' 'peer:<TESTBASE>/test/local' '-'.
+Found 3 deleted files
 Got 3 dirty files from host peer
 Connecting to host peer (PLAIN) ...
 Deleting peer:<TESTBASE>/test/local
