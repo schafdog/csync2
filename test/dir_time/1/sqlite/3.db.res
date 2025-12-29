@@ -6,4 +6,4 @@ other	<TESTBASE>/test/local	MKDIR	-	1
 other	<TESTBASE>/test/local/usr	MKDIR	-	1
 other	<TESTBASE>/test/local/usr/local	MKDIR	-	1
 other	<TESTBASE>/test/local/usr/local/sbin	MKDIR	-	1
-peer	<TESTBASE>/test/local/usr/local/sbin	MKDIR	-	129
+peer	<TESTBASE>/test/local/usr/local/sbin	MOD	-	128
