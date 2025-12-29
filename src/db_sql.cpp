@@ -520,7 +520,7 @@ int DbSql::move_file(filename_p filename, filename_p newname)
 					"WHERE (filename = ? or filename like ?)", getTextType());
 	
 	std::string recursive = filename + "/%";
-	csync_info(1, "SQL MOVE: '{}' '{}' {} '{}' '{}'\n", update_sql_format, newname, filename, filename, recursive);
+	csync_info(2, "SQL MOVE: '{}' '{}' {} '{}' '{}'\n", update_sql_format, newname, filename, filename, recursive);
 	long long rc = conn_->execute_update("move_file", update_sql_format, newname, filename, filename, recursive);
 	return rc;
 }

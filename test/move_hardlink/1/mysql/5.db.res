@@ -16,6 +16,6 @@ other	<TESTBASE>/test/local/Maildir/cur/123,Sab	NEW	-	2
 peer	<TESTBASE>/test/local/Maildir/cur/123,Sab	MV	<TESTBASE>/test/local/Maildir/tmp/123	16
 other	<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab	HARDLINK	<TESTBASE>/test/local/Maildir/cur/123,Sab	32
 peer	<TESTBASE>/test/local/Maildir/.Trash/cur/123,Sab	HARDLINK	<TESTBASE>/test/local/Maildir/cur/123,Sab	32
-peer	<TESTBASE>/test/local/Maildir/.Trash/cur	MKDIR	-	129
-peer	<TESTBASE>/test/local/Maildir/cur	MKDIR	-	129
-peer	<TESTBASE>/test/local/Maildir/tmp	MKDIR	-	129
+peer	<TESTBASE>/test/local/Maildir/.Trash/cur	MOD	-	128
+peer	<TESTBASE>/test/local/Maildir/cur	MOD	-	128
+peer	<TESTBASE>/test/local/Maildir/tmp	MOD	-	128
