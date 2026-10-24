@@ -207,41 +207,32 @@ static FILE* open_temp_file(char *fnametmp, const char *fname) {
 	return f;
 }
 
-#ifdef _SVID_SOURCE
-static FILE *paranoid_tmpfile()
-{
-  //char *name;
-  FILE *f;
-  int fd;
-  char *template = "csync2.XXXXXX";
-  char *name =  strdup(template);
-  fd = mkstemp(name);
-
-  //fd = open(name, O_CREAT | O_EXCL | O_RDWR, S_IWUSR | S_IRUSR); */
-  if (fd >= 0) {
-    f = fdopen(fd, "wb+");
-    unlink(name);
-  }
-  if (fd < 0 || !f)
-    csync_fatal("ERROR: Could not open result from tempnam({})!\n", name);
-
-  csync_debug(1, "Tempfilename is {}\n", name);
-  free(name);
-  return f;
-}
-#else
+/* Returns an anonymous (already unlinked) scratch file for signatures and deltas.
+ Uses the configured tempdir if set, otherwise the system temp dir.
+ The patched result file is created next to the target by open_temp_file().
+ */
 static FILE* paranoid_tmpfile(void) {
-	FILE *f;
+	FILE *f = NULL;
+	int fd = -1;
+	const char *dir = csync_tempdir ? csync_tempdir : P_tmpdir;
 
-	if (access(P_tmpdir, R_OK | W_OK | X_OK) < 0)
-		csync_fatal("Temp directory '{}' does not exist!\n", P_tmpdir);
-
-	if (!(f = tmpfile()))
-		csync_fatal("ERROR: tmpfile() didn't return a valid file handle: {}, {} {}\n", errno, strerror(errno), P_tmpdir);
-
+#ifdef O_TMPFILE
+	fd = open(dir, O_TMPFILE | O_RDWR, S_IRUSR | S_IWUSR);
+	if (fd < 0)
+		csync_debug(3, "O_TMPFILE in '{}' failed: {}\n", dir, strerror(errno));
+#endif
+	if (fd < 0) {
+		std::string name = std::string(dir) + "/csync2.XXXXXX";
+		fd = mkstemp(&name[0]);
+		if (fd >= 0)
+			unlink(name.c_str());
+		else
+			csync_fatal("ERROR: Could not create temp file in '{}': {}\n", dir, strerror(errno));
+	}
+	if (!(f = fdopen(fd, "wb+")))
+		csync_fatal("ERROR: fdopen() on temp file in '{}' failed: {}\n", dir, strerror(errno));
 	return f;
 }
-#endif
 
 static int csync_send_file_chunked(int conn, FILE *in) {
 	long size;
